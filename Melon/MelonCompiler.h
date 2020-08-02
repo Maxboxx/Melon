@@ -1,0 +1,72 @@
+#pragma once
+
+#include "Boxx/String.h"
+#include "Boxx/List.h"
+#include "Boxx/Pointer.h"
+
+#include "Kiwi/Kiwi.h"
+#include "Kiwi/x86_64Converter.h"
+
+namespace Melon {
+	///B CompilerOptions
+	/// Options for the compilation process
+	struct CompilerOptions {
+		///T Include Directories
+		/// Contains the absolute file path for all include directories
+		/// The directories should end with a <code>/</code>
+		/// The directory the main melon file is located in is always added to the include directories by the compiler
+		Boxx::List<Boxx::String> includeDirectories;
+
+		///T Optimization Passes
+		/// The amount of times to perform optimizations on the code
+		Boxx::UInt optimizationPasses = 0;
+
+		///T Kiwi Optimization Passes
+		/// The amount of times to perform optimizations on the kiwi instructions
+		Boxx::UInt kiwiOptimizationPasses = 0;
+
+		///T Output Directory
+		/// The directory of the output files
+		/// The directory should end with a <code>/</code>
+		/// Defaults to the directory of the main melon file
+		Boxx::String outputDirectory;
+
+		///T Output Name
+		/// The name of the output files
+		/// Defaults to the name of the main melon file
+		Boxx::String outputName;
+
+		///T Output files
+		/// Boolean values for choosing which files the compiler should output
+		///M
+		bool outputKiwi       = false;
+		bool outputAssembly   = false;
+		bool outputAST        = false;
+		bool outputSymbols    = false;
+		bool outputExecutable = true;
+		///M
+
+		///T Create Error Log
+		bool createErrorLog = true;
+
+		///T Converter
+		/// The kiwi converter to use for compiling
+		Boxx::Pointer<Kiwi::Converter> converter = new Kiwi::x86_64Converter(Kiwi::x86_64Syntax::Intel);
+
+		~CompilerOptions() {}
+	};
+
+	///B MelonCompiler
+	/// The main class for compiling melon files
+	class MelonCompiler {
+	public:
+		///T Compile
+		/// Compiles a melon project
+		///A const Boxx::String& mainMelonFile: The main melon file for the project
+		///A const CompilerOptions& options: The compiler options to use for the compilation
+		static void Compile(const Boxx::String& mainMelonFile, const CompilerOptions& options = CompilerOptions());
+
+	private:
+		static void CompileFile(const Boxx::String& filename, const CompilerOptions& options);
+	};
+}
