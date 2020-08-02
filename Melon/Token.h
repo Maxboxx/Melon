@@ -92,6 +92,7 @@ namespace Melon {
 		Required,
 		Override,
 		Debug,
+		Include,
 
 		// Logic
 		Not,

@@ -1,5 +1,7 @@
 #include "ScopeList.h"
 
+#include "Boxx/Math.h"
+
 using namespace Boxx;
 using namespace Melon::Symbols;
 
@@ -213,6 +215,18 @@ bool ScopeList::operator==(const ScopeList& scopeList) const {
 
 bool ScopeList::operator!=(const ScopeList& scopeList) const {
 	return !operator==(scopeList);
+}
+
+bool ScopeList::operator<(const ScopeList& scopeList) const {
+	UInt maxIndex = Math::Min(Size(), scopeList.Size());
+
+	for (UInt i = 0; i < maxIndex; i++) {
+		if ((*this)[i] < scopeList[i]) {
+			return true;
+		}
+	}
+
+	return Size() < scopeList.Size(); 
 }
 
 void ScopeList::operator=(const ScopeList& scopeList) {

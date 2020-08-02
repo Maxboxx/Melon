@@ -170,6 +170,7 @@ const char* const SyntaxError::AbortLoops           = "not enough loops to abort
 const char* const SyntaxError::StructName           = "name expected for struct";
 const char* const SyntaxError::DotName              = "name expected after '.'";
 const char* const SyntaxError::CustomInitName       = "name expected in custom init";
+const char* const SyntaxError::InvalidInclude       = "invalid name to include";
 
 String SymbolError::Function(const Boxx::String& func, const Boxx::List<Boxx::String>& args) {
 	if (args.IsEmpty()) {

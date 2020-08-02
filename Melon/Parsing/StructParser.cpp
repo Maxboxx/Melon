@@ -86,9 +86,9 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	assign.node = new StructAssignNode();
 	structSymbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line));
 
-	info.index++;
+	Symbol::Add(info.scopes, structSymbol, FileInfo(info.filename, structLine), true);
 
-	Symbol::Add(info.scopes, structSymbol, FileInfo(info.filename, info.Current().line), true);
+	info.index++;
 
 	info.scopes = info.scopes.Pop();
 

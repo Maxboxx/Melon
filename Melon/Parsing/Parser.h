@@ -3,9 +3,12 @@
 #include "Boxx/List.h"
 #include "Boxx/Pointer.h"
 #include "Boxx/String.h"
+#include "Boxx/Set.h"
 
 #include "Melon/Token.h"
 #include "Melon/Errors.h"
+#include "Melon/MelonCompiler.h"
+
 #include "Melon/Symbols/Symbols.h"
 #include "Melon/Symbols/ScopeList.h"
 
@@ -24,6 +27,9 @@ namespace Melon {
 			///T Filename
 			Boxx::String filename;
 
+			///T Namespace
+			Symbols::ScopeList currentNamespace;
+
 			///T Scopes
 			/// Used to keep track of the current scope
 			Symbols::ScopeList scopes;
@@ -39,6 +45,17 @@ namespace Melon {
 			///T Loop counter
 			/// The amount of loops the parser is currently inside of
 			Boxx::UInt loops;
+
+			///T CompilerOptions
+			CompilerOptions options;
+
+			///T Included files
+			/// All files included by the project
+			Boxx::Set<Boxx::String> includedFiles;
+
+			///T Included namespaces
+			/// All namespaces included by the current file
+			Boxx::Set<Symbols::ScopeList> includedNamespaces;
 
 			///H Methods
 
@@ -68,17 +85,21 @@ namespace Melon {
 		class Parser {
 		public:
 			///T Parse
-			/// Parses a list of tokens to an AST
-			static Nodes::RootNode Parse(const Boxx::List<Token>& tokens, const Boxx::String& filename);
+			/// Parses a file and converts it to an AST
+			static Nodes::RootNode Parse(const Boxx::String& filename, const CompilerOptions& options);
 
 			///T Unexpected token
 			/// Throws a <type>SyntaxError</type> for the current token
 			static Nodes::NodePtr UnexpectedToken(ParsingInfo& info);
 		private:
+			friend class IncludeParser;
 
-			///T Parse next
-			/// Parses the next part of the main scope
+			static void ParseFile(const Boxx::String& filename, ParsingInfo& info);
 			static Nodes::NodePtr ParseNext(ParsingInfo& info);
+			static void SetupTokens();
+			static Boxx::List<TokenPattern> GetTokenPatterns();
+
+			static Boxx::List<TokenPattern> patterns;
 		};
 	}
 }

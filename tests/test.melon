@@ -1,4 +1,6 @@
 
---include Vector
+include Vector
 
---Vector: v = Vector(1, 2, 3)
+byte: a, b, c = 1, 2, 3
+
+Vector: v = Vector(a, b, c)

@@ -201,6 +201,8 @@ namespace Melon {
 			bool operator!=(const ScopeList& scopeList) const;
 			///M
 
+			bool operator<(const ScopeList& scopeList) const;
+
 			void operator=(const ScopeList& scopeList);
 
 			static ScopeList undefined;

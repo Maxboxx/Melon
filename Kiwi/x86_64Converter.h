@@ -406,6 +406,13 @@ namespace Kiwi {
 						break;
 					}
 
+					case InstructionType::Jmp: {
+						inst.type = InstructionType::Custom;
+						inst.instructionName = "jmp";
+						converted.Add(inst);
+						break;
+					}
+
 					case InstructionType::Ret: {
 						inst.type = InstructionType::Custom;
 						inst.instructionName = "ret";
