@@ -1,0 +1,49 @@
+ast: [
+	nil
+	assign: [
+		newvar: [
+			int: "i"
+			short: "s"
+			byte: "b"
+		]
+		"int.=:2": [
+			int: "i"
+			long: 1
+		]
+		"short.=:2": [
+			short: "s"
+			long: 2
+		]
+		"byte.=:2": [
+			byte: "b"
+			long: 3
+		]
+	]
+	assign: [
+		"short.=:3": [
+			short: "s"
+			"short.~|:3": [
+				short: "s"
+				short: "s"
+			]
+		]
+	]
+	assign: [
+		"short.=:3": [
+			short: "s"
+			"short.~|:0": [
+				short: "s"
+				byte: "b"
+			]
+		]
+	]
+	assign: [
+		"byte.=:3": [
+			byte: "b"
+			"byte.~|:3": [
+				byte: "b"
+				short: "s"
+			]
+		]
+	]
+]

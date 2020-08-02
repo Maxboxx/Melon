@@ -1,0 +1,72 @@
+symbols: [
+	Vector: {
+		size: 3
+		type: "struct"
+	}
+	"Vector.+:0": "Vector (Vector, Vector)"
+	"Vector.+:0.v1": {
+		type: "Vector"
+	}
+	"Vector.+:0.v2": {
+		type: "Vector"
+	}
+	"Vector.-:0": "Vector (Vector)"
+	"Vector.-:0.self": {
+		attributes: [
+			"ref"
+		]
+		type: "Vector"
+	}
+	"Vector.=:0": "(Vector)"
+	"Vector.init.():0": "(Vector)"
+	"Vector.init.():0.self": {
+		attributes: [
+			"ref"
+		]
+		type: "Vector"
+	}
+	"Vector.init.():1": "(Vector, byte)"
+	"Vector.init.():1.b": {
+		type: "byte"
+	}
+	"Vector.init.():1.self": {
+		attributes: [
+			"ref"
+		]
+		type: "Vector"
+	}
+	"Vector.init.():2": "(Vector, byte, byte, byte)"
+	"Vector.init.():2.self": {
+		attributes: [
+			"ref"
+		]
+		type: "Vector"
+	}
+	"Vector.init.():2.x": {
+		type: "byte"
+	}
+	"Vector.init.():2.y": {
+		type: "byte"
+	}
+	"Vector.init.():2.z": {
+		type: "byte"
+	}
+	"Vector.x": {
+		type: "byte"
+	}
+	"Vector.y": {
+		type: "byte"
+	}
+	"Vector.z": {
+		type: "byte"
+	}
+	b: {
+		type: "byte"
+	}
+	i: {
+		type: "int"
+	}
+	s: {
+		type: "short"
+	}
+]

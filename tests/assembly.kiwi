@@ -1,0 +1,40 @@
+	Mov  4: SP[-4], 1
+	Mov  2: SP[-6], 2
+	Mov  1: SP[-7], 3
+	Nor  2: SP[-6], SP[-6]
+	Nor  2, 1: SP[-6], SP[-7]
+	Nor  1, 2: SP[-7], SP[-6]
+	Exit 0
+F0:
+	Mov  8: R0, SP[8]
+	Mov  2: R0[1], 0
+	Mov  1: R0[0], 0
+	Ret 
+F1:
+	Mov  8: R0, SP[9]
+	Mov  1: R0[2], SP[8]
+	Mov  1: R0[1], SP[8]
+	Mov  1: R0[0], SP[8]
+	Ret 
+F2:
+	Mov  8: R0, SP[11]
+	Mov  2: R0[2], SP[10]
+	Mov  1: R0[0], SP[8]
+	Ret 
+F3:
+	Add  1: SP[13], SP[10], SP[16]
+	Add  1: SP[12], SP[9], SP[15]
+	Add  1: SP[11], SP[8], SP[14]
+	Ret 
+F4:
+	Mov  8: R0, SP[8]
+	Mov  1: R1, R0[2]
+	Neg  1: R1
+	Mov  1: SP[18], R1
+	Mov  1: R1, R0[1]
+	Neg  1: R1
+	Mov  1: SP[17], R1
+	Mov  1: R1, R0[0]
+	Neg  1: R1
+	Mov  1: SP[16], R1
+	Ret 

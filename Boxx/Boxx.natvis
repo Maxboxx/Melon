@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="Boxx::String">
+		<DisplayString>{str,na}</DisplayString>
+	</Type>
+
+	<Type Name="Boxx::Error">
+		<DisplayString>{{message={_Data._What, na}}}</DisplayString>
+	</Type>
+
+	<Type Name="Boxx::Optional&lt;*&gt;">
+		<DisplayString Condition="hasValue == false">null</DisplayString>
+		<DisplayString Condition="hasValue == true">{value}</DisplayString>
+		<Expand>
+			<Item Name="value" Condition="hasValue == true">value</Item>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Pointer&lt;*&gt;">
+		<DisplayString>{*ptr}</DisplayString>
+		<Expand>
+			<Item Name="pointer">ptr</Item>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::WeakPointer&lt;*&gt;">
+		<DisplayString>{*ptr}</DisplayString>
+		<Expand>
+			<Item Name="pointer">ptr</Item>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Vector2">
+		<DisplayString>{{{x}, {y}}}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Vector3">
+		<DisplayString>{{{x}, {y}, {z}}}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+			<Item Name="z">z</Item>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Vector4">
+		<DisplayString>{{{x}, {y}, {z}, {w}}}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+			<Item Name="z">z</Item>
+			<Item Name="w">w</Item>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Quaternion">
+		<DisplayString>{{x={x} y={y} z={z} w={w}}}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+			<Item Name="z">z</Item>
+			<Item Name="w">w</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Boxx::Matrix2">
+		<DisplayString>{values}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Rank>2</Rank>
+				<Size>2</Size>
+				<ValuePointer>values</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Matrix3">
+		<DisplayString>{values}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Rank>2</Rank>
+				<Size>3</Size>
+				<ValuePointer>values</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Matrix4">
+		<DisplayString>{values}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Rank>2</Rank>
+				<Size>4</Size>
+				<ValuePointer>values</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::StaticArray&lt;*&gt;">
+		<DisplayString>{{size={$T2}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>$T2</Size>
+				<ValuePointer>array</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Array&lt;*&gt;">
+		<DisplayString>{{size={size}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>size</Size>
+				<ValuePointer>array</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="Boxx::List&lt;*&gt;">
+		<DisplayString>{{size={list->size} capacity={list->capacity}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>list->size</Size>
+				<ValuePointer>list->list</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="Boxx::Stack&lt;*&gt;">
+		<DisplayString>{{size={stack.list->size} capacity={stack.list->capacity}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>stack.list->size</Size>
+				<ValuePointer>stack.list->list</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Collection&lt;*&gt;">
+		<DisplayString>{{size={list->size} capacity={list->capacity}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>list->size</Size>
+				<ValuePointer>list->list</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	
+	<Type Name="Boxx::Set&lt;*&gt;">
+		<DisplayString>{{size={list.list->size} capacity={list.list->capacity}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>list.list->size</Size>
+				<ValuePointer>list.list->list</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="Boxx::Map&lt;*,*&gt;">
+		<DisplayString>{{size={values.list->size}}}</DisplayString>
+		<Expand>
+			<CustomListItems>
+				<Variable Name="index" InitialValue="0"/>
+				
+				<Loop>
+					<Break Condition="index >= values.list->size"/>
+					<Item Name="[{values.list->list[index].key}]">values.list->list[index].value</Item>
+					<Exec>index++</Exec>
+				</Loop>
+			</CustomListItems>
+		</Expand>
+	</Type>
+</AutoVisualizer>

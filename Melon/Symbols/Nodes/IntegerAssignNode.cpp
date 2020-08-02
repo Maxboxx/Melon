@@ -1,0 +1,44 @@
+#include "IntegerAssignNode.h"
+
+#include "Kiwi/Kiwi.h"
+
+#include "Melon/Optimizing/OptimizerInstruction.h"
+
+#include "Melon/Symbols/Symbols.h"
+
+using namespace Boxx;
+
+using namespace Kiwi;
+
+using namespace Melon::Nodes;
+using namespace Melon::Symbols;
+using namespace Melon::Symbols::Nodes;
+using namespace Melon::Optimizing;
+
+IntegerAssignNode::IntegerAssignNode(const UByte size) {
+	this->size = size;
+}
+
+CompiledNode IntegerAssignNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
+	bool important = info.important;
+	info.important = false;
+
+	CompiledNode c1 = nodes[0]->Compile(info);
+	CompiledNode c2 = nodes[1]->Compile(info);
+
+	OptimizerInstruction mov = Instruction(InstructionType::Mov);
+	mov.instruction.sizes[0] = c1.size;
+	mov.instruction.sizes[1] = nodes[1]->IsImmediate() ? c1.size : c2.size;
+	mov.instruction.signs[0] = Symbol::Find(nodes[0]->Type(), nodes[0]->file).sign;
+	mov.instruction.signs[1] = Symbol::Find(nodes[1]->Type(), nodes[1]->file).sign;
+	mov.important = important;
+	mov.instruction.arguments.Add(c1.argument);
+	mov.instruction.arguments.Add(c2.argument);
+
+	c1.AddInstructions(c2.instructions);
+	c1.instructions.Add(mov);
+
+	info.important = important;
+
+	return c1;
+}
