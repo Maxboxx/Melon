@@ -99,6 +99,19 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	ScopeList scopes = info.scopes;
 	info.scopes = include;
 
+	for (UInt i = 0; i < include.Size(); i++) {
+		ScopeList includeScopes;
+
+		for (UInt u = 0; u <= i; u++) {
+			includeScopes = includeScopes.Add(include[u]);
+		}
+
+		if (!Symbol::Contains(includeScopes)) {
+			Symbol s = Symbol(SymbolType::Namespace);
+			Symbol::Add(includeScopes, s, FileInfo(info.filename, 1));
+		}
+	}
+
 	Parser::ParseFile(filename, info);
 
 	info.filename = file;

@@ -17,9 +17,9 @@ NameNode::~NameNode() {
 }
 
 ScopeList NameNode::Type() const {
-	Symbol s = Symbol::FindNearest(scope, name, file);
+	Symbol s = GetSymbol();
 
-	if (s.type == SymbolType::Scope) {
+	if (s.type == SymbolType::Scope || s.type == SymbolType::Namespace) {
 		return s.scope;
 	}
 	else if (s.type != SymbolType::None) {
@@ -34,12 +34,12 @@ ScopeList NameNode::Type() const {
 }
 
 Symbol NameNode::GetSymbol() const {
-	return Symbol::FindNearest(scope, name, file);
+	return Symbol::FindNearestInNamespace(scope, name, file);
 }
 
 CompiledNode NameNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
-	Symbol s = Symbol::FindNearest(scope, name, file);
+	Symbol s = GetSymbol();
 
 	if (!ignoreRef && s.attributes.Contains(SymbolAttribute::Ref)){
 		Pointer<NameNode> name = new NameNode(scope, file);
@@ -52,7 +52,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 		cn.argument = Argument(MemoryLocation(info.stack.Offset(s.stack)));
 	}
 
-	cn.size = Symbol::Find(s.varType, file).size;
+	cn.size = Symbol::FindInNamespace(s.varType, file).size;
 	return cn;
 }
 
@@ -63,11 +63,11 @@ Set<ScanType> NameNode::Scan(ScanInfo& info) const {
 		scanSet.Add(ScanType::Self);
 	}
 
-	Symbol::FindNearest(scope, name, file);
+	GetSymbol();
 
 	return scanSet;
 }
 
 Mango NameNode::ToMango() const {
-	return Mango(Type().ToString(), Symbol::FindNearest(scope, name, file).scope.ToString());
+	return Mango(Type().ToString(), GetSymbol().scope.ToString());
 }

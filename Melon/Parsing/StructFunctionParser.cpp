@@ -18,11 +18,13 @@ NodePtr StructFunctionParser::Parse(ParsingInfo& info) {
 			if (Pointer<FunctionNode> fn = en->node.Cast<FunctionNode>()) {
 				if (!fn->s.attributes.Contains(SymbolAttribute::Static)) {
 					Symbol a = Symbol(SymbolType::Variable);
-					a.varType = ScopeList().Add(info.scopes.Last());
+					a.symbolNamespace = info.currentNamespace;
+					a.includedNamespaces = info.includedNamespaces;
+					a.varType = info.scopes;
 					a.attributes.Add(SymbolAttribute::Ref);
 					//a.attributes.Add(SymbolAttribute::Const);	Add to class
 
-					fn->s.args.Insert(0, ScopeList().Add(info.scopes.Last()));
+					fn->s.args.Insert(0, info.scopes);
 					fn->s.names.Insert(0, Scope::Self);
 					fn->argNames.Insert(0, Scope::Self);
 

@@ -76,6 +76,7 @@ namespace Melon {
 			static const Scope Super;
 			static const Scope This;
 			static const Scope Base;
+			static const Scope Global;
 			///M
 
 			///T Scope types
@@ -168,6 +169,11 @@ namespace Melon {
 			///R ScopeList: A copy of the <type>ScopeList</type> containing the added scope.
 			/// The original <type>ScopeList</type> is not changed
 			ScopeList AddNext(const Boxx::String& scope) const;
+
+			///T Combine
+			/// Appends a scope list to the end of the current one
+			/// If the scope list shares scopes, those scopes are ignored
+			ScopeList Combine(const ScopeList& scopes) const;
 
 			///T Pop scope
 			///R ScopeList: A copy of the <type>ScopeList</type> with the last scope removed.

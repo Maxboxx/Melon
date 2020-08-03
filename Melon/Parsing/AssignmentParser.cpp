@@ -24,6 +24,8 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 
 		for (UInt i = 0; i < nn->names.Size(); i++) {
 			Symbol v = Symbol(SymbolType::Variable);
+			v.symbolNamespace = info.currentNamespace;
+			v.includedNamespaces = info.includedNamespaces;
 
 			if (nn->types.Size() == 1)
 				v.varType = nn->types[0];

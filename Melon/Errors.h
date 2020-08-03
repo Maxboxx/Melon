@@ -5,6 +5,9 @@
 #include "Boxx/Logger.h"
 #include "Boxx/Pair.h"
 #include "Boxx/List.h"
+#include "Boxx/Set.h"
+
+#include "Melon/Symbols/ScopeList.h"
 
 namespace Melon {
 	///B ErrorLog
@@ -72,6 +75,12 @@ namespace Melon {
 		///T Line
 		Boxx::UInt line;
 
+		///T Current Namespace
+		Symbols::ScopeList currentNamespace;
+
+		///T Included Namespaces
+		Boxx::Set<Symbols::ScopeList> includedNamespaces;
+
 		///T Empty constructor
 		FileInfo() {
 			filename = "";
@@ -82,6 +91,14 @@ namespace Melon {
 		FileInfo(const Boxx::String& filename, const Boxx::UInt line) {
 			this->filename = filename;
 			this->line = line;
+		}
+
+		///T Constructor with Namespaces
+		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Symbols::ScopeList& currentNamespace, const Boxx::Set<Symbols::ScopeList>& includedNamespaces) {
+			this->filename = filename;
+			this->line = line;
+			this->currentNamespace = currentNamespace;
+			this->includedNamespaces = includedNamespaces;
 		}
 	};
 
@@ -221,6 +238,8 @@ namespace Melon {
 		static const char* const FuncNotFoundStart;
 		static const char* const NotFoundEnd;
 		static const char* const NotFoundArgs;
+		static const char* const AmbiguousStart;
+		static const char* const AmbiguousEnd;
 		///M
 	};
 
@@ -250,7 +269,7 @@ namespace Melon {
 	class InfoError : public CompileError {
 	public:
 		InfoError(const char* const msg, const FileInfo& file) : CompileError(msg, file) {
-			type == ErrorType::Info;
+			type = ErrorType::Info;
 		}
 
 		static Boxx::String UpperName(const Boxx::String& type, const Boxx::String& name);
@@ -263,7 +282,7 @@ namespace Melon {
 	class PlainError : public CompileError {
 	public:
 		PlainError(const char* const msg) : CompileError(msg, FileInfo()) {
-			type == ErrorType::Plain;
+			type = ErrorType::Plain;
 		}
 	};
 }

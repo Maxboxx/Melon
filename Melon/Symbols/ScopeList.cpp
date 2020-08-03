@@ -5,12 +5,13 @@
 using namespace Boxx;
 using namespace Melon::Symbols;
 
-const Scope Scope::Self  = Scope("self");
-const Scope Scope::Init  = Scope("init");
-const Scope Scope::Final = Scope("final");
-const Scope Scope::Super = Scope("super");
-const Scope Scope::This  = Scope("this");
-const Scope Scope::Base  = Scope("base");
+const Scope Scope::Self   = Scope("self");
+const Scope Scope::Init   = Scope("init");
+const Scope Scope::Final  = Scope("final");
+const Scope Scope::Super  = Scope("super");
+const Scope Scope::This   = Scope("this");
+const Scope Scope::Base   = Scope("base");
+const Scope Scope::Global = Scope("global");
 
 const Scope Scope::Bool   = Scope("bool");
 const Scope Scope::Byte   = Scope("byte");
@@ -165,6 +166,22 @@ ScopeList ScopeList::AddNext(const String& scope) const {
 		list.scopes.Last().AddScope(scope);
 		Scope s = Scope("!" + scope + String::ToString((Int)list.scopes.Last().GetScope(scope)));
 		list.scopes.Add(s);
+	}
+
+	return list;
+}
+
+ScopeList ScopeList::Combine(const ScopeList& scopes) const {
+	ScopeList list = *this;
+
+	for (UInt i = 0; i < scopes.Size(); i++) {
+		if ((*this)[i] != scopes[i]) {
+			for (UInt u = i; u < scopes.Size(); u++) {
+				list = list.Add(scopes[u]);
+			}
+
+			break;
+		}
 	}
 
 	return list;

@@ -20,13 +20,13 @@ ScopeList NewVariableNode::Type() const {
 
 CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate error lines
 	CompiledNode cn;
-	cn.size = Symbol::Find(Type(), file).size;
+	cn.size = Symbol::FindInNamespace(Type(), file).size;
 
 	if (attributes[0].Contains(SymbolAttribute::Ref)) {
 		info.stack.Push(info.stack.ptrSize);
 	}
 	else {
-		info.stack.Push(Symbol::Find(types[0], file).size);
+		info.stack.Push(Symbol::FindInNamespace(types[0], file).size);
 	}
 
 	Symbol::Find(scope, file).Get(names[0], file).stack = info.stack.top;
@@ -38,10 +38,10 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 		}
 		else {
 			if (types.Size() == 1) {
-				info.stack.Push(Symbol::Find(types[0], file).size);
+				info.stack.Push(Symbol::FindInNamespace(types[0], file).size);
 			}
 			else {
-				info.stack.Push(Symbol::Find(types[i], file).size);
+				info.stack.Push(Symbol::FindInNamespace(types[i], file).size);
 			}
 		}
 
@@ -52,14 +52,14 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 }
 
 Set<ScanType> NewVariableNode::Scan(ScanInfo& info) const {
-	Symbol::Find(Type(), file);
+	Symbol::FindInNamespace(Type(), file);
 
 	for (const ScopeList& s : types) {
-		Symbol::Find(s, file);
+		Symbol::FindInNamespace(s, file);
 	}
 
 	for (const Scope& n : names) {
-		Symbol::Find(scope.Add(n), file);
+		Symbol::FindInNamespace(scope.Add(n), file);
 	}
 
 	return Set<ScanType>();

@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "NewVariableNode.h"
+
 namespace Melon {
 	namespace Nodes {
 
@@ -12,7 +14,7 @@ namespace Melon {
 
 			///T New variables
 			/// List of new variables if there are any
-			Boxx::Pointer<struct NewVariableNode> newVars;
+			Boxx::Pointer<NewVariableNode> newVars;
 
 			///T Variables and values
 			/// List of variables and values for each variable

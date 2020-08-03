@@ -16,7 +16,7 @@ namespace Melon {
 	namespace Nodes {
 
 		///T NodePtr
-		typedef Boxx::Pointer<struct Node> NodePtr;
+		typedef Boxx::Pointer<class Node> NodePtr;
 
 		///B StackPtr
 		/// Contains information about the stack pointer

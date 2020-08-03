@@ -1,6 +1,6 @@
 
-include Vector
+include Math.Vector
 
 byte: a, b, c = 1, 2, 3
 
-Vector: v = Vector(a, b, c)
+Math.Vector: v = Math.Vector(a, b, c)

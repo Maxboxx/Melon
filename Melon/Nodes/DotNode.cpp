@@ -26,18 +26,26 @@ ScopeList DotNode::Type() const {
 }
 
 Symbol DotNode::GetSymbol() const {
-	Symbol s = Symbol::Find(node->Type(), file);
+	Symbol nodeSymbol = node->GetSymbol();
 
-	if (s.type == SymbolType::Struct) {
-		Symbol varType = Symbol::FindNearest(s.scope, s.varType, file);
+	if (nodeSymbol.type == SymbolType::Variable) {
+		Symbol s = Symbol::Find(node->Type(), file);
 
-		if (varType.type != SymbolType::None && varType.Contains(name)) {
-			const Symbol s2 = varType.Get(name, file);
+		if (s.type == SymbolType::Struct) {
+			Symbol varType = Symbol::FindNearest(s.scope, s.varType, file);
 
-			if (s2.type != SymbolType::None) {
-				return Symbol::FindNearest(s2.scope, s2.varType, file);
+			if (varType.type != SymbolType::None && varType.Contains(name)) {
+				const Symbol s2 = varType.Get(name, file);
+
+				if (s2.type != SymbolType::None) {
+					return Symbol::FindNearest(s2.scope, s2.varType, file);
+				}
 			}
 		}
+	}
+	else {
+		Symbol s = Symbol::Find(nodeSymbol.scope, file);
+		return s.Get(name, file);
 	}
 
 	return Symbol();

@@ -93,6 +93,7 @@ namespace Melon {
 		Override,
 		Debug,
 		Include,
+		Global,
 
 		// Logic
 		Not,

@@ -16,6 +16,7 @@
 #include "Melon/Nodes/CallNode.h"
 #include "Melon/Nodes/DotNode.h"
 #include "Melon/Nodes/CustomInitNode.h"
+#include "Melon/Nodes/NameNode.h"
 
 using namespace Boxx;
 
@@ -262,7 +263,29 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		}
 	}
 
-	if (NodePtr node = NameParser::Parse(info)) {
+	if (info.Current().type == TokenType::Global) {
+		const UInt line = info.Current().line;
+		info.index++;
+		
+		if (NodePtr dotNode = DotParser::Parse(info)) {
+			Pointer<DotNode> dn = dotNode.Cast<DotNode>();
+			Pointer<NameNode> nn = new NameNode(ScopeList(), FileInfo(info.filename, line));
+			nn->name = Scope::Global;
+			dn->node = nn;
+			return dn;
+		}
+
+		if (info.Current().type == TokenType::Dot) {
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'.'", "'global'"), FileInfo(info.filename, info.Current(-1).line)));
+		}
+		else {
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("name", "'.'"), FileInfo(info.filename, info.Current(-1).line)));
+		}
+
+		info.index = startIndex;
+		return nullptr;
+	}
+	else if (NodePtr node = NameParser::Parse(info)) {
 		return node;
 	}
 

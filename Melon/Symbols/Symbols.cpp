@@ -1,6 +1,7 @@
 #include "Symbols.h"
 
 #include "Boxx/Map.h"
+#include "Boxx/Optional.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -199,13 +200,27 @@ Symbol Symbol::Get(const ScopeList& scope, const FileInfo& file) const {
 	return s;
 }
 
+Symbol Symbol::GetReturnType(const UInt index) const {
+	FileInfo file;
+	file.currentNamespace = symbolNamespace;
+	file.includedNamespaces = includedNamespaces;
+	return FindNearestInNamespace(scope.Pop(), ret[index], file);
+}
+
+Symbol Symbol::GetArgumentType(const UInt index) const {
+	FileInfo file;
+	file.currentNamespace = symbolNamespace;
+	file.includedNamespaces = includedNamespaces;
+	return FindNearestInNamespace(scope.Pop(), args[index], file);
+}
+
 bool Symbol::Contains(const Scope& scope) const {
-	if (!scope.variant) return scopes.Contains(scope.name);
+	if (!scope.variant.HasValue()) return scopes.Contains(scope.name);
 
 	Symbol s;
 
 	if (scopes.Contains(scope.name, s)) {
-		return s.scopes.Contains(scope.variant.Get());
+		return s.variants.Size() > scope.variant.Get();
 	}
 
 	return false;
@@ -293,16 +308,55 @@ Symbol Symbol::Find(const ScopeList& scopes, const FileInfo& file) {
 
 	Symbol s = symbols;
 
-	try {
-		for (UInt i = 0; i < scopes.Size(); i++) {
-			s = s.Get(scopes[i], file);
-		}
-	}
-	catch (MapKeyError e) {
-		ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + scopes.ToString() + SymbolError::NotFoundEnd, file));
+	for (UInt i = scopes[0] == Scope::Global ? 1 : 0; i < scopes.Size(); i++) {
+		s = s.Get(scopes[i], file);
 	}
 
 	return s;
+}
+
+Symbol Symbol::FindInNamespace(const ScopeList& scopes, const FileInfo& file) {
+	if (scopes.Size() == 0) return symbols;
+	if (scopes[0].name.Size() == 0) return symbols;
+
+	if (scopes[0] == Scope::Global) {
+		return Symbol::Find(scopes, file);
+	}
+
+	if (Symbol::Contains(file.currentNamespace.Add(scopes))) {
+		return Symbol::Find(file.currentNamespace.Add(scopes), file);
+	}
+
+	Optional<Symbol> foundSymbol = nullptr;
+
+	if (Symbol::Contains(scopes)) {
+		foundSymbol = Symbol::Find(scopes, file);
+	}
+
+	for (const ScopeList& includedNamespace : file.includedNamespaces) {
+		if (includedNamespace.Last() == scopes[0]) {
+			if (Symbol::Contains(includedNamespace.Pop().Add(scopes))) {
+				if (foundSymbol) {
+					ErrorLog::Error(SymbolError(SymbolError::AmbiguousStart + scopes.ToString() + SymbolError::AmbiguousEnd, file));
+				}
+
+				foundSymbol = Symbol::Find(includedNamespace.Pop().Add(scopes), file);
+			}
+		}
+	}
+
+	if (foundSymbol) return foundSymbol;
+
+	ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + scopes.ToString() + SymbolError::NotFoundEnd, file));
+	return Symbol();
+}
+
+bool Symbol::ContainsScope(const Scope& scope) {
+	return symbols.Contains(scope);
+}
+
+bool Symbol::Contains(const ScopeList& scopes) {
+	return symbols.Contains(scopes, FileInfo());
 }
 
 Symbol Symbol::FindNearest(const ScopeList& scopes, const Scope& scope, const FileInfo& file) {
@@ -326,9 +380,33 @@ Symbol Symbol::FindNearest(const ScopeList& scopes, const ScopeList& scope, cons
 		}
 	}
 
-	Symbol s = symbols.Get(scope[0], file);
-	s.scope = ScopeList().Add(scope[0]);
+	Symbol s = symbols.Get(scope, file);
+	s.scope = scope;
 	return s;
+}
+
+Symbol Symbol::FindNearestInNamespace(const ScopeList& scopes, const Scope& scope, const FileInfo& file) {
+	return FindNearestInNamespace(scopes, ScopeList().Add(scope), file);
+}
+
+Symbol Symbol::FindNearestInNamespace(const ScopeList& scopes, const ScopeList& scope, const FileInfo& file) {
+	if (scopes.Size() > 0) {
+		ScopeList list = scopes;
+
+		while (list.Size() > 0) {
+			Symbol s = FindInNamespace(list, file);
+
+			if (s.Contains(scope, file)) {
+				Symbol sym = s.Get(scope, file);
+				sym.scope = list.Add(scope);
+				return sym;
+			}
+
+			list = list.Pop();
+		}
+	}
+
+	return FindInNamespace(scope, file);
 }
 
 Symbol Symbol::FindNearestType(const ScopeList& scopes, const Scope& scope, const FileInfo& file) {
@@ -355,9 +433,36 @@ Symbol Symbol::FindNearestType(const ScopeList& scopes, const ScopeList& scope, 
 		}
 	}
 
-	Symbol s = symbols.Get(scope[0], file);
-	s.scope = ScopeList().Add(scope[0]);
+	Symbol s = symbols.Get(scope, file);
+	s.scope = scope;
 	return s;
+}
+
+Symbol Symbol::FindNearestTypeInNamespace(const ScopeList& scopes, const Scope& scope, const FileInfo& file) {
+	return FindNearestInNamespace(scopes, ScopeList().Add(scope), file);
+}
+
+Symbol Symbol::FindNearestTypeInNamespace(const ScopeList& scopes, const ScopeList& scope, const FileInfo& file) {
+	if (scopes.Size() > 0) {
+		ScopeList list = scopes;
+
+		while (list.Size() > 0) {
+			Symbol s = FindInNamespace(list, file);
+
+			if (s.Contains(scope, file)) {
+				Symbol sym = s.Get(scope, file);
+
+				if (sym.IsType()) {
+					sym.scope = list.Add(scope);
+					return sym;
+				}
+			}
+
+			list = list.Pop();
+		}
+	}
+
+	return FindInNamespace(scope, file);
 }
 
 Symbol Symbol::FindCurrentFunction(const ScopeList& scopes, const FileInfo& file) {
@@ -429,7 +534,7 @@ Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types,
 			bool match = true;
 
 			for (UInt a = 0; a < types.Size(); a++) {
-				if (types[a] != FindNearestType(func, s.variants[i].args[a], file).scope) {
+				if (types[a] != FindNearestType(func.Pop(), s.variants[i].args[a], file).scope) {
 					match = false;
 					break;
 				}
@@ -547,7 +652,7 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) const {
 
 		for (UInt i = 0; i < ret.Size(); i++) {
 			if (i > 0) r += ", ";
-			r += ret[i].ToString();
+			r += GetReturnType(i).scope.ToString();
 		}
 
 		if (r.Size() > 0) r += " ";
@@ -556,7 +661,7 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) const {
 
 		for (UInt i = 0; i < args.Size(); i++) {
 			if (i > 0) a += ", ";
-			a += args[i].ToString();
+			a += GetArgumentType(i).scope.ToString();
 		}
 
 		symbols.Add(Mango(scope.ToString(), r + "(" + a + ")"));

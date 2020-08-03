@@ -30,7 +30,8 @@ namespace Melon {
 			Struct,
 			Enum,
 			Interface,
-			Scope
+			Scope,
+			Namespace
 			///M
 		};
 
@@ -117,6 +118,12 @@ namespace Melon {
 			/// A set of the attributes for this symbol
 			Boxx::Set<SymbolAttribute> attributes;
 
+			///T Symbol namespace
+			ScopeList symbolNamespace;
+
+			///T Included namespaces
+			Boxx::Set<ScopeList> includedNamespaces;
+
 			///H Constructors
 
 			///T Constructors
@@ -134,6 +141,12 @@ namespace Melon {
 			Symbol Get(const Scope& scope, const FileInfo& file) const;
 			Symbol Get(const ScopeList& scope, const FileInfo& file) const;
 			///M
+
+			///T Get Return Type
+			Symbol GetReturnType(const Boxx::UInt index) const;
+
+			///T Get Argument Type
+			Symbol GetArgumentType(const Boxx::UInt index) const;
 
 			///T Contains
 			/// Checks if the symbol contains a specific child symbol
@@ -183,6 +196,17 @@ namespace Melon {
 			/// Find a specific symbol
 			static Symbol Find(const ScopeList& scopes, const FileInfo& file);
 
+			///T Find In Namespace
+			/// Find a specific symbol in the namespaces provided by <code>file</code>
+			static Symbol FindInNamespace(const ScopeList& scopes, const FileInfo& file);
+
+			///T Contains
+			/// Checks if a specific symbol exists
+			///M
+			static bool ContainsScope(const Scope& scope);
+			static bool Contains(const ScopeList& scopes);
+			///M
+
 			///T Find nearest
 			/// Find the nearest symbol to the specified scope
 			///M
@@ -190,11 +214,25 @@ namespace Melon {
 			static Symbol FindNearest(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
 			///M
 
+			///T Find Nearest in Namespace
+			/// Find the nearest symbol to the specified scope in the namespaces provided by <code>file</code>
+			///M
+			static Symbol FindNearestInNamespace(const ScopeList& scopes, const Scope& name, const FileInfo& file);
+			static Symbol FindNearestInNamespace(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
+			///M
+
 			///T Find nearest type
 			/// Find the nearest type symbol to the specified scope
 			///M
 			static Symbol FindNearestType(const ScopeList& scopes, const Scope& name, const FileInfo& file);
 			static Symbol FindNearestType(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
+			///M
+
+			///T Find nearest type in namespace
+			/// Find the nearest type symbol to the specified scope in the namespaces provided by <code>file</code>
+			///M
+			static Symbol FindNearestTypeInNamespace(const ScopeList& scopes, const Scope& name, const FileInfo& file);
+			static Symbol FindNearestTypeInNamespace(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
 			///M
 
 			///T Find current function

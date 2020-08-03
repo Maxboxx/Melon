@@ -194,6 +194,8 @@ const char* const SymbolError::NotFoundStart     = "symbol '";
 const char* const SymbolError::FuncNotFoundStart = "function '";
 const char* const SymbolError::NotFoundEnd       = "' not found";
 const char* const SymbolError::NotFoundArgs      = "' not found for arguments: ";
+const char* const SymbolError::AmbiguousStart     = "'";
+const char* const SymbolError::AmbiguousEnd       = "' is ambiguous";
 
 String TypeError::Operator(const String& op, const String& type) {
 	return "operator '" + op + "' for '" + type + "' not found";

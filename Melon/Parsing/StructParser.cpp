@@ -40,6 +40,8 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 	info.index++;
 	Symbol structSymbol = Symbol(SymbolType::Struct);
+	structSymbol.symbolNamespace = info.currentNamespace;
+	structSymbol.includedNamespaces = info.includedNamespaces;
 	structSymbol.scope = info.scopes.Add(structName);
 	Pointer<StructNode> sn = new StructNode(info.scopes, FileInfo(info.filename, structLine));
 
@@ -56,6 +58,8 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 			for (UInt i = 0; i < nn->names.Size(); i++) {
 				Symbol v = Symbol(SymbolType::Variable);
+				v.symbolNamespace = info.currentNamespace;
+				v.includedNamespaces = info.includedNamespaces;
 
 				if (nn->types.Size() == 1)
 					v.varType = nn->types[0];
@@ -82,6 +86,8 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("struct", structLine), FileInfo(info.filename, info.Current(-1).line)));
 
 	Symbol assign = Symbol(SymbolType::Function);
+	assign.symbolNamespace = info.currentNamespace;
+	assign.includedNamespaces = info.includedNamespaces;
 	assign.args.Add(info.scopes);
 	assign.node = new StructAssignNode();
 	structSymbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line));

@@ -164,6 +164,7 @@ void Parser::SetupTokens() {
 
 	// Keywords
 	patterns.Add(TokenPattern(TokenType::Include, "include"));
+	patterns.Add(TokenPattern(TokenType::Global, "global"));
 	patterns.Add(TokenPattern(TokenType::If, "if"));
 	patterns.Add(TokenPattern(TokenType::Then, "then"));
 	patterns.Add(TokenPattern(TokenType::AlsoIf, "alsoif"));
