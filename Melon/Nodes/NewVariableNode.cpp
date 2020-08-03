@@ -15,12 +15,12 @@ NewVariableNode::~NewVariableNode() {
 }
 
 ScopeList NewVariableNode::Type() const {
-	return types[0];
+	return Symbol::FindInNamespace(types[0], file).scope;
 }
 
 CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate error lines
 	CompiledNode cn;
-	cn.size = Symbol::FindInNamespace(Type(), file).size;
+	cn.size = Symbol::Find(Type(), file).size;
 
 	if (attributes[0].Contains(SymbolAttribute::Ref)) {
 		info.stack.Push(info.stack.ptrSize);
@@ -52,7 +52,7 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 }
 
 Set<ScanType> NewVariableNode::Scan(ScanInfo& info) const {
-	Symbol::FindInNamespace(Type(), file);
+	Symbol::Find(Type(), file);
 
 	for (const ScopeList& s : types) {
 		Symbol::FindInNamespace(s, file);
@@ -70,9 +70,9 @@ Mango NewVariableNode::ToMango() const {
 
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (types.Size() == 1)
-			mango.Add(Mango(types[0].ToString(), scope.Add(names[i]).ToString()));
+			mango.Add(Mango(Symbol::FindInNamespace(types[0], file).scope.ToString(), scope.Add(names[i]).ToString()));
 		else
-			mango.Add(Mango(types[i].ToString(), scope.Add(names[i]).ToString()));
+			mango.Add(Mango(Symbol::FindInNamespace(types[i], file).scope.ToString(), scope.Add(names[i]).ToString()));
 	}
 
 	return mango;

@@ -9,7 +9,7 @@ namespace Melon {
 			static bool Parse(ParsingInfo& info);
 
 		private:
-			static void ParseFile(const Boxx::String& filename, const Symbols::ScopeList& include, ParsingInfo& info);
+			static void ParseFile(const Boxx::String& filename, const Symbols::ScopeList& include, const Symbols::Scope& includeFile, ParsingInfo& info);
 		};
 	}
 }

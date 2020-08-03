@@ -27,6 +27,9 @@ namespace Melon {
 			///T Filename
 			Boxx::String filename;
 
+			///T File
+			Symbols::Scope currentFile;
+
 			///T Namespace
 			Symbols::ScopeList currentNamespace;
 

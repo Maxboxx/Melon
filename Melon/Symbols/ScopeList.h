@@ -170,11 +170,6 @@ namespace Melon {
 			/// The original <type>ScopeList</type> is not changed
 			ScopeList AddNext(const Boxx::String& scope) const;
 
-			///T Combine
-			/// Appends a scope list to the end of the current one
-			/// If the scope list shares scopes, those scopes are ignored
-			ScopeList Combine(const ScopeList& scopes) const;
-
 			///T Pop scope
 			///R ScopeList: A copy of the <type>ScopeList</type> with the last scope removed.
 			/// The original <type>ScopeList</type> is not changed

@@ -36,7 +36,7 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 
 	for (UInt i = 0; i < vars.Size(); i++) {
 		Symbol v = s.Get(vars[i], file);
-		Symbol varType = Symbol::FindNearest(Type(), v.varType, file);
+		Symbol varType = v.GetType(file);
 		const ScopeList type = varType.scope;
 
 		List<ScopeList> argTypes;
@@ -79,7 +79,7 @@ Set<ScanType> CustomInitNode::Scan(ScanInfo& info) const {
 		}
 
 		Symbol v = s.Get(vars[i], file);
-		Symbol varType = Symbol::FindNearest(Type(), v.varType, file);
+		Symbol varType = v.GetType(file);
 		const ScopeList type = varType.scope;
 
 		List<ScopeList> argTypes;

@@ -24,6 +24,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 
 		for (UInt i = 0; i < nn->names.Size(); i++) {
 			Symbol v = Symbol(SymbolType::Variable);
+			v.symbolFile = info.currentFile;
 			v.symbolNamespace = info.currentNamespace;
 			v.includedNamespaces = info.includedNamespaces;
 
@@ -42,12 +43,12 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 
 			bool moreValues = true;
 
-			Pointer<AssignNode> assign = new AssignNode(info.scopes, FileInfo(info.filename, startLine));
+			Pointer<AssignNode> assign = new AssignNode(info.scopes, FileInfo(info.filename, startLine, info.currentNamespace, info.includedNamespaces));
 			Pointer<NewVariableNode> vars = node.Cast<NewVariableNode>();
 			assign->newVars = vars;
 
 			for (UInt i = 0; i < vars->names.Size(); i++) {
-				Pointer<NameNode> name = new NameNode(info.scopes, FileInfo(info.filename, startLine)); // TODO: more accurate line
+				Pointer<NameNode> name = new NameNode(info.scopes, FileInfo(info.filename, startLine, info.currentNamespace, info.includedNamespaces)); // TODO: more accurate line
 				name->name = vars->names[i];
 				assign->vars.Add(name);
 

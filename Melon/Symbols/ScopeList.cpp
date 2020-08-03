@@ -171,22 +171,6 @@ ScopeList ScopeList::AddNext(const String& scope) const {
 	return list;
 }
 
-ScopeList ScopeList::Combine(const ScopeList& scopes) const {
-	ScopeList list = *this;
-
-	for (UInt i = 0; i < scopes.Size(); i++) {
-		if ((*this)[i] != scopes[i]) {
-			for (UInt u = i; u < scopes.Size(); u++) {
-				list = list.Add(scopes[u]);
-			}
-
-			break;
-		}
-	}
-
-	return list;
-}
-
 ScopeList ScopeList::Pop() const {
 	ScopeList list = *this;
 	list.scopes.RemoveAt(list.scopes.Size() - 1);
@@ -255,4 +239,4 @@ void ScopeList::operator=(const ScopeList& scopeList) {
 	}
 }
 
-ScopeList ScopeList::undefined = ScopeList().Add(Scope("!undefined"));
+ScopeList ScopeList::undefined = ScopeList().Add(Scope("<undefined>"));

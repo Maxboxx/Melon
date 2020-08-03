@@ -1,6 +1,6 @@
 
-include Math.Vector
+include Boxx.Math.Vector
 
 byte: a, b, c = 1, 2, 3
 
-Math.Vector: v = Math.Vector(a, b, c)
+Vector: v = Vector()

@@ -3,6 +3,7 @@
 #include "Boxx/Error.h"
 #include "Boxx/String.h"
 #include "Boxx/Logger.h"
+#include "Boxx/Tuple.h"
 #include "Boxx/Pair.h"
 #include "Boxx/List.h"
 #include "Boxx/Set.h"
@@ -62,7 +63,7 @@ namespace Melon {
 			Fatal
 		};
 
-		static Boxx::List<Boxx::Pair<LogLevel, class CompileError>> errors;
+		static Boxx::List<Boxx::Tuple<LogLevel, class CompileError>> errors;
 		static Boxx::List<Boxx::UInt> markers;
 	};
 

@@ -18,7 +18,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info) {
 
 	const UInt startIndex = info.index;
 
-	Pointer<NewVariableNode> node = new NewVariableNode(info.scopes, FileInfo(info.filename, info.Current().line));
+	Pointer<NewVariableNode> node = new NewVariableNode(info.scopes, FileInfo(info.filename, info.Current().line, info.currentNamespace, info.includedNamespaces));
 
 	while (const Optional<ScopeList> type = TypeParser::Parse(info)) {
 		node->types.Add(type.Get());

@@ -19,11 +19,11 @@ NameNode::~NameNode() {
 ScopeList NameNode::Type() const {
 	Symbol s = GetSymbol();
 
-	if (s.type == SymbolType::Scope || s.type == SymbolType::Namespace) {
+	if (s.type == SymbolType::Scope || s.type == SymbolType::Namespace || s.type == SymbolType::Struct) {
 		return s.scope;
 	}
 	else if (s.type != SymbolType::None) {
-		const Symbol s2 = Symbol::FindNearest(s.scope, s.varType, file);
+		const Symbol s2 = s.GetType(file);
 
 		if (s2.type != SymbolType::None) {
 			return s2.scope;
@@ -52,7 +52,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 		cn.argument = Argument(MemoryLocation(info.stack.Offset(s.stack)));
 	}
 
-	cn.size = Symbol::FindInNamespace(s.varType, file).size;
+	cn.size = s.GetType(file).size;
 	return cn;
 }
 

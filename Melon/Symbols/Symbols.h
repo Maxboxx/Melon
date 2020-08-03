@@ -118,6 +118,9 @@ namespace Melon {
 			/// A set of the attributes for this symbol
 			Boxx::Set<SymbolAttribute> attributes;
 
+			///T Symbol File
+			Scope symbolFile;
+
 			///T Symbol namespace
 			ScopeList symbolNamespace;
 
@@ -141,6 +144,9 @@ namespace Melon {
 			Symbol Get(const Scope& scope, const FileInfo& file) const;
 			Symbol Get(const ScopeList& scope, const FileInfo& file) const;
 			///M
+
+			///T Get Type
+			Symbol GetType(const FileInfo& file) const;
 
 			///T Get Return Type
 			Symbol GetReturnType(const Boxx::UInt index) const;

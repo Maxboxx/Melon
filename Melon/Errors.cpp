@@ -7,24 +7,24 @@ using namespace Melon;
 
 Logger ErrorLog::logger = Logger("errors.log");
 Logger ErrorLog::compileLogger = Logger("compile.log");
-List<Pair<ErrorLog::LogLevel, CompileError>> ErrorLog::errors;
+List<Tuple<ErrorLog::LogLevel, CompileError>> ErrorLog::errors;
 List<UInt> ErrorLog::markers;
 bool ErrorLog::stopOnError = false;
 
 void ErrorLog::Log(const CompileError& error) {
-	errors.Add(Pair<LogLevel, CompileError>(LogLevel::Log, error));
+	errors.Add(Tuple<LogLevel, CompileError>(LogLevel::Log, error));
 }
 
 void ErrorLog::Info(const CompileError& error) {
-	errors.Add(Pair<LogLevel, CompileError>(LogLevel::Info, error));
+	errors.Add(Tuple<LogLevel, CompileError>(LogLevel::Info, error));
 }
 
 void ErrorLog::Warning(const CompileError& error) {
-	errors.Add(Pair<LogLevel, CompileError>(LogLevel::Warning, error));
+	errors.Add(Tuple<LogLevel, CompileError>(LogLevel::Warning, error));
 }
 
 void ErrorLog::Error(const CompileError& error) {
-	errors.Add(Pair<LogLevel, CompileError>(LogLevel::Error, error));
+	errors.Add(Tuple<LogLevel, CompileError>(LogLevel::Error, error));
 
 	if (stopOnError) {
 		throw error;
@@ -32,7 +32,7 @@ void ErrorLog::Error(const CompileError& error) {
 }
 
 void ErrorLog::Fatal(const CompileError& error) {
-	errors.Add(Pair<LogLevel, CompileError>(LogLevel::Fatal, error));
+	errors.Add(Tuple<LogLevel, CompileError>(LogLevel::Fatal, error));
 	logger.Fatal(error.Message());
 }
 
@@ -51,22 +51,22 @@ void ErrorLog::RevertToMark() {
 }
 
 void ErrorLog::LogErrors() {
-	Map<String, List<Pair<LogLevel, CompileError>>> sortedErrors;
+	Map<String, List<Tuple<LogLevel, CompileError>>> sortedErrors;
 
-	for (const Pair<LogLevel, CompileError>& error : errors) {
-		List<Pair<LogLevel, CompileError>> errorList;
+	for (const Tuple<LogLevel, CompileError>& error : errors) {
+		List<Tuple<LogLevel, CompileError>> errorList;
 
-		if (sortedErrors.Contains(error.value.file.filename, errorList)) {
+		if (sortedErrors.Contains(error.value2.file.filename, errorList)) {
 			bool inserted = false;
 
 			for (UInt i = 0; i < errorList.Size(); i++) {
-				if (errorList[i].value.file.line == error.value.file.line) {
-					if (errorList[i].value.Message() == error.value.Message()) {
+				if (errorList[i].value2.file.line == error.value2.file.line) {
+					if (errorList[i].value2.Message() == error.value2.Message()) {
 						inserted = true;
 						break;
 					}
 				}
-				else if (errorList[i].value.file.line > error.value.file.line) {
+				else if (errorList[i].value2.file.line > error.value2.file.line) {
 					errorList.Insert(i, error);
 					inserted = true;
 					break;
@@ -79,26 +79,28 @@ void ErrorLog::LogErrors() {
 		}
 		else {
 			errorList.Add(error);
-			sortedErrors.Add(error.value.file.filename, errorList);
+			sortedErrors.Add(error.value2.file.filename, errorList);
 		}
 	}
 
-	for (const Pair<String, List<Pair<LogLevel, CompileError>>>& errorList : sortedErrors) {
-		for (const Pair<LogLevel, CompileError>& error : errorList.value) {
-			switch (error.key) {
-				case LogLevel::Log:     logger.Log(error.value.Message()); break;
-				case LogLevel::Info:    logger.Info(error.value.Message()); break;
-				case LogLevel::Warning: logger.Warning(error.value.Message()); break;
-				case LogLevel::Error:   logger.Error(error.value.Message()); break;
-				case LogLevel::Fatal:   logger.Fatal(error.value.Message()); break;
-			}
+	for (const Pair<String, List<Tuple<LogLevel, CompileError>>>& errorList : sortedErrors) {
+		for (const Tuple<LogLevel, CompileError>& error : errorList.value) {
+			//if (errorList.key.Size() > 1) {
+				switch (error.value1) {
+					case LogLevel::Log:     logger.Log(error.value2.Message()); break;
+					case LogLevel::Info:    logger.Info(error.value2.Message()); break;
+					case LogLevel::Warning: logger.Warning(error.value2.Message()); break;
+					case LogLevel::Error:   logger.Error(error.value2.Message()); break;
+					case LogLevel::Fatal:   logger.Fatal(error.value2.Message()); break;
+				}
+			//}
 		}
 	}
 }
 
 bool ErrorLog::HasError() {
-	for (const Pair<LogLevel, CompileError>& error : errors) {
-		if (error.key == LogLevel::Error) {
+	for (const Tuple<LogLevel, CompileError>& error : errors) {
+		if (error.value1 == LogLevel::Error) {
 			return true;
 		}
 	}

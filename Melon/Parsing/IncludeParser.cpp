@@ -42,7 +42,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 			if (System::FileExists(fileDir + includeDir + ".melon")) {
 				found = true;
 				include = info.currentNamespace.Add(include);
-				ParseFile(fileDir + includeDir + ".melon", include.Pop(), info);
+				ParseFile(fileDir + includeDir + ".melon", include.Pop(), include.Last(), info);
 			}
 			else if (System::DirectoryExists(fileDir + includeDir)) {
 				found = true;
@@ -55,7 +55,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 
 					if (System::FileExists(dir + ".melon")) {
 						found = true;
-						ParseFile(dir + ".melon", include.Pop(), info);
+						ParseFile(dir + ".melon", include.Pop(), include.Last(), info);
 						break;
 					}
 					else if (System::DirectoryExists(dir)) {
@@ -77,12 +77,15 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 	return false;
 }
 
-void IncludeParser::ParseFile(const String& filename, const ScopeList& include, ParsingInfo& info) {
+void IncludeParser::ParseFile(const String& filename, const ScopeList& include, const Scope& includeFile, ParsingInfo& info) {
 	String file = info.filename;
 	info.filename = filename;
 
 	ScopeList currentNamespace = info.currentNamespace;
 	info.currentNamespace = include;
+
+	Scope currentFile = info.currentFile;
+	info.currentFile = includeFile;
 
 	Set<ScopeList> namespaces = info.includedNamespaces;
 	info.includedNamespaces = Set<ScopeList>();
@@ -115,6 +118,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	Parser::ParseFile(filename, info);
 
 	info.filename = file;
+	info.currentFile = currentFile;
 	info.currentNamespace = currentNamespace;
 	info.includedNamespaces = namespaces;
 	info.tokens = tokens;

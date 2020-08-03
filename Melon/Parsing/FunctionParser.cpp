@@ -21,6 +21,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, isPlain)) {
 		const FunctionHead funcHead = fh;
 		Symbol s = Symbol(funcHead.isMethod && !funcHead.isOperator ? SymbolType::Method : SymbolType::Function);
+		s.symbolFile = info.currentFile;
 		s.symbolNamespace = info.currentNamespace;
 		s.includedNamespaces = info.includedNamespaces;
 		s.ret = funcHead.retrunTypes;
@@ -90,6 +91,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 					func->argNames.Add(Scope(info.Current().value));
 
 					Symbol a = Symbol(SymbolType::Variable);
+					a.symbolFile = info.currentFile;
 					a.symbolNamespace = info.currentNamespace;
 					a.includedNamespaces = info.includedNamespaces;
 					a.varType = type;

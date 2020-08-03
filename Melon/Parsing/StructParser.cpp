@@ -40,6 +40,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 	info.index++;
 	Symbol structSymbol = Symbol(SymbolType::Struct);
+	structSymbol.symbolFile = info.currentFile;
 	structSymbol.symbolNamespace = info.currentNamespace;
 	structSymbol.includedNamespaces = info.includedNamespaces;
 	structSymbol.scope = info.scopes.Add(structName);
@@ -58,6 +59,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 			for (UInt i = 0; i < nn->names.Size(); i++) {
 				Symbol v = Symbol(SymbolType::Variable);
+				v.symbolFile = info.currentFile;
 				v.symbolNamespace = info.currentNamespace;
 				v.includedNamespaces = info.includedNamespaces;
 
@@ -86,6 +88,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("struct", structLine), FileInfo(info.filename, info.Current(-1).line)));
 
 	Symbol assign = Symbol(SymbolType::Function);
+	assign.symbolFile = info.currentFile;
 	assign.symbolNamespace = info.currentNamespace;
 	assign.includedNamespaces = info.includedNamespaces;
 	assign.args.Add(info.scopes);

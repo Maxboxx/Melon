@@ -170,7 +170,6 @@ Symbol Symbol::Get(const Scope& scope, const FileInfo& file) const {
 		ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + this->scope.Add(scope).ToString() + SymbolError::NotFoundEnd, file));
 	}
 
-	empty = Symbol();
 	return empty;
 }
 
@@ -186,7 +185,6 @@ Symbol& Symbol::Get(const Scope& scope, const FileInfo& file) {
 		ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + this->scope.Add(scope).ToString() + SymbolError::NotFoundEnd, file));
 	}
 
-	empty = Symbol();
 	return empty;
 }
 
@@ -195,9 +193,20 @@ Symbol Symbol::Get(const ScopeList& scope, const FileInfo& file) const {
 	
 	for (UInt i = 0; i < scope.Size(); i++) {
 		s = s.Get(scope[i], file);
+
+		if (s.type == SymbolType::None) {
+			break;
+		}
 	}
 
 	return s;
+}
+
+Symbol Symbol::GetType(const FileInfo& file) const {
+	FileInfo file1 = file;
+	file1.currentNamespace = symbolNamespace;
+	file1.includedNamespaces = includedNamespaces;
+	return FindNearestInNamespace(scope.Pop(), varType, file1);
 }
 
 Symbol Symbol::GetReturnType(const UInt index) const {
@@ -310,6 +319,10 @@ Symbol Symbol::Find(const ScopeList& scopes, const FileInfo& file) {
 
 	for (UInt i = scopes[0] == Scope::Global ? 1 : 0; i < scopes.Size(); i++) {
 		s = s.Get(scopes[i], file);
+
+		if (s.type == SymbolType::None) {
+			break;
+		}
 	}
 
 	return s;
@@ -323,24 +336,56 @@ Symbol Symbol::FindInNamespace(const ScopeList& scopes, const FileInfo& file) {
 		return Symbol::Find(scopes, file);
 	}
 
-	if (Symbol::Contains(file.currentNamespace.Add(scopes))) {
+	if (Symbol::Contains(file.currentNamespace.Add(scopes)) && Symbol::Find(file.currentNamespace.Add(scopes[0]), file).type != SymbolType::Namespace) {
 		return Symbol::Find(file.currentNamespace.Add(scopes), file);
 	}
 
 	Optional<Symbol> foundSymbol = nullptr;
 
-	if (Symbol::Contains(scopes)) {
-		foundSymbol = Symbol::Find(scopes, file);
+	ScopeList nearestScopes = file.currentNamespace;
+
+	while (nearestScopes.Size() > 0) {
+		if (Symbol::Contains(nearestScopes.Add(scopes))) {
+			foundSymbol = Symbol::Find(nearestScopes.Add(scopes), file);
+			break;
+		}
+
+		if (nearestScopes.Size() == 1 && nearestScopes.Last() == scopes[0] && Symbol::Contains(scopes)) {
+			foundSymbol = Symbol::Find(scopes, file);
+			break;
+		}
+
+		nearestScopes = nearestScopes.Pop();
+	}
+
+	if (!foundSymbol) {
+		if (Symbol::Contains(scopes)) {
+			if (Symbol::Find(ScopeList().Add(scopes[0]), file).type != SymbolType::Namespace) {
+				foundSymbol = Symbol::Find(scopes, file);
+			}
+		}
 	}
 
 	for (const ScopeList& includedNamespace : file.includedNamespaces) {
-		if (includedNamespace.Last() == scopes[0]) {
-			if (Symbol::Contains(includedNamespace.Pop().Add(scopes))) {
-				if (foundSymbol) {
-					ErrorLog::Error(SymbolError(SymbolError::AmbiguousStart + scopes.ToString() + SymbolError::AmbiguousEnd, file));
+		if (Symbol::Contains(includedNamespace.Pop().Add(scopes))) {
+			Symbol s = Symbol::Find(includedNamespace.Pop().Add(scopes), file);
+
+			if (includedNamespace.Last() == scopes[0] || s.symbolFile == scopes[0]) {
+				ScopeList includeScopes = includedNamespace.Pop();
+
+				for (UInt i = 0; i < scopes.Size(); i++) {
+					if (Symbol::Find(includeScopes.Add(scopes[i]), file).type == SymbolType::Namespace) {
+						includeScopes = includeScopes.Add(scopes[i]);
+					}
 				}
 
-				foundSymbol = Symbol::Find(includedNamespace.Pop().Add(scopes), file);
+				if (s.symbolNamespace == includeScopes) {
+					if (foundSymbol) {
+						ErrorLog::Error(SymbolError(SymbolError::AmbiguousStart + scopes.ToString() + SymbolError::AmbiguousEnd, file));
+					}
+
+					foundSymbol = s;
+				}
 			}
 		}
 	}
@@ -628,7 +673,9 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) const {
 	}
 	else if (type == SymbolType::Variable) {
 		Mango m = Mango(scope.ToString(), MangoType::Map);
-		m.Add("type", varType.ToString());
+		m.Add("type", GetType(FileInfo()).scope.ToString());
+
+		bool onlyType = true;
 
 		if (!attributes.IsEmpty()) {
 			Mango attr = Mango(MangoType::List);
@@ -643,9 +690,15 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) const {
 			}
 
 			m.Add("attributes", attr);
+			onlyType = false;
 		}
 
-		symbols.Add(m);
+		if (!onlyType) {
+			symbols.Add(m);
+		}
+		else {
+			symbols.Add(Mango(m.GetLabel(), (String)m[String("type")]));
+		}
 	}
 	else if (variants.IsEmpty() && (type == SymbolType::Function || type == SymbolType::Method)) {
 		String r = "";
