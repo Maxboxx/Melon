@@ -19,16 +19,16 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-List<TokenPattern> Parser::patterns;
+List<Melon::TokenPattern> Parser::patterns;
 
-Token ParsingInfo::Next() {
+Melon::Token ParsingInfo::Next() {
 	if (index + 1 >= tokens.Size())
 		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line)));
 
 	return tokens[++index];
 }
 
-Token ParsingInfo::Previous() {
+Melon::Token ParsingInfo::Previous() {
 	if (index - 1 >= tokens.Size())
 		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line)));
 
@@ -39,14 +39,14 @@ bool ParsingInfo::EndOfFile() const {
 	return index >= tokens.Size();
 }
 
-Token ParsingInfo::Current() {
+Melon::Token ParsingInfo::Current() {
 	if (index >= tokens.Size())
 		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line)));
 
 	return tokens[index];
 }
 
-Token ParsingInfo::Current(const Int offset) {
+Melon::Token ParsingInfo::Current(const Int offset) {
 	if (index + offset >= tokens.Size())
 		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line)));
 
@@ -211,6 +211,6 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Name, "%w+"));
 }
 
-List<TokenPattern> Parser::GetTokenPatterns() {
+List<Melon::TokenPattern> Parser::GetTokenPatterns() {
 	return patterns;
 }

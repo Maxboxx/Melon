@@ -3,7 +3,4 @@ Debug/
 *.vcxproj.filters
 *.vcxproj.user
 *.log
-tests/*.asm
-tests/*.s
-tests/*.kiwi
-tests/*.mango
+tests/output/

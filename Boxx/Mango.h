@@ -6,6 +6,9 @@
 #include "Map.h"
 #include "String.h"
 #include "Regex.h"
+#include "Token.h"
+#include "Lexer.h"
+#include "Optional.h"
 
 ///N Mango
 namespace Boxx {
@@ -172,6 +175,7 @@ namespace Boxx {
 
 		///T Decode
 		/// Decodes a string to a mango value
+		///E MangoDecodeError: Thrown if the mango string can not be decoded
 		static Mango Decode(const String& mango);
 
 	private:
@@ -186,6 +190,25 @@ namespace Boxx {
 		String string;
 		List<Mango> list;
 		Map<String, Mango> map;
+
+		enum class MangoTokenType : UByte {
+			None,
+			Comment,
+			Name,
+			Boolean,
+			Nil,
+			Number,
+			String,
+			Colon,
+			OpenCurl,
+			CloseCurl,
+			OpenSq,
+			CloseSq
+		};
+
+		static Mango DecodeTokens(const List<Token<MangoTokenType>>& tokens);
+		static Optional<Mango> DecodeValue(const List<Token<MangoTokenType>>& tokens, UInt& index);
+		static Optional<String> DecodeLabel(const List<Token<MangoTokenType>>& tokens, UInt& index);
 	};
 
 	///B MangoError
@@ -204,12 +227,20 @@ namespace Boxx {
 		MangoTypeError(const char* const msg) : MangoError(msg) {}
 	};
 
-	///B MangoKeyErrors
+	///B MangoKeyError
 	/// Used for mango map key related errors
 	class MangoKeyError : public MangoError {
 	public:
 		MangoKeyError() : MangoError() {}
 		MangoKeyError(const char* const msg) : MangoError(msg) {}
+	};
+
+	///B MangoDecodeError
+	/// Used for decoding errors
+	class MangoDecodeError : public MangoError {
+	public:
+		MangoDecodeError() : MangoError() {}
+		MangoDecodeError(const char* const msg) : MangoError(msg) {}
 	};
 
 	inline Mango::Mango() {
@@ -675,5 +706,138 @@ namespace Boxx {
 		}
 
 		return str + "\n";
+	}
+
+	inline Mango Mango::Decode(const String& mango) {
+		List<TokenPattern<MangoTokenType>> patterns;
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Comment, "%-%-~\n*", true, true));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Comment, "%-#%/+./%1%-", true, true));
+
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Boolean, "true|false"));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Nil, "nil"));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Name, "[%a_]%w*"));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Number, "%d*%.?%d+"));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::String, "\"()\"", true));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::String, "\"(./~{{\\\\}*\\})\"", true));
+
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Colon, "%:", true));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::OpenCurl, "%{", true));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::CloseCurl, "%}", true));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::OpenSq, "%[", true));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::CloseSq, "%]", true));
+
+		try {
+			return DecodeTokens(Lexer::Lex(patterns, mango));
+		}
+		catch (MangoDecodeError e) {
+			throw e;
+		}
+		catch (LexerError e) {
+			throw MangoDecodeError(e.Message());
+		}
+	}
+
+	inline Mango Mango::DecodeTokens(const List<Token<MangoTokenType>>& tokens) {
+		UInt index = 0;
+		Optional<Mango> mango = DecodeValue(tokens, index);
+
+		if (index < tokens.Size()) throw MangoDecodeError("Unecpected token: '" + tokens[index].value + "'");
+
+		if (mango) {
+			return mango;
+		}
+		else {
+			throw MangoDecodeError("Invalid value");
+		}
+	}
+
+	inline Optional<Mango> Mango::DecodeValue(const List<Token<MangoTokenType>>& tokens, UInt& index) {
+		String label = "";
+
+		if (Optional<String> s = DecodeLabel(tokens, index)) {
+			label = s.Get();
+		}
+
+		if (index >= tokens.Size()) throw MangoDecodeError("Unexpected end of string");
+
+		switch (tokens[index].type) {
+			case MangoTokenType::Nil: {
+				index++;
+				return Mango(label, MangoType::Nil);
+			}
+			
+			case MangoTokenType::Boolean: {
+				index++;
+				return Mango(label, tokens[index - 1].value == "true");
+			}
+			
+			case MangoTokenType::Number: {
+				index++;
+				return Mango(label, tokens[index - 1].value.ToDouble());
+			}
+			
+			case MangoTokenType::String: {
+				index++;
+				return Mango(label, tokens[index - 1].value);
+			}
+			
+			case MangoTokenType::OpenSq: {
+				index++;
+				Mango list = Mango(label, MangoType::List);
+
+				while (Optional<Mango> value = DecodeValue(tokens, index)) {
+					list.Add(value);
+				}
+
+				if (index >= tokens.Size()) throw MangoDecodeError("Unexpected end of string");
+
+				if (tokens[index].type != MangoTokenType::CloseSq) {
+					throw MangoDecodeError("']' expected to close list");
+				}
+
+				index++;
+
+				return list;
+			}
+
+			case MangoTokenType::OpenCurl: {
+				index++;
+				Mango map = Mango(label, MangoType::Map);
+
+				while (Optional<String> key = DecodeLabel(tokens, index)) {
+					if (Optional<Mango> m = DecodeValue(tokens, index)) {
+						map.Add(key, m);
+					}
+					else {
+						throw MangoDecodeError("Value expected after map key");
+					}
+				}
+
+				if (index >= tokens.Size()) throw MangoDecodeError("Unexpected end of string");
+
+				if (tokens[index].type != MangoTokenType::CloseCurl) {
+					throw MangoDecodeError("'}' expected to close map");
+				}
+
+				index++;
+
+				return map;
+			}
+		}
+	}
+
+	inline Optional<String> Mango::DecodeLabel(const List<Token<MangoTokenType>>& tokens, UInt& index) {
+		if (index >= tokens.Size()) return nullptr;
+
+		if (tokens[index].type == MangoTokenType::Name) {
+			if (index + 1 >= tokens.Size()) throw MangoDecodeError("Unexpected end of string");
+
+			if (tokens[index + 1].type == MangoTokenType::Colon) {
+				index += 2;
+				return tokens[index - 2].value;
+			}
+		}
+
+		return nullptr;
 	}
 }

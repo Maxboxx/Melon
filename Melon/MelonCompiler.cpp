@@ -1,5 +1,9 @@
 #include "MelonCompiler.h"
 
+#include "Boxx/File.h"
+#include "Boxx/Mango.h"
+#include "Boxx/System.h"
+
 #include "Kiwi/Kiwi.h"
 #include "Kiwi/x86_64Converter.h"
 
@@ -25,8 +29,77 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-void MelonCompiler::Compile(const String& mainMelonFile, const CompilerOptions& options) {
-	const String filename = mainMelonFile;
+CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
+	FileReader file = FileReader(mangoFile);
+	Mango mango = Mango::Decode(file.ReadAll());
+	file.Close();
+
+	CompilerOptions options;
+	Map<String, Mango> optionsMap = mango;
+
+	if (optionsMap.Contains("main")) {
+		options.mainFile = optionsMap["main"];
+	}
+
+	if (optionsMap.Contains("name")) {
+		options.outputName = optionsMap["name"];
+	}
+
+	if (optionsMap.Contains("include")) {
+		List<Mango> includeDirs = optionsMap["include"];
+		
+		for (const Mango& dir : includeDirs) {
+			if (dir.GetLabel() == "dir") {
+				options.includeDirectories.Add(dir);
+			}
+		}
+	}
+
+	if (optionsMap.Contains("output")) {
+		Map<String, Mango> outputOptions = optionsMap["output"];
+
+		if (outputOptions.Contains("dir")) {
+			options.outputDirectory = outputOptions["dir"];
+		}
+
+		if (outputOptions.Contains("ast")) {
+			options.outputAST = outputOptions["ast"];
+		}
+
+		if (outputOptions.Contains("symbols")) {
+			options.outputSymbols = outputOptions["symbols"];
+		}
+
+		if (outputOptions.Contains("kiwi")) {
+			options.outputKiwi = outputOptions["kiwi"];
+		}
+
+		if (outputOptions.Contains("assembly")) {
+			options.outputAssembly = outputOptions["assembly"];
+		}
+
+		if (outputOptions.Contains("executable")) {
+			options.outputExecutable = outputOptions["executable"];
+		}
+	}
+
+	if (optionsMap.Contains("optimizing")) {
+		Map<String, Mango> opti = optionsMap["optimizing"];
+
+		if (opti.Contains("ast")) {
+			options.astOptimizationPasses = (double)opti["ast"];
+		}
+
+		if (opti.Contains("kiwi")) {
+			options.kiwiOptimizationPasses = (double)opti["kiwi"];
+		}
+	}
+
+	return options;
+}
+
+void MelonCompiler::Compile(const CompilerOptions& options) {
+	const String filename = options.mainFile;
 	
 	CompilerOptions compOptions = options;
 	compOptions.includeDirectories = List<String>();
@@ -54,6 +127,10 @@ void MelonCompiler::Compile(const String& mainMelonFile, const CompilerOptions& 
 	}
 	else if (compOptions.outputDirectory[compOptions.outputDirectory.Size() - 1] != '/' && compOptions.outputDirectory[compOptions.outputDirectory.Size() - 1] != '\\') {
 		compOptions.outputDirectory += "/";
+	}
+
+	if (!System::DirectoryExists(compOptions.outputDirectory)) {
+		System::CreateDirectory(compOptions.outputDirectory);
 	}
 
 	const String code = FileReader(filename).ReadAll();

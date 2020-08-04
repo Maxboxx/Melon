@@ -11,19 +11,25 @@ namespace Melon {
 	///B CompilerOptions
 	/// Options for the compilation process
 	struct CompilerOptions {
+		///H Values
+
 		///T Include Directories
 		/// Contains the absolute file path for all include directories
 		/// The directories should end with a <code>/</code>
 		/// The directory the main melon file is located in is always added to the include directories by the compiler
 		Boxx::List<Boxx::String> includeDirectories;
 
-		///T Optimization Passes
-		/// The amount of times to perform optimizations on the code
-		Boxx::UInt optimizationPasses = 0;
+		///T AST Optimization Passes
+		/// The amount of times to perform optimizations on the AST
+		Boxx::UInt astOptimizationPasses = 0;
 
 		///T Kiwi Optimization Passes
 		/// The amount of times to perform optimizations on the kiwi instructions
 		Boxx::UInt kiwiOptimizationPasses = 0;
+
+		///T Main file
+		/// The main melon file for the project
+		Boxx::String mainFile;
 
 		///T Output Directory
 		/// The directory of the output files
@@ -54,6 +60,12 @@ namespace Melon {
 		Boxx::Pointer<Kiwi::Converter> converter = new Kiwi::x86_64Converter(Kiwi::x86_64Syntax::Intel);
 
 		~CompilerOptions() {}
+
+		///H Static functions
+		
+		///T Load from Mango
+		/// Loads the compiler options from a mango file
+		static CompilerOptions LoadFromFile(const Boxx::String& mangoFile);
 	};
 
 	///B MelonCompiler
@@ -64,7 +76,7 @@ namespace Melon {
 		/// Compiles a melon project
 		///A const Boxx::String& mainMelonFile: The main melon file for the project
 		///A const CompilerOptions& options: The compiler options to use for the compilation
-		static void Compile(const Boxx::String& mainMelonFile, const CompilerOptions& options = CompilerOptions());
+		static void Compile(const CompilerOptions& options);
 
 	private:
 		static void CompileFile(const Boxx::String& filename, const CompilerOptions& options);

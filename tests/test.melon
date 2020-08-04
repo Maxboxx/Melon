@@ -1,6 +1,9 @@
 
 include Boxx.Math.Vector
 
-byte: a, b, c = 1, 2, 3
+include A
+include B
+
+A, B: a, b = A {a = 1}, B {b = 2}
 
 Vector: v = Vector()

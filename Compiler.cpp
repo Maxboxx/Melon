@@ -1,8 +1,8 @@
 #include "Boxx/List.h"
 #include "Boxx/String.h"
 
-#if BOXX_VERSION_LT(2, 1, 1)
-	#error Boxx version of 2.1.1 or newer required
+#if BOXX_VERSION_LT(2, 3, 0)
+	#error Boxx version of 2.3.0 or newer required
 #endif
 
 #include "Kiwi/Kiwi.h"
@@ -17,15 +17,10 @@ using namespace Kiwi;
 using namespace Melon;
 
 int main() {
-	CompilerOptions options;
-	options.outputAST = true;
-	options.outputSymbols = true;
-	options.outputKiwi = true;
-	options.outputAssembly = true;
-	options.outputExecutable = false;
+	CompilerOptions options = CompilerOptions::LoadFromFile("tests/options.mango");
 	options.converter = new x86_64Converter(x86_64Syntax::Intel, ErrorLog::logger);
 
-	MelonCompiler::Compile("tests/test.melon", options);
+	MelonCompiler::Compile(options);
 
 	return 0;
 }

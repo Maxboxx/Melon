@@ -6,6 +6,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef BOXX_WINDOWS
+	#include <direct.h>
+#endif
+
 ///N System
 
 namespace Boxx {
@@ -24,6 +28,11 @@ namespace Boxx {
 		///T Directory Exists
 		/// Checks if a directory exists
 		static bool DirectoryExists(const String& directory);
+
+		///T Create Directory
+		/// Creates a directory
+		///R bool success: <code>true</code> if the directory was created. <code>false</code> otherwise.
+		static bool CreateDirectory(const String& directory);
 	};
 
 	inline void System::Execute(const String& command) {
@@ -44,5 +53,13 @@ namespace Boxx {
 			return true;
 		else
 			return false;
+	}
+
+	inline bool System::CreateDirectory(const String& directory) {
+		#ifdef BOXX_WINDOWS
+			return _mkdir(directory) != -1;
+		#else
+			return mkdir(directory, 0777) != -1;
+		#endif
 	}
 }
