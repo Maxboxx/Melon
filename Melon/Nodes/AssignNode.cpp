@@ -162,6 +162,8 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 Set<ScanType> AssignNode::Scan(ScanInfo& info) const {
 	info.assign = true;
 
+	UInt errorCount = ErrorLog::ErrorCount();
+
 	Set<ScanType> scanSet = newVars ? newVars->Scan(info) : Set<ScanType>();
 
 	if (info.init && scanSet.Contains(ScanType::Self) && !info.symbol.IsAssigned()) {
@@ -169,6 +171,8 @@ Set<ScanType> AssignNode::Scan(ScanInfo& info) const {
 	}
 
 	List<Pair<ScopeList, NodePtr>> values = Values();
+
+	bool errors = errorCount < ErrorLog::ErrorCount();
 
 	for (UInt i = 0; i < vars.Size(); i++) {
 		NodePtr node = vars[i];
@@ -193,9 +197,11 @@ Set<ScanType> AssignNode::Scan(ScanInfo& info) const {
 			}
 		}
 
-		List<ScopeList> args; //TODO: check for valid ref
-		args.Add(values[i].key);
-		Symbol::FindFunction(node->Type().Add(Scope::Assign), args, node->file);
+		if (!errors) {
+			List<ScopeList> args; //TODO: check for valid ref
+			args.Add(values[i].key);
+			Symbol::FindFunction(node->Type().Add(Scope::Assign), args, node->file);
+		}
 	}
 
 	info.assign = false;

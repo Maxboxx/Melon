@@ -111,6 +111,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 
 		if (!Symbol::Contains(includeScopes)) {
 			Symbol s = Symbol(SymbolType::Namespace);
+			s.symbolNamespace = includeScopes;
 			Symbol::Add(includeScopes, s, FileInfo(info.filename, 1));
 		}
 	}

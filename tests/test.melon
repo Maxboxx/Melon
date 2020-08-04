@@ -1,9 +1,5 @@
 
+include Boxx
 include Boxx.Math.Vector
 
-include A
-include B
-
-A, B: a, b = A {a = 1}, B {b = 2}
-
-Vector: v = Vector()
+Boxx.Math.Vector: v = Boxx.Math.Vector()

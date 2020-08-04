@@ -26,7 +26,13 @@ ScopeList DotNode::Type() const {
 }
 
 Symbol DotNode::GetSymbol() const {
+	UInt errorCount = ErrorLog::ErrorCount();
+
 	Symbol nodeSymbol = node->GetSymbol();
+
+	if (errorCount < ErrorLog::ErrorCount()) {
+		return Symbol();
+	}
 
 	if (nodeSymbol.type == SymbolType::Variable) {
 		Symbol s = Symbol::Find(node->Type(), file);
@@ -79,7 +85,13 @@ Set<ScanType> DotNode::Scan(ScanInfo& info) const {
 	bool assign = info.assign;
 	info.assign = false;
 
+	UInt errorCount = ErrorLog::ErrorCount();
+
 	Set<ScanType> scanSet = node->Scan(info);
+
+	if (errorCount < ErrorLog::ErrorCount()) {
+		return scanSet;
+	}
 
 	const ScopeList type = node->Type();
 	Symbol::Find(type.Add(name), file);

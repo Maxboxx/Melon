@@ -45,6 +45,9 @@ namespace Melon {
 		///T Has Errors
 		static bool HasError();
 
+		///T Error Count
+		static Boxx::UInt ErrorCount();
+
 		///T Stop On Error
 		static bool stopOnError;
 

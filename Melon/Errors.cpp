@@ -108,6 +108,18 @@ bool ErrorLog::HasError() {
 	return false;
 }
 
+UInt ErrorLog::ErrorCount() {
+	UInt count = 0;
+
+	for (const Tuple<LogLevel, CompileError>& error : errors) {
+		if (error.value1 == LogLevel::Error) {
+			count++;
+		}
+	}
+
+	return count;
+}
+
 const char* const CompileError::SelfInit          = "'self' used before all member variables are initialized";
 const char* const CompileError::InvalidRef        = "invalid reference value";
 const char* const CompileError::FuncNotFound      = "no matching function found";

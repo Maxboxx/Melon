@@ -29,21 +29,29 @@ Symbol CallNode::GetFunc() const {
 
 	Symbol s;
 
+	UInt errorCount = ErrorLog::ErrorCount();
+
+	ScopeList type = this->node->Type();
+
+	if (errorCount < ErrorLog::ErrorCount()) {
+		return Symbol();
+	}
+
 	if (op) {
-		s = Symbol::FindFunction(this->node->Type(), argTypes, file);
+		s = Symbol::FindFunction(type, argTypes, file);
 	}
 	else if (IsInit()) {
-		s = Symbol::FindMethod(this->node->Type().Add(Scope::Init).Add(Scope::Call), argTypes, this->node->file);
+		s = Symbol::FindMethod(type.Add(Scope::Init).Add(Scope::Call), argTypes, this->node->file);
 	}
 	else if (!isMethod) {
 		if (IsSelfPassing()) {
-			argTypes.Add(this->node->Type());
+			argTypes.Add(type);
 		}
 
-		s = Symbol::FindFunction(this->node->Type().Add(Scope::Call), argTypes, this->node->file);
+		s = Symbol::FindFunction(type.Add(Scope::Call), argTypes, this->node->file);
 	}
 	else {
-		s = Symbol::FindMethod(this->node->Type().Add(methodName).Add(Scope::Call), argTypes, this->node->file);
+		s = Symbol::FindMethod(type.Add(methodName).Add(Scope::Call), argTypes, this->node->file);
 	}
 
 	if ((IsInit() && s.type == SymbolType::Method) || (isMethod ? s.type == SymbolType::Method : s.type == SymbolType::Function)) {
@@ -56,7 +64,7 @@ Symbol CallNode::GetFunc() const {
 		argStr.Add(type.ToString());
 	}
 
-	ErrorLog::Error(SymbolError(SymbolError::Function(this->node->Type().ToString(), argStr), file));
+	ErrorLog::Error(SymbolError(SymbolError::Function(type.ToString(), argStr), file));
 	return Symbol();
 }
 
@@ -86,7 +94,13 @@ bool CallNode::IsInit() const {
 ScopeList CallNode::Type() const {
 	if (IsInit()) return node->Type();
 
+	UInt errorCount = ErrorLog::ErrorCount();
+
 	const Symbol s = GetFunc();
+
+	if (errorCount < ErrorLog::ErrorCount()) {
+		return ScopeList::undefined;
+	}
 
 	if (s.type != SymbolType::None) {
 		return ScopeList().Add(s.ret[0]);
