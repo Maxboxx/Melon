@@ -1,10 +1,13 @@
 #include "IfExprNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
+using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
 IfExprNode::IfExprNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
@@ -88,6 +91,10 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	info.stack.Pop(Symbol::Find(Type(), file).size);
 
 	return cn;
+}
+
+void IfExprNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> IfExprNode::Scan(ScanInfo& info) const { //TODO: add cast node for conditions

@@ -3,11 +3,14 @@
 #include "CallNode.h"
 #include "TypeNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
 
 using namespace Melon::Nodes;
+using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
@@ -57,6 +60,10 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 		cn->op = true;
 		return cn->Compile(info);
 	}
+}
+
+void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> BinaryOperatorNode::Scan(ScanInfo& info) const {

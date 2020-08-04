@@ -1,5 +1,7 @@
 #include "LogicNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -7,6 +9,7 @@ using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
+using namespace Melon::Parsing;
 using namespace Melon::Symbols::Nodes;
 
 LogicNode::LogicNode(const ScopeList& scope, const TokenType type, const FileInfo& file) : BinaryOperatorNode(scope, Scope(), file) {
@@ -129,6 +132,10 @@ CompiledNode LogicNode::Compile(CompileInfo& info) {
 
 	c.argument = arg;
 	return c;
+}
+
+void LogicNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> LogicNode::Scan(ScanInfo& info) const {

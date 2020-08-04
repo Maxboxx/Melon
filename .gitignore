@@ -3,4 +3,4 @@ Debug/
 *.vcxproj.filters
 *.vcxproj.user
 *.log
-tests/output/
+code/output/

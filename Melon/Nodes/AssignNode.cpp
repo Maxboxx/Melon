@@ -5,6 +5,8 @@
 #include "StackNode.h"
 #include "NameNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -12,6 +14,7 @@ using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Optimizing;
+using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
@@ -157,6 +160,10 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 	}
 
 	return c;
+}
+
+void AssignNode::IncludeScan(ParsingInfo& info) {
+
 }
 
 Set<ScanType> AssignNode::Scan(ScanInfo& info) const {

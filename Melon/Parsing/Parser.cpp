@@ -53,7 +53,7 @@ Melon::Token ParsingInfo::Current(const Int offset) {
 	return tokens[index + offset];
 }
 
-RootNode Parser::Parse(const String& filename, const CompilerOptions& options) {
+ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options) {
 	SetupTokens();
 
 	ParsingInfo info;
@@ -64,7 +64,7 @@ RootNode Parser::Parse(const String& filename, const CompilerOptions& options) {
 
 	ParseFile(filename, info);
 
-	return info.root;
+	return info;
 }
 
 NodePtr Parser::UnexpectedToken(ParsingInfo& info) {

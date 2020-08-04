@@ -1,10 +1,13 @@
 #include "RootNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
+using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
 RootNode::RootNode() : Node(ScopeList(), FileInfo()) {
@@ -41,6 +44,10 @@ List<OptimizerInstruction> RootNode::Compile() {
 	UByte index = 0;
 	CompileInfo info;
 	return Compile(info).instructions;
+}
+
+void RootNode::IncludeScan(ParsingInfo& info) {
+
 }
 
 Set<ScanType> RootNode::Scan(ScanInfo& info) const {

@@ -1,10 +1,13 @@
 #include "LoopNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
+using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
 LoopNode::LoopNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
@@ -225,6 +228,10 @@ CompiledNode LoopNode::Compile(CompileInfo& info) {
 	}
 
 	return c;
+}
+
+void LoopNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> LoopNode::Scan(ScanInfo& info) const {

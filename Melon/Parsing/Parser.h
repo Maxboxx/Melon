@@ -89,11 +89,12 @@ namespace Melon {
 		public:
 			///T Parse
 			/// Parses a file and converts it to an AST
-			static Nodes::RootNode Parse(const Boxx::String& filename, const CompilerOptions& options);
+			static ParsingInfo Parse(const Boxx::String& filename, const CompilerOptions& options);
 
 			///T Unexpected token
 			/// Throws a <type>SyntaxError</type> for the current token
 			static Nodes::NodePtr UnexpectedToken(ParsingInfo& info);
+
 		private:
 			friend class IncludeParser;
 

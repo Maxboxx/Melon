@@ -1,6 +1,7 @@
 #include "IncludeParser.h"
 
 #include "Boxx/System.h"
+#include "Boxx/Array.h"
 
 using namespace Boxx;
 
@@ -47,6 +48,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 			else if (System::DirectoryExists(fileDir + includeDir)) {
 				found = true;
 				include = info.currentNamespace.Add(include);
+				ParseDirectory(fileDir + includeDir, include, info);
 			}
 
 			if (!found) {
@@ -60,6 +62,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 					}
 					else if (System::DirectoryExists(dir)) {
 						found = true;
+						ParseDirectory(dir, include, info);
 						break;
 					}
 				}
@@ -75,6 +78,14 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 	}
 
 	return false;
+}
+
+void IncludeParser::ParseInclude(const ScopeList& include, ParsingInfo& info) {
+	Symbol s = Symbol::Find(include.Pop(), FileInfo());
+
+	if (System::DirectoryExists(s.symbolPath + "/" + include.Last().ToString())) {
+		ParseDirectory(s.symbolPath + "/" + include.Last().ToString(), include, info);
+	}
 }
 
 void IncludeParser::ParseFile(const String& filename, const ScopeList& include, const Scope& includeFile, ParsingInfo& info) {
@@ -102,19 +113,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	ScopeList scopes = info.scopes;
 	info.scopes = include;
 
-	for (UInt i = 0; i < include.Size(); i++) {
-		ScopeList includeScopes;
-
-		for (UInt u = 0; u <= i; u++) {
-			includeScopes = includeScopes.Add(include[u]);
-		}
-
-		if (!Symbol::Contains(includeScopes)) {
-			Symbol s = Symbol(SymbolType::Namespace);
-			s.symbolNamespace = includeScopes;
-			Symbol::Add(includeScopes, s, FileInfo(info.filename, 1));
-		}
-	}
+	CreateIncludeSymbols(filename, include);
 
 	Parser::ParseFile(filename, info);
 
@@ -126,4 +125,38 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	info.index = index;
 	info.loops = loops;
 	info.scopes = scopes;
+}
+
+void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList& include) {
+	for (UInt i = 0; i < include.Size(); i++) {
+		ScopeList includeScopes;
+
+		for (UInt u = 0; u <= i; u++) {
+			includeScopes = includeScopes.Add(include[u]);
+		}
+
+		if (!Symbol::Contains(includeScopes)) {
+			Array<String> dirs = filename.Replace("\\", "/").Split("/");
+			String path = dirs[0];
+
+			for (UInt u = 1; u < includeScopes.Size() + 1; u++) {
+				path += "/" + dirs[u];
+			}
+
+			Symbol s = Symbol(SymbolType::Namespace);
+			s.symbolNamespace = includeScopes;
+			s.symbolPath = path;
+			Symbol::Add(includeScopes, s, FileInfo(filename, 1));
+		}
+	}
+}
+
+void IncludeParser::ParseDirectory(const String& directory, const ScopeList& include, ParsingInfo& info) {
+	for (const String& file : System::GetFilesInDirectory(directory)) {
+		Array<String> parts = file.Split(".");
+
+		if (parts.Size() == 2 && parts[1] == "melon") {
+			ParseFile(directory + "/" + file, include, Scope(parts[0]), info);
+		}
+	}
 }

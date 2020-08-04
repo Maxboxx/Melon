@@ -1,14 +1,12 @@
 #pragma once
 
+#include "Types.h"
 #include "String.h"
+#include "Array.h"
+#include "List.h"
+#include "Error.h"
 
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#ifdef BOXX_WINDOWS
-	#include <direct.h>
-#endif
+#include <filesystem>
 
 ///N System
 
@@ -33,6 +31,11 @@ namespace Boxx {
 		/// Creates a directory
 		///R bool success: <code>true</code> if the directory was created. <code>false</code> otherwise.
 		static bool CreateDirectory(const String& directory);
+
+		///T Get Files in Directory
+		/// Gets a list of all files in the specified directory
+		///E SystemNotSupportedError: Thrown if the operating system is not Windows
+		static List<String> GetFilesInDirectory(const String& directory);
 	};
 
 	inline void System::Execute(const String& command) {
@@ -40,26 +43,26 @@ namespace Boxx {
 	}
 
 	inline bool System::FileExists(const String& file) {
-		struct stat info;
-		return stat(file, &info) == 0;
+		return std::filesystem::is_regular_file((const char*)file);
 	}
 
 	inline bool System::DirectoryExists(const String& directory) {
-		struct stat info;
-
-		if (stat(directory, &info) != 0)
-			return false;
-		else if (info.st_mode & S_IFDIR)
-			return true;
-		else
-			return false;
+		return std::filesystem::is_directory((const char*)directory);
 	}
 
 	inline bool System::CreateDirectory(const String& directory) {
-		#ifdef BOXX_WINDOWS
-			return _mkdir(directory) != -1;
-		#else
-			return mkdir(directory, 0777) != -1;
-		#endif
+		return std::filesystem::create_directory((const char*)directory);
+	}
+
+	inline List<String> System::GetFilesInDirectory(const String& directory) {
+		List<String> files;
+
+		for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator((const char*)directory)) {
+			if (entry.is_regular_file()) {
+				files.Add(entry.path().filename().string());
+			}
+		}
+
+		return files;
 	}
 }

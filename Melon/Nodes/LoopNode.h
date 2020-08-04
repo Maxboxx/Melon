@@ -50,6 +50,7 @@ namespace Melon {
 			~LoopNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfo& info) const override;
 			virtual Boxx::Mango ToMango() const override;
 		};

@@ -39,6 +39,7 @@ namespace Melon {
 			Boxx::List<Optimizing::OptimizerInstruction> Compile();
 
 			virtual Boxx::Mango ToMango() const override;
+			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfo& info) const override;
 
 			///T Scan

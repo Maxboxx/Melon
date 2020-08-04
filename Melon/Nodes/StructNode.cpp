@@ -1,10 +1,13 @@
 #include "StructNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 
 using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
+using namespace Melon::Parsing;
 
 StructNode::StructNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
 
@@ -28,6 +31,10 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 	}
 
 	return CompiledNode();
+}
+
+void StructNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> StructNode::Scan(ScanInfo& info) const {

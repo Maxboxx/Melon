@@ -1,9 +1,12 @@
 #include "Node.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
+using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
 void CompiledNode::AddInstructions(const List<OptimizerInstruction>& instructions) {
@@ -33,6 +36,10 @@ List<ScopeList> Node::Types() const {
 
 Set<ScanType> Node::Scan(ScanInfo& info) const {
 	return Set<ScanType>();
+}
+
+void Node::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Symbol Node::GetSymbol() const {

@@ -1,10 +1,13 @@
 #include "StatementsNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 
 using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
+using namespace Melon::Parsing;
 
 StatementsNode::StatementsNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
 
@@ -25,6 +28,10 @@ CompiledNode StatementsNode::Compile(CompileInfo& info) {
 	info.index = 0;
 
 	return c;
+}
+
+void StatementsNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> StatementsNode::Scan(ScanInfo& info) const {

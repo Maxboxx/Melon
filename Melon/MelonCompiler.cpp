@@ -138,19 +138,20 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 	Symbol::Setup();
 
 	try {
-		RootNode node = Parser::Parse(filename, compOptions);
+		ParsingInfo info = Parser::Parse(filename, compOptions);
 
 		if (ErrorLog::HasError()) {
 			throw CompileError("", FileInfo());
 		}
 
-		node.Scan();
+		info.root.IncludeScan(info);
+		info.root.Scan();
 
 		if (ErrorLog::HasError()) {
 			throw CompileError("", FileInfo());
 		}
 
-		List<OptimizerInstruction> instructions = node.Compile();
+		List<OptimizerInstruction> instructions = info.root.Compile();
 
 		if (ErrorLog::HasError()) {
 			throw CompileError("", FileInfo());
@@ -166,7 +167,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		if (compOptions.outputAST) {
 			FileWriter ast = FileWriter(compOptions.outputDirectory + compOptions.outputName + "_ast.mango");
-			ast.Write(node.ToString());
+			ast.Write(info.root.ToString());
 			ast.Close();
 		}
 
@@ -206,12 +207,8 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		ErrorLog::LogErrors();
 	}
-	//*
 	catch (CompileError e) {
 		ErrorLog::LogErrors();
-	}//*/
-	catch (int e) {
-		Int i = 0;
 	}
 }
 

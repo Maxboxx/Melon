@@ -2,11 +2,14 @@
 
 #include "StackNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
 
 using namespace Melon::Nodes;
+using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
@@ -63,6 +66,10 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	}
 
 	return c;
+}
+
+void ReturnNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> ReturnNode::Scan(ScanInfo& info) const {

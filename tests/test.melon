@@ -1,5 +1,0 @@
-
-include Boxx
-include Boxx.Math.Vector
-
-Boxx.Math.Vector: v = Boxx.Math.Vector()

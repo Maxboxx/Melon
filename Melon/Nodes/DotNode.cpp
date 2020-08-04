@@ -2,10 +2,13 @@
 
 #include "NameNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
+using namespace Melon::Parsing;
 
 DotNode::DotNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
 
@@ -79,6 +82,10 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 	}
 
 	return c;
+}
+
+void DotNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> DotNode::Scan(ScanInfo& info) const {

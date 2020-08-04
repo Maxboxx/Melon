@@ -1,9 +1,12 @@
 #include "FunctionNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon::Nodes;
+using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
 FunctionNode::FunctionNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
@@ -46,6 +49,10 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate ar
 	}
 
 	return c;
+}
+
+void FunctionNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> FunctionNode::Scan(ScanInfo& info) const {

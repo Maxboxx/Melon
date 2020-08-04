@@ -1,14 +1,14 @@
 {
 	name: "test"
-	main: "tests/test.melon"
+	main: "code/test.melon"
 	
 	include: [
-		dir: "tests/include/dir1"
-		dir: "tests/include/dir2"
+		dir: "code/include/dir1"
+		dir: "code/include/dir2"
 	]
 	
 	output: {
-		dir: "tests/output"
+		dir: "code/output"
 		
 		ast:        true
 		symbols:    true

@@ -19,6 +19,7 @@ namespace Melon {
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Symbols::ScopeList Type() const override;
+			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Mango ToMango() const override;
 		};
 	}

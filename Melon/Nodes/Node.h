@@ -13,6 +13,10 @@
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
 namespace Melon {
+	namespace Parsing {
+		struct ParsingInfo;
+	}
+
 	namespace Nodes {
 
 		///T NodePtr
@@ -137,6 +141,9 @@ namespace Melon {
 			/// The file info of the node
 			FileInfo file;
 
+			///T Include scanned
+			bool includeScanned = false;
+
 			///H Constructors
 
 			///T Constructor
@@ -165,6 +172,10 @@ namespace Melon {
 			///T To Mango
 			/// Converts the node to mango
 			virtual Boxx::Mango ToMango() const = 0;
+
+			///T Include Scan
+			/// Scans the node for potential extra includes
+			virtual void IncludeScan(Parsing::ParsingInfo& info);
 
 			///T Scan
 			/// Scans the node for potential errors

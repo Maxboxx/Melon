@@ -1,10 +1,13 @@
 #include "RefNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
+using namespace Melon::Parsing;
 
 RefNode::RefNode(const NodePtr& node) : Node(node->scope, node->file) {this->node = node;}
 RefNode::~RefNode() {}
@@ -35,6 +38,10 @@ CompiledNode RefNode::Compile(CompileInfo& info) {
 	cn.argument = reg;
 	cn.size = info.stack.ptrSize;
 	return cn;
+}
+
+void RefNode::IncludeScan(ParsingInfo& info) {
+
 }
 
 Set<ScanType> RefNode::Scan(ScanInfo& info) const {

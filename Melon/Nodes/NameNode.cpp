@@ -2,10 +2,13 @@
 
 #include "PtrNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon::Nodes;
+using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
 NameNode::NameNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
@@ -54,6 +57,10 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 
 	cn.size = s.GetType(file).size;
 	return cn;
+}
+
+void NameNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> NameNode::Scan(ScanInfo& info) const {

@@ -1,9 +1,12 @@
 #include "NewVariableNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon::Nodes;
+using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
 NewVariableNode::NewVariableNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
@@ -49,6 +52,10 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 	}
 
 	return cn;
+}
+
+void NewVariableNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> NewVariableNode::Scan(ScanInfo& info) const {

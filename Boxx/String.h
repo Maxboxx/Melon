@@ -97,7 +97,7 @@ namespace Boxx {
 		/// Searches the string for a specific substring and replaces all occurrences of it with the specified value
 		///A const String& search: The substring to search for
 		///A const String& replace: The string to replace the substring with
-		String Replace(const String& search, const String& replace);
+		String Replace(const String& search, const String& replace) const;
 
 		///H Operators
 
@@ -447,7 +447,7 @@ namespace Boxx {
 		return String(chars.list->list, chars.Size());
 	}
 
-	inline String String::Replace(const String& search, const String& replace) {
+	inline String String::Replace(const String& search, const String& replace) const {
 		List<char> chars{Size()};
 
 		for (UInt i = 0; i < Size(); i++) {

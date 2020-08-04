@@ -1,9 +1,12 @@
 #include "PtrNode.h"
 
+#include "Melon/Parsing/Parser.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon::Nodes;
+using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
 PtrNode::PtrNode(const NodePtr& node) : Node(node->scope, node->file) {this->node = node;}
@@ -37,6 +40,10 @@ CompiledNode PtrNode::Compile(CompileInfo& info) {
 
 	cn.argument = Argument(sv);
 	return cn;
+}
+
+void PtrNode::IncludeScan(ParsingInfo& info) {
+	
 }
 
 Set<ScanType> PtrNode::Scan(ScanInfo& info) const {

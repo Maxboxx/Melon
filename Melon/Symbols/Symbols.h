@@ -124,6 +124,9 @@ namespace Melon {
 			///T Symbol namespace
 			ScopeList symbolNamespace;
 
+			///T Symbol Path
+			Boxx::String symbolPath;
+
 			///T Included namespaces
 			Boxx::Set<ScopeList> includedNamespaces;
 

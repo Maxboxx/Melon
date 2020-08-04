@@ -13,9 +13,9 @@
 /// Defined if the operating system is Windows
 #define BOXX_WINDOWS
 #else
-///T Unknown OS
-/// Defined if the operating system is unknown
-#define BOXX_UNKNOWN_OS
+///T Unknown System
+/// Defined if the operating system is not Windos or Linux
+#define BOXX_UNKNOWN_SYSTEM
 #endif
 
 #define _BOXX_STR(s) #s
@@ -36,7 +36,7 @@
 
 ///T Version number 3
 /// The last number of the current version
-#define BOXX_VERSION_V3 0
+#define BOXX_VERSION_V3 2
 
 ///T Version string
 /// A string containing the current version
