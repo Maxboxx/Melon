@@ -130,6 +130,11 @@ namespace Melon {
 			///T Included namespaces
 			Boxx::Set<ScopeList> includedNamespaces;
 
+			///T StatementNumber
+			/// The statement number the symbol was created at
+			/// Only used if <code>type</code> is <code>SymbolType::Variable</code> or a plain <code>SymbolType::Function</code>
+			Boxx::UInt statementNumber = 0;
+
 			///H Constructors
 
 			///T Constructors

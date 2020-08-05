@@ -14,7 +14,7 @@ Set<SymbolAttribute> VariableAttributeParser::Parse(ParsingInfo& info) {
 		if (info.Current().type == TokenType::Const) {
 			for (const SymbolAttribute a : attributes) {
 				if (a == SymbolAttribute::Const) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("const"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("const"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 			}
 
@@ -24,10 +24,10 @@ Set<SymbolAttribute> VariableAttributeParser::Parse(ParsingInfo& info) {
 		else if (info.Current().type == TokenType::Ref) {
 			for (const SymbolAttribute a : attributes) {
 				if (a == SymbolAttribute::Copy) {
-					ErrorLog::Error(SyntaxError(SyntaxError::AttributeIncompatible("ref", "copy"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::AttributeIncompatible("ref", "copy"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 				else if (a == SymbolAttribute::Ref) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("ref"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("ref"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 			}
 
@@ -37,10 +37,10 @@ Set<SymbolAttribute> VariableAttributeParser::Parse(ParsingInfo& info) {
 		else if (info.Current().type == TokenType::Copy) {
 			for (const SymbolAttribute a : attributes) {
 				if (a == SymbolAttribute::Ref) {
-					ErrorLog::Error(SyntaxError(SyntaxError::AttributeIncompatible("copy", "ref"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::AttributeIncompatible("copy", "ref"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 				else if (a == SymbolAttribute::Copy) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("copy"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("copy"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 			}
 
@@ -50,7 +50,7 @@ Set<SymbolAttribute> VariableAttributeParser::Parse(ParsingInfo& info) {
 		else if (info.Current().type == TokenType::Nil) {
 			for (const SymbolAttribute a : attributes) {
 				if (a == SymbolAttribute::Nil) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("nil"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("nil"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 			}
 

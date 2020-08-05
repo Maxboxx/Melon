@@ -52,7 +52,7 @@ namespace Melon {
 					Boxx::Array<Boxx::String> match = undefinedToken.Match(code, i);
 
 					if (!match.IsEmpty()) {
-						ErrorLog::Error(TokenError(TokenError::UndefinedStart + match[0] + TokenError::UndefinedEnd, FileInfo(filename, line)));
+						ErrorLog::Error(TokenError(TokenError::UndefinedStart + match[0] + TokenError::UndefinedEnd, FileInfo(filename, line, 0)));
 					}
 				}
             

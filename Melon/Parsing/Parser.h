@@ -60,6 +60,10 @@ namespace Melon {
 			/// All namespaces included by the current file
 			Boxx::Set<Symbols::ScopeList> includedNamespaces;
 
+			///T Statement number
+			/// Used to keep track of the statement number of symbols
+			Boxx::UInt statementNumber = 1;
+
 			///H Methods
 
 			///T Next

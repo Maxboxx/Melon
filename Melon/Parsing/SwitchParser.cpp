@@ -20,7 +20,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 	}
 
 	info.scopes = info.scopes.AddNext("switch");
-	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line));
+	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	const UInt switchLine = info.Current().line;
 	info.index++;
@@ -28,28 +28,28 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 	NodePtr value = ExpressionParser::Parse(info);
 
 	if (!value) {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("match expression", "'switch'", "switch statement"), FileInfo(info.filename, info.Current(-1).line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("match expression", "'switch'", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
-	Pointer<SwitchNode> switchNode = new SwitchNode(info.scopes, FileInfo(info.filename, switchLine));
+	Pointer<SwitchNode> switchNode = new SwitchNode(info.scopes, FileInfo(info.filename, switchLine, info.statementNumber));
 	switchNode->expr = false;
 	switchNode->match = value;
 
 	while (info.Current().type == TokenType::Case || info.Current().type == TokenType::Default) {
 		if (info.Current().type == TokenType::Case) {
 			info.scopes = info.scopes.AddNext("case");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line));
+			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 		else {
 			info.scopes = info.scopes.AddNext("default");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line));
+			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 
 		bool isDefault = info.Current().type == TokenType::Default;
 		const UInt caseLine = info.Current().line;
 
 		if (isDefault && switchNode->def) {
-			ErrorLog::Error(SyntaxError(SyntaxError::MultipleDefault, FileInfo(info.filename, info.Current().line)));
+			ErrorLog::Error(SyntaxError(SyntaxError::MultipleDefault, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 		}
 
 		info.index++;
@@ -65,7 +65,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			}
 
 			if (caseValues.IsEmpty()) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("case expression", "'case'", "switch statement"), FileInfo(info.filename, info.Current(-1).line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("case expression", "'case'", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 		}
 
@@ -85,7 +85,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			node = StatementParser::Parse(info);
 
 			if (!node) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "case values", "switch statement"), FileInfo(info.filename, info.Current(-1).line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "case values", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 		}
 
@@ -102,7 +102,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 				info.index++;
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch case", caseLine), FileInfo(info.filename, info.Current(-1).line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch case", caseLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 		}
 
@@ -113,9 +113,10 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		info.index++;
 	}
 	else {
-		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch statement", switchLine), FileInfo(info.filename, info.Current(-1).line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch statement", switchLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
 	info.scopes = info.scopes.Pop();
+	info.statementNumber++;
 	return switchNode;
 }

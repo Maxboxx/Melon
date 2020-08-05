@@ -78,7 +78,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 			return true;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::InvalidInclude, FileInfo(info.filename, info.Current(-1).line)));
+			ErrorLog::Error(SyntaxError(SyntaxError::InvalidInclude, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			return false;
 		}
 	}
@@ -117,6 +117,9 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	UInt loops = info.loops;
 	info.loops = 0;
 
+	UInt statementNumber = info.statementNumber;
+	info.statementNumber = 1;
+
 	ScopeList scopes = info.scopes;
 	info.scopes = include;
 
@@ -131,6 +134,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	info.tokens = tokens;
 	info.index = index;
 	info.loops = loops;
+	info.statementNumber = statementNumber;
 	info.scopes = scopes;
 }
 
@@ -153,7 +157,7 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 			Symbol s = Symbol(SymbolType::Namespace);
 			s.symbolNamespace = includeScopes;
 			s.symbolPath = path;
-			Symbol::Add(includeScopes, s, FileInfo(filename, 1));
+			Symbol::Add(includeScopes, s, FileInfo(filename, 1, 0));
 		}
 	}
 }

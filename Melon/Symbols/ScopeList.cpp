@@ -159,12 +159,12 @@ ScopeList ScopeList::AddNext(const String& scope) const {
 
 	if (list.scopes.IsEmpty()) {
 		list.baseScope.AddScope(scope);
-		Scope s = Scope("!" + scope + String::ToString((Int)list.baseScope.GetScope(scope)));
+		Scope s = Scope("<" + scope + ":" + String::ToString(list.baseScope.GetScope(scope)) + ">");
 		list.scopes.Add(s);
 	}
 	else {
 		list.scopes.Last().AddScope(scope);
-		Scope s = Scope("!" + scope + String::ToString((Int)list.scopes.Last().GetScope(scope)));
+		Scope s = Scope("<" + scope + ":" + String::ToString((Int)list.scopes.Last().GetScope(scope)) + ">");
 		list.scopes.Add(s);
 	}
 

@@ -27,6 +27,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 			v.symbolFile = info.currentFile;
 			v.symbolNamespace = info.currentNamespace;
 			v.includedNamespaces = info.includedNamespaces;
+			v.statementNumber = info.statementNumber;
 
 			if (nn->types.Size() == 1)
 				v.varType = nn->types[0];
@@ -35,7 +36,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 
 			v.attributes = nn->attributes[i];
 
-			Symbol::Add(info.scopes.Add(nn->names[i]), v, FileInfo(info.filename, info.Current().line));
+			Symbol::Add(info.scopes.Add(nn->names[i]), v, FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 
 		if (info.Current().type == TokenType::Assign) {
@@ -43,12 +44,12 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 
 			bool moreValues = true;
 
-			Pointer<AssignNode> assign = new AssignNode(info.scopes, FileInfo(info.filename, startLine, info.currentNamespace, info.includedNamespaces));
+			Pointer<AssignNode> assign = new AssignNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
 			Pointer<NewVariableNode> vars = node.Cast<NewVariableNode>();
 			assign->newVars = vars;
 
 			for (UInt i = 0; i < vars->names.Size(); i++) {
-				Pointer<NameNode> name = new NameNode(info.scopes, FileInfo(info.filename, startLine, info.currentNamespace, info.includedNamespaces)); // TODO: more accurate line
+				Pointer<NameNode> name = new NameNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber + 1, info.currentNamespace, info.includedNamespaces)); // TODO: more accurate line
 				name->name = vars->names[i];
 				assign->vars.Add(name);
 
@@ -59,7 +60,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 						if (i < vars->names.Size() - 1) {
 							if (info.EndOfFile() || info.Current().type != TokenType::Comma) {
 								if (node2->Types().Size() + i < vars->names.Size())
-									ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("','", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line)));
+									ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("','", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 								moreValues = false;
 							}
 							else {
@@ -68,14 +69,16 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 						}
 					}
 					else {
-						ErrorLog::Error(SyntaxError(SyntaxError::FewExpressions, FileInfo(info.filename, info.Current(-1).line)));
+						ErrorLog::Error(SyntaxError(SyntaxError::FewExpressions, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 					}
 				}
 			}
 
+			info.statementNumber++;
 			return assign;
 		}
 
+		info.statementNumber++;
 		return node;
 	}
 	else {
@@ -83,16 +86,18 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 
 		if (NodePtr node = AssignableParser::Parse(info))
 			nodes.Add(node);
-		else
+		else {
 			return nullptr;
+		}
 
 		while (info.Current().type == TokenType::Comma) {
 			info.index++;
 
 			if (NodePtr node = AssignableParser::Parse(info))
 				nodes.Add(node);
-			else
+			else {
 				return Parser::UnexpectedToken(info);
+			}
 		}
 
 		if (info.Current().type == TokenType::Assign) {
@@ -100,7 +105,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 
 			bool moreValues = true;
 
-			Pointer<AssignNode> assign = new AssignNode(info.scopes, FileInfo(info.filename, startLine));
+			Pointer<AssignNode> assign = new AssignNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber));
 
 			for (UInt i = 0; i < nodes.Size(); i++) {
 				assign->vars.Add(nodes[i]);
@@ -112,7 +117,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 						if (i < nodes.Size() - 1) {
 							if (info.EndOfFile() || info.Current().type != TokenType::Comma) {
 								if (node2->Types().Size() + i < nodes.Size())
-									ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("','", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line)));
+									ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("','", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 								moreValues = false;
 							}
 							else {
@@ -121,11 +126,12 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 						}
 					}
 					else {
-						ErrorLog::Error(SyntaxError(SyntaxError::FewExpressions, FileInfo(info.filename, info.Current(-1).line)));
+						ErrorLog::Error(SyntaxError(SyntaxError::FewExpressions, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 					}
 				}
 			}
 
+			info.statementNumber++;
 			return assign;
 		}
 	}

@@ -17,8 +17,8 @@ NodePtr ReturnParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Return) {
 		info.index++;
 
-		Pointer<ReturnNode> ret = new ReturnNode(info.scopes, FileInfo(info.filename, info.Current(-1).line));
-		ret->func = Symbol::FindCurrentFunction(info.scopes, FileInfo(info.filename, info.Current().line)).scope;
+		Pointer<ReturnNode> ret = new ReturnNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ret->func = Symbol::FindCurrentFunction(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber)).scope;
 
 		while (NodePtr node = ExpressionParser::Parse(info)) {
 			ret->nodes.Add(node);
@@ -31,6 +31,7 @@ NodePtr ReturnParser::Parse(ParsingInfo& info) {
 			}
 		}
 
+		info.statementNumber++;
 		return ret;
 	}
 

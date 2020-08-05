@@ -13,7 +13,7 @@ using namespace Melon::Parsing;
 NodePtr LoopParser::Parse(ParsingInfo& info) {
 	if (!IsLoopStart(info.Current().type)) return nullptr;
 
-	Pointer<LoopNode> loop = new LoopNode(info.scopes, FileInfo(info.filename, info.Current().line));
+	Pointer<LoopNode> loop = new LoopNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	const UInt startLine = info.Current().line;
 	const String start = info.Current().value;
@@ -23,8 +23,9 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 		TokenType type = info.Current().type;
 		String value = info.Current().value;
 
-		if (!loop->segments.IsEmpty() && IsLoopStart(type))
+		if (!loop->segments.IsEmpty() && IsLoopStart(type)) {
 			return Parser::UnexpectedToken(info);
+		}
 
 		info.index++;
 
@@ -33,11 +34,13 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 
 		if (ls.type == LoopNode::LoopType::If) {
 			info.scopes = info.scopes.AddNext("if");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line));
+			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 			if (NodePtr cond = ExpressionParser::Parse(info)) {
+				info.statementNumber++;
+
 				if (info.Current().type != TokenType::Then)
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "condition", "if segment"), FileInfo(info.filename, info.Current(-1).line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "condition", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
 				info.index++;
 
@@ -45,16 +48,18 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 				ls.statements = StatementParser::ParseMultiple(info);
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "if segment"), FileInfo(info.filename, info.Current(-1).line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 		}
 		else if (ls.type == LoopNode::LoopType::While) {
 			info.scopes = info.scopes.AddNext("while");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line));
+			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 			if (NodePtr cond = ExpressionParser::Parse(info)) {
+				info.statementNumber++;
+
 				if (info.Current().type != TokenType::Do)
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
 				info.index++;
 
@@ -64,12 +69,13 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 				info.loops--;
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 		}
 		else {
 			info.scopes = info.scopes.AddNext(ls.also ? "also" : "else");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line));
+			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+
 			ls.statements = StatementParser::ParseMultiple(info);
 		}
 
@@ -79,9 +85,10 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 	}
 
 	if (info.Current().type != TokenType::End)
-		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected(start, startLine), FileInfo(info.filename, info.Current(-1).line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected(start, startLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
 	info.index++;
+	info.statementNumber++;
 	return loop;
 }
 

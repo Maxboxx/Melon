@@ -419,8 +419,11 @@ Symbol Symbol::FindNearest(const ScopeList& scopes, const ScopeList& scope, cons
 
 			if (s.Contains(scope, file)) {
 				Symbol sym = s.Get(scope, file);
-				sym.scope = list.Add(scope);
-				return sym;
+
+				if (sym.statementNumber < file.statementNumber) {
+					sym.scope = list.Add(scope);
+					return sym;
+				}
 			}
 
 			list = list.Pop();
@@ -445,8 +448,11 @@ Symbol Symbol::FindNearestInNamespace(const ScopeList& scopes, const ScopeList& 
 
 			if (s.Contains(scope, file)) {
 				Symbol sym = s.Get(scope, file);
-				sym.scope = list.Add(scope);
-				return sym;
+
+				if (sym.statementNumber < file.statementNumber) {
+					sym.scope = list.Add(scope);
+					return sym;
+				}
 			}
 
 			list = list.Pop();

@@ -12,7 +12,7 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Break) {
 		info.index++;
 
-		Pointer<BreakNode> bn = new BreakNode(info.scopes, FileInfo(info.filename, info.Current(-1).line));
+		Pointer<BreakNode> bn = new BreakNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		bn->isBreak = true;
 		bn->loops = 1;
 		bn->breakBool = false;
@@ -28,9 +28,9 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 					bn->loops = info.Current().value.ToInt();
 
 					if (bn->loops == 0)
-						ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line)));
+						ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 					if (bn->loops > info.loops)
-						ErrorLog::Error(SyntaxError(SyntaxError::BreakLoops, FileInfo(info.filename, info.Current().line)));
+						ErrorLog::Error(SyntaxError(SyntaxError::BreakLoops, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 
 					info.index++;
 				}
@@ -43,9 +43,9 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 			bn->loops = info.Current().value.ToInt();
 
 			if (bn->loops == 0)
-				ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 			if (bn->loops > info.loops)
-				ErrorLog::Error(SyntaxError(SyntaxError::BreakLoops, FileInfo(info.filename, info.Current().line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::BreakLoops, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 
 			info.index++;
 
@@ -62,12 +62,13 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 			}
 		}
 
+		info.statementNumber++;
 		return bn;
 	}
 	else if (info.Current().type == TokenType::Abort) {
 		info.index++;
 
-		Pointer<BreakNode> bn = new BreakNode(info.scopes, FileInfo(info.filename, info.Current(-1).line));
+		Pointer<BreakNode> bn = new BreakNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		bn->isBreak = false;
 		bn->loops = 1;
 
@@ -75,13 +76,14 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 			bn->loops = info.Current().value.ToInt();
 
 			if (bn->loops == 0)
-				ErrorLog::Error(SyntaxError(SyntaxError::AbortIntLow, FileInfo(info.filename, info.Current().line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::AbortIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 			if (bn->loops > info.loops)
-				ErrorLog::Error(SyntaxError(SyntaxError::AbortLoops, FileInfo(info.filename, info.Current().line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::AbortLoops, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 
 			info.index++;
 		}
 
+		info.statementNumber++;
 		return bn;
 	}
 

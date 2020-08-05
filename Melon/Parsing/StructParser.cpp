@@ -26,16 +26,16 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	info.index++;
 
 	if (info.Current().type != TokenType::Name)
-		ErrorLog::Error(SyntaxError(SyntaxError::StructName, FileInfo(info.filename, structLine)));
+		ErrorLog::Error(SyntaxError(SyntaxError::StructName, FileInfo(info.filename, structLine, info.statementNumber)));
 
 	const Scope structName = Scope(info.Current().value);
 
 	if (!lower.Match(info.Current().value).IsEmpty()) {
-		ErrorLog::Info(InfoError(InfoError::UpperName("struct", info.Current().value), FileInfo(info.filename, info.Current().line)));
+		ErrorLog::Info(InfoError(InfoError::UpperName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 	}
 
 	if (!underscore.Match(info.Current().value).IsEmpty()) {
-		ErrorLog::Info(InfoError(InfoError::UpperUnderscoreName("struct", info.Current().value), FileInfo(info.filename, info.Current().line)));
+		ErrorLog::Info(InfoError(InfoError::UpperUnderscoreName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 	}
 
 	info.index++;
@@ -44,12 +44,12 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	structSymbol.symbolNamespace = info.currentNamespace;
 	structSymbol.includedNamespaces = info.includedNamespaces;
 	structSymbol.scope = info.scopes.Add(structName);
-	Pointer<StructNode> sn = new StructNode(info.scopes, FileInfo(info.filename, structLine));
+	Pointer<StructNode> sn = new StructNode(info.scopes, FileInfo(info.filename, structLine, info.statementNumber));
 
 	sn->name = structName;
 
 	info.scopes = info.scopes.Add(structName);
-	Symbol::Add(info.scopes, structSymbol, FileInfo(info.filename, info.Current().line));
+	Symbol::Add(info.scopes, structSymbol, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	while (true) {
 		bool found = false;
@@ -70,7 +70,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 				v.attributes = nn->attributes[i];
 
-				structSymbol.Add(nn->names[i], v, FileInfo(info.filename, info.Current().line));
+				structSymbol.Add(nn->names[i], v, FileInfo(info.filename, info.Current().line, info.statementNumber));
 				sn->vars.Add(nn->names[i]);
 				structSymbol.args.Add(ScopeList().Add(nn->names[i]));
 			}
@@ -85,7 +85,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	}
 
 	if (info.Current().type != TokenType::End)
-		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("struct", structLine), FileInfo(info.filename, info.Current(-1).line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("struct", structLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
 	Symbol assign = Symbol(SymbolType::Function);
 	assign.symbolFile = info.currentFile;
@@ -93,13 +93,12 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	assign.includedNamespaces = info.includedNamespaces;
 	assign.args.Add(info.scopes);
 	assign.node = new StructAssignNode();
-	structSymbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line));
+	structSymbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
-	Symbol::Add(info.scopes, structSymbol, FileInfo(info.filename, structLine), true);
+	Symbol::Add(info.scopes, structSymbol, FileInfo(info.filename, structLine, info.statementNumber), true);
 
 	info.index++;
 
 	info.scopes = info.scopes.Pop();
-
 	return sn;
 }

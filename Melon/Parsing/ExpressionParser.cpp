@@ -44,10 +44,10 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 					Pointer<BinaryOperatorNode> node;
 
 					if (IsLogic(token.type)) {
-						node = new LogicNode(info.scopes, token.type, FileInfo(info.filename, token.line));
+						node = new LogicNode(info.scopes, token.type, FileInfo(info.filename, token.line, info.statementNumber));
 					}
 					else {
-						node = new BinaryOperatorNode(info.scopes, Scope(token.value), FileInfo(info.filename, token.line));
+						node = new BinaryOperatorNode(info.scopes, Scope(token.value), FileInfo(info.filename, token.line, info.statementNumber));
 					}
 
 					operators.Add(Pair<TokenType, Pointer<BinaryOperatorNode>>(token.type, node));
@@ -198,7 +198,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 		info.index++;
 
 		if (NodePtr node = ParseValue(info)) {
-			Pointer<UnaryOperatorNode> opNode = new UnaryOperatorNode(info.scopes, Scope(token.value), FileInfo(info.filename, token.line));
+			Pointer<UnaryOperatorNode> opNode = new UnaryOperatorNode(info.scopes, Scope(token.value), FileInfo(info.filename, token.line, info.statementNumber));
 
 			opNode->node = node;
 			return opNode;
@@ -269,17 +269,17 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		
 		if (NodePtr dotNode = DotParser::Parse(info)) {
 			Pointer<DotNode> dn = dotNode.Cast<DotNode>();
-			Pointer<NameNode> nn = new NameNode(ScopeList(), FileInfo(info.filename, line));
+			Pointer<NameNode> nn = new NameNode(ScopeList(), FileInfo(info.filename, line, info.statementNumber));
 			nn->name = Scope::Global;
 			dn->node = nn;
 			return dn;
 		}
 
 		if (info.Current().type == TokenType::Dot) {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'.'", "'global'"), FileInfo(info.filename, info.Current(-1).line)));
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'.'", "'global'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("name", "'.'"), FileInfo(info.filename, info.Current(-1).line)));
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("name", "'.'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		}
 
 		info.index = startIndex;

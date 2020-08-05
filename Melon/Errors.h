@@ -85,22 +85,29 @@ namespace Melon {
 		///T Included Namespaces
 		Boxx::Set<Symbols::ScopeList> includedNamespaces;
 
+		///T Sttement number
+		/// The statement number of this file location
+		Boxx::UInt statementNumber;
+
 		///T Empty constructor
 		FileInfo() {
 			filename = "";
 			line = 0;
+			statementNumber = 0;
 		}
 
 		///T Constructor
-		FileInfo(const Boxx::String& filename, const Boxx::UInt line) {
+		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Boxx::UInt statementNumber) {
 			this->filename = filename;
 			this->line = line;
+			this->statementNumber = statementNumber;
 		}
 
 		///T Constructor with Namespaces
-		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Symbols::ScopeList& currentNamespace, const Boxx::Set<Symbols::ScopeList>& includedNamespaces) {
+		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Boxx::UInt statementNumber, const Symbols::ScopeList& currentNamespace, const Boxx::Set<Symbols::ScopeList>& includedNamespaces) {
 			this->filename = filename;
 			this->line = line;
+			this->statementNumber = statementNumber;
 			this->currentNamespace = currentNamespace;
 			this->includedNamespaces = includedNamespaces;
 		}

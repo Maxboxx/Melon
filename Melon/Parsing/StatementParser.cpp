@@ -55,7 +55,7 @@ NodePtr StatementParser::Parse(ParsingInfo& info) {
 }
 
 NodePtr StatementParser::ParseMultiple(ParsingInfo& info) {
-	Pointer<StatementsNode> sn = new StatementsNode(info.scopes, FileInfo(info.filename, info.Current().line));
+	Pointer<StatementsNode> sn = new StatementsNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	while (NodePtr stat = StatementParser::Parse(info))
 		sn->statements.Add(stat);

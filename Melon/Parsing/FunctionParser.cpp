@@ -24,6 +24,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		s.symbolFile = info.currentFile;
 		s.symbolNamespace = info.currentNamespace;
 		s.includedNamespaces = info.includedNamespaces;
+		if (isPlain) s.statementNumber = info.statementNumber;
 		s.ret = funcHead.retrunTypes;
 		s.size = info.root.funcId++;
 		s.varType = ScopeList().Add(funcHead.name);
@@ -31,19 +32,19 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 
 		UInt line = 0;
 
-		Pointer<FunctionNode> func = new FunctionNode(info.scopes, FileInfo(info.filename, startLine));
+		Pointer<FunctionNode> func = new FunctionNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber));
 
 		if (info.Current().type == TokenType::ParenOpen) {
 			info.index++;
 
-			Symbol currentScope = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line));
+			Symbol currentScope = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 			info.scopes = info.scopes.Add(funcHead.name);
 
 			if (!currentScope.Contains(funcHead.name)) {
-				Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line));
+				Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 			}
 
-			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line));
+			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 			if (!funcHead.isOperator) {
 				if (!fs.Contains(Scope::Call)) {
@@ -53,7 +54,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 				}
 				else {
 					Scope scope = Scope::Call;
-					scope.variant = fs.Get(Scope::Call, FileInfo(info.filename, info.Current().line)).variants.Size();
+					scope.variant = fs.Get(Scope::Call, FileInfo(info.filename, info.Current().line, info.statementNumber)).variants.Size();
 					info.scopes = info.scopes.Add(scope);
 				}
 			}
@@ -69,7 +70,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 			while (info.Current().type != TokenType::ParenClose) {
 				if (!args.IsEmpty()) {
 					if (info.Current().type != TokenType::Comma) {
-						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("')'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line)));
+						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("')'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 					}
 
 					info.index++;
@@ -82,7 +83,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 					Set<SymbolAttribute> attributes = VariableAttributeParser::Parse(info);
 
 					if (info.Current().type != TokenType::Name) {
-						ErrorLog::Error(SyntaxError(SyntaxError::ArgNameExpected, FileInfo(info.filename, info.Current(-1).line)));
+						ErrorLog::Error(SyntaxError(SyntaxError::ArgNameExpected, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 					}
 
 					s.args.Add(type);
@@ -94,6 +95,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 					a.symbolFile = info.currentFile;
 					a.symbolNamespace = info.currentNamespace;
 					a.includedNamespaces = info.includedNamespaces;
+					a.statementNumber = info.statementNumber;
 					a.varType = type;
 					a.attributes = attributes;
 					args.Add(a);
@@ -101,7 +103,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 					info.index++;
 				}
 				else {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("')'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("')'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				}
 			}
 
@@ -109,24 +111,26 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 			info.index++;
 
 			for (UInt i = 0; i < args.Size(); i++) {
-				s.Add(func->argNames[i], args[i], FileInfo(info.filename, info.Current().line));
+				s.Add(func->argNames[i], args[i], FileInfo(info.filename, info.Current().line, info.statementNumber));
 			}
 		}
+
+		info.statementNumber++;
 
 		if (!funcHead.isOperator) {
 			info.scopes = info.scopes.Pop();
 
-			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line));
+			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 			s.scope = info.scopes.Add(Scope::Call);
-			Symbol::Add(info.scopes.Add(Scope::Call), s, FileInfo(info.filename, info.Current().line));
+			Symbol::Add(info.scopes.Add(Scope::Call), s, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 			Scope scope = Scope::Call;
-			scope.variant = fs.Get(Scope::Call, FileInfo(info.filename, info.Current().line)).variants.Size() - 1;
+			scope.variant = fs.Get(Scope::Call, FileInfo(info.filename, info.Current().line, info.statementNumber)).variants.Size() - 1;
 			info.scopes = info.scopes.Add(scope);
 		}
 		else {
 			s.scope = info.scopes;
-			Symbol::Add(info.scopes, s, FileInfo(info.filename, info.Current().line));
+			Symbol::Add(info.scopes, s, FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 
 		func->s = s;
@@ -135,7 +139,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		func->node = StatementParser::ParseMultiple(info);
 
 		if (info.Current().type != TokenType::End) {
-			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("function", line), FileInfo(info.filename, info.Current(-1).line)));
+			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("function", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		}
 
 		info.index++;
@@ -148,6 +152,8 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		}
 
 		info.root.funcs.Add(func);
+
+		info.statementNumber++;
 
 		Pointer<EmptyNode> en = new EmptyNode();
 		en->node = func;
@@ -316,7 +322,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 		switch (info.Current().type) {
 			case TokenType::Static: {
 				if (funcHead.attributes.Contains(SymbolAttribute::Static)) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("static"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("static"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 
 				funcHead.isMethod = false;
@@ -325,7 +331,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 			}
 			case TokenType::Override: {
 				if (funcHead.attributes.Contains(SymbolAttribute::Override)) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("override"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("override"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 
 				funcHead.attributes.Add(SymbolAttribute::Override);
@@ -333,7 +339,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 			}
 			case TokenType::Required: {
 				if (funcHead.attributes.Contains(SymbolAttribute::Required)) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("required"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("required"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 
 				funcHead.attributes.Add(SymbolAttribute::Required);
@@ -341,7 +347,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 			}
 			case TokenType::Debug: {
 				if (funcHead.attributes.Contains(SymbolAttribute::Debug)) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("debug"), FileInfo(info.filename, info.Current().line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("debug"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}
 
 				funcHead.attributes.Add(SymbolAttribute::Debug);
@@ -396,18 +402,18 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 				const Scope name = fname;
 
 				if (!upper.Match(name.name).IsEmpty()) {
-					ErrorLog::Info(InfoError(InfoError::LowerName("function", name.name), FileInfo(info.filename, startLine)));
+					ErrorLog::Info(InfoError(InfoError::LowerName("function", name.name), FileInfo(info.filename, startLine, info.statementNumber)));
 				}
 
 				if (!underscore.Match(name.name).IsEmpty()) {
-					ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("function", name.name), FileInfo(info.filename, startLine)));
+					ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("function", name.name), FileInfo(info.filename, startLine, info.statementNumber)));
 				}
 
 				funcHead.name = name;
 				return funcHead;
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("function name", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("function name", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				return nullptr;
 			}
 		}
@@ -417,13 +423,13 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 				return funcHead;
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("operator", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("operator", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				return nullptr;
 			}
 		}
 	}
 	else if (!funcHead.attributes.IsEmpty()) {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'function'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'function'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		return nullptr;
 	}
 

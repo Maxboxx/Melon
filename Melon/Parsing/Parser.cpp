@@ -23,14 +23,14 @@ List<Melon::TokenPattern> Parser::patterns;
 
 Melon::Token ParsingInfo::Next() {
 	if (index + 1 >= tokens.Size())
-		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line, 0)));
 
 	return tokens[++index];
 }
 
 Melon::Token ParsingInfo::Previous() {
 	if (index - 1 >= tokens.Size())
-		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line, 0)));
 
 	return tokens[--index];
 }
@@ -41,14 +41,14 @@ bool ParsingInfo::EndOfFile() const {
 
 Melon::Token ParsingInfo::Current() {
 	if (index >= tokens.Size())
-		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line, 0)));
 
 	return tokens[index];
 }
 
 Melon::Token ParsingInfo::Current(const Int offset) {
 	if (index + offset >= tokens.Size())
-		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line, 0)));
 
 	return tokens[index + offset];
 }
@@ -61,6 +61,7 @@ ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options
 	info.filename = filename;
 	info.index = 0;
 	info.loops = 0;
+	info.statementNumber = 1;
 
 	ParseFile(filename, info);
 
@@ -68,7 +69,7 @@ ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options
 }
 
 NodePtr Parser::UnexpectedToken(ParsingInfo& info) {
-	ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedTokenStart + info.Current().value + SyntaxError::UnexpectedTokenEnd, FileInfo(info.filename, info.Current().line)));
+	ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedTokenStart + info.Current().value + SyntaxError::UnexpectedTokenEnd, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 	return nullptr;
 }
 

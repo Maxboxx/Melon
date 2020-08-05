@@ -1,8 +1,19 @@
 
-include Boxx
-include Vector
+int: i = 1
 
-Vector: v1 = Vector()
-
-Boxx.Math.Vector: v2 = Boxx.Math.Vector(v1.x, v1.y, v1.z)
+do
+	int: i = i
+	
+	do
+		do
+			int: i = i
+			
+			if i > 2 then
+				int: i = i
+			end
+		end
+		
+		int: i = i
+	end
+end
 

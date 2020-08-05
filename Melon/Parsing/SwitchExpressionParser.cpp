@@ -26,11 +26,11 @@ NodePtr SwitchExpressionParser::Parse(ParsingInfo& info, const bool returnOnErro
 	bool error = false;
 
 	if (!value) {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("match expression", "'switch'", "switch expression"), FileInfo(info.filename, info.Current(-1).line)));
+		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("match expression", "'switch'", "switch expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		error = true;
 	}
 
-	Pointer<SwitchNode> switchexpr = new SwitchNode(info.scopes, FileInfo(info.filename, switchLine));
+	Pointer<SwitchNode> switchexpr = new SwitchNode(info.scopes, FileInfo(info.filename, switchLine, info.statementNumber));
 	switchexpr->expr = true;
 	switchexpr->match = value;
 
@@ -39,7 +39,7 @@ NodePtr SwitchExpressionParser::Parse(ParsingInfo& info, const bool returnOnErro
 		const UInt caseLine = info.Current().line;
 
 		if (isDefault && switchexpr->def) {
-			ErrorLog::Error(SyntaxError(SyntaxError::MultipleDefaultExpr, FileInfo(info.filename, info.Current().line)));
+			ErrorLog::Error(SyntaxError(SyntaxError::MultipleDefaultExpr, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 			error = true;
 		}
 
@@ -56,7 +56,7 @@ NodePtr SwitchExpressionParser::Parse(ParsingInfo& info, const bool returnOnErro
 			}
 
 			if (caseValues.IsEmpty()) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("case expression", "'case'", "switch expression"), FileInfo(info.filename, info.Current(-1).line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("case expression", "'case'", "switch expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				error = true;
 			}
 		}
@@ -78,7 +78,7 @@ NodePtr SwitchExpressionParser::Parse(ParsingInfo& info, const bool returnOnErro
 			}
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExprSwitchCase, FileInfo(info.filename, info.Current(-1).line)));
+			ErrorLog::Error(SyntaxError(SyntaxError::ExprSwitchCase, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			error = true;
 		}
 
@@ -87,7 +87,7 @@ NodePtr SwitchExpressionParser::Parse(ParsingInfo& info, const bool returnOnErro
 				info.index++;
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch case", caseLine), FileInfo(info.filename, info.Current(-1).line)));
+				ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch case", caseLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				error = true;
 			}
 		}
@@ -97,7 +97,7 @@ NodePtr SwitchExpressionParser::Parse(ParsingInfo& info, const bool returnOnErro
 		info.index++;
 	}
 	else {
-		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch expression", switchLine), FileInfo(info.filename, switchLine)));
+		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch expression", switchLine), FileInfo(info.filename, switchLine, info.statementNumber)));
 		error = true;
 	}
 

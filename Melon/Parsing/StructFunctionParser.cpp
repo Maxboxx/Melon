@@ -28,9 +28,9 @@ NodePtr StructFunctionParser::Parse(ParsingInfo& info) {
 					fn->s.names.Insert(0, Scope::Self);
 					fn->argNames.Insert(0, Scope::Self);
 
-					Symbol::Add(fn->func, fn->s, FileInfo(info.filename, info.Current().line), true);
-					fn->s = Symbol::Find(fn->func, FileInfo(info.filename, info.Current().line));
-					fn->s.Add(Scope::Self, a, FileInfo(info.filename, info.Current().line));
+					Symbol::Add(fn->func, fn->s, FileInfo(info.filename, info.Current().line, info.statementNumber), true);
+					fn->s = Symbol::Find(fn->func, FileInfo(info.filename, info.Current().line, info.statementNumber));
+					fn->s.Add(Scope::Self, a, FileInfo(info.filename, info.Current().line, info.statementNumber));
 				}
 
 				return en;

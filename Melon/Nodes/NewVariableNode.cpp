@@ -22,6 +22,16 @@ ScopeList NewVariableNode::Type() const {
 	return Symbol::FindInNamespace(types[0], file).scope;
 }
 
+List<ScopeList> NewVariableNode::GetVariables() const {
+	List<ScopeList> vars{names.Size()};
+
+	for (const Scope& n : names) {
+		vars.Add(Symbol::FindInNamespace(scope.Add(n), file).scope);
+	}
+
+	return vars;
+}
+
 CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate error lines
 	CompiledNode cn;
 	cn.size = Symbol::Find(Type(), file).size;

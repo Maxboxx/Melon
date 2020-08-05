@@ -18,7 +18,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info) {
 
 	const UInt startIndex = info.index;
 
-	Pointer<NewVariableNode> node = new NewVariableNode(info.scopes, FileInfo(info.filename, info.Current().line, info.currentNamespace, info.includedNamespaces));
+	Pointer<NewVariableNode> node = new NewVariableNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
 
 	while (const Optional<ScopeList> type = TypeParser::Parse(info)) {
 		node->types.Add(type.Get());
@@ -40,7 +40,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info) {
 
 			if (info.Current().type != TokenType::Name) {
 				if (!node->attributes.Last().IsEmpty()) {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "attributes"), FileInfo(info.filename, info.Current(-1).line)));
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "attributes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				}
 
 				break;
@@ -49,11 +49,11 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info) {
 			node->names.Add(Scope(info.Current().value));
 
 			if (!upper.Match(info.Current().value).IsEmpty()) {
-				ErrorLog::Info(InfoError(InfoError::LowerName("variable", info.Current().value), FileInfo(info.filename, info.Current().line)));
+				ErrorLog::Info(InfoError(InfoError::LowerName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 			}
 
 			if (!underscore.Match(info.Current().value).IsEmpty()) {
-				ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("variable", info.Current().value), FileInfo(info.filename, info.Current().line)));
+				ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 			}
 
 			if (info.Next().type != TokenType::Comma) break;
@@ -64,7 +64,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info) {
 		}
 
 		if (node->names.Size() < node->types.Size()) {
-			ErrorLog::Error(SyntaxError(SyntaxError::FewVariables, FileInfo(info.filename, info.Current(-1).line)));
+			ErrorLog::Error(SyntaxError(SyntaxError::FewVariables, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		}
 
 		return node;

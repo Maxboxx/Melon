@@ -32,6 +32,10 @@ namespace Boxx {
 		/// Push a value to the top of the stack
 		void Push(const T& value);
 
+		///T Set
+		/// Sets the value at the top of the stack
+		void Set(const T& value);
+
 		///T Peek
 		/// Return the item on the top of the stack
 		const T& Peek() const;
@@ -96,6 +100,11 @@ namespace Boxx {
 	template <class T>
 	inline void Stack<T>::Push(const T& value) {
 		stack.Add(value);
+	}
+
+	template <class T>
+	inline void Stack<T>::Set(const T& value) {
+		stack[stack.Last() - 1] = value;
 	}
 
 	template <class T>

@@ -15,17 +15,17 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 		info.index++;
 
 		info.scopes = info.scopes.AddNext("do");
-		Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line));
-
+		Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+		
 		NodePtr statements = StatementParser::ParseMultiple(info);
 
 		if (info.Current().type != TokenType::End)
-			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("do", line), FileInfo(info.filename, info.Current(-1).line)));
+			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("do", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
 		info.index++;
 
 		info.scopes = info.scopes.Pop();
-
+		info.statementNumber++;
 		return statements;
 	}
 

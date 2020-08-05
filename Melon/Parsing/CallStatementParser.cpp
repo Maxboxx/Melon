@@ -14,6 +14,7 @@ NodePtr CallStatementParser::Parse(ParsingInfo& info) {
 
 	if (NodePtr node = ExpressionParser::Parse(info, true)) {
 		if (node.Cast<CallNode>()) {
+			info.statementNumber++;
 			return node;
 		}
 	}
