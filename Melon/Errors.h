@@ -146,8 +146,10 @@ namespace Melon {
 		static const char* const InvalidRef;
 		static const char* const FuncNotFound;
 		static const char* const InvalidCustomInit;
-		static const char* const VarNotCustomInit;
-		static const char* const VarNotInit;
+		static const char* const VarNotCustomInitStart;
+		static const char* const VarNotCustomInitEnd;
+		static const char* const VarNotInitStart;
+		static const char* const VarNotInitEnd;
 		static const char* const MultipleInitStart;
 		static const char* const MultipleInitEnd;
 		static const char* const SelfVarUseStart;

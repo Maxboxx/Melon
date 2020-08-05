@@ -120,16 +120,18 @@ UInt ErrorLog::ErrorCount() {
 	return count;
 }
 
-const char* const CompileError::SelfInit          = "'self' used before all member variables are initialized";
-const char* const CompileError::InvalidRef        = "invalid reference value";
-const char* const CompileError::FuncNotFound      = "no matching function found";
-const char* const CompileError::InvalidCustomInit = "invalid use of custom init";
-const char* const CompileError::VarNotCustomInit  = "all member variables have to be initialized in custom init";
-const char* const CompileError::VarNotInit        = "all member variables have to be initialized in constructor";
-const char* const CompileError::MultipleInitStart = "member variable '";
-const char* const CompileError::MultipleInitEnd   = "' is initialized more than once";
-const char* const CompileError::SelfVarUseStart   = "member variable '";
-const char* const CompileError::SelfVarUseEnd     = "' used before being initialized";
+const char* const CompileError::SelfInit              = "'self' used before all member variables are initialized";
+const char* const CompileError::InvalidRef            = "invalid reference value";
+const char* const CompileError::FuncNotFound          = "no matching function found";
+const char* const CompileError::InvalidCustomInit     = "invalid use of custom init";
+const char* const CompileError::VarNotCustomInitStart = "member variable '";
+const char* const CompileError::VarNotCustomInitEnd   = "' has to be initialized in custom init";
+const char* const CompileError::VarNotInitStart       = "member variable '";;
+const char* const CompileError::VarNotInitEnd         = "' has to be initialized in constructor";
+const char* const CompileError::MultipleInitStart     = "member variable '";
+const char* const CompileError::MultipleInitEnd       = "' is initialized more than once";
+const char* const CompileError::SelfVarUseStart       = "member variable '";
+const char* const CompileError::SelfVarUseEnd         = "' used before being initialized";
 
 const char* const TokenError::UndefinedStart = "undefined token '";
 const char* const TokenError::UndefinedEnd   = "'";

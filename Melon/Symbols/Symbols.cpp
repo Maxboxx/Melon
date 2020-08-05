@@ -285,7 +285,7 @@ bool Symbol::IsAssigned() const {
 	return true;
 }
 
-bool Symbol::IsAllRequiredVars(const Boxx::List<Scope>& vars) const
+bool Symbol::IsAllRequiredVars(const List<Scope>& vars) const
 {
 	for (const Pair<String, Symbol>& s : scopes) {
 		if (s.value.type == SymbolType::Variable) {
@@ -305,6 +305,41 @@ bool Symbol::IsAllRequiredVars(const Boxx::List<Scope>& vars) const
 	}
 
 	return true;
+}
+
+List<Scope> Symbol::GetUnassignedVars() const {
+	List<Scope> unassigned;
+
+	for (const Pair<String, Symbol>& s : scopes) {
+		if (s.value.type == SymbolType::Variable && !s.value.sign) {
+			unassigned.Add(Scope(s.key));
+		}
+	}
+
+	return unassigned;
+}
+
+List<Scope> Symbol::GetUnassignedVars(const List<Scope>& vars) const {
+	List<Scope> unassigned;
+
+	for (const Pair<String, Symbol>& s : scopes) {
+		if (s.value.type == SymbolType::Variable) {
+			bool found = false;
+
+			for (const Scope& var : vars) {
+				if (var.name == s.key) {
+					found = true;
+					break;
+				}
+			}
+
+			if (!found) {
+				unassigned.Add(Scope(s.key));
+			}
+		}
+	}
+
+	return unassigned;
 }
 
 bool Symbol::IsValid() const {

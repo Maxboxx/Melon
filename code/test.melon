@@ -1,19 +1,20 @@
 
-int: i = 1
-
-do
-	int: i = i
+struct A
+	byte: a, b
 	
-	do
-		do
-			int: i = i
-			
-			if i > 2 then
-				int: i = i
-			end
+	function init(bool: b)
+		if b then
+			self.a = 3
+		alsoif b then
+			self.b = 3
+		also
+			self.b = 3
+		elseif b then
+			self.a = 3
+			self.b = 3
+		else
+			self.a = 3
+			self.b = 3
 		end
-		
-		int: i = i
 	end
 end
-

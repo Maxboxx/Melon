@@ -71,7 +71,9 @@ Set<ScanType> FunctionNode::Scan(ScanInfo& info) const {
 	Set<ScanType> scanSet = node->Scan(info);
 
 	if (info.init && !info.symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::VarNotInit, file));
+		for (const Scope& var : info.symbol.GetUnassignedVars()) {
+			ErrorLog::Error(CompileError(CompileError::VarNotInitStart + var.ToString() + CompileError::VarNotInitEnd, file));
+		}
 	}
 
 	for (const ScopeList& sl : s.args) {

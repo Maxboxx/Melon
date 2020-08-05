@@ -42,12 +42,46 @@ namespace Melon {
 				~LoopSegment() {}
 			};
 
+			struct LoopScanInfo {
+				Boxx::List<Symbols::Scope> unassignedVarsStart;
+				Boxx::Set<Symbols::Scope> unassignedVarsAlso;
+				Boxx::Set<Symbols::Scope> unassignedVars;
+				bool init;
+
+				bool checkAlso;
+				bool canBeAssigned;
+			};
+
 			///T Segments
 			/// All segments in the loop structure
 			Boxx::List<LoopSegment> segments;
 
 			LoopNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~LoopNode();
+
+			///T Will A Segment Run
+			/// Returns <code>true</code> if at least one segment will run
+			bool WillASegmentRun() const;
+
+			///T Scan Setup
+			/// Sets up the loop scan info
+			LoopScanInfo ScanSetup(ScanInfo& info) const;
+				
+			///T Scan First Post Contents
+			/// A loop scan performed on the first segment
+			void ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const;
+
+			///T Scan Pre Contents
+			/// A loop scan performed before the scan of the loop segment content
+			void ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
+
+			///T Scan Post Contents
+			/// A loop scan performed after the scan of the loop segment content
+			void ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
+
+			///T Scan Cleanup
+			/// Cleanup for the loop scan info
+			void ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

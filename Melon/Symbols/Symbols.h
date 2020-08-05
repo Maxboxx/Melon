@@ -196,6 +196,13 @@ namespace Melon {
 			/// Checks if the specified vars contain all required vars for init
 			bool IsAllRequiredVars(const Boxx::List<Scope>& vars) const;
 
+			///T Get Unassigned vars
+			/// Gets a list of all unassigned vars
+			///M
+			Boxx::List<Scope> GetUnassignedVars() const;
+			Boxx::List<Scope> GetUnassignedVars(const Boxx::List<Scope>& vars) const;
+			///M
+
 			///T Is valid
 			/// Checks if the symbol is valid
 			bool IsValid() const;

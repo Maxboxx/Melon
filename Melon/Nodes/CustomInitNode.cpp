@@ -82,8 +82,8 @@ Set<ScanType> CustomInitNode::Scan(ScanInfo& info) const {
 
 	Symbol s = Symbol::Find(Type(), file);
 
-	if (!s.IsAllRequiredVars(vars)) {
-		ErrorLog::Error(CompileError(CompileError::VarNotCustomInit, file));
+	for (const Scope& var : s.GetUnassignedVars(vars)) {
+		ErrorLog::Error(CompileError(CompileError::VarNotCustomInitStart + var.ToString() + CompileError::VarNotCustomInitEnd, file));
 	}
 
 	for (UInt i = 0; i < vars.Size(); i++) {
