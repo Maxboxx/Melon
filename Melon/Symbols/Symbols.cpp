@@ -22,8 +22,8 @@ using namespace Kiwi;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-Symbol Symbol::symbols;
-Symbol Symbol::empty;
+Symbol Symbol::symbols = Symbol(SymbolType::Namespace);
+Symbol Symbol::empty = Symbol(SymbolType::None);
 
 Symbol::Symbol() {
 
@@ -336,8 +336,10 @@ Symbol Symbol::FindInNamespace(const ScopeList& scopes, const FileInfo& file) {
 		return Symbol::Find(scopes, file);
 	}
 
-	if (Symbol::Contains(file.currentNamespace.Add(scopes)) && Symbol::Find(file.currentNamespace.Add(scopes[0]), file).type != SymbolType::Namespace) {
-		return Symbol::Find(file.currentNamespace.Add(scopes), file);
+	if (file.currentNamespace.Size() > 0) {
+		if (Symbol::Contains(file.currentNamespace.Add(scopes)) && Symbol::Find(file.currentNamespace.Add(scopes[0]), file).type != SymbolType::Namespace) {
+			return Symbol::Find(file.currentNamespace.Add(scopes), file);
+		}
 	}
 
 	Optional<Symbol> foundSymbol = nullptr;
@@ -380,7 +382,7 @@ Symbol Symbol::FindInNamespace(const ScopeList& scopes, const FileInfo& file) {
 				}
 
 				if (s.symbolNamespace == includeScopes) {
-					if (foundSymbol) {
+					if (foundSymbol && foundSymbol.Get().scope != s.scope) {
 						ErrorLog::Error(SymbolError(SymbolError::AmbiguousStart + scopes.ToString() + SymbolError::AmbiguousEnd, file));
 					}
 

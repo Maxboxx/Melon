@@ -47,7 +47,18 @@ List<OptimizerInstruction> RootNode::Compile() {
 }
 
 void RootNode::IncludeScan(ParsingInfo& info) {
+	do {
+		includeScanned = true;
 
+		for (NodePtr node : nodes) {
+			node->IncludeScan(info);
+		}
+
+		for (NodePtr func : funcs) {
+			func->IncludeScan(info);
+		}
+	}
+	while (!includeScanned);
 }
 
 Set<ScanType> RootNode::Scan(ScanInfo& info) const {

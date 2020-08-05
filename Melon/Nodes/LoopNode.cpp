@@ -231,7 +231,17 @@ CompiledNode LoopNode::Compile(CompileInfo& info) {
 }
 
 void LoopNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	for (LoopSegment& segment : segments) {
+		if (segment.type != LoopType::None) {
+			segment.condition->IncludeScan(info);
+		}
+
+		segment.statements->IncludeScan(info);
+	}
+
+	includeScanned = true;
 }
 
 Set<ScanType> LoopNode::Scan(ScanInfo& info) const {

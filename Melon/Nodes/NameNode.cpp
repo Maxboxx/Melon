@@ -59,10 +59,6 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-void NameNode::IncludeScan(ParsingInfo& info) {
-	
-}
-
 Set<ScanType> NameNode::Scan(ScanInfo& info) const {
 	Set<ScanType> scanSet = Set<ScanType>();
 

@@ -19,10 +19,6 @@ CompiledNode TypeNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-void TypeNode::IncludeScan(ParsingInfo& info) {
-
-}
-
 ScopeList TypeNode::Type() const {
 	return type;
 }

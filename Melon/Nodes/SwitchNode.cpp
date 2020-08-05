@@ -156,7 +156,21 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 }
 
 void SwitchNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	match->IncludeScan(info);
+
+	for (NodePtr node : nodes) {
+		node->IncludeScan(info);
+	}
+
+	for (List<NodePtr>& caseList : cases) {
+		for (NodePtr c : caseList) {
+			c->IncludeScan(info);
+		}
+	}
+
+	includeScanned = true;
 }
 
 Set<ScanType> SwitchNode::Scan(ScanInfo& info) const {

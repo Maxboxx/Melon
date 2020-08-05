@@ -1,6 +1,7 @@
 #include "NewVariableNode.h"
 
 #include "Melon/Parsing/Parser.h"
+#include "Melon/Parsing/IncludeParser.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -55,7 +56,32 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 }
 
 void NewVariableNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	for (const ScopeList& type : types) {
+		while (true) {
+			Symbol s = Symbol::FindInNamespace(ScopeList().Add(type[0]), file);
+
+			bool done = true;
+
+			for (UInt i = 1; i < type.Size(); i++) {
+				if (s.type == SymbolType::Namespace) {
+					if (!s.Contains(type[i])) {
+						IncludeParser::ParseInclude(s.scope.Add(type[i]), info);
+						done = false;
+						break;
+					}
+					else {
+						s = s.Get(type[i], FileInfo());
+					}
+				}
+			}
+
+			if (done) break;
+		}
+	}
+
+	includeScanned = true;
 }
 
 Set<ScanType> NewVariableNode::Scan(ScanInfo& info) const {

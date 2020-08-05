@@ -268,7 +268,15 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 }
 
 void CallNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	node->IncludeScan(info);
+
+	for (NodePtr arg : args) {
+		arg->IncludeScan(info);
+	}
+
+	includeScanned = true;
 }
 
 Set<ScanType> CallNode::Scan(ScanInfo& info) const {

@@ -63,7 +63,12 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 }
 
 void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	node1->IncludeScan(info);
+	node2->IncludeScan(info);
+
+	includeScanned = true;
 }
 
 Set<ScanType> BinaryOperatorNode::Scan(ScanInfo& info) const {

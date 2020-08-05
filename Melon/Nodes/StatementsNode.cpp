@@ -31,7 +31,13 @@ CompiledNode StatementsNode::Compile(CompileInfo& info) {
 }
 
 void StatementsNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	for (NodePtr statement : statements) {
+		statement->IncludeScan(info);
+	}
+
+	includeScanned = true;
 }
 
 Set<ScanType> StatementsNode::Scan(ScanInfo& info) const {

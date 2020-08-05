@@ -1,4 +1,8 @@
 
-include Boxx.Math
+include Boxx
+include Vector
 
-Math.Vector: v = Math.Vector()
+Vector: v1 = Vector()
+
+Boxx.Math.Vector: v2 = Boxx.Math.Vector(v1.x, v1.y, v1.z)
+

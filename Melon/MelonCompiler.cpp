@@ -144,7 +144,11 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			throw CompileError("", FileInfo());
 		}
 
+		ErrorLog::AddMark();
 		info.root.IncludeScan(info);
+		ErrorLog::RevertToMark();
+		ErrorLog::RemoveMark();
+
 		info.root.Scan();
 
 		if (ErrorLog::HasError()) {

@@ -71,7 +71,11 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 }
 
 void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	node->IncludeScan(info);
+
+	includeScanned = true;
 }
 
 Set<ScanType> UnaryOperatorNode::Scan(ScanInfo& info) const {

@@ -3,6 +3,7 @@
 #include "NameNode.h"
 
 #include "Melon/Parsing/Parser.h"
+#include "Melon/Parsing/IncludeParser.h"
 
 using namespace Boxx;
 
@@ -85,7 +86,17 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 }
 
 void DotNode::IncludeScan(ParsingInfo& info) {
+	if (includeScanned) return;
+
+	node->IncludeScan(info);
 	
+	Symbol s = node->GetSymbol();
+
+	if (s.type == SymbolType::Namespace && !s.Contains(name)) {
+		IncludeParser::ParseInclude(s.scope.Add(name), info);
+	}
+
+	includeScanned = true;
 }
 
 Set<ScanType> DotNode::Scan(ScanInfo& info) const {

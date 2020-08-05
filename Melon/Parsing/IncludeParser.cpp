@@ -44,6 +44,8 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 				found = true;
 				include = info.currentNamespace.Add(include);
 				ParseFile(fileDir + includeDir + ".melon", include.Pop(), include.Last(), info);
+
+				if (include.Size() == 1) include = include.Pop();
 			}
 			else if (System::DirectoryExists(fileDir + includeDir)) {
 				found = true;
@@ -58,6 +60,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 					if (System::FileExists(dir + ".melon")) {
 						found = true;
 						ParseFile(dir + ".melon", include.Pop(), include.Last(), info);
+						if (include.Size() == 1) include = include.Pop();
 						break;
 					}
 					else if (System::DirectoryExists(dir)) {
@@ -68,7 +71,10 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 				}
 			}
 
-			info.includedNamespaces.Add(include);
+			if (include.Size() > 0) {
+				info.includedNamespaces.Add(include);
+			}
+
 			return true;
 		}
 		else {
@@ -84,6 +90,7 @@ void IncludeParser::ParseInclude(const ScopeList& include, ParsingInfo& info) {
 	Symbol s = Symbol::Find(include.Pop(), FileInfo());
 
 	if (System::DirectoryExists(s.symbolPath + "/" + include.Last().ToString())) {
+		info.root.includeScanned = false;
 		ParseDirectory(s.symbolPath + "/" + include.Last().ToString(), include, info);
 	}
 }
@@ -152,6 +159,8 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 }
 
 void IncludeParser::ParseDirectory(const String& directory, const ScopeList& include, ParsingInfo& info) {
+	CreateIncludeSymbols(directory, include);
+
 	for (const String& file : System::GetFilesInDirectory(directory)) {
 		Array<String> parts = file.Split(".");
 

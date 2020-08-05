@@ -33,10 +33,6 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-void StructNode::IncludeScan(ParsingInfo& info) {
-	
-}
-
 Set<ScanType> StructNode::Scan(ScanInfo& info) const {
 	const ScopeList globalName = scope.Add(name);
 

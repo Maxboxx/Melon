@@ -52,7 +52,11 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate ar
 }
 
 void FunctionNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	node->IncludeScan(info);
+
+	includeScanned = true;
 }
 
 Set<ScanType> FunctionNode::Scan(ScanInfo& info) const {

@@ -66,7 +66,15 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 }
 
 void CustomInitNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	node->IncludeScan(info);
+
+	for (NodePtr expression : expressions) {
+		expression->IncludeScan(info);
+	}
+
+	includeScanned = true;
 }
 
 Set<ScanType> CustomInitNode::Scan(ScanInfo& info) const {

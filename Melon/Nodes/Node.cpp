@@ -39,7 +39,7 @@ Set<ScanType> Node::Scan(ScanInfo& info) const {
 }
 
 void Node::IncludeScan(ParsingInfo& info) {
-	
+	includeScanned = true;
 }
 
 Symbol Node::GetSymbol() const {

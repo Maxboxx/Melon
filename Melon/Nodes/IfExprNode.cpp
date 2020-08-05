@@ -94,10 +94,20 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 }
 
 void IfExprNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	for (NodePtr node : nodes) {
+		node->IncludeScan(info);
+	}
+
+	for (NodePtr condition : conditions) {
+		condition->IncludeScan(info);
+	}
+
+	includeScanned = true;
 }
 
-Set<ScanType> IfExprNode::Scan(ScanInfo& info) const { //TODO: add cast node for conditions
+Set<ScanType> IfExprNode::Scan(ScanInfo& info) const { // TODO: add cast node for conditions
 	Set<ScanType> scanSet = Set<ScanType>();
 
 	for (const NodePtr& node : nodes) {

@@ -41,7 +41,11 @@ CompiledNode RefNode::Compile(CompileInfo& info) {
 }
 
 void RefNode::IncludeScan(ParsingInfo& info) {
+	if (includeScanned) return;
 
+	node->IncludeScan(info);
+
+	includeScanned = true;
 }
 
 Set<ScanType> RefNode::Scan(ScanInfo& info) const {

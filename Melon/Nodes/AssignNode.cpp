@@ -163,7 +163,19 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 }
 
 void AssignNode::IncludeScan(ParsingInfo& info) {
+	if (includeScanned) return;
 
+	if (newVars) newVars->IncludeScan(info);
+	
+	for (NodePtr var : vars) {
+		var->IncludeScan(info);
+	}
+
+	for (NodePtr value : values) {
+		value->IncludeScan(info);
+	}
+
+	includeScanned = true;
 }
 
 Set<ScanType> AssignNode::Scan(ScanInfo& info) const {

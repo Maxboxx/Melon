@@ -134,10 +134,6 @@ CompiledNode LogicNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-void LogicNode::IncludeScan(ParsingInfo& info) {
-	
-}
-
 Set<ScanType> LogicNode::Scan(ScanInfo& info) const {
 	Set<ScanType> scanSet = BinaryOperatorNode::Scan(info);
 

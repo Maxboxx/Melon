@@ -43,7 +43,11 @@ CompiledNode PtrNode::Compile(CompileInfo& info) {
 }
 
 void PtrNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	node->IncludeScan(info);
+
+	includeScanned = true;
 }
 
 Set<ScanType> PtrNode::Scan(ScanInfo& info) const {

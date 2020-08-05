@@ -69,7 +69,13 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 }
 
 void ReturnNode::IncludeScan(ParsingInfo& info) {
-	
+	if (includeScanned) return;
+
+	for (NodePtr node : nodes) {
+		node->IncludeScan(info);
+	}
+
+	includeScanned = true;
 }
 
 Set<ScanType> ReturnNode::Scan(ScanInfo& info) const {
