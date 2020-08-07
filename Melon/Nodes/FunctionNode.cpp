@@ -61,6 +61,7 @@ void FunctionNode::IncludeScan(ParsingInfo& info) {
 
 Set<ScanType> FunctionNode::Scan(ScanInfo& info) const {
 	Symbol::Find(this->func, file);
+	info.ret = false;
 
 	if (func.Pop().Last() == Scope::Init) {
 		info.init = true;
@@ -78,6 +79,10 @@ Set<ScanType> FunctionNode::Scan(ScanInfo& info) const {
 
 	for (const ScopeList& sl : s.args) {
 		Symbol::FindNearest(scope, sl, file);
+	}
+
+	if (!info.ret && !s.ret.IsEmpty()) {
+		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(s), file));
 	}
 
 	info.init = false;

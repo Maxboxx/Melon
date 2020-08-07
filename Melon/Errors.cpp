@@ -2,8 +2,11 @@
 
 #include "Boxx/Map.h"
 
+#include "Melon/Symbols/Symbols.h"
+
 using namespace Boxx;
 using namespace Melon;
+using namespace Melon::Symbols;
 
 Logger ErrorLog::logger = Logger("errors.log");
 Logger ErrorLog::compileLogger = Logger("compile.log");
@@ -120,13 +123,22 @@ UInt ErrorLog::ErrorCount() {
 	return count;
 }
 
+String CompileError::FuncNotReturn(const Symbol& func) {
+	if (func.ret.Size() > 1) {
+		return "function '" + func.scope.ToString() + "' must return values";
+	}
+	else {
+		return "function '" + func.scope.ToString() + "' must return a value";
+	}
+}
+
 const char* const CompileError::SelfInit              = "'self' used before all member variables are initialized";
 const char* const CompileError::InvalidRef            = "invalid reference value";
 const char* const CompileError::FuncNotFound          = "no matching function found";
 const char* const CompileError::InvalidCustomInit     = "invalid use of custom init";
 const char* const CompileError::VarNotCustomInitStart = "member variable '";
 const char* const CompileError::VarNotCustomInitEnd   = "' has to be initialized in custom init";
-const char* const CompileError::VarNotInitStart       = "member variable '";;
+const char* const CompileError::VarNotInitStart       = "member variable '";
 const char* const CompileError::VarNotInitEnd         = "' has to be initialized in constructor";
 const char* const CompileError::MultipleInitStart     = "member variable '";
 const char* const CompileError::MultipleInitEnd       = "' is initialized more than once";

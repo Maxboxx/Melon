@@ -558,7 +558,7 @@ Symbol Symbol::FindCurrentFunction(const ScopeList& scopes, const FileInfo& file
 		ScopeList list = scopes;
 
 		while (list.Size() > 0) {
-			Symbol s = Find(scopes, file);
+			Symbol s = Find(list, file);
 
 			if (s.type == SymbolType::Function || s.type == SymbolType::Method) {
 				s.scope = list;

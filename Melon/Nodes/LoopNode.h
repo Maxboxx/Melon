@@ -46,10 +46,14 @@ namespace Melon {
 				Boxx::List<Symbols::Scope> unassignedVarsStart;
 				Boxx::Set<Symbols::Scope> unassignedVarsAlso;
 				Boxx::Set<Symbols::Scope> unassignedVars;
-				bool init;
+				bool init = false;
 
-				bool checkAlso;
-				bool canBeAssigned;
+				bool checkAlsoAssign = false;
+				bool willASegmentRun = false;
+
+				bool ret = false;
+				bool retExists = false;
+				bool checkAlsoRet = false;
 			};
 
 			///T Segments

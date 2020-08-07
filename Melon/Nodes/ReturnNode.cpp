@@ -80,6 +80,7 @@ void ReturnNode::IncludeScan(ParsingInfo& info) {
 
 Set<ScanType> ReturnNode::Scan(ScanInfo& info) const {
 	Set<ScanType> scanSet = Set<ScanType>();
+	info.ret = true;
 
 	for (const NodePtr& node : nodes) {
 		for (const ScanType type : node->Scan(info)) {

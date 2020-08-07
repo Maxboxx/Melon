@@ -11,6 +11,10 @@
 #include "Melon/Symbols/ScopeList.h"
 
 namespace Melon {
+	namespace Symbols {
+		class Symbol;
+	}
+
 	///B ErrorLog
 	/// Used to log errors
 	class ErrorLog {
@@ -138,6 +142,9 @@ namespace Melon {
 				return file.filename + ":" + Boxx::String::ToString((Boxx::Int)file.line) + ": " + what();
 			}
 		}
+
+		///T Func Not Return
+		static Boxx::String FuncNotReturn(const Symbols::Symbol& func);
 
 		///T Errors
 		/// All compile error messages

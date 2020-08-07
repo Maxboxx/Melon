@@ -25,8 +25,8 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 	UInt offset = s.size;
 
 	for (UInt i = 0; i < s.args.Size(); i++) {
-		Symbol argSym = Symbol::FindNearest(type, s.args[i], nodes[0]->file);
-		Symbol argType = Symbol::FindNearest(type, argSym.varType, nodes[0]->file);
+		Symbol argSym = s.Get(s.args[i], nodes[0]->file);
+		Symbol argType = argSym.GetType(nodes[0]->file);
 		offset -= argType.size;
 
 		const ScopeList typeName = argType.scope;

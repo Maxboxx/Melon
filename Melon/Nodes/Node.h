@@ -125,6 +125,8 @@ namespace Melon {
 			bool init = false;
 			bool assign = false;
 			Symbols::Symbol symbol;
+
+			bool ret = false;
 		};
 
 		///B Node
