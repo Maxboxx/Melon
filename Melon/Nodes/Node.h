@@ -4,6 +4,7 @@
 #include "Boxx/List.h"
 #include "Boxx/Mango.h"
 #include "Boxx/Set.h"
+#include "Boxx/Stack.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -125,8 +126,25 @@ namespace Melon {
 			bool init = false;
 			bool assign = false;
 			Symbols::Symbol symbol;
+			FileInfo file;
 
 			bool ret = false;
+			bool hasRet = false;
+		};
+
+		///B ScanInfoStack
+		class ScanInfoStack {
+		public:
+			ScanInfoStack() {
+				stack.Push(ScanInfo());
+			}
+
+			void Pop() {stack.Pop();};
+			void Push() {stack.Push(stack.Peek());};
+			ScanInfo& Get() {return stack.Peek();};
+
+		private:
+			Boxx::Stack<ScanInfo> stack;
 		};
 
 		///B Node
@@ -181,7 +199,7 @@ namespace Melon {
 
 			///T Scan
 			/// Scans the node for potential errors
-			virtual Boxx::Set<ScanType> Scan(ScanInfo& info) const;
+			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) const;
 
 			///T Is Immediate
 			/// <code>true</code> if the compiled node is an immediate value

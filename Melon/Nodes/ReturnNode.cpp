@@ -28,15 +28,15 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	List<Symbol> types;
 
 	for (ScopeList type : s.ret) {
-		Symbol sym = Symbol::FindNearest(s.scope.Pop(), type, file);
+		Symbol sym = Symbol::FindNearestInNamespace(s.scope.Pop(), type, file);
 		stackOffset += sym.size;
 		types.Add(sym);
 	}
 
 	for (UInt i = 0; i < s.args.Size(); i++) {
-		Symbol sym = Symbol::FindNearest(s.scope.Pop(), s.args[i], file);
+		Symbol sym = Symbol::FindNearestInNamespace(s.scope.Pop(), s.args[i], file);
 
-		if (Symbol::Find(s.scope.Add(s.names[i]), nodes[i]->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (Symbol::Find(s.scope.Add(s.names[i]), file).attributes.Contains(SymbolAttribute::Ref)) {
 			stackOffset += info.stack.ptrSize;
 		}
 		else {
@@ -78,9 +78,10 @@ void ReturnNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> ReturnNode::Scan(ScanInfo& info) const {
+Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) const {
 	Set<ScanType> scanSet = Set<ScanType>();
-	info.ret = true;
+	info.Get().ret = true;
+	info.Get().hasRet = true;
 
 	for (const NodePtr& node : nodes) {
 		for (const ScanType type : node->Scan(info)) {
@@ -90,15 +91,19 @@ Set<ScanType> ReturnNode::Scan(ScanInfo& info) const {
 
 	Symbol s = Symbol::Find(func, file);
 
+	if (s.ret.Size() != nodes.Size()) {
+		ErrorLog::Error(CompileError(CompileError::Return(s.ret.Size(), nodes.Size()), file));
+	}
+
 	List<Symbol> types;
 
 	for (ScopeList type : s.ret) {
-		types.Add(Symbol::FindNearest(s.scope.Pop(), type, file));
+		types.Add(Symbol::FindNearestInNamespace(s.scope.Pop(), type, file));
 	}
 
 	for (UInt i = 0; i < s.args.Size(); i++) {
-		Symbol::FindNearest(s.scope.Pop(), s.args[i], file);
-		Symbol::Find(s.scope.Add(s.names[i]), nodes[i]->file);
+		Symbol::FindNearestInNamespace(s.scope.Pop(), s.args[i], file);
+		Symbol::Find(s.scope.Add(s.names[i]), file);
 	}
 
 	for (UInt i = 0; i < nodes.Size(); i++) {

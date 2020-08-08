@@ -107,14 +107,14 @@ void IfExprNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> IfExprNode::Scan(ScanInfo& info) const { // TODO: add cast node for conditions
+Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) const { // TODO: add cast node for conditions
 	Set<ScanType> scanSet = Set<ScanType>();
 
 	for (const NodePtr& node : nodes) {
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
 
-			if (info.init && type == ScanType::Self && !info.symbol.IsAssigned()) {
+			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
 		}
@@ -124,7 +124,7 @@ Set<ScanType> IfExprNode::Scan(ScanInfo& info) const { // TODO: add cast node fo
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
 
-			if (info.init && type == ScanType::Self && !info.symbol.IsAssigned()) {
+			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
 		}

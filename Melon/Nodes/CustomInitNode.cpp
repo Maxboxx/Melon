@@ -77,7 +77,7 @@ void CustomInitNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> CustomInitNode::Scan(ScanInfo& info) const {
+Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) const {
 	Set<ScanType> scanSet = node->Scan(info);
 
 	Symbol s = Symbol::Find(Type(), file);
@@ -106,7 +106,7 @@ Set<ScanType> CustomInitNode::Scan(ScanInfo& info) const {
 		}
 	}
 
-	if (info.init && scanSet.Contains(ScanType::Self) && !info.symbol.IsAssigned()) {
+	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 	}
 
@@ -114,7 +114,7 @@ Set<ScanType> CustomInitNode::Scan(ScanInfo& info) const {
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
 
-			if (info.init && type == ScanType::Self && !info.symbol.IsAssigned()) {
+			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
 		}

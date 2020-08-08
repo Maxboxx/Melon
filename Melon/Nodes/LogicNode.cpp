@@ -134,7 +134,7 @@ CompiledNode LogicNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-Set<ScanType> LogicNode::Scan(ScanInfo& info) const {
+Set<ScanType> LogicNode::Scan(ScanInfoStack& info) const {
 	Set<ScanType> scanSet = BinaryOperatorNode::Scan(info);
 
 	Symbol::FindMethod(node1->Type().Add(Scope::Bool), List<ScopeList>(), node1->file);

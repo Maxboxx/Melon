@@ -132,6 +132,15 @@ String CompileError::FuncNotReturn(const Symbol& func) {
 	}
 }
 
+String CompileError::Return(const UInt funcRetCount, const UInt args) {
+	if (args > funcRetCount) {
+		return "too many arguments to return";
+	}
+	else {
+		return "not enough arguments to return";
+	}
+}
+
 const char* const CompileError::SelfInit              = "'self' used before all member variables are initialized";
 const char* const CompileError::InvalidRef            = "invalid reference value";
 const char* const CompileError::FuncNotFound          = "no matching function found";

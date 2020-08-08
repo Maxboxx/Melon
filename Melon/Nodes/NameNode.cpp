@@ -59,7 +59,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-Set<ScanType> NameNode::Scan(ScanInfo& info) const {
+Set<ScanType> NameNode::Scan(ScanInfoStack& info) const {
 	Set<ScanType> scanSet = Set<ScanType>();
 
 	if (name == Scope::Self) {

@@ -269,7 +269,7 @@ LoopNode::LoopScanInfo LoopNode::ScanSetup(ScanInfo& info) const {
 	LoopScanInfo loopInfo;
 	loopInfo.init = info.init;
 	loopInfo.ret = segments.Size() > 1;
-	loopInfo.retExists = info.ret;
+	loopInfo.retExists = info.ret || info.hasRet;
 	loopInfo.willASegmentRun = true;
 
 	if (loopInfo.init) {
@@ -301,7 +301,7 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 					loopInfo.unassignedVarsAlso.Add(var);
 				}
 			
-				if (!hasPlainAlso) {
+				if (!hasPlainAlso || info.ret) {
 					for (const Scope& var : info.symbol.GetUnassignedVars()) {
 						loopInfo.unassignedVars.Add(var);
 					}
@@ -322,7 +322,7 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 				for (const Scope& var : info.symbol.GetUnassignedVars()) {
 					loopInfo.unassignedVarsAlso.Add(var);
 
-					if (!hasPlainAlso) {
+					if (!hasPlainAlso || info.ret) {
 						loopInfo.unassignedVars.Add(var);
 					}
 					else {
@@ -343,6 +343,12 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 					info.ret = hasPlainAlso;
 				}
 			}
+		}
+	}
+
+	if (info.ret && !loopInfo.unassignedVars.IsEmpty()) {
+		for (const Scope& var : loopInfo.unassignedVars) {
+			ErrorLog::Error(CompileError(CompileError::VarNotInitStart + var.ToString() + CompileError::VarNotInitEnd, info.file));
 		}
 	}
 
@@ -372,6 +378,7 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 	}
 
 	info.ret = false;
+	info.hasRet = loopInfo.retExists;
 }
 
 void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
@@ -413,42 +420,43 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	}
 
 	info.ret = loopInfo.ret || loopInfo.retExists;
+	info.hasRet = loopInfo.retExists;
 }
 
-Set<ScanType> LoopNode::Scan(ScanInfo& info) const {
+Set<ScanType> LoopNode::Scan(ScanInfoStack& info) const {
 	Set<ScanType> scanSet = Set<ScanType>();
-	LoopScanInfo loopInfo = ScanSetup(info);
+	LoopScanInfo loopInfo = ScanSetup(info.Get());
 
 	for (UInt i = 0; i < segments.Size(); i++) {
 		if (segments[i].type != LoopType::None) {
 			for (const ScanType type : segments[i].condition->Scan(info)) {
 				scanSet.Add(type);
 
-				if (info.init && type == ScanType::Self && !info.symbol.IsAssigned()) {
+				if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 					ErrorLog::Error(CompileError(CompileError::SelfInit, segments[i].condition->file));
 				}
 			}
 		}
 
-		ScanPreContents(loopInfo, info, segments[i]);
+		ScanPreContents(loopInfo, info.Get(), segments[i]);
 
 		for (const ScanType type : segments[i].statements->Scan(info)) {
 			scanSet.Add(type);
 
-			if (info.init && type == ScanType::Self && !info.symbol.IsAssigned()) {
+			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, segments[i].statements->file));
 			}
 		}
 
 		if (i == 0) {
-			ScanFirstPostContents(loopInfo, info);
+			ScanFirstPostContents(loopInfo, info.Get());
 		}
 		else {
-			ScanPostContents(loopInfo, info, segments[i]);
+			ScanPostContents(loopInfo, info.Get(), segments[i]);
 		}
 	}
 
-	ScanCleanup(loopInfo, info);
+	ScanCleanup(loopInfo, info.Get());
 
 	return scanSet;
 }

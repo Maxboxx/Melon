@@ -38,7 +38,10 @@ namespace Boxx {
 
 		///T Peek
 		/// Return the item on the top of the stack
+		///M
+		T& Peek();
 		const T& Peek() const;
+		///M
 
 		///T Pop
 		/// Remove and return the item on the top of the stack
@@ -105,6 +108,11 @@ namespace Boxx {
 	template <class T>
 	inline void Stack<T>::Set(const T& value) {
 		stack[stack.Last() - 1] = value;
+	}
+
+	template <class T>
+	inline T& Stack<T>::Peek() {
+		return stack.Last();
 	}
 
 	template <class T>

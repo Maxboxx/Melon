@@ -99,9 +99,9 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> DotNode::Scan(ScanInfo& info) const {
-	bool assign = info.assign;
-	info.assign = false;
+Set<ScanType> DotNode::Scan(ScanInfoStack& info) const {
+	bool assign = info.Get().assign;
+	info.Get().assign = false;
 
 	UInt errorCount = ErrorLog::ErrorCount();
 
@@ -114,20 +114,21 @@ Set<ScanType> DotNode::Scan(ScanInfo& info) const {
 	const ScopeList type = node->Type();
 	Symbol::Find(type.Add(name), file);
 
-	info.assign = assign;
+	info.Get().assign = assign;
 
-	if (info.assign) {
+	if (info.Get().assign) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
 				const ScopeList scope = node->Type().Add(name);
 				Symbol& s = Symbol::Find(scope.Pop(), file).Get(scope.Last(), file);
 
 				if (s.type == SymbolType::Variable) {
-					s.sign = true;
+					if (!info.Get().hasRet) s.sign = true;
+
 					scanSet.Remove(ScanType::Self);
 
 					if (Symbol::Find(scope.Pop(), file).IsAssigned()) {
-						info.init = false;
+						info.Get().init = false;
 					}
 				}
 
@@ -135,7 +136,7 @@ Set<ScanType> DotNode::Scan(ScanInfo& info) const {
 			}
 		}
 	}
-	else if (info.init) {
+	else if (info.Get().init) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
 				const ScopeList scope = node->Type().Add(name);

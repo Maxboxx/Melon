@@ -178,14 +178,14 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> AssignNode::Scan(ScanInfo& info) const {
-	info.assign = true;
+Set<ScanType> AssignNode::Scan(ScanInfoStack& info) const {
+	info.Get().assign = true;
 
 	UInt errorCount = ErrorLog::ErrorCount();
 
 	Set<ScanType> scanSet = newVars ? newVars->Scan(info) : Set<ScanType>();
 
-	if (info.init && scanSet.Contains(ScanType::Self) && !info.symbol.IsAssigned()) {
+	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, newVars->file));
 	}
 
@@ -203,14 +203,14 @@ Set<ScanType> AssignNode::Scan(ScanInfo& info) const {
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
 
-			if (info.init) {
+			if (info.Get().init) {
 				if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 					if (nn->name == Scope::Self) {
 						Symbol::Find(nn->Type(), file).AssignAll();
 						scanSet.Remove(ScanType::Self);
 					}
 				}
-				else if (type == ScanType::Self && !info.symbol.IsAssigned()) {
+				else if (type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 					ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 				}
 			}
@@ -223,13 +223,13 @@ Set<ScanType> AssignNode::Scan(ScanInfo& info) const {
 		}
 	}
 
-	info.assign = false;
+	info.Get().assign = false;
 
 	for (const NodePtr& node : this->values) {
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
 
-			if (info.init && type == ScanType::Self && !info.symbol.IsAssigned()) {
+			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
 		}

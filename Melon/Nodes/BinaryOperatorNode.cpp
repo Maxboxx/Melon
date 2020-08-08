@@ -71,17 +71,17 @@ void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> BinaryOperatorNode::Scan(ScanInfo& info) const {
+Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) const {
 	Set<ScanType> scanSet = node1->Scan(info);
 
-	if (info.init && scanSet.Contains(ScanType::Self) && !info.symbol.IsAssigned()) {
+	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
 	}
 
 	for (const ScanType type : node2->Scan(info)) {
 		scanSet.Add(type);
 
-		if (info.init && type == ScanType::Self && !info.symbol.IsAssigned()) {
+		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 			ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
 		}
 	}

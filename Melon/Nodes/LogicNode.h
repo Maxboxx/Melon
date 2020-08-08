@@ -20,7 +20,7 @@ namespace Melon {
 			virtual Symbols::ScopeList Type() const override;
 			virtual Symbols::Scope GetOperator() const;
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfo& info) const override;
+			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) const override;
 			virtual Boxx::Mango ToMango() const override;
 		};
 	}

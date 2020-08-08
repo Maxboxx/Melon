@@ -59,20 +59,24 @@ void FunctionNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> FunctionNode::Scan(ScanInfo& info) const {
+Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) const {
+	info.Push();
+
 	Symbol::Find(this->func, file);
-	info.ret = false;
+	info.Get().ret = false;
+	info.Get().hasRet = false;
+	info.Get().file = file;
 
 	if (func.Pop().Last() == Scope::Init) {
-		info.init = true;
-		info.symbol = Symbol::Find(func.Pop().Pop(), file);
-		info.symbol.ClearAssign();
+		info.Get().init = true;
+		info.Get().symbol = Symbol::Find(func.Pop().Pop(), file);
+		info.Get().symbol.ClearAssign();
 	}
 
 	Set<ScanType> scanSet = node->Scan(info);
 
-	if (info.init && !info.symbol.IsAssigned()) {
-		for (const Scope& var : info.symbol.GetUnassignedVars()) {
+	if (info.Get().init && !info.Get().symbol.IsAssigned()) {
+		for (const Scope& var : info.Get().symbol.GetUnassignedVars()) {
 			ErrorLog::Error(CompileError(CompileError::VarNotInitStart + var.ToString() + CompileError::VarNotInitEnd, file));
 		}
 	}
@@ -81,11 +85,11 @@ Set<ScanType> FunctionNode::Scan(ScanInfo& info) const {
 		Symbol::FindNearest(scope, sl, file);
 	}
 
-	if (!info.ret && !s.ret.IsEmpty()) {
+	if (!info.Get().ret && !s.ret.IsEmpty()) {
 		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(s), file));
 	}
 
-	info.init = false;
+	info.Pop();
 	return scanSet;
 }
 

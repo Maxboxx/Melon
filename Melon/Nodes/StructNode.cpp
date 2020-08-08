@@ -33,7 +33,7 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-Set<ScanType> StructNode::Scan(ScanInfo& info) const {
+Set<ScanType> StructNode::Scan(ScanInfoStack& info) const {
 	const ScopeList globalName = scope.Add(name);
 
 	Symbol s = Symbol::Find(globalName, file);

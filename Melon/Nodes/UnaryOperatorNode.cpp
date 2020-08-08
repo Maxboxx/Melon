@@ -78,10 +78,10 @@ void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> UnaryOperatorNode::Scan(ScanInfo& info) const {
+Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) const {
 	Set<ScanType> scanSet = node->Scan(info);
 
-	if (info.init && scanSet.Contains(ScanType::Self) && !info.symbol.IsAssigned()) {
+	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 	}
 

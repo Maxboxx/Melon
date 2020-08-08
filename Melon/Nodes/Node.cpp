@@ -34,7 +34,7 @@ List<ScopeList> Node::Types() const {
 	return types;
 };
 
-Set<ScanType> Node::Scan(ScanInfo& info) const {
+Set<ScanType> Node::Scan(ScanInfoStack& info) const {
 	return Set<ScanType>();
 }
 

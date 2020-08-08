@@ -1,21 +1,15 @@
 
 struct A
-	function init()
+	byte: a, b
 	
+	function init()
+		if true then
+			self.a = 1
+			return
+		end
+		
+		self.a = 1
+		self.b = 4
+		return
 	end
 end
-
-function A: getA()
-	if true then
-		--return A()
-	alsoif true then
-		return A()
-	also
-		return A()
-	elseif true then
-		return A()
-	else
-		return A()
-	end
-end
-

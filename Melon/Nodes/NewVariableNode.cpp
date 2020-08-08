@@ -94,7 +94,7 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> NewVariableNode::Scan(ScanInfo& info) const {
+Set<ScanType> NewVariableNode::Scan(ScanInfoStack& info) const {
 	Symbol::Find(Type(), file);
 
 	for (const ScopeList& s : types) {

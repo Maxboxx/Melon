@@ -22,7 +22,7 @@ namespace Melon {
 			~StructNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfo& info) const;
+			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) const;
 			virtual Boxx::Mango ToMango() const override;
 		};
 	}
