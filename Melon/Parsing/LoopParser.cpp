@@ -23,14 +23,26 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 		TokenType type = info.Current().type;
 		String value = info.Current().value;
 
-		if (!loop->segments.IsEmpty() && IsLoopStart(type)) {
-			return Parser::UnexpectedToken(info);
+		ls.also = IsLoopAlso(type);
+		ls.type = GetLoopType(type);
+
+		if (!loop->segments.IsEmpty()) {
+			if (IsLoopStart(type)) {
+				return Parser::UnexpectedToken(info);
+			}
+
+			if (loop->segments.Size() > 1) {
+				if (!loop->segments.Last().also && ls.also) {
+					return Parser::UnexpectedToken(info);
+				}
+
+				if (loop->segments.Last().also == ls.also && loop->segments.Last().type == LoopNode::LoopType::None) {
+					return Parser::UnexpectedToken(info);
+				}
+			}
 		}
 
 		info.index++;
-
-		ls.also = IsLoopAlso(type);
-		ls.type = GetLoopType(type);
 
 		if (ls.type == LoopNode::LoopType::If) {
 			info.scopes = info.scopes.AddNext("if");
