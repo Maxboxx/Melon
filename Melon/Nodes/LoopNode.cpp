@@ -27,23 +27,32 @@ CompiledNode LoopNode::Compile(CompileInfo& info) {
 
 	for (UInt i = 0; i < segments.Size(); i++) {
 		LoopSegment seg = segments[i];
-		UInt nextTrue = i + 1;
+		UInt nextTrue = segments.Size();
 		UInt nextFalse = i + 1;
 		bool isLast = i >= segments.Size() - 1;
 
 		if (!isLast) {
-			if (!segments[i + 1].also) {
-				while (nextTrue < segments.Size() && !segments[nextTrue].also) {
-					nextTrue++;
+			if (seg.also != segments[nextFalse].also) {
+				nextFalse = segments.Size();
+			}
+
+			if (i == 0) {
+				nextTrue = segments.Size();
+
+				for (UInt u = 1; u < segments.Size(); u++) {
+					if (segments[u].also) {
+						nextTrue = u;
+						break;
+					}
 				}
 
-				while (nextTrue < segments.Size() && segments[nextTrue].also) {
-					nextTrue++;
-				}
-			}
-			else {
-				while (nextFalse < segments.Size() && segments[nextFalse].also) {
-					nextFalse++;
+				nextFalse = segments.Size();
+
+				for (UInt u = 1; u < segments.Size(); u++) {
+					if (!segments[u].also) {
+						nextFalse = u;
+						break;
+					}
 				}
 			}
 		}
