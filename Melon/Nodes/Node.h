@@ -128,8 +128,12 @@ namespace Melon {
 			Symbols::Symbol symbol;
 			FileInfo file;
 
-			bool ret = false;
-			bool hasRet = false;
+			bool hasReturned   = false;
+			bool isBroken      = false;
+			bool willNotReturn = true;
+			bool willNotBreak  = true;
+
+			Boxx::UInt abortCount = 0;
 		};
 
 		///B ScanInfoStack
@@ -139,9 +143,10 @@ namespace Melon {
 				stack.Push(ScanInfo());
 			}
 
-			void Pop() {stack.Pop();};
-			void Push() {stack.Push(stack.Peek());};
-			ScanInfo& Get() {return stack.Peek();};
+			void Pop() {stack.Pop();}
+			void Push() {stack.Push(stack.Peek());}
+			ScanInfo& Get() {return stack.Peek();}
+			void Set(const ScanInfo& info) {stack.Set(info);}
 
 		private:
 			Boxx::Stack<ScanInfo> stack;

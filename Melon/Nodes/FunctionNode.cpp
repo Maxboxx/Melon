@@ -63,8 +63,10 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) const {
 	info.Push();
 
 	Symbol::Find(this->func, file);
-	info.Get().ret = false;
-	info.Get().hasRet = false;
+	info.Get().hasReturned   = false;
+	info.Get().willNotReturn = true;
+	info.Get().isBroken      = false;
+	info.Get().willNotBreak  = true;
 	info.Get().file = file;
 
 	if (func.Pop().Last() == Scope::Init) {
@@ -85,7 +87,7 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) const {
 		Symbol::FindNearest(scope, sl, file);
 	}
 
-	if (!info.Get().ret && !s.ret.IsEmpty()) {
+	if (!info.Get().hasReturned && !s.ret.IsEmpty()) {
 		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(s), file));
 	}
 

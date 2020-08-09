@@ -107,7 +107,7 @@ namespace Boxx {
 
 	template <class T>
 	inline void Stack<T>::Set(const T& value) {
-		stack[stack.Last() - 1] = value;
+		stack[stack.Size() - 1] = value;
 	}
 
 	template <class T>

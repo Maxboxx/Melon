@@ -24,6 +24,12 @@ CompiledNode ContinueNode::Compile(CompileInfo& info) {
 	return c;
 }
 
+Set<ScanType> ContinueNode::Scan(ScanInfoStack& info) const {
+	info.Get().isBroken = true;
+	info.Get().willNotBreak = false;
+	return Set<ScanType>();
+};
+
 Mango ContinueNode::ToMango() const {
 	return Mango("continue", (Int)loops);
 }

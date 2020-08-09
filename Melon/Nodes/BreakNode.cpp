@@ -1,5 +1,7 @@
 #include "BreakNode.h"
 
+#include "Boxx/Math.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -29,6 +31,16 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 	c.instructions.Add(in);
 	return c;
 }
+
+Set<ScanType> BreakNode::Scan(ScanInfoStack& info) const {
+	if (!isBreak) {
+		info.Get().abortCount = Math::Max(info.Get().abortCount, loops);
+	}
+
+	info.Get().isBroken     = true;
+	info.Get().willNotBreak = false;
+	return Set<ScanType>();
+};
 
 Mango BreakNode::ToMango() const {
 	Mango m = Mango(isBreak ? "break" : "abort", MangoType::List);
