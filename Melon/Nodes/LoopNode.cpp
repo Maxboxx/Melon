@@ -437,10 +437,18 @@ void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const Lo
 		}
 	}
 
+	if (!info.willNotReturn) {
+		loopInfo.hasAReturn = true;
+	}
+
 	if (loopInfo.willASegmentRun && (!segment.also || loopInfo.checkAlsoRet)) {
 		if (!info.hasReturned) {
 			loopInfo.hasReturned = false;
 		}
+	}
+
+	if (!info.willNotBreak) {
+		loopInfo.hasABreak = true;
 	}
 
 	if (loopInfo.willASegmentRun && (!segment.also || loopInfo.checkAlsoBreak)) {
@@ -467,8 +475,8 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 
 	info.hasReturned = loopInfo.hasReturned || !loopInfo.willNotReturn;
 	info.isBroken    = loopInfo.isBroken    || !loopInfo.willNotBreak;
-	info.willNotReturn = loopInfo.willNotReturn && !info.hasReturned;
-	info.willNotBreak  = loopInfo.willNotBreak  && !info.isBroken;
+	info.willNotReturn = loopInfo.willNotReturn && !info.hasReturned && !loopInfo.hasAReturn;
+	info.willNotBreak  = loopInfo.willNotBreak  && !info.isBroken && !loopInfo.hasABreak;
 }
 
 Set<ScanType> LoopNode::Scan(ScanInfoStack& info) const {

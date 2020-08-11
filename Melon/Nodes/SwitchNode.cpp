@@ -125,18 +125,20 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	cn.instructions[defaultJump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
 	info.label++;
 
-	CompiledNode defNode = def->Compile(info);
+	if (def) {
+		CompiledNode defNode = def->Compile(info);
 
-	for (const OptimizerInstruction& instruction : defNode.instructions) {
-		cn.instructions.Add(instruction);
-	}
+		for (const OptimizerInstruction& instruction : defNode.instructions) {
+			cn.instructions.Add(instruction);
+		}
 
-	if (this->expr) {
-		Instruction mov = Instruction(InstructionType::Mov, cn.size);
-		mov.arguments.Add(result);
-		mov.arguments.Add(defNode.argument);
+		if (this->expr) {
+			Instruction mov = Instruction(InstructionType::Mov, cn.size);
+			mov.arguments.Add(result);
+			mov.arguments.Add(defNode.argument);
 
-		cn.instructions.Add(mov);
+			cn.instructions.Add(mov);
+		}
 	}
 
 	cn.instructions.Add(Instruction::Label(info.label));
@@ -173,6 +175,92 @@ void SwitchNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
+SwitchNode::SwitchScanInfo SwitchNode::ScanSetup(ScanInfo& info) const {
+	SwitchScanInfo switchInfo;
+	switchInfo.init = info.init;
+
+	if (!expr) {
+		if (switchInfo.init) {
+			switchInfo.unassignedVarsStart = info.symbol.GetUnassignedVars();
+
+			if (!def) for (const Scope& var : switchInfo.unassignedVarsStart) {
+				switchInfo.unassignedVars.Add(var);
+			}
+		}
+
+		switchInfo.hasReturned = def != nullptr;
+		switchInfo.isBroken    = def != nullptr;
+		switchInfo.willNotReturn = info.willNotReturn;
+		switchInfo.willNotBreak  = info.willNotBreak;
+	}
+
+	return switchInfo;
+}
+
+void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+	if (!expr) {
+		if (switchInfo.init) {
+			info.init = true;
+
+			for (const Scope& var : switchInfo.unassignedVarsStart) {
+				info.symbol.Get(var, FileInfo()).sign = false;
+			}
+		}
+
+		info.hasReturned = false;
+		info.isBroken    = false;
+		info.willNotReturn = switchInfo.willNotReturn;
+		info.willNotBreak  = switchInfo.willNotBreak;
+	}
+}
+
+void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+	if (!expr) {
+		if (switchInfo.init) {
+			for (const Scope& var : info.symbol.GetUnassignedVars()) {
+				switchInfo.unassignedVars.Add(var);
+			}
+		}
+
+		if (!info.hasReturned) {
+			switchInfo.hasReturned = false;
+		}
+		else {
+			switchInfo.hasAReturn = true;
+		}
+
+		if (!info.isBroken) {
+			switchInfo.isBroken = false;
+		}
+		else {
+			switchInfo.hasABreak = true;
+		}
+	}
+}
+
+void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+	if (!expr) {
+		if (switchInfo.init) {
+			for (const Scope& var : switchInfo.unassignedVarsStart) {
+				info.symbol.Get(var, FileInfo()).sign = true;
+			}
+
+			for (const Scope& var : switchInfo.unassignedVars) {
+				info.symbol.Get(var, FileInfo()).sign = false;
+			}
+
+			if (!switchInfo.unassignedVars.IsEmpty()) {
+				info.init = true;
+			}
+		}
+
+		info.hasReturned = switchInfo.hasReturned || !switchInfo.willNotReturn;
+		info.isBroken    = switchInfo.isBroken    || !switchInfo.willNotBreak;
+		info.willNotReturn = switchInfo.willNotReturn && !info.hasReturned && !switchInfo.hasAReturn;
+		info.willNotBreak  = switchInfo.willNotBreak  && !info.isBroken && !switchInfo.hasABreak;
+	}
+}
+
 Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) const {
 	Set<ScanType> scanSet = match->Scan(info);
 
@@ -180,14 +268,21 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) const {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, match->file));
 	}
 
-	Symbol::Find(Type(), file);
+	if (expr) {
+		Symbol::Find(Type(), file);
+	}
+
 	Symbol::Find(this->match->Type(), this->match->file);
 
 	List<ScopeList> args;
 	args.Add(this->match->Type());
 	Symbol::FindFunction(this->match->Type().Add(Scope::Assign), args, this->match->file);
 
+	SwitchScanInfo switchInfo = ScanSetup(info.Get());
+
 	for (const NodePtr& node : nodes) {
+		ScanPreContents(switchInfo, info.Get());
+
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
 
@@ -195,7 +290,25 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) const {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
 		}
+
+		ScanPostContents(switchInfo, info.Get());
 	}
+
+	if (def) {
+		ScanPreContents(switchInfo, info.Get());
+
+		for (const ScanType type : def->Scan(info)) {
+			scanSet.Add(type);
+
+			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
+				ErrorLog::Error(CompileError(CompileError::SelfInit, def->file));
+			}
+		}
+
+		ScanPostContents(switchInfo, info.Get());
+	}
+
+	ScanCleanup(switchInfo, info.Get());
 
 	for (const List<NodePtr>& nodeList : cases) {
 		for (const NodePtr& node : nodeList) {

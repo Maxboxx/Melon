@@ -223,6 +223,7 @@ namespace Melon {
 		static const char* const UnexpectedTokenEnd;
 		static const char* const MultipleDefaultExpr;
 		static const char* const MultipleDefault;
+		static const char* const DefaultRequired;
 		static const char* const ExprSwitchCase;
 		static const char* const FewExpressions;
 		static const char* const FewVariables;

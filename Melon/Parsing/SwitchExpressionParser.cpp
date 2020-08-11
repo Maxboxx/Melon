@@ -93,6 +93,10 @@ NodePtr SwitchExpressionParser::Parse(ParsingInfo& info, const bool returnOnErro
 		}
 	}
 
+	if (!switchexpr->def) {
+		ErrorLog::Error(SyntaxError(SyntaxError::DefaultRequired, FileInfo(info.filename, switchLine, info.statementNumber)));
+	}
+
 	if (info.Current().type == TokenType::End) {
 		info.index++;
 	}

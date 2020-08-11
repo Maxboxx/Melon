@@ -30,6 +30,35 @@ namespace Melon {
 			SwitchNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~SwitchNode();
 
+			struct SwitchScanInfo {
+				Boxx::List<Symbols::Scope> unassignedVarsStart;
+				Boxx::Set<Symbols::Scope> unassignedVars;
+
+				bool init          = false;
+				bool hasReturned   = false;
+				bool hasAReturn    = false;
+				bool isBroken      = false;
+				bool hasABreak     = false;
+				bool willNotReturn = true;
+				bool willNotBreak  = true;
+			};
+
+			///T Scan Setup
+			/// Sets up the switch scan info
+			SwitchScanInfo ScanSetup(ScanInfo& info) const;
+
+			///T Scan Pre Contents
+			/// A switch scan performed before the scan of the case content
+			void ScanPreContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
+
+			///T Scan Post Contents
+			/// A switch scan performed after the scan of the case content
+			void ScanPostContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
+
+			///T Scan Cleanup
+			/// Cleanup for the switch scan info
+			void ScanCleanup(SwitchScanInfo& loopInfo, ScanInfo& info) const;
+
 			virtual Symbols::ScopeList Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

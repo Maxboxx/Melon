@@ -33,12 +33,16 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 }
 
 Set<ScanType> BreakNode::Scan(ScanInfoStack& info) const {
-	if (!isBreak) {
-		info.Get().abortCount = Math::Max(info.Get().abortCount, loops);
+	if (!info.Get().hasReturned && !info.Get().isBroken) {
+		if (!isBreak) {
+			info.Get().abortCount = Math::Max(info.Get().abortCount, loops);
+		}
+
+		info.Get().isBroken     = true;
 	}
 
-	info.Get().isBroken     = true;
 	info.Get().willNotBreak = false;
+
 	return Set<ScanType>();
 };
 

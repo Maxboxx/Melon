@@ -80,7 +80,11 @@ void ReturnNode::IncludeScan(ParsingInfo& info) {
 
 Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) const {
 	Set<ScanType> scanSet = Set<ScanType>();
-	info.Get().hasReturned   = true;
+
+	if (!info.Get().hasReturned && !info.Get().isBroken) {
+		info.Get().hasReturned   = true;
+	}
+
 	info.Get().willNotReturn = false;
 
 	for (const NodePtr& node : nodes) {

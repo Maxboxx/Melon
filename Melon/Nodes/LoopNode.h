@@ -49,7 +49,9 @@ namespace Melon {
 
 				bool init          = false;
 				bool hasReturned   = false;
+				bool hasAReturn    = false;
 				bool isBroken      = false;
+				bool hasABreak     = false;
 				bool willNotReturn = true;
 				bool willNotBreak  = true;
 
@@ -57,6 +59,8 @@ namespace Melon {
 				bool willASegmentRun = false;
 				bool checkAlsoRet    = false;
 				bool checkAlsoBreak  = false;
+
+				~LoopScanInfo() {}
 			};
 
 			///T Segments
