@@ -550,7 +550,7 @@ Mango LoopNode::ToMango() const {
 
 		Mango s = Mango(name, MangoType::Map);
 
-		if (segments[i].type == LoopType::If || segments[i].type == LoopType::While) {
+		if (segments[i].type == LoopType::If || segments[i].type == LoopType::While || segments[i].type == LoopType::For) {
 			s.Add("condition", segments[i].condition->ToMango());
 		}
 

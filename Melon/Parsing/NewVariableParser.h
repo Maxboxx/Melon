@@ -6,7 +6,7 @@ namespace Melon {
 	namespace Parsing {
 		class NewVariableParser {
 		public:
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Nodes::NodePtr Parse(ParsingInfo& info, const bool single = false);
 		};
 	}
 }

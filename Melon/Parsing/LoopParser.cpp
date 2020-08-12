@@ -2,6 +2,9 @@
 
 #include "ExpressionParser.h"
 #include "StatementParser.h"
+#include "AssignmentParser.h"
+
+#include "Melon/Nodes/ForConditionNode.h"
 
 using namespace Boxx;
 
@@ -84,6 +87,54 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 		}
+		else if (ls.type == LoopNode::LoopType::For) {
+			info.scopes = info.scopes.AddNext("for");
+			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+			if (NodePtr init = AssignmentParser::Parse(info, true)) {
+				info.statementNumber++;
+
+				if (info.Current().type == TokenType::Comma) {
+					info.index++;
+
+					if (NodePtr cond = ExpressionParser::Parse(info)) {
+						Pointer<ForConditionNode> fcn = new ForConditionNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+						fcn->loopInit = init;
+						fcn->loopCondition = cond;
+
+						if (info.Current().type == TokenType::Comma) {
+							info.index++;
+
+							if (NodePtr step = StatementParser::Parse(info)) {
+								fcn->loopStep = step;
+							}
+							else {
+								ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("statement", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+							}
+						}
+
+						if (info.Current().type != TokenType::Do)
+							ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+
+						info.index++;
+
+						ls.condition = fcn;
+						info.loops++;
+						ls.statements = StatementParser::ParseMultiple(info);
+						info.loops--;
+					}
+					else {
+						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+					}
+				}
+				else {
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("','", "'" + info.Current(-1).value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				}
+			}
+			else {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("assignment", "'" + value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+		}
 		else {
 			info.scopes = info.scopes.AddNext(ls.also ? "also" : "else");
 			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
@@ -111,7 +162,8 @@ bool LoopParser::IsLoop(const TokenType t) {
 bool LoopParser::IsLoopStart(const TokenType t) {
 	return 
 		t == TokenType::If ||
-		t == TokenType::While;
+		t == TokenType::While ||
+		t == TokenType::For;
 }
 
 bool LoopParser::IsLoopMiddle(const TokenType t) {
@@ -120,6 +172,8 @@ bool LoopParser::IsLoopMiddle(const TokenType t) {
 		t == TokenType::ElseIf ||
 		t == TokenType::AlsoWhile ||
 		t == TokenType::ElseWhile ||
+		t == TokenType::AlsoFor ||
+		t == TokenType::ElseFor ||
 		t == TokenType::Also ||
 		t == TokenType::Else;
 }
@@ -131,6 +185,9 @@ LoopNode::LoopType LoopParser::GetLoopType(const TokenType t) {
 	else if (t == TokenType::While || t == TokenType::AlsoWhile || t == TokenType::ElseWhile) {
 		return LoopNode::LoopType::While;
 	}
+	else if (t == TokenType::For || t == TokenType::AlsoFor || t == TokenType::ElseFor) {
+		return LoopNode::LoopType::For;
+	}
 
 	return LoopNode::LoopType::None;
 }
@@ -139,5 +196,6 @@ bool LoopParser::IsLoopAlso(const TokenType t) {
 	return 
 		t == TokenType::AlsoIf ||
 		t == TokenType::AlsoWhile ||
+		t == TokenType::AlsoFor ||
 		t == TokenType::Also;
 }

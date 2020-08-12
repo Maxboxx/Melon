@@ -15,11 +15,11 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr AssignmentParser::Parse(ParsingInfo& info) {
+NodePtr AssignmentParser::Parse(ParsingInfo& info, const bool single, const bool newAssign) {
 	const UInt startIndex = info.index;
 	const UInt startLine = info.Current().line;
 
-	if (NodePtr node = NewVariableParser::Parse(info)) {
+	if (NodePtr node = NewVariableParser::Parse(info, single)) {
 		Pointer<NewVariableNode> nn = node.Cast<NewVariableNode>();
 
 		for (UInt i = 0; i < nn->names.Size(); i++) {
@@ -81,7 +81,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info) {
 		info.statementNumber++;
 		return node;
 	}
-	else {
+	else if (!newAssign) {
 		List<NodePtr> nodes;
 
 		if (NodePtr node = AssignableParser::Parse(info))

@@ -173,6 +173,9 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::While, "while"));
 	patterns.Add(TokenPattern(TokenType::AlsoWhile, "alsowhile"));
 	patterns.Add(TokenPattern(TokenType::ElseWhile, "elsewhile"));
+	patterns.Add(TokenPattern(TokenType::For, "for"));
+	patterns.Add(TokenPattern(TokenType::AlsoFor, "alsofor"));
+	patterns.Add(TokenPattern(TokenType::ElseFor, "elsefor"));
 	patterns.Add(TokenPattern(TokenType::Do, "do"));
 	patterns.Add(TokenPattern(TokenType::Also, "also"));
 	patterns.Add(TokenPattern(TokenType::Else, "else"));

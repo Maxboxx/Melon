@@ -12,7 +12,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr NewVariableParser::Parse(ParsingInfo& info) {
+NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 	static Regex upper = Regex("^%u");
 	static Regex underscore = Regex("%a_+%a");
 
@@ -22,6 +22,8 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info) {
 
 	while (const Optional<ScopeList> type = TypeParser::Parse(info)) {
 		node->types.Add(type.Get());
+
+		if (single && node->types.Size() == 1) break;
 
 		if (info.Current().type == TokenType::Comma) {
 			info.index++;

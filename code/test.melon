@@ -1,40 +1,7 @@
 
-struct A
-	byte: a, b
-	
-	function init()
-		self.b = switch 1
-			case 1 2
-			case 2 3
-			case 3 4
-			case 4 5
-			case 5 6
-			
-			default 7
-		end
-		
-		switch 1
-			case 1 self.a = 2
-			default int: i = 0
-		end
-		
-		switch 1
-			case 1 self.a = 1
-			case 2 self.a = 1
-			case 3 self.a = 1
-			case 4 self.a = 1
-			case 5 self.a = 1
-			
-			default self.a = 4
-		end
-	end
-end
+int: n = 0
 
-function A: f()
-	switch 1
-		case 1 return A()
-		case 2 return A()
-		default return A()
-	end
+for int: i = 1, i < 6, i = i + 1 do
+	n = n + i
 end
 
