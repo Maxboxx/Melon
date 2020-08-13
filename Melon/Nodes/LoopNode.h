@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Boxx/Tuple.h"
+
 #include "Node.h"
 
 namespace Melon {
@@ -98,6 +100,50 @@ namespace Melon {
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) const override;
 			virtual Boxx::Mango ToMango() const override;
+
+		private:
+			///T Get Next Segments
+			/// Gets the index for the next true and false segment
+			void GetNextSegments(const Boxx::UInt segment, Boxx::UInt& nextTrue, Boxx::UInt& nextFalse) const;
+
+			///T Is Segment Last
+			/// Checks if the specified segment is the last also or else segment or is the only segment of the loop structure
+			bool IsSegmentLast(const Boxx::UInt segment) const;
+
+			struct SegmentInfo {
+				Boxx::UInt index;
+				Boxx::Array<Boxx::UInt> segmentLabels;
+				Boxx::List<Boxx::Tuple<Boxx::UInt, Boxx::UInt>> jumps;
+				Boxx::Long stackTop;
+			};
+
+			struct LoopInfo {
+				Boxx::Long stack = 0;
+				Boxx::UInt loopEndLbl = 0;
+				Boxx::UInt loopEndJmp = 0;
+				Boxx::UInt loopLbl = 0;
+			};
+
+			///T Add Label If Needed
+			void AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+
+			///T Compile If Segment
+			void CompileIfSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+
+			///T Compile While Segment
+			void CompileWhileSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+			void CompileWhileStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+			void CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+
+			///T Compile For Segment
+			void CompileForSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+			void CompileForStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+			void CompileForEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+			
+			void CompileLoopBody(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+
+			///T Compile None Segment
+			void CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
 		};
 	}
 }
