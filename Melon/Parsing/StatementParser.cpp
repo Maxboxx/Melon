@@ -10,6 +10,7 @@
 #include "BreakParser.h"
 #include "ContinueParser.h"
 #include "StructParser.h"
+#include "RepeatParser.h"
 
 #include "Melon/Nodes/StatementsNode.h"
 
@@ -33,6 +34,9 @@ NodePtr StatementParser::Parse(ParsingInfo& info) {
 		return node;
 	}
 	else if (NodePtr node = DoParser::Parse(info)) {
+		return node;
+	}
+	else if (NodePtr node = RepeatParser::Parse(info)) {
 		return node;
 	}
 	else if (NodePtr node = FunctionParser::Parse(info)) {

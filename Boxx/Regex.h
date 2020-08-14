@@ -495,7 +495,7 @@ namespace Boxx {
 			~BoundaryPattern() {}
 
 			virtual const char* Match(const char* str, List<String>& matches, PatternInfo& info) override {
-				if (str >= info.last || str - 1 <= info.first) return Next(str, matches, info);
+				if (str >= info.last || str - 1 < info.first) return Next(str, matches, info);
 				if (Word(*str) && !Word(*(str - 1))) return Next(str, matches, info);
 				if (!Word(*str) && Word(*(str - 1))) return Next(str, matches, info);
 				return nullptr;

@@ -188,6 +188,8 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Break, "break"));
 	patterns.Add(TokenPattern(TokenType::Abort, "abort"));
 	patterns.Add(TokenPattern(TokenType::Continue, "continue"));
+	patterns.Add(TokenPattern(TokenType::Repeat, "repeat"));
+	patterns.Add(TokenPattern(TokenType::Until, "until"));
 	patterns.Add(TokenPattern(TokenType::Struct, "struct"));
 	patterns.Add(TokenPattern(TokenType::Init, "init"));
 

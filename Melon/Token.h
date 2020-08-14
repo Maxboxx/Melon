@@ -85,6 +85,8 @@ namespace Melon {
 		Break,
 		Abort,
 		Continue,
+		Repeat,
+		Until,
 		Struct,
 		Const,
 		Ref,
