@@ -25,8 +25,21 @@ CompiledNode ContinueNode::Compile(CompileInfo& info) {
 }
 
 Set<ScanType> ContinueNode::Scan(ScanInfoStack& info) const {
-	info.Get().isBroken = true;
-	info.Get().willNotBreak = false;
+	if (!scopeWise) {
+		if (info.Get().CanContinue()) {
+			info.Get().loopBreakCount = Math::Max(info.Get().loopBreakCount, loops);
+		}
+
+		info.Get().maxLoopBreakCount = Math::Max(info.Get().maxLoopBreakCount, loops);
+	}
+	else {
+		if (info.Get().CanContinue()) {
+			info.Get().scopeBreakCount = Math::Max(info.Get().scopeBreakCount, loops + 1);
+		}
+
+		info.Get().maxScopeBreakCount = Math::Max(info.Get().maxScopeBreakCount, loops + 1);
+	}
+
 	return Set<ScanType>();
 };
 

@@ -65,8 +65,12 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) const {
 	Symbol::Find(this->func, file);
 	info.Get().hasReturned   = false;
 	info.Get().willNotReturn = true;
-	info.Get().isBroken      = false;
-	info.Get().willNotBreak  = true;
+	info.Get().loopAbortCount     = 0;
+	info.Get().scopeAbortCount    = 0;
+	info.Get().loopBreakCount     = 0;
+	info.Get().scopeBreakCount    = 0;
+	info.Get().maxLoopBreakCount  = 0;
+	info.Get().maxScopeBreakCount = 0;
 	info.Get().file = file;
 
 	if (func.Pop().Last() == Scope::Init) {

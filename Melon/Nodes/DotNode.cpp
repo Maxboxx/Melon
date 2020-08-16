@@ -123,7 +123,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) const {
 				Symbol& s = Symbol::Find(scope.Pop(), file).Get(scope.Last(), file);
 
 				if (s.type == SymbolType::Variable) {
-					if (info.Get().willNotReturn && info.Get().willNotBreak) s.sign = true;
+					if (info.Get().WillContinue()) s.sign = true;
 
 					scanSet.Remove(ScanType::Self);
 

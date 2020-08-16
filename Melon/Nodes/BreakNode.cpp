@@ -33,15 +33,28 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 }
 
 Set<ScanType> BreakNode::Scan(ScanInfoStack& info) const {
-	if (!info.Get().hasReturned && !info.Get().isBroken) {
-		if (!isBreak) {
-			info.Get().abortCount = Math::Max(info.Get().abortCount, loops);
+	if (!scopeWise) {
+		if (info.Get().CanContinue()) {
+			if (!isBreak) {
+				info.Get().loopAbortCount = Math::Max(info.Get().loopAbortCount, loops);
+			}
+
+			info.Get().loopBreakCount = Math::Max(info.Get().loopBreakCount, loops);
 		}
 
-		info.Get().isBroken     = true;
+		info.Get().maxLoopBreakCount = Math::Max(info.Get().maxLoopBreakCount, loops);
 	}
+	else {
+		if (info.Get().CanContinue()) {
+			if (!isBreak) {
+				info.Get().scopeAbortCount = Math::Max(info.Get().scopeAbortCount, loops + 1);
+			}
 
-	info.Get().willNotBreak = false;
+			info.Get().scopeBreakCount = Math::Max(info.Get().scopeBreakCount, loops + 1);
+		}
+
+		info.Get().maxScopeBreakCount = Math::Max(info.Get().maxScopeBreakCount, loops + 1);
+	}
 
 	return Set<ScanType>();
 };

@@ -129,11 +129,39 @@ namespace Melon {
 			FileInfo file;
 
 			bool hasReturned   = false;
-			bool isBroken      = false;
 			bool willNotReturn = true;
-			bool willNotBreak  = true;
 
-			Boxx::UInt abortCount = 0;
+			Boxx::UInt loopAbortCount     = 0;
+			Boxx::UInt scopeAbortCount    = 0;
+			Boxx::UInt loopBreakCount     = 0;
+			Boxx::UInt scopeBreakCount    = 0;
+			Boxx::UInt maxLoopBreakCount  = 0;
+			Boxx::UInt maxScopeBreakCount = 0;
+
+			bool CanAbort() const {return loopAbortCount > 0 || scopeAbortCount > 0;}
+			bool WillBreak() const {return loopBreakCount > 0 || scopeBreakCount > 0;}
+			bool WillReturn() const {return hasReturned;}
+			bool WillContinue() const {return willNotReturn && maxLoopBreakCount == 0 && maxScopeBreakCount == 0;}
+			bool CanContinue() const {return !WillReturn() && !WillBreak();}
+			bool WillNotContinue() const {return WillReturn() || WillBreak();}
+
+			void EnterScope(const bool isLoop = false) {
+				if (isLoop && loopAbortCount > 0) loopAbortCount++;
+				if (scopeAbortCount > 0) scopeAbortCount++;
+				if (isLoop && loopBreakCount > 0) loopBreakCount++;
+				if (scopeBreakCount > 0) scopeBreakCount++;
+				if (isLoop && maxLoopBreakCount > 0) maxLoopBreakCount++;
+				if (maxScopeBreakCount > 0) maxScopeBreakCount++;
+			}
+
+			void ExitScope(const bool isLoop = false) {
+				if (isLoop && loopAbortCount > 0) loopAbortCount--;
+				if (scopeAbortCount > 0) scopeAbortCount--;
+				if (isLoop && loopBreakCount > 0) loopBreakCount--;
+				if (scopeBreakCount > 0) scopeBreakCount--;
+				if (isLoop && maxLoopBreakCount > 0) maxLoopBreakCount--;
+				if (maxScopeBreakCount > 0) maxScopeBreakCount--;
+			}
 		};
 
 		///B ScanInfoStack

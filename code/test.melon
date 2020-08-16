@@ -1,6 +1,7 @@
 
 int: n = 0
 
+-/
 for int: i = 1, i < 6, i = i + 1 do
 	n = n + i
 end
@@ -9,4 +10,16 @@ end
 repeat
 	n = n - 1
 until n == 0
+/-
 
+function int: f()
+	while true do
+		while true do
+			break 2
+		end
+	also
+		return 2
+	else
+		return 3
+	end
+end

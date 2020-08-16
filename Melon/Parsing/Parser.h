@@ -49,6 +49,10 @@ namespace Melon {
 			/// The amount of loops the parser is currently inside of
 			Boxx::UInt loops;
 
+			///T Scope counter
+			/// The amount of breakable scopes the parser is currently inside of
+			Boxx::UInt scopeCount;
+
 			///T CompilerOptions
 			CompilerOptions options;
 

@@ -52,15 +52,17 @@ namespace Melon {
 				bool init          = false;
 				bool hasReturned   = false;
 				bool hasAReturn    = false;
-				bool isBroken      = false;
-				bool hasABreak     = false;
 				bool willNotReturn = true;
-				bool willNotBreak  = true;
+
+				Boxx::List<Boxx::UInt> loopBreakCounts;
+				Boxx::List<Boxx::UInt> scopeBreakCounts;
+
+				Boxx::UInt loopBreakCount  = 0;
+				Boxx::UInt scopeBreakCount = 0;
 
 				bool checkAlsoAssign = false;
 				bool willASegmentRun = false;
 				bool checkAlsoRet    = false;
-				bool checkAlsoBreak  = false;
 
 				~LoopScanInfo() {}
 			};

@@ -1,5 +1,7 @@
 #include "SwitchNode.h"
 
+#include "Boxx/Math.h"
+
 #include "StackNode.h"
 
 #include "Melon/Parsing/Parser.h"
@@ -180,18 +182,21 @@ SwitchNode::SwitchScanInfo SwitchNode::ScanSetup(ScanInfo& info) const {
 	switchInfo.init = info.init;
 
 	if (!expr) {
+		switchInfo.willACaseRun = def != nullptr;
+
 		if (switchInfo.init) {
 			switchInfo.unassignedVarsStart = info.symbol.GetUnassignedVars();
 
-			if (!def) for (const Scope& var : switchInfo.unassignedVarsStart) {
+			if (switchInfo.willACaseRun) for (const Scope& var : switchInfo.unassignedVarsStart) {
 				switchInfo.unassignedVars.Add(var);
 			}
 		}
 
-		switchInfo.hasReturned = def != nullptr;
-		switchInfo.isBroken    = def != nullptr;
+		switchInfo.hasReturned = switchInfo.willACaseRun;
 		switchInfo.willNotReturn = info.willNotReturn;
-		switchInfo.willNotBreak  = info.willNotBreak;
+
+		switchInfo.loopBreakCount  = info.loopBreakCount;
+		switchInfo.scopeBreakCount = info.scopeBreakCount;
 	}
 
 	return switchInfo;
@@ -208,9 +213,10 @@ void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) con
 		}
 
 		info.hasReturned = false;
-		info.isBroken    = false;
 		info.willNotReturn = switchInfo.willNotReturn;
-		info.willNotBreak  = switchInfo.willNotBreak;
+
+		info.loopBreakCount  = switchInfo.loopBreakCount;
+		info.scopeBreakCount = switchInfo.scopeBreakCount;
 	}
 }
 
@@ -229,11 +235,9 @@ void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) co
 			switchInfo.hasAReturn = true;
 		}
 
-		if (!info.isBroken) {
-			switchInfo.isBroken = false;
-		}
-		else {
-			switchInfo.hasABreak = true;
+		if (switchInfo.willACaseRun) {
+			switchInfo.minLoopBreakCount  = Math::Min(switchInfo.minLoopBreakCount, info.loopBreakCount);
+			switchInfo.minScopeBreakCount = Math::Min(switchInfo.minScopeBreakCount, info.scopeBreakCount);
 		}
 	}
 }
@@ -255,9 +259,10 @@ void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 		}
 
 		info.hasReturned = switchInfo.hasReturned || !switchInfo.willNotReturn;
-		info.isBroken    = switchInfo.isBroken    || !switchInfo.willNotBreak;
 		info.willNotReturn = switchInfo.willNotReturn && !info.hasReturned && !switchInfo.hasAReturn;
-		info.willNotBreak  = switchInfo.willNotBreak  && !info.isBroken && !switchInfo.hasABreak;
+
+		info.loopBreakCount  = switchInfo.loopBreakCount;
+		info.scopeBreakCount = switchInfo.scopeBreakCount;
 	}
 }
 

@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Boxx/Math.h"
+
 namespace Melon {
 	namespace Nodes {
 		///B SwitchNode
@@ -37,10 +39,16 @@ namespace Melon {
 				bool init          = false;
 				bool hasReturned   = false;
 				bool hasAReturn    = false;
-				bool isBroken      = false;
-				bool hasABreak     = false;
 				bool willNotReturn = true;
-				bool willNotBreak  = true;
+
+				bool isFirst = true;
+				bool willACaseRun = false;
+
+				Boxx::UInt loopBreakCount  = 0;
+				Boxx::UInt scopeBreakCount = 0;
+
+				Boxx::UInt minLoopBreakCount  = Boxx::Math::UIntMax();
+				Boxx::UInt minScopeBreakCount = Boxx::Math::UIntMax();
 			};
 
 			///T Scan Setup
