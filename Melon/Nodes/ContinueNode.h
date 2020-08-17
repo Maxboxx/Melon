@@ -14,14 +14,14 @@ namespace Melon {
 			/// The amount of loops to continue
 			Boxx::UInt loops;
 
-			bool scopeWise = false;
-
 			ContinueNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~ContinueNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) const override;
 			virtual Boxx::Mango ToMango() const override;
+
+			static Boxx::String continueInstName;
 		};
 	}
 }

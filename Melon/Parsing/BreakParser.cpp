@@ -26,8 +26,10 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 				info.index++;
 			}
 
+			bn->loops++;
+
 			if (bn->loops > info.scopeCount)
-				ErrorLog::Error(SyntaxError(SyntaxError::BreakScopes, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+				ErrorLog::Error(SyntaxError(SyntaxError::BreakScopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		}
 		else {
 			if (info.Current().type == TokenType::Boolean) {

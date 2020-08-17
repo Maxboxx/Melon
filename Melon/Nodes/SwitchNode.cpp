@@ -3,6 +3,7 @@
 #include "Boxx/Math.h"
 
 #include "StackNode.h"
+#include "BreakNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -108,8 +109,28 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 
 		CompiledNode compExpr = expr->Compile(info);
 
-		for (const OptimizerInstruction& instruction : compExpr.instructions) {
-			cn.instructions.Add(instruction);
+		for (const OptimizerInstruction& in : compExpr.instructions) {
+			if (in.instruction.type != InstructionType::Custom) {
+				cn.instructions.Add(in);
+				continue;
+			}
+
+			const String type = in.instruction.instructionName;
+
+			if (type != BreakNode::scopeBreakInstName) {
+				cn.instructions.Add(in);
+				continue;
+			}
+
+			if (in.instruction.sizes[0] > 1) {
+				OptimizerInstruction inst = in;
+				inst.instruction.sizes[0]--;
+				cn.instructions.Add(inst);
+			}
+			else {
+				endJumps.Add(cn.instructions.Size());
+				cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
+			}
 		}
 
 		if (this->expr && result != compExpr.argument) {
@@ -130,8 +151,28 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	if (def) {
 		CompiledNode defNode = def->Compile(info);
 
-		for (const OptimizerInstruction& instruction : defNode.instructions) {
-			cn.instructions.Add(instruction);
+		for (const OptimizerInstruction& in : defNode.instructions) {
+			if (in.instruction.type != InstructionType::Custom) {
+				cn.instructions.Add(in);
+				continue;
+			}
+
+			const String type = in.instruction.instructionName;
+
+			if (type != BreakNode::scopeBreakInstName) {
+				cn.instructions.Add(in);
+				continue;
+			}
+
+			if (in.instruction.sizes[0] > 1) {
+				OptimizerInstruction inst = in;
+				inst.instruction.sizes[0]--;
+				cn.instructions.Add(inst);
+			}
+			else {
+				endJumps.Add(cn.instructions.Size());
+				cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
+			}
 		}
 
 		if (this->expr) {

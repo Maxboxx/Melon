@@ -3,6 +3,8 @@
 #include "Boxx/Math.h"
 
 #include "ForConditionNode.h"
+#include "BreakNode.h"
+#include "ContinueNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -13,6 +15,8 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
+
+#define guard(x) if (x) {} 
 
 LoopNode::LoopNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
 
@@ -131,7 +135,30 @@ void LoopNode::CompileIfSegment(CompiledNode& compiled, CompileInfo& info, Segme
 	segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), nextFalse));
 	compiled.instructions.Add(eq);
 
-	compiled.AddInstructions(segment.statements->Compile(info).instructions);
+	for (const OptimizerInstruction& in : segments[segmentInfo.index].statements->Compile(info).instructions) {
+		if (in.instruction.type != InstructionType::Custom) {
+			compiled.instructions.Add(in);
+			continue;
+		}
+
+		const String type = in.instruction.instructionName;
+
+		if (type != BreakNode::scopeBreakInstName) {
+			compiled.instructions.Add(in);
+			continue;
+		}
+
+		if (in.instruction.sizes[0] > 1) {
+			OptimizerInstruction inst = in;
+			inst.instruction.sizes[0]--;
+			compiled.instructions.Add(inst);
+		}
+		else {
+			Instruction jmp = Instruction(InstructionType::Jmp);
+			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), IsSegmentLast(segmentInfo.index) ? segments.Size() : nextTrue));
+			compiled.instructions.Add(jmp);
+		}
+	}
 	
 	if (!IsSegmentLast(segmentInfo.index)) {
 		if (nextTrue != segmentInfo.index + 1 && (segment.type == LoopType::If || segment.type == LoopType::None)) {
@@ -318,50 +345,48 @@ void LoopNode::CompileLoopBody(CompiledNode& compiled, CompileInfo& info, Segmen
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 
 	for (const OptimizerInstruction& in : segments[segmentInfo.index].statements->Compile(info).instructions) {
-		if (in.instruction.type == InstructionType::Custom) {
-			const String type = in.instruction.instructionName;
-
-			if (
-				type == "abort" ||
-				type == "breaktrue" ||
-				type == "breakfalse" ||
-				type == "continue"
-			) {
-				if (in.instruction.sizes[0] > 1) {
-					OptimizerInstruction inst = in;
-					inst.instruction.sizes[0]--;
-					compiled.instructions.Add(inst);
-				}
-				else if (type == "abort") {
-					Instruction jmp = Instruction(InstructionType::Jmp);
-					segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), segments.Size()));
-					compiled.instructions.Add(jmp);
-				}
-				else if (type == "breaktrue") {
-					Instruction jmp = Instruction(InstructionType::Jmp);
-					segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), isLast ? segments.Size() : nextTrue));
-					compiled.instructions.Add(jmp);
-				}
-				else if (type == "breakfalse") {
-					Instruction jmp = Instruction(InstructionType::Jmp);
-					segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), isLast ? segments.Size() : nextFalse));
-					compiled.instructions.Add(jmp);
-				}
-				else if (type == "continue") {
-					Instruction jmp = Instruction(InstructionType::Jmp);
-					jmp.arguments.Add(Argument(ArgumentType::Label, loopInfo.loopLbl));
-					compiled.instructions.Add(jmp);
-				}
-				else {
-					compiled.instructions.Add(in);
-				}
-			}
-			else {
-				compiled.instructions.Add(in);
-			}
-		}
-		else {
+		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
+			continue;
+		}
+
+		const String type = in.instruction.instructionName;
+
+		if (
+			type != BreakNode::abortInstName &&
+			type != BreakNode::scopeBreakInstName &&
+			type != BreakNode::breakTrueInstName &&
+			type != BreakNode::breakFalseInstName &&
+			type != ContinueNode::continueInstName
+		) {
+			compiled.instructions.Add(in);
+			continue;
+		}
+
+		if (in.instruction.sizes[0] > 1) {
+			OptimizerInstruction inst = in;
+			inst.instruction.sizes[0]--;
+			compiled.instructions.Add(inst);
+		}
+		else if (type == BreakNode::abortInstName) {
+			Instruction jmp = Instruction(InstructionType::Jmp);
+			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), segments.Size()));
+			compiled.instructions.Add(jmp);
+		}
+		else if (type == BreakNode::breakTrueInstName) {
+			Instruction jmp = Instruction(InstructionType::Jmp);
+			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), isLast ? segments.Size() : nextTrue));
+			compiled.instructions.Add(jmp);
+		}
+		else if (type == BreakNode::breakFalseInstName || type == BreakNode::scopeBreakInstName) {
+			Instruction jmp = Instruction(InstructionType::Jmp);
+			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), isLast ? segments.Size() : nextFalse));
+			compiled.instructions.Add(jmp);
+		}
+		else if (type == ContinueNode::continueInstName) {
+			Instruction jmp = Instruction(InstructionType::Jmp);
+			jmp.arguments.Add(Argument(ArgumentType::Label, loopInfo.loopLbl));
+			compiled.instructions.Add(jmp);
 		}
 	}
 }
@@ -373,7 +398,30 @@ void LoopNode::CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, Seg
 
 	LoopSegment segment = segments[segmentInfo.index];
 
-	compiled.AddInstructions(segment.statements->Compile(info).instructions);
+	for (const OptimizerInstruction& in : segments[segmentInfo.index].statements->Compile(info).instructions) {
+		if (in.instruction.type != InstructionType::Custom) {
+			compiled.instructions.Add(in);
+			continue;
+		}
+
+		const String type = in.instruction.instructionName;
+
+		if (type != BreakNode::scopeBreakInstName) {
+			compiled.instructions.Add(in);
+			continue;
+		}
+
+		if (in.instruction.sizes[0] > 1) {
+			OptimizerInstruction inst = in;
+			inst.instruction.sizes[0]--;
+			compiled.instructions.Add(inst);
+		}
+		else {
+			Instruction jmp = Instruction(InstructionType::Jmp);
+			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), IsSegmentLast(segmentInfo.index) ? segments.Size() : nextTrue));
+			compiled.instructions.Add(jmp);
+		}
+	}
 
 	if (!IsSegmentLast(segmentInfo.index)) {
 		if (nextTrue != segmentInfo.index + 1 && (segment.type == LoopType::If || segment.type == LoopType::None)) {

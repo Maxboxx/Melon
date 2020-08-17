@@ -61,6 +61,7 @@ ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options
 	info.filename = filename;
 	info.index = 0;
 	info.loops = 0;
+	info.scopeCount = 0;
 	info.statementNumber = 1;
 
 	ParseFile(filename, info);

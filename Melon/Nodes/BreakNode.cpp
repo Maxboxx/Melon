@@ -8,6 +8,11 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
+String BreakNode::abortInstName = "abort";
+String BreakNode::scopeBreakInstName = "break!";
+String BreakNode::breakTrueInstName = "breaktrue";
+String BreakNode::breakFalseInstName = "breakfalse";
+
 BreakNode::BreakNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
 	
 }
@@ -22,11 +27,13 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 	Instruction in = Instruction(InstructionType::Custom, loops);
 
 	if (!isBreak)
-		in.instructionName = "abort";
+		in.instructionName = abortInstName;
+	else if (scopeWise)
+		in.instructionName = scopeBreakInstName;
 	else if (breakBool)
-		in.instructionName = "breaktrue";
+		in.instructionName = breakTrueInstName;
 	else
-		in.instructionName = "breakfalse";
+		in.instructionName = breakFalseInstName;
 
 	c.instructions.Add(in);
 	return c;
@@ -46,24 +53,20 @@ Set<ScanType> BreakNode::Scan(ScanInfoStack& info) const {
 	}
 	else {
 		if (info.Get().CanContinue()) {
-			if (!isBreak) {
-				info.Get().scopeAbortCount = Math::Max(info.Get().scopeAbortCount, loops + 1);
-			}
-
-			info.Get().scopeBreakCount = Math::Max(info.Get().scopeBreakCount, loops + 1);
+			info.Get().scopeBreakCount = Math::Max(info.Get().scopeBreakCount, loops);
 		}
 
-		info.Get().maxScopeBreakCount = Math::Max(info.Get().maxScopeBreakCount, loops + 1);
+		info.Get().maxScopeBreakCount = Math::Max(info.Get().maxScopeBreakCount, loops);
 	}
 
 	return Set<ScanType>();
 };
 
 Mango BreakNode::ToMango() const {
-	Mango m = Mango(isBreak ? "break" : "abort", MangoType::List);
-	m.Add(Mango((Int)loops));
+	Mango m = Mango(scopeWise ? "break!" : (isBreak ? "break" : "abort"), MangoType::List);
+	m.Add(Mango(scopeWise ? (Int)loops - 1 : (Int)loops));
 
-	if (isBreak)
+	if (isBreak && !scopeWise)
 		m.Add(Mango((bool)breakBool));
 
 	return m;

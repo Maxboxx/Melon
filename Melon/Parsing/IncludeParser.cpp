@@ -117,6 +117,9 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	UInt loops = info.loops;
 	info.loops = 0;
 
+	UInt scopeCount = info.scopeCount;
+	info.scopeCount = 0;
+
 	UInt statementNumber = info.statementNumber;
 	info.statementNumber = 1;
 
@@ -134,6 +137,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	info.tokens = tokens;
 	info.index = index;
 	info.loops = loops;
+	info.scopeCount = scopeCount;
 	info.statementNumber = statementNumber;
 	info.scopes = scopes;
 }

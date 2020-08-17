@@ -12,14 +12,11 @@ repeat
 until n == 0
 /-
 
-function int: f()
-	while true do
-		while true do
-			break!
-		end
-	also
-		return 2
-	else
-		return 3
+do
+	if n == 0 then
+		n = n + 4
+		break!
 	end
+	
+	int: i = n
 end
