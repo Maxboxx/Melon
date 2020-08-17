@@ -136,7 +136,13 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		func->s = s;
 		func->func = info.scopes;
 
+		UInt loops = info.loops;
+		UInt scopeCount = info.scopeCount;
+		info.loops = 0;
+		info.scopeCount = 0;
 		func->node = StatementParser::ParseMultiple(info);
+		info.loops = loops;
+		info.scopeCount = scopeCount;
 
 		if (info.Current().type != TokenType::End) {
 			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("function", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));

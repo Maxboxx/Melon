@@ -232,6 +232,7 @@ namespace Melon {
 		static const char* const ContinueIntLow;
 		static const char* const AbortIntLow;
 		static const char* const BreakLoops;
+		static const char* const BreakScopes;
 		static const char* const ContinueLoops;
 		static const char* const AbortLoops;
 		static const char* const StructName;

@@ -78,6 +78,8 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 
 		NodePtr node;
 
+		info.scopeCount++;
+
 		if (hasThen) {
 			node = StatementParser::ParseMultiple(info);
 		}
@@ -88,6 +90,8 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "case values", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 		}
+
+		info.scopeCount--;
 
 		if (isDefault) {
 			switchNode->def = node;

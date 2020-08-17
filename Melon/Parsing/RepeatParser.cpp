@@ -20,9 +20,11 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 
 	Pointer<RepeatNode> repeatNode = new RepeatNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 
-	if (NodePtr nodes = StatementParser::ParseMultiple(info)) {
-		repeatNode->content = nodes;
-	}
+	info.scopeCount++;
+	info.loops++;
+	repeatNode->content = StatementParser::ParseMultiple(info);
+	info.scopeCount--;
+	info.loops--;
 
 	if (info.Current().type == TokenType::Until) {
 		info.index++;

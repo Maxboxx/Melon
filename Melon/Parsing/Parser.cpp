@@ -162,6 +162,7 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Colon, "%:", true));
 	patterns.Add(TokenPattern(TokenType::Dot, "%.", true));
 	patterns.Add(TokenPattern(TokenType::Len, "%#", true));
+	patterns.Add(TokenPattern(TokenType::Exclamation, "%!", true));
 
 	// Keywords
 	patterns.Add(TokenPattern(TokenType::Include, "include"));

@@ -60,7 +60,9 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 				info.index++;
 
 				ls.condition = cond;
+				info.scopeCount++;
 				ls.statements = StatementParser::ParseMultiple(info);
+				info.scopeCount--;
 			}
 			else {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
@@ -80,8 +82,10 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 
 				ls.condition = cond;
 				info.loops++;
+				info.scopeCount++;
 				ls.statements = StatementParser::ParseMultiple(info);
 				info.loops--;
+				info.scopeCount--;
 			}
 			else {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
@@ -120,8 +124,10 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 
 						ls.condition = fcn;
 						info.loops++;
+						info.scopeCount++;
 						ls.statements = StatementParser::ParseMultiple(info);
 						info.loops--;
+						info.scopeCount--;
 					}
 					else {
 						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));

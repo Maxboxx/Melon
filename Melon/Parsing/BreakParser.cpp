@@ -17,49 +17,62 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 		bn->loops = 1;
 		bn->breakBool = false;
 
-		if (info.Current().type == TokenType::Boolean) {
-			bn->breakBool = info.Current().value == "true" ? true : false;
+		if (info.Current().type == TokenType::Exclamation) {
 			info.index++;
+			bn->scopeWise = true;
 
-			if (info.Current().type == TokenType::Comma) {
+			if (info.Current().type == TokenType::Integer) {
+				bn->loops = info.Current().value.ToInt();
+				info.index++;
+			}
+
+			if (bn->loops > info.scopeCount)
+				ErrorLog::Error(SyntaxError(SyntaxError::BreakScopes, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+		}
+		else {
+			if (info.Current().type == TokenType::Boolean) {
+				bn->breakBool = info.Current().value == "true" ? true : false;
 				info.index++;
 
-				if (info.Current().type == TokenType::Integer) {
-					bn->loops = info.Current().value.ToInt();
-
-					if (bn->loops == 0)
-						ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
-					if (bn->loops > info.loops)
-						ErrorLog::Error(SyntaxError(SyntaxError::BreakLoops, FileInfo(info.filename, info.Current().line, info.statementNumber)));
-
+				if (info.Current().type == TokenType::Comma) {
 					info.index++;
-				}
-				else {
-					return Parser::UnexpectedToken(info);
+
+					if (info.Current().type == TokenType::Integer) {
+						bn->loops = info.Current().value.ToInt();
+
+						if (bn->loops == 0)
+							ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+
+						info.index++;
+					}
+					else {
+						return Parser::UnexpectedToken(info);
+					}
 				}
 			}
-		}
-		else if (info.Current().type == TokenType::Integer) {
-			bn->loops = info.Current().value.ToInt();
+			else if (info.Current().type == TokenType::Integer) {
+				bn->loops = info.Current().value.ToInt();
 
-			if (bn->loops == 0)
-				ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+				if (bn->loops == 0)
+					ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+
+				info.index++;
+
+				if (info.Current().type == TokenType::Comma) {
+					info.index++;
+
+					if (info.Current().type == TokenType::Boolean) {
+						bn->breakBool = info.Current().value == "true" ? true : false;
+						info.index++;
+					}
+					else {
+						return Parser::UnexpectedToken(info);
+					}
+				}
+			}
+
 			if (bn->loops > info.loops)
 				ErrorLog::Error(SyntaxError(SyntaxError::BreakLoops, FileInfo(info.filename, info.Current().line, info.statementNumber)));
-
-			info.index++;
-
-			if (info.Current().type == TokenType::Comma) {
-				info.index++;
-
-				if (info.Current().type == TokenType::Boolean) {
-					bn->breakBool = info.Current().value == "true" ? true : false;
-					info.index++;
-				}
-				else {
-					return Parser::UnexpectedToken(info);
-				}
-			}
 		}
 
 		info.statementNumber++;

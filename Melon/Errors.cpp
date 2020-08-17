@@ -203,6 +203,7 @@ const char* const SyntaxError::BreakIntLow          = "integer argument for brea
 const char* const SyntaxError::ContinueIntLow       = "integer argument for continue is less than 1";
 const char* const SyntaxError::AbortIntLow          = "integer argument for abort is less than 1";
 const char* const SyntaxError::BreakLoops           = "not enough loops to break";
+const char* const SyntaxError::BreakScopes          = "not enough scopes to break";
 const char* const SyntaxError::ContinueLoops        = "not enough loops to continue";
 const char* const SyntaxError::AbortLoops           = "not enough loops to abort";
 const char* const SyntaxError::StructName           = "name expected for struct";

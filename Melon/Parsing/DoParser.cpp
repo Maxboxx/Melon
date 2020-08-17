@@ -17,7 +17,9 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 		info.scopes = info.scopes.AddNext("do");
 		Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 		
+		info.scopeCount++;
 		NodePtr statements = StatementParser::ParseMultiple(info);
+		info.scopeCount--;
 
 		if (info.Current().type != TokenType::End)
 			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("do", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
