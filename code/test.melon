@@ -2,7 +2,7 @@
 int: n = 0
 
 
-for int: i = 1, i < 6, i = i + 1 do
+for int: i = 1, 6 do
 	n = n + i
 end
 

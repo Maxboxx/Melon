@@ -20,11 +20,11 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NodePtr StatementParser::Parse(ParsingInfo& info) {
+NodePtr StatementParser::Parse(ParsingInfo& info, const bool single) {
 	if (NodePtr node = CallStatementParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = AssignmentParser::Parse(info)) {
+	else if (NodePtr node = AssignmentParser::Parse(info, single)) {
 		return node;
 	}
 	else if (NodePtr node = LoopParser::Parse(info)) {

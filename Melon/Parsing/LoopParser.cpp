@@ -5,6 +5,7 @@
 #include "AssignmentParser.h"
 
 #include "Melon/Nodes/ForConditionNode.h"
+#include "Melon/Nodes/IntegerNode.h"
 
 using namespace Boxx;
 
@@ -48,104 +49,16 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 		info.index++;
 
 		if (ls.type == LoopNode::LoopType::If) {
-			info.scopes = info.scopes.AddNext("if");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
-
-			if (NodePtr cond = ExpressionParser::Parse(info)) {
-				info.statementNumber++;
-
-				if (info.Current().type != TokenType::Then)
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "condition", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-
-				info.index++;
-
-				ls.condition = cond;
-				info.scopeCount++;
-				ls.statements = StatementParser::ParseMultiple(info);
-				info.scopeCount--;
-			}
-			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-			}
+			ParseIf(ls, value, info);
 		}
 		else if (ls.type == LoopNode::LoopType::While) {
-			info.scopes = info.scopes.AddNext("while");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
-
-			if (NodePtr cond = ExpressionParser::Parse(info)) {
-				info.statementNumber++;
-
-				if (info.Current().type != TokenType::Do)
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-
-				info.index++;
-
-				ls.condition = cond;
-				info.loops++;
-				info.scopeCount++;
-				ls.statements = StatementParser::ParseMultiple(info);
-				info.loops--;
-				info.scopeCount--;
-			}
-			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-			}
+			ParseWhile(ls, value, info);
 		}
 		else if (ls.type == LoopNode::LoopType::For) {
-			info.scopes = info.scopes.AddNext("for");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
-
-			if (NodePtr init = AssignmentParser::Parse(info, true)) {
-				info.statementNumber++;
-
-				if (info.Current().type == TokenType::Comma) {
-					info.index++;
-
-					if (NodePtr cond = ExpressionParser::Parse(info)) {
-						Pointer<ForConditionNode> fcn = new ForConditionNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
-						fcn->loopInit = init;
-						fcn->loopCondition = cond;
-
-						if (info.Current().type == TokenType::Comma) {
-							info.index++;
-
-							if (NodePtr step = StatementParser::Parse(info)) {
-								fcn->loopStep = step;
-							}
-							else {
-								ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("statement", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-							}
-						}
-
-						if (info.Current().type != TokenType::Do)
-							ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-
-						info.index++;
-
-						ls.condition = fcn;
-						info.loops++;
-						info.scopeCount++;
-						ls.statements = StatementParser::ParseMultiple(info);
-						info.loops--;
-						info.scopeCount--;
-					}
-					else {
-						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-					}
-				}
-				else {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("','", "'" + info.Current(-1).value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-				}
-			}
-			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("assignment", "'" + value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-			}
+			ParseFor(ls, value, info);
 		}
 		else {
-			info.scopes = info.scopes.AddNext(ls.also ? "also" : "else");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
-
-			ls.statements = StatementParser::ParseMultiple(info);
+			ParseNone(ls, value, info);
 		}
 
 		loop->segments.Add(ls);
@@ -159,6 +72,118 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 	info.index++;
 	info.statementNumber++;
 	return loop;
+}
+
+void LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+	info.scopes = info.scopes.AddNext("if");
+	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+	if (NodePtr cond = ExpressionParser::Parse(info)) {
+		info.statementNumber++;
+
+		if (info.Current().type != TokenType::Then)
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "condition", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+
+		info.index++;
+
+		ls.condition = cond;
+		info.scopeCount++;
+		ls.statements = StatementParser::ParseMultiple(info);
+		info.scopeCount--;
+	}
+	else {
+		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+	}
+}
+
+void LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+	info.scopes = info.scopes.AddNext("while");
+	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+	if (NodePtr cond = ExpressionParser::Parse(info)) {
+		info.statementNumber++;
+
+		if (info.Current().type != TokenType::Do)
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+
+		info.index++;
+
+		ls.condition = cond;
+		info.loops++;
+		info.scopeCount++;
+		ls.statements = StatementParser::ParseMultiple(info);
+		info.loops--;
+		info.scopeCount--;
+	}
+	else {
+		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+	}
+}
+
+void LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+	info.scopes = info.scopes.AddNext("for");
+	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+	if (NodePtr init = AssignmentParser::Parse(info, true)) {
+		info.statementNumber++;
+
+		if (info.Current().type == TokenType::Comma) {
+			info.index++;
+
+			if (NodePtr cond = ExpressionParser::Parse(info)) {
+				Pointer<ForConditionNode> fcn = new ForConditionNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				fcn->loopInit = init;
+				fcn->loopCondition = cond;
+
+				if (info.Current().type == TokenType::Comma) {
+					info.index++;
+
+					if (NodePtr step = ExpressionParser::Parse(info)) {
+						fcn->loopStep = step;
+					}
+					else if (NodePtr step = AssignmentParser::Parse(info, true)) {
+						fcn->loopStep = step;
+					}
+					else {
+						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression or assignment", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+					}
+				}
+				else {
+					Pointer<IntegerNode> num = new IntegerNode(FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+					num->number = 1;
+					fcn->loopStep = num;
+				}
+
+				if (info.Current().type != TokenType::Do)
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+
+				info.index++;
+
+				ls.condition = fcn;
+				info.loops++;
+				info.scopeCount++;
+				ls.statements = StatementParser::ParseMultiple(info);
+				info.loops--;
+				info.scopeCount--;
+			}
+			else {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+		}
+		else {
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("','", "'" + info.Current(-1).value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		}
+	}
+	else {
+		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("assignment", "'" + value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+	}
+}
+
+void LoopParser::ParseNone(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+	info.scopes = info.scopes.AddNext(ls.also ? "also" : "else");
+	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+	ls.statements = StatementParser::ParseMultiple(info);
 }
 
 bool LoopParser::IsLoop(const TokenType t) {

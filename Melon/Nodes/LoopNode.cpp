@@ -5,6 +5,9 @@
 #include "ForConditionNode.h"
 #include "BreakNode.h"
 #include "ContinueNode.h"
+#include "AssignNode.h"
+#include "CallNode.h"
+#include "BinaryOperatorNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -294,12 +297,52 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 	loopInfo.loopLbl = info.label++;
 	compiled.instructions.Add(lbl1);
 
-	compiled.AddInstructions(cond->loopStep->Compile(info).instructions);
+	if (cond->loopStep.Cast<AssignNode>() != nullptr) {
+		compiled.AddInstructions(cond->loopStep->Compile(info).instructions);
+	}
+	else {
+		bool createAssign = true;
+
+		if (Pointer<CallNode> call = cond->loopStep.Cast<CallNode>()) {
+			createAssign = !call->GetFunc().ret.IsEmpty();
+		}
+
+		if (createAssign) {
+			Pointer<AssignNode> assign = new AssignNode(cond->loopStep->scope, cond->loopStep->file);
+			assign->vars.Add(cond->loopInit.Cast<AssignNode>()->vars[0]);
+			
+			Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(cond->loopStep->scope, Scope::Add, cond->loopStep->file);
+			add->node1 = assign->vars[0];
+			add->node2 = cond->loopStep;
+
+			assign->values.Add(add);
+			compiled.AddInstructions(assign->Compile(info).instructions);
+		}
+		else {
+			compiled.AddInstructions(cond->loopStep->Compile(info).instructions);
+		}
+	}
 
 	Instruction lbl2 = Instruction::Label(info.label++);
 	compiled.instructions.Add(lbl2);
 
-	CompiledNode compiledCond = cond->loopCondition->Compile(info);
+	CompiledNode compiledCond;
+
+	if (cond->loopCondition.Cast<AssignNode>() != nullptr) {
+		compiledCond = cond->loopCondition->Compile(info);
+	}
+	else {
+		if (cond->loopCondition->Type() != ScopeList().Add(Scope::Bool)) {
+			Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(cond->loopCondition->scope, Scope::Less, cond->loopCondition->file);
+			comp->node1 = cond->loopInit.Cast<AssignNode>()->vars[0];
+			comp->node2 = cond->loopCondition;
+			compiledCond = comp->Compile(info);
+		}
+		else {
+			compiledCond = cond->loopCondition->Compile(info);
+		}
+	}
+
 	compiled.AddInstructions(compiledCond.instructions);
 
 	Instruction eq = Instruction(InstructionType::Eq, 1);
