@@ -60,7 +60,12 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 
 	if (arg1.type == ArgumentType::Memory) {
 		arg1 = Argument(Register(info.index++));
-		inst.sizes[2] = size;
+		inst.sizes[2] = Instruction::IsComp(op) ? 1 : size;
+		inst.signs[2] = sign;
+		inst.arguments.Add(arg1);
+	}
+	else if (Instruction::IsComp(op) && arg1.type == ArgumentType::Register) {
+		inst.sizes[2] = 1;
 		inst.signs[2] = sign;
 		inst.arguments.Add(arg1);
 	}
