@@ -202,6 +202,8 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 			in.arguments.Add(n.argument);
 
 			c.instructions.Add(in);
+
+			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
 			Int i = IsInit() ? u - 1 : u;
@@ -231,10 +233,11 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 			}
 
 			c.AddInstructions(assign.node->Compile(assignArgs, info).instructions);
+
+			info.stack.Push(type.size);
 		}
 	}
 
-	info.stack.Push(argSize);
 	info.stack.base = info.stack.top;
 	const UInt stackSize = info.stack.top - stack.base;
 	info.stack.Push(info.stack.ptrSize);
