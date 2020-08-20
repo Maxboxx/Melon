@@ -285,8 +285,18 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 
 					for (UInt u = i; u < i + insts.Size(); u++) {
 						totalSize -= sizes[0];
+
+						ULong numMask = 0;
+
+						switch (sizes[0]) {
+							case 8: numMask = Math::ULongMax();  break;
+							case 4: numMask = Math::UIntMax();   break;
+							case 2: numMask = Math::UShortMax(); break;
+							case 1: numMask = Math::UByteMax();  break;
+						}
+
 						sizes.RemoveAt(0);
-						instructions[i].instruction.arguments[1].number |= numbers[0] << totalSize * 8;
+						instructions[i].instruction.arguments[1].number |= (numbers[0] & numMask) << totalSize * 8;
 						numbers.RemoveAt(0);
 
 						if (u != i) instructions.RemoveAt(i + 1);

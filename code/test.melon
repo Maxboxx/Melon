@@ -1,13 +1,11 @@
 
-int: n = 0
+include Math.Vector
 
+byte: a, b, c, d, e, f, g, h, i, j, k, l = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -2
 
-for int: i = 1, 6 do
-	n = n + i
-end
+Vector: v1 = Vector(a, b, c)
+Vector: v2 = Vector(d, e, f)
+Vector: v3 = Vector(g, h, i)
+Vector: v4 = Vector(j, k, l)
 
-
-repeat
-	n = n - 1
-until n == 0
-
+Vector: v = (v1 + v2 * v3) // v4

@@ -910,13 +910,11 @@ void Symbol::Setup() {
 	boolAssign.node = new BooleanAssignNode();
 	boolSym.Add(Scope::Assign, boolAssign, FileInfo());
 
-	Symbol boolToBool = Symbol(SymbolType::Function);
+	Symbol boolToBool = Symbol(SymbolType::Method);
 	boolToBool.args.Add(ScopeList().Add(Scope::Bool));
 	boolToBool.ret.Add(ScopeList().Add(Scope::Bool));
 	boolToBool.node = new BooleanToBooleanNode();
 	boolSym.Add(Scope::Bool, boolToBool, FileInfo());
 
 	symbols.Add(Scope::Bool, boolSym, FileInfo());
-
-	binOps = Map<Scope, InstructionType>();
 }

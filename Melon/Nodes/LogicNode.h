@@ -17,6 +17,11 @@ namespace Melon {
 			LogicNode(const Symbols::ScopeList& scope, const TokenType type, const FileInfo& file);
 			~LogicNode();
 
+			static CompiledNode CompileToBool(const NodePtr& node, CompileInfo& info);
+
+			CompiledNode CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) const;
+			CompiledNode CompileXor(CompileInfo& info, const bool checkEqual) const;
+
 			virtual Symbols::ScopeList Type() const override;
 			virtual Symbols::Scope GetOperator() const;
 			virtual CompiledNode Compile(CompileInfo& info) override;

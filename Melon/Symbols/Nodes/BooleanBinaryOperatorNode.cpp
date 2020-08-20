@@ -13,3 +13,4 @@ BooleanBinaryOperatorNode::BooleanBinaryOperatorNode(const InstructionType name)
 CompiledNode BooleanBinaryOperatorNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
 	return CompiledNode();
 }
+

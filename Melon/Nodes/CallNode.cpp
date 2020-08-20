@@ -161,7 +161,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 
 	// Calculate return size
 	for (const ScopeList& type : s.ret)
-		retSize += Symbol::FindNearest(s.scope.Pop(), type, node->file).size;
+		retSize += Symbol::FindNearestInNamespace(s.scope.Pop(), type, FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
 
 	if (IsInit()) retSize = Symbol::Find(Type(), node->file).size;
 
@@ -169,7 +169,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 
 	// Calculate argument size and compile arguments
 	for (UInt u = 0; u < s.args.Size(); u++) {
-		Symbol type = Symbol::FindNearest(scope, s.args[u], node->file);
+		Symbol type = Symbol::FindNearestInNamespace(scope, s.args[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
 
 		if (Symbol::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
 			Pointer<RefNode> r = nullptr;
@@ -240,7 +240,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 	info.stack.Push(info.stack.ptrSize);
 
 	if (!s.ret.IsEmpty()) {
-		c.size = Symbol::FindNearest(scope, s.ret[0], node->file).size;
+		c.size = Symbol::FindNearestInNamespace(s.symbolNamespace, s.ret[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
 	}
 	else {
 		c.size = info.stack.ptrSize;
@@ -261,7 +261,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 	add.arguments.Add(Argument(stackSize));
 	c.instructions.Add(add);
 
-	c.argument = Argument(MemoryLocation(stack.Offset() - (s.ret.IsEmpty() ? retSize : Symbol::FindNearest(scope, s.ret[0], node->file).size)));
+	c.argument = Argument(MemoryLocation(stack.Offset() - (s.ret.IsEmpty() ? retSize : Symbol::FindNearestInNamespace(s.symbolNamespace, s.ret[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size)));
 
 	info.stack = stack;
 	return c;
@@ -300,7 +300,7 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) const {
 
 	for (UInt u = 0; u < s.args.Size(); u++) {
 		Int i = IsInit() ? u - 1 : u;
-		Symbol type = Symbol::FindNearest(scope, s.args[u], node->file);
+		Symbol type = Symbol::FindNearestInNamespace(s.symbolNamespace, s.args[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
 		Symbol::Find(s.scope.Add(s.names[u]), node->file);
 		List<ScopeList> args;
 

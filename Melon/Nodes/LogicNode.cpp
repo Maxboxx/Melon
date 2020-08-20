@@ -37,105 +37,138 @@ Scope LogicNode::GetOperator() const {
 	return Scope("logic");
 }
 
-CompiledNode LogicNode::Compile(CompileInfo& info) {
-	CompiledNode c;
+CompiledNode LogicNode::CompileToBool(const NodePtr& node, CompileInfo& info) {
+	List<NodePtr> nodes{1};
+	nodes.Add(node);
+	return Symbol::FindMethod(node->Type().Add(Scope::Bool), List<ScopeList>(), node->file).node->Compile(nodes, info);
+}
 
-	List<NodePtr> node;
-	node.Add(node1);
+CompiledNode LogicNode::CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) const {
+	CompiledNode cn;
+	cn.size = 1;
 
-	List<UInt> lbls1, lbls2;
-	UInt lbl1, lbl2;
+	List<UInt> jumps;
 
-	Argument arg = Argument(Register(info.index++));
+	CompiledNode operand1 = CompileToBool(node1, info);
+	cn.AddInstructions(operand1.instructions);
 
-	CompiledNode c1 = Symbol::FindMethod(node1->Type().Add(Scope::Bool), List<ScopeList>(), node1->file).node->Compile(node, info);
-	c.AddInstructions(c1.instructions);
+	Instruction comp1 = Instruction(checkTrue ? InstructionType::Ne : InstructionType::Eq, 1);
+	comp1.arguments.Add(operand1.argument);
+	comp1.arguments.Add(Argument(0));
+	jumps.Add(cn.instructions.Size());
+	cn.instructions.Add(comp1);
 
-	if (type == TokenType::Or || type == TokenType::And || type == TokenType::Nor || type == TokenType::Nand) {
-		Instruction eq = Instruction((type == TokenType::Or || type == TokenType::Nand) ? InstructionType::Eq : InstructionType::Ne, 1);
-		eq.arguments.Add(c1.argument);
-		eq.arguments.Add(0);
+	if (operand1.argument.type == ArgumentType::Register && operand1.argument.reg.type == RegisterType::Register) {
+		info.index--;
+	}
 
-		lbls1.Add(c.instructions.Size());
-		c.instructions.Add(eq);
+	CompiledNode operand2 = CompileToBool(node2, info);
+	cn.AddInstructions(operand2.instructions);
 
-		if (type == TokenType::Or || type == TokenType::And) {
-			Instruction mov = Instruction(InstructionType::Mov, 1);
-			mov.arguments.Add(arg);
-			mov.arguments.Add(c1.argument);
-			c.instructions.Add(mov);
+	Instruction comp2 = Instruction(checkTrue ? InstructionType::Ne : InstructionType::Eq, 1);
+	comp2.arguments.Add(operand2.argument);
+	comp2.arguments.Add(Argument(0));
+	jumps.Add(cn.instructions.Size());
+	cn.instructions.Add(comp2);
 
-			Instruction jmp = Instruction(InstructionType::Jmp);
-			lbls2.Add(c.instructions.Size());
-			c.instructions.Add(jmp);
+	if (operand2.argument.type == ArgumentType::Register && operand2.argument.reg.type == RegisterType::Register) {
+		info.index--;
+	}
+
+	cn.argument = Argument(Register(info.index++));
+
+	Instruction mov1 = Instruction(InstructionType::Mov, 1);
+	mov1.arguments.Add(cn.argument);
+	mov1.arguments.Add(Argument(setTrue ? 0 : 1));
+	cn.instructions.Add(mov1);
+
+	Instruction jmp = Instruction(InstructionType::Jmp);
+	jmp.arguments.Add(Argument(ArgumentType::Label, info.label + 1));
+	cn.instructions.Add(jmp);
+
+	cn.instructions.Add(Instruction::Label(info.label));
+
+	for (const UInt jump : jumps) {
+		cn.instructions[jump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
+	}
+
+	info.label++;
+
+	Instruction mov2 = Instruction(InstructionType::Mov, 1);
+	mov2.arguments.Add(cn.argument);
+	mov2.arguments.Add(Argument(setTrue ? 1 : 0));
+	cn.instructions.Add(mov2);
+
+	cn.instructions.Add(Instruction::Label(info.label++));
+
+	return cn;
+}
+
+CompiledNode LogicNode::CompileXor(CompileInfo& info, const bool checkEqual) const {
+	CompiledNode cn;
+	cn.argument = Argument(Register(info.index++));
+	cn.size = 1;
+
+	CompiledNode operand1 = CompileToBool(node1, info);
+	cn.AddInstructions(operand1.instructions);
+
+	CompiledNode operand2 = CompileToBool(node2, info);
+	cn.AddInstructions(operand2.instructions);
+
+	Instruction comp = Instruction(checkEqual ? InstructionType::Eq : InstructionType::Ne, 1);
+	comp.arguments.Add(operand1.argument);
+	comp.arguments.Add(operand2.argument);
+	comp.arguments.Add(cn.argument);
+	cn.instructions.Add(comp);
+
+	if (operand2.argument.type == ArgumentType::Register && operand2.argument.reg.type == RegisterType::Register) {
+		info.index--;
+
+		if (operand1.argument.type == ArgumentType::Register && operand1.argument.reg.type == RegisterType::Register) {
+			info.index--;
 		}
 	}
 
-	if (type == TokenType::Or || type == TokenType::And) {
-		lbl1 = info.label++;
-		c.instructions.Add(Instruction::Label(lbl1));
+	return cn;
+}
+
+CompiledNode LogicNode::Compile(CompileInfo& info) {
+	if (type == TokenType::Or) {
+		return CompileAndOr(info, true, true);
+	}
+	else if (type == TokenType::And) {
+		return CompileAndOr(info, false, false);
+	}
+	else if (type == TokenType::Xor) {
+		return CompileXor(info, false);
+	}
+	else if (type == TokenType::Nor) {
+		return CompileAndOr(info, true, false);
+	}
+	else if (type == TokenType::Nand) {
+		return CompileAndOr(info, false, true);
+	}
+	else if (type == TokenType::Xnor) {
+		return CompileXor(info, true);
 	}
 
-	node[0] = node2;
-	CompiledNode c2 = Symbol::FindMethod(node2->Type().Add(Scope::Bool), List<ScopeList>(), node2->file).node->Compile(node, info);
-	c.AddInstructions(c2.instructions);
-
-	if (type == TokenType::Or || type == TokenType::And) {
-		Instruction mov = Instruction(InstructionType::Mov, 1);
-		mov.arguments.Add(arg);
-		mov.arguments.Add(c2.argument);
-		c.instructions.Add(mov);
-	}
-	else if (type == TokenType::Nor || type == TokenType::Nand) {
-		Instruction eq = Instruction(type == TokenType::Nor ? InstructionType::Ne : InstructionType::Eq, 1);
-		eq.arguments.Add(c2.argument);
-		eq.arguments.Add(0);
-
-		lbls1.Add(c.instructions.Size());
-		c.instructions.Add(eq);
-
-		Instruction mov = Instruction(InstructionType::Mov, 1);
-		mov.arguments.Add(arg);
-		mov.arguments.Add(Argument(type == TokenType::Nor ? 1 : 0));
-		c.instructions.Add(mov);
-
-		Instruction jmp = Instruction(InstructionType::Jmp);
-		lbls2.Add(c.instructions.Size());
-		c.instructions.Add(jmp);
-
-		lbl1 = info.label++;
-		c.instructions.Add(Instruction::Label(lbl1));
-
-		Instruction mov2 = Instruction(InstructionType::Mov, 1);
-		mov2.arguments.Add(arg);
-		mov2.arguments.Add(type == TokenType::Nor ? 0 : 1);
-		c.instructions.Add(mov2);
-	}
-	else if (type == TokenType::Xor || type == TokenType::Xnor) {
-		Instruction cmp = Instruction(type == TokenType::Xor ? InstructionType::Ne : InstructionType::Eq, 1);
-		cmp.arguments.Add(c1.argument);
-		cmp.arguments.Add(c2.argument);
-		cmp.arguments.Add(arg);
-		c.instructions.Add(cmp);
-	}
-
-	if (type != TokenType::Xor && type != TokenType::Xnor) {
-		lbl2 = info.label++;
-		c.instructions.Add(Instruction::Label(lbl2));
-
-		for (const UInt i : lbls1)
-			c.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, lbl1));
-
-		for (const UInt i : lbls2)
-			c.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, lbl2));
-	}
-
-	c.argument = arg;
-	return c;
+	return CompiledNode();
 }
 
 Set<ScanType> LogicNode::Scan(ScanInfoStack& info) const {
-	Set<ScanType> scanSet = BinaryOperatorNode::Scan(info);
+	Set<ScanType> scanSet = node1->Scan(info);
+
+	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
+		ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
+	}
+
+	for (const ScanType type : node2->Scan(info)) {
+		scanSet.Add(type);
+
+		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
+			ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
+		}
+	}
 
 	Symbol::FindMethod(node1->Type().Add(Scope::Bool), List<ScopeList>(), node1->file);
 	Symbol::FindMethod(node2->Type().Add(Scope::Bool), List<ScopeList>(), node2->file);

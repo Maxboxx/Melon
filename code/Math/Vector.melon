@@ -1,0 +1,129 @@
+
+struct Vector
+	byte: x, y, z
+	
+	function init()
+		self.x, self.y, self.z = 0, 0, 0
+	end
+	
+	function init(byte: b)
+		self.x, self.y, self.z = b, b, b
+	end
+	
+	function init(byte: x, byte: y, byte: z)
+		self.x, self.y, self.z = x, y, z
+	end
+	
+	static function operator Vector: +(Vector: v1, Vector: v2)
+		return Vector {
+			x = v1.x + v2.x,
+			y = v1.y + v2.y,
+			z = v1.z + v2.z
+		}
+	end
+	
+	static function operator Vector: +(byte: b, Vector: v)
+		return Vector {
+			x = b + v.x,
+			y = b + v.y,
+			z = b + v.z
+		}
+	end
+	
+	static function operator Vector: +(Vector: v, byte: b)
+		return Vector {
+			x = v.x + b,
+			y = v.y + b,
+			z = v.z + b
+		}
+	end
+	
+	function operator Vector: -()
+		return Vector {
+			x = -self.x,
+			y = -self.y,
+			z = -self.z
+		}
+	end
+	
+	static function operator Vector: -(Vector: v1, Vector: v2)
+		return Vector {
+			x = v1.x - v2.x,
+			y = v1.y - v2.y,
+			z = v1.z - v2.z
+		}
+	end
+	
+	static function operator Vector: -(byte: b, Vector: v)
+		return Vector {
+			x = b - v.x,
+			y = b - v.y,
+			z = b - v.z
+		}
+	end
+	
+	static function operator Vector: -(Vector: v, byte: b)
+		return Vector {
+			x = v.x - b,
+			y = v.y - b,
+			z = v.z - b
+		}
+	end
+	
+	static function operator Vector: *(Vector: v1, Vector: v2)
+		return Vector {
+			x = v1.x * v2.x,
+			y = v1.y * v2.y,
+			z = v1.z * v2.z
+		}
+	end
+	
+	static function operator Vector: *(byte: b, Vector: v)
+		return Vector {
+			x = b * v.x,
+			y = b * v.y,
+			z = b * v.z
+		}
+	end
+	
+	static function operator Vector: *(Vector: v, byte: b)
+		return Vector {
+			x = v.x * b,
+			y = v.y * b,
+			z = v.z * b
+		}
+	end
+	
+	static function operator Vector: //(Vector: v1, Vector: v2)
+		return Vector {
+			x = v1.x // v2.x,
+			y = v1.y // v2.y,
+			z = v1.z // v2.z
+		}
+	end
+	
+	static function operator Vector: //(byte: b, Vector: v)
+		return Vector {
+			x = b // v.x,
+			y = b // v.y,
+			z = b // v.z
+		}
+	end
+	
+	static function operator Vector: //(Vector: v, byte: b)
+		return Vector {
+			x = v.x // b,
+			y = v.y // b,
+			z = v.z // b
+		}
+	end
+	
+	static function operator bool: ==(Vector: v1, Vector: v2)
+		return v1.x == v2.x and v1.y == v2.y and v1.z == v2.z
+	end
+	
+	static function operator bool: ~=(Vector: v1, Vector: v2)
+		return v1.x ~= v2.x or v1.y ~= v2.y or v1.z ~= v2.z
+	end
+end
+
