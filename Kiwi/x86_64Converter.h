@@ -608,8 +608,8 @@ namespace Kiwi {
 			}
 		}
 
-		Boxx::List<Instruction> NoExtendMov(const Instruction& inst) {
-			Instruction mov = inst;
+		Boxx::List<Instruction> NoExtendMov(const Instruction& inst, const Register& reg) {
+			Instruction mov = inst.Copy();
 			Boxx::List<Instruction> insts;
 
 			if (inst.type == InstructionType::Adr) {
@@ -621,7 +621,20 @@ namespace Kiwi {
 
 			mov.type = InstructionType::Custom;
 			mov.sizes[1] = mov.sizes[0];
-			insts.Add(mov);
+
+			if (mov.arguments[1].type == ArgumentType::Number && mov.sizes[1] == 8) {
+				Instruction mov2 = mov.Copy();
+
+				mov.arguments[0] = reg;
+				insts.Add(mov);
+
+				mov2.arguments[0] = inst.arguments[0];
+				mov2.arguments[1] = reg;
+				insts.Add(mov2);
+			}
+			else {
+				insts.Add(mov);
+			}
 
 			return insts;
 		}
@@ -658,7 +671,7 @@ namespace Kiwi {
 				return Extend4To8(inst, reg);
 			}
 			else if (inst.sizes[0] <= inst.sizes[1]) {
-				return NoExtendMov(inst);
+				return NoExtendMov(inst, reg);
 			}
 			else {
 				return PlainExtendMov(inst);

@@ -205,6 +205,8 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 
 					while (!KiwiLang::IsValidSize(totalSize)) {
 						totalSize -= sizes.Last();
+						offset1 += sizes.Last();
+						offset2 += sizes.Last();
 						sizes.RemoveAt(sizes.Size() - 1);
 						insts.RemoveAt(insts.Size() - 1);
 					}
@@ -213,6 +215,8 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 
 					instructions[i].instruction.sizes[0] = totalSize;
 					instructions[i].instruction.sizes[1] = totalSize;
+					instructions[i].instruction.arguments[0].mem.offset = offset1;
+					instructions[i].instruction.arguments[1].mem.offset = offset2;
 
 					for (UInt u = i + 1; u < i + insts.Size(); u++) {
 						instructions.RemoveAt(i + 1);
