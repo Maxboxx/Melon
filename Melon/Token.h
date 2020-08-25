@@ -81,6 +81,7 @@ namespace Melon {
 		Switch,
 		Case,
 		Default,
+		Guard,
 		Function,
 		Return,
 		Break,

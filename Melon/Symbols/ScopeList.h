@@ -6,6 +6,7 @@
 
 namespace Melon {
 	namespace Symbols {
+		class ScopeList;
 
 		///B Scope
 		/// Container for scope info
@@ -21,12 +22,9 @@ namespace Melon {
 			/// Optional variant for the scope. Used for overloads
 			Boxx::Optional<Boxx::UInt> variant;
 
-			///T Attributes
-			/// Attributes for the scope. Used for types
-			///M
-			bool isConst = false;
-			bool isNil = false;
-			///M
+			///T types
+			/// Extra types of the scope
+			Boxx::Optional<Boxx::List<ScopeList>> types;
 
 			///H Constructors
 
@@ -131,6 +129,7 @@ namespace Melon {
 			static const Scope Assign;
 			static const Scope Len;
 			static const Scope Index;
+			static const Scope As;
 			///M
 		private:
 			Boxx::Map<Boxx::String, Boxx::UInt> scopes;

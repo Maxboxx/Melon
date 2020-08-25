@@ -63,6 +63,8 @@ const Scope Scope::Assign = Scope("=");
 const Scope Scope::Len    = Scope("#");
 const Scope Scope::Index  = Scope("[]");
 
+const Scope Scope::As = Scope("as");
+
 Scope::Scope() {
 	
 }
@@ -89,10 +91,29 @@ UInt Scope::GetScope(const String& scope) const {
 }
 
 String Scope::ToString() const {
-	if (variant)
-		return name + ":" + String::ToString((Boxx::Int)variant.Get());
+	String scope = name;
 
-	return name;
+	if (types) {
+		scope += "<";
+
+		bool first = true;
+
+		for (const ScopeList& scopes : types.Get()) {
+			if (!first) {
+				first = false;
+				scope += ",";
+			}
+
+			scope += scopes.ToString();
+		}
+
+		scope += ">";
+	}
+
+	if (variant)
+		return scope + ":" + String::ToString((Boxx::Int)variant.Get());
+
+	return scope;
 }
 
 bool Scope::operator==(const Scope& scope) const {

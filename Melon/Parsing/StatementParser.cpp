@@ -12,6 +12,7 @@
 #include "StructParser.h"
 #include "RepeatParser.h"
 #include "EnumParser.h"
+#include "GuardParser.h"
 
 #include "Melon/Nodes/StatementsNode.h"
 
@@ -38,6 +39,9 @@ NodePtr StatementParser::Parse(ParsingInfo& info, const bool single) {
 		return node;
 	}
 	else if (NodePtr node = RepeatParser::Parse(info)) {
+		return node;
+	}
+	else if (NodePtr node = GuardParser::Parse(info)) {
 		return node;
 	}
 	else if (NodePtr node = FunctionParser::Parse(info)) {

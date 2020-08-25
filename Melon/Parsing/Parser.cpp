@@ -185,6 +185,7 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Switch, "switch"));
 	patterns.Add(TokenPattern(TokenType::Case, "case"));
 	patterns.Add(TokenPattern(TokenType::Default, "default"));
+	patterns.Add(TokenPattern(TokenType::Guard, "guard"));
 	patterns.Add(TokenPattern(TokenType::Function, "function"));
 	patterns.Add(TokenPattern(TokenType::Return, "return"));
 	patterns.Add(TokenPattern(TokenType::Break, "break"));

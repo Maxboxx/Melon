@@ -1,42 +1,5 @@
 
-enum Fruit
-	mango,
-	melon,
-	kiwi,
-	lime,
-	lemon
-	
-	function int: getSweetness()
-		return switch self
-			case Fruit.mango  3
-			case Fruit.melon  2
-			case Fruit.kiwi   1
-			
-			case Fruit.lime then 
-				-1
-			end
-			
-			case Fruit.lemon then
-				-2
-			end
-			
-			default 0
-		end
-	end
-	
-	function bool: isSweet()
-		return self:getSweetness() > 0
-	end
-	
-	function bool: isSour()
-		return self:getSweetness() < 0
-	end
+guard true else
+	int: i = 0
 end
 
-Fruit: fruit = Fruit.lime
-
-if fruit:isSweet() then
-	int: i = 3
-else
-	int: i = 5
-end

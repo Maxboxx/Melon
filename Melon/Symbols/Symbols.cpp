@@ -680,6 +680,62 @@ Symbol Symbol::FindMethod(const ScopeList& func, const List<ScopeList>& types, c
 	return Symbol();
 }
 
+Symbol Symbol::FindImplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file) {
+	Symbol convert = FindExplicitConversion(from, to, file);
+
+	if (convert.sign) {
+		ErrorLog::Error(SymbolError("implicit convert error", file));
+		return Symbol();
+	}
+
+	return convert;
+}
+
+Symbol Symbol::FindExplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file) {
+	Symbol s = Find(from.Add(Scope::As), file);
+
+	for (UInt i = 0; i < s.variants.Size(); i++) {
+		if (
+			s.variants[i].type == SymbolType::Function &&
+			s.variants[i].args.Size() == 1 &&
+			s.variants[i].ret.Size() == 1 &&
+			FindNearest(from, s.variants[i].args[0], file).scope == from &&
+			FindNearest(from, s.variants[i].ret[0], file).scope == to
+		) {
+			Symbol sym = s.variants[i];
+
+			Scope as = Scope::As;
+			as.variant = i;
+
+			sym.scope = from.Add(as);
+			return sym;
+		}
+	}
+
+	s = Find(to.Add(Scope::As), file);
+
+	for (UInt i = 0; i < s.variants.Size(); i++) {
+		if (
+			s.variants[i].type == SymbolType::Function &&
+			s.variants[i].args.Size() == 1 &&
+			s.variants[i].ret.Size() == 1 &&
+			FindNearest(to, s.variants[i].args[0], file).scope == from &&
+			FindNearest(to, s.variants[i].ret[0], file).scope == to
+		) {
+			Symbol sym = s.variants[i];
+
+			Scope as = Scope::As;
+			as.variant = i;
+
+			sym.scope = to.Add(as);
+			return sym;
+		}
+	}
+	
+	ErrorLog::Error(SymbolError("explicit convert error", file));
+	return Symbol();
+}
+
 Mango Symbol::ToMango(const bool ignoreBasic) {
 	Mango symbols = Mango("symbols", MangoType::List);
 	
@@ -910,11 +966,11 @@ void Symbol::Setup() {
 	boolAssign.node = new BooleanAssignNode();
 	boolSym.Add(Scope::Assign, boolAssign, FileInfo());
 
-	Symbol boolToBool = Symbol(SymbolType::Method);
+	Symbol boolToBool = Symbol(SymbolType::Function);
 	boolToBool.args.Add(ScopeList().Add(Scope::Bool));
 	boolToBool.ret.Add(ScopeList().Add(Scope::Bool));
 	boolToBool.node = new BooleanToBooleanNode();
-	boolSym.Add(Scope::Bool, boolToBool, FileInfo());
+	boolSym.Add(Scope::As, boolToBool, FileInfo());
 
 	symbols.Add(Scope::Bool, boolSym, FileInfo());
 }

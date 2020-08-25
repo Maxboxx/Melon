@@ -78,6 +78,7 @@ namespace Melon {
 			///T Signed/Assigned
 			/// Whether or not the type is signed if <code>type</code> is <code>SymbolType::Type</code>
 			/// Whether or not the variable has been assigned if <code>type</code> is <code>SymbolType::Variable</code>
+			/// Whether or not the conversion operator is explicit if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
 			bool sign = false;
 
 			///T Basic
@@ -272,6 +273,14 @@ namespace Melon {
 			///T Find method
 			/// Finds the overload for the specified method that accepts the specified argument types
 			static Symbol FindMethod(const ScopeList& scopes, const Boxx::List<ScopeList>& argTypes, const FileInfo& file);
+
+			///T Find Implicit Conversion
+			/// Finds the implicit conversion operator for a specific type
+			static Symbol FindImplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file);
+
+			///T Find Explicit Conversion
+			/// Finds the implicit or explicit conversion operator for a specific type
+			static Symbol FindExplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file);
 
 			///T To mango
 			/// Convert the symbol table to mango
