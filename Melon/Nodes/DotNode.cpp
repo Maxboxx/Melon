@@ -5,7 +5,10 @@
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
 
+#include "Kiwi/Kiwi.h"
+
 using namespace Boxx;
+using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
@@ -22,7 +25,10 @@ DotNode::~DotNode() {
 ScopeList DotNode::Type() const {
 	const Symbol s = GetSymbol();
 
-	if (s.type != SymbolType::None) {
+	if (s.type == SymbolType::Value) {
+		return s.varType;
+	}
+	else if (s.type != SymbolType::None) {
 		return s.scope;
 	}
 
@@ -80,6 +86,10 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 				break;	
 			}
 		}
+	}
+	else if (s.type == SymbolType::Enum) {
+		c.argument = Argument(s.Get(name, file).stack);
+		c.size = s.size;
 	}
 
 	return c;

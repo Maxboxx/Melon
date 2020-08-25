@@ -47,10 +47,6 @@ Symbol CallNode::GetFunc() const {
 		s = Symbol::FindMethod(type.Add(Scope::Init).Add(Scope::Call), argTypes, this->node->file);
 	}
 	else if (!isMethod) {
-		if (IsSelfPassing()) {
-			argTypes.Add(type);
-		}
-
 		s = Symbol::FindFunction(type.Add(Scope::Call), argTypes, this->node->file);
 	}
 	else {
@@ -73,14 +69,6 @@ Symbol CallNode::GetFunc() const {
 
 bool CallNode::IsSelfPassing() const {
 	if (isMethod) return true;
-	if (op || IsInit()) return false;
-
-	Symbol s = node->GetSymbol();
-
-	if (s.type != SymbolType::Function) {
-		return true;
-	}
-
 	return false;
 }
 

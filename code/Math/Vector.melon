@@ -14,6 +14,10 @@ struct Vector
 		self.x, self.y, self.z = x, y, z
 	end
 	
+	static function byte: dot(Vector: v1, Vector: v2)
+		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
+	end
+	
 	static function operator Vector: +(Vector: v1, Vector: v2)
 		return Vector {
 			x = v1.x + v2.x,

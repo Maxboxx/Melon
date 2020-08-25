@@ -111,7 +111,7 @@ void Parser::SetupTokens() {
 
 	// Comments
 	patterns.Add(TokenPattern(TokenType::CommentLine, "%-%-~\n*", true, true));
-	patterns.Add(TokenPattern(TokenType::CommentBlock, "%-#%/+~{%1%-}*%1%-", true, true));
+	patterns.Add(TokenPattern(TokenType::CommentBlock, "%-%-#%/+~{%1%-}*%1%-%-", true, true));
 
 	// Raw
 	patterns.Add(TokenPattern(TokenType::Float, "%d*%.%d+"));
@@ -193,6 +193,7 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Repeat, "repeat"));
 	patterns.Add(TokenPattern(TokenType::Until, "until"));
 	patterns.Add(TokenPattern(TokenType::Struct, "struct"));
+	patterns.Add(TokenPattern(TokenType::Enum, "enum"));
 	patterns.Add(TokenPattern(TokenType::Init, "init"));
 
 	patterns.Add(TokenPattern(TokenType::Const, "const"));

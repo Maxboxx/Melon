@@ -89,6 +89,7 @@ namespace Melon {
 		Repeat,
 		Until,
 		Struct,
+		Enum,
 		Const,
 		Ref,
 		Copy,

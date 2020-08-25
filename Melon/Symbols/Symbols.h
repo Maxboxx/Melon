@@ -31,7 +31,8 @@ namespace Melon {
 			Enum,
 			Interface,
 			Scope,
-			Namespace
+			Namespace,
+			Value
 			///M
 		};
 
@@ -84,8 +85,8 @@ namespace Melon {
 			bool basic = false;
 
 			///T Stack
-			/// The stack index of the variable
-			/// Only used if <code>type</code> is <code>SymbolType::Variable</code>
+			/// The stack index of the variable if <code>type</code> is <code>SymbolType::Variable</code>
+			/// The value if <code>type</code> is <code>SymbolType::Value</code>
 			Boxx::Long stack = 0;
 
 			///T Symbol node

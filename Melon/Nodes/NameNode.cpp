@@ -22,7 +22,7 @@ NameNode::~NameNode() {
 ScopeList NameNode::Type() const {
 	Symbol s = GetSymbol();
 
-	if (s.type == SymbolType::Scope || s.type == SymbolType::Namespace || s.type == SymbolType::Struct) {
+	if (s.type == SymbolType::Scope || s.type == SymbolType::Namespace || s.type == SymbolType::Struct || s.type == SymbolType::Enum) {
 		return s.scope;
 	}
 	else if (s.type != SymbolType::None) {

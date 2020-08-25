@@ -207,6 +207,7 @@ const char* const SyntaxError::BreakScopes          = "not enough scopes to brea
 const char* const SyntaxError::ContinueLoops        = "not enough loops to continue";
 const char* const SyntaxError::AbortLoops           = "not enough loops to abort";
 const char* const SyntaxError::StructName           = "name expected for struct";
+const char* const SyntaxError::EnumName             = "name expected for enum";
 const char* const SyntaxError::DotName              = "name expected after '.'";
 const char* const SyntaxError::CustomInitName       = "name expected in custom init";
 const char* const SyntaxError::InvalidInclude       = "invalid name to include";

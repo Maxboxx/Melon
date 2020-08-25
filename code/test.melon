@@ -1,11 +1,42 @@
 
-include Math.Vector
+enum Fruit
+	mango,
+	melon,
+	kiwi,
+	lime,
+	lemon
+	
+	function int: getSweetness()
+		return switch self
+			case Fruit.mango  3
+			case Fruit.melon  2
+			case Fruit.kiwi   1
+			
+			case Fruit.lime then 
+				-1
+			end
+			
+			case Fruit.lemon then
+				-2
+			end
+			
+			default 0
+		end
+	end
+	
+	function bool: isSweet()
+		return self:getSweetness() > 0
+	end
+	
+	function bool: isSour()
+		return self:getSweetness() < 0
+	end
+end
 
-byte: a, b, c, d, e, f, g, h, i, j, k, l = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -2
+Fruit: fruit = Fruit.lime
 
-Vector: v1 = Vector(a, b, c)
-Vector: v2 = Vector(d, e, f)
-Vector: v3 = Vector(g, h, i)
-Vector: v4 = Vector(j, k, l)
-
-Vector: v = (v1 + v2 * v3) // v4
+if fruit:isSweet() then
+	int: i = 3
+else
+	int: i = 5
+end
