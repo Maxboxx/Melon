@@ -1,6 +1,7 @@
 #include "ConditionNode.h"
 
 #include "ConvertNode.h"
+#include "AssignNode.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -24,11 +25,16 @@ ScopeList ConditionNode::Type() const {
 }
 
 CompiledNode ConditionNode::Compile(CompileInfo& info) {
-	Pointer<ConvertNode> convert = new ConvertNode(scope, file);
-	convert->isExplicit = true;
-	convert->node = cond;
-	convert->type = ScopeList().Add(Scope::Bool);
-	return convert->Compile(info);
+	if (cond.Cast<AssignNode>()) {
+		return CompiledNode();
+	}
+	else {
+		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
+		convert->isExplicit = true;
+		convert->node = cond;
+		convert->type = ScopeList().Add(Scope::Bool);
+		return convert->Compile(info);
+	}
 }
 
 void ConditionNode::IncludeScan(ParsingInfo& info) {
@@ -40,8 +46,17 @@ void ConditionNode::IncludeScan(ParsingInfo& info) {
 }
 
 Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) const {
-	Symbol::FindExplicitConversion(cond->Type(), ScopeList().Add(Scope::Bool), file);
-	return cond->Scan(info);
+	if (cond.Cast<AssignNode>()) {
+		ErrorLog::Error(SyntaxError("assignment condition not supported yet", file));
+		return Set<ScanType>();
+	}
+	else {
+		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
+		convert->isExplicit = true;
+		convert->node = cond;
+		convert->type = ScopeList().Add(Scope::Bool);
+		return convert->Scan(info);
+	}
 }
 
 Mango ConditionNode::ToMango() const {

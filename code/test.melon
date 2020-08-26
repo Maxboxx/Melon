@@ -3,3 +3,6 @@ guard true else
 	int: i = 0
 end
 
+if false then
+	int: u = 7
+end

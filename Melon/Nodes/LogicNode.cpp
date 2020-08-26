@@ -1,5 +1,7 @@
 #include "LogicNode.h"
 
+#include "ConvertNode.h"
+
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
@@ -38,9 +40,11 @@ Scope LogicNode::GetOperator() const {
 }
 
 CompiledNode LogicNode::CompileToBool(const NodePtr& node, CompileInfo& info) {
-	List<NodePtr> nodes{1};
-	nodes.Add(node);
-	return Symbol::FindMethod(node->Type().Add(Scope::Bool), List<ScopeList>(), node->file).node->Compile(nodes, info);
+	Pointer<ConvertNode> convert = new ConvertNode(node->scope, node->file);
+	convert->node = node;
+	convert->type = ScopeList().Add(Scope::Bool);
+	convert->isExplicit = true;
+	return convert->Compile(info);
 }
 
 CompiledNode LogicNode::CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) const {
@@ -170,8 +174,23 @@ Set<ScanType> LogicNode::Scan(ScanInfoStack& info) const {
 		}
 	}
 
-	Symbol::FindMethod(node1->Type().Add(Scope::Bool), List<ScopeList>(), node1->file);
-	Symbol::FindMethod(node2->Type().Add(Scope::Bool), List<ScopeList>(), node2->file);
+	Pointer<ConvertNode> convert1 = new ConvertNode(node1->scope, node1->file);
+	convert1->node = node1;
+	convert1->type = ScopeList().Add(Scope::Bool);
+	convert1->isExplicit = true;
+
+	for (const ScanType type : convert1->Scan(info)) {
+		scanSet.Add(type);
+	}
+
+	Pointer<ConvertNode> convert2 = new ConvertNode(node2->scope, node2->file);
+	convert2->node = node2;
+	convert2->type = ScopeList().Add(Scope::Bool);
+	convert2->isExplicit = true;
+
+	for (const ScanType type : convert2->Scan(info)) {
+		scanSet.Add(type);
+	}
 
 	return scanSet;
 }

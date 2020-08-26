@@ -21,11 +21,13 @@ ConvertNode::~ConvertNode() {
 }
 
 ScopeList ConvertNode::Type() const {
-	return ScopeList().Add(Scope::Bool);
+	return type;
 }
 
 CompiledNode ConvertNode::Compile(CompileInfo& info) {
-	Symbol convert = Symbol::FindExplicitConversion(node->Type(), ScopeList().Add(Scope::Bool), file);
+	if (node->Type() == type) return node->Compile(info);
+
+	Symbol convert = Symbol::FindExplicitConversion(node->Type(), type, file);
 
 	List<NodePtr> nodes;
 	nodes.Add(node);
@@ -55,7 +57,8 @@ void ConvertNode::IncludeScan(ParsingInfo& info) {
 }
 
 Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) const {
-	Symbol::FindExplicitConversion(node->Type(), ScopeList().Add(Scope::Bool), file);
+	if (node->Type() == type) return Set<ScanType>();
+	Symbol::FindExplicitConversion(node->Type(), type, file);
 	return node->Scan(info);
 }
 

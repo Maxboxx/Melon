@@ -1,7 +1,7 @@
 #include "RepeatParser.h"
 
 #include "StatementParser.h"
-#include "ExpressionParser.h"
+#include "ConditionParser.h"
 
 #include "Melon/Nodes/RepeatNode.h"
 
@@ -29,13 +29,13 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Until) {
 		info.index++;
 
-		if (NodePtr cond = ExpressionParser::Parse(info)) {
+		if (NodePtr cond = ConditionParser::Parse(info)) {
 			repeatNode->condition = cond;
 			info.statementNumber++;
 			return repeatNode;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'until'", "repeat loop"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'until'", "repeat loop"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		}
 	}
 	else {

@@ -11,7 +11,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 
-NodePtr ConditionParser::Parse(ParsingInfo& info) {
+NodePtr ConditionParser::Parse(ParsingInfo& info, const bool includeAssign) {
 	Pointer<ConditionNode> cond = nullptr;
 
 	if (NodePtr node = ExpressionParser::Parse(info)) {
@@ -19,11 +19,13 @@ NodePtr ConditionParser::Parse(ParsingInfo& info) {
 		cond->cond = node;
 		return cond;
 	}
-	/*else if (NodePtr node = AssignmentParser::Parse(info, true)) {
-		cond = new ConditionNode(info.scopes, node->file);
-		cond->cond = node;
-		return cond;
-	}*/
+	else if (includeAssign) {
+		if (NodePtr node = AssignmentParser::Parse(info, true)) {
+			cond = new ConditionNode(info.scopes, node->file);
+			cond->cond = node;
+			return cond;
+		}
+	}
 
 	return nullptr;
 }

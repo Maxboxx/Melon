@@ -1,5 +1,6 @@
 #include "LoopParser.h"
 
+#include "ConditionParser.h"
 #include "ExpressionParser.h"
 #include "StatementParser.h"
 #include "AssignmentParser.h"
@@ -78,7 +79,7 @@ void LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, P
 	info.scopes = info.scopes.AddNext("if");
 	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
-	if (NodePtr cond = ExpressionParser::Parse(info)) {
+	if (NodePtr cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
 
 		if (info.Current().type != TokenType::Then)
@@ -100,7 +101,7 @@ void LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value
 	info.scopes = info.scopes.AddNext("while");
 	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
-	if (NodePtr cond = ExpressionParser::Parse(info)) {
+	if (NodePtr cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
 
 		if (info.Current().type != TokenType::Do)
@@ -130,7 +131,7 @@ void LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 		if (info.Current().type == TokenType::Comma) {
 			info.index++;
 
-			if (NodePtr cond = ExpressionParser::Parse(info)) {
+			if (NodePtr cond = ConditionParser::Parse(info)) {
 				Pointer<ForConditionNode> fcn = new ForConditionNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 				fcn->loopInit = init;
 				fcn->loopCondition = cond;

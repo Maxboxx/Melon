@@ -1,5 +1,6 @@
 #include "IfExpressionParser.h"
 
+#include "ConditionParser.h"
 #include "ExpressionParser.h"
 
 #include "Melon/Nodes/IfExprNode.h"
@@ -21,7 +22,7 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 	const UInt ifLine = info.Current().line;
 	info.index++;
 
-	NodePtr cond = ExpressionParser::Parse(info);
+	NodePtr cond = ConditionParser::Parse(info);
 
 	bool error = false;
 
@@ -45,7 +46,7 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 		while (info.Current().type == TokenType::ElseIf) {
 			info.index++;
 
-			NodePtr cond = ExpressionParser::Parse(info);
+			NodePtr cond = ConditionParser::Parse(info);
 
 			if (!cond) {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'elseif'", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
