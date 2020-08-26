@@ -27,7 +27,7 @@ void ForConditionNode::IncludeScan(ParsingInfo& info) {
 
 }
 
-Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = loopInit->Scan(info);
 
 	for (const ScanType type : loopCondition->Scan(info)) {

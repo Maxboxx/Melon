@@ -26,12 +26,12 @@ CompiledNode ContinueNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-Set<ScanType> ContinueNode::Scan(ScanInfoStack& info) const {
-	if (info.Get().CanContinue()) {
-		info.Get().loopBreakCount = Math::Max(info.Get().loopBreakCount, loops);
+Set<ScanType> ContinueNode::Scan(ScanInfoStack& info) {
+	if (info.Get().scopeInfo.CanContinue()) {
+		info.Get().scopeInfo.loopBreakCount = Math::Max(info.Get().scopeInfo.loopBreakCount, loops);
 	}
 
-	info.Get().maxLoopBreakCount = Math::Max(info.Get().maxLoopBreakCount, loops);
+	info.Get().scopeInfo.maxLoopBreakCount = Math::Max(info.Get().scopeInfo.maxLoopBreakCount, loops);
 
 	return Set<ScanType>();
 };

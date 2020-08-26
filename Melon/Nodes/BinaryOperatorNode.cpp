@@ -71,7 +71,7 @@ void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node1->Scan(info);
 
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {

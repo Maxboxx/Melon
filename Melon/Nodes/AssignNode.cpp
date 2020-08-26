@@ -178,7 +178,7 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> AssignNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 	info.Get().assign = true;
 
 	UInt errorCount = ErrorLog::ErrorCount();

@@ -517,10 +517,10 @@ LoopNode::LoopScanInfo LoopNode::ScanSetup(ScanInfo& info) const {
 	loopInfo.willASegmentRun = WillASegmentRun();
 
 	loopInfo.hasReturned   = segments.Size() > 1 && loopInfo.willASegmentRun;
-	loopInfo.willNotReturn = info.willNotReturn;
+	loopInfo.willNotReturn = info.scopeInfo.willNotReturn;
 
-	loopInfo.loopBreakCount  = info.loopBreakCount;
-	loopInfo.scopeBreakCount = info.scopeBreakCount;
+	loopInfo.loopBreakCount  = info.scopeInfo.loopBreakCount;
+	loopInfo.scopeBreakCount = info.scopeInfo.scopeBreakCount;
 
 	if (loopInfo.init) {
 		loopInfo.unassignedVarsStart = info.symbol.GetUnassignedVars();
@@ -560,7 +560,7 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 					loopInfo.unassignedVarsAlso.Add(var);
 				}
 			
-				if (!hasPlainAlso || info.WillNotContinue()) {
+				if (!hasPlainAlso || info.scopeInfo.WillNotContinue()) {
 					for (const Scope& var : info.symbol.GetUnassignedVars()) {
 						loopInfo.unassignedVars.Add(var);
 					}
@@ -570,11 +570,11 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 				}
 			}
 
-			info.hasReturned = hasPlainAlso;
+			info.scopeInfo.hasReturned = hasPlainAlso;
 
-			if (info.CanAbort()) {
+			if (info.scopeInfo.CanAbort()) {
 				loopInfo.willASegmentRun = false;
-				info.hasReturned = false;
+				info.scopeInfo.hasReturned = false;
 			}
 		}
 	}
@@ -584,7 +584,7 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 				for (const Scope& var : info.symbol.GetUnassignedVars()) {
 					loopInfo.unassignedVarsAlso.Add(var);
 
-					if (!hasPlainAlso || info.WillNotContinue()) {
+					if (!hasPlainAlso || info.scopeInfo.WillNotContinue()) {
 						loopInfo.unassignedVars.Add(var);
 					}
 					else {
@@ -593,32 +593,32 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 				}
 			}
 
-			if (info.hasReturned || !hasAlso || hasPlainAlso) {
-				if (info.hasReturned) {
+			if (info.scopeInfo.hasReturned || !hasAlso || hasPlainAlso) {
+				if (info.scopeInfo.hasReturned) {
 					loopInfo.checkAlsoRet = false;
 				}
 				else {
 					loopInfo.checkAlsoRet = true;
-					info.hasReturned = hasPlainAlso;
+					info.scopeInfo.hasReturned = hasPlainAlso;
 				}
 			}
 
-			loopInfo.loopBreakCounts[0]  = info.loopBreakCount;
-			loopInfo.scopeBreakCounts[0] = info.scopeBreakCount;
+			loopInfo.loopBreakCounts[0]  = info.scopeInfo.loopBreakCount;
+			loopInfo.scopeBreakCounts[0] = info.scopeInfo.scopeBreakCount;
 		}
 	}
 
-	if (info.hasReturned && !loopInfo.unassignedVars.IsEmpty()) {
+	if (info.scopeInfo.hasReturned && !loopInfo.unassignedVars.IsEmpty()) {
 		for (const Scope& var : loopInfo.unassignedVars) {
 			ErrorLog::Error(CompileError(CompileError::VarNotInitStart + var.ToString() + CompileError::VarNotInitEnd, info.file));
 		}
 	}
 
-	if (!info.hasReturned && hasAlso && !hasPlainAlso) {
+	if (!info.scopeInfo.hasReturned && hasAlso && !hasPlainAlso) {
 		loopInfo.willASegmentRun = false;
 	}
 
-	if (!info.WillBreak() && hasAlso && !hasPlainAlso) {
+	if (!info.scopeInfo.WillBreak() && hasAlso && !hasPlainAlso) {
 		loopInfo.willASegmentRun = false;
 	}
 
@@ -627,7 +627,7 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 		loopInfo.scopeBreakCounts[0] = loopInfo.scopeBreakCount;
 	}
 
-	if (!info.hasReturned) {
+	if (!info.scopeInfo.hasReturned) {
 		loopInfo.hasReturned = false;
 	}
 }
@@ -641,10 +641,10 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 		}
 	}
 
-	info.hasReturned     = false;
-	info.willNotReturn   = loopInfo.willNotReturn;
-	info.loopBreakCount  = loopInfo.loopBreakCount;
-	info.scopeBreakCount = loopInfo.scopeBreakCount;
+	info.scopeInfo.hasReturned     = false;
+	info.scopeInfo.willNotReturn   = loopInfo.willNotReturn;
+	info.scopeInfo.loopBreakCount  = loopInfo.loopBreakCount;
+	info.scopeInfo.scopeBreakCount = loopInfo.scopeBreakCount;
 }
 
 void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
@@ -663,19 +663,19 @@ void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const Lo
 		}
 	}
 
-	if (!info.willNotReturn) {
+	if (!info.scopeInfo.willNotReturn) {
 		loopInfo.hasAReturn = true;
 	}
 
 	if (loopInfo.willASegmentRun && (!segment.also || loopInfo.checkAlsoRet)) {
-		if (!info.hasReturned) {
+		if (!info.scopeInfo.hasReturned) {
 			loopInfo.hasReturned = false;
 		}
 	}
 
 	if (loopInfo.willASegmentRun) {
-		loopInfo.loopBreakCounts.Add(info.loopBreakCount);
-		loopInfo.scopeBreakCounts.Add(info.scopeBreakCount);
+		loopInfo.loopBreakCounts.Add(info.scopeInfo.loopBreakCount);
+		loopInfo.scopeBreakCounts.Add(info.scopeInfo.scopeBreakCount);
 	}
 	else {
 		loopInfo.loopBreakCounts.Add(loopInfo.loopBreakCount);
@@ -726,19 +726,19 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 		}
 	}
 
-	info.loopBreakCount  = Math::Min(Math::Max( mainLoopBreaks,  alsoLoopBreaks),  elseLoopBreaks);
-	info.scopeBreakCount = Math::Min(Math::Max(mainScopeBreaks, alsoScopeBreaks), elseScopeBreaks);
+	info.scopeInfo.loopBreakCount  = Math::Min(Math::Max( mainLoopBreaks,  alsoLoopBreaks),  elseLoopBreaks);
+	info.scopeInfo.scopeBreakCount = Math::Min(Math::Max(mainScopeBreaks, alsoScopeBreaks), elseScopeBreaks);
 
-	info.hasReturned = loopInfo.hasReturned || !loopInfo.willNotReturn;
-	info.willNotReturn = loopInfo.willNotReturn && !info.hasReturned && !loopInfo.hasAReturn;
+	info.scopeInfo.hasReturned = loopInfo.hasReturned || !loopInfo.willNotReturn;
+	info.scopeInfo.willNotReturn = loopInfo.willNotReturn && !info.scopeInfo.hasReturned && !loopInfo.hasAReturn;
 }
 
-Set<ScanType> LoopNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
-	info.Get().EnterScope();
+	info.Get().scopeInfo.EnterScope();
 	LoopScanInfo loopInfo = ScanSetup(info.Get());
-	info.Get().ExitScope();
+	info.Get().scopeInfo.ExitScope();
 
 	for (UInt i = 0; i < segments.Size(); i++) {
 		if (segments[i].type != LoopType::None) {
@@ -751,7 +751,7 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) const {
 			}
 		}
 
-		info.Get().EnterScope(segments[i].type == LoopType::For || segments[i].type == LoopType::While);
+		info.Get().scopeInfo.EnterScope(segments[i].type == LoopType::For || segments[i].type == LoopType::While);
 
 		ScanPreContents(loopInfo, info.Get(), segments[i]);
 
@@ -764,8 +764,8 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) const {
 		}
 
 		if (segments[i].type == LoopType::For || segments[i].type == LoopType::While) {
-			info.Get().loopBreakCount  = loopInfo.loopBreakCount;
-			info.Get().scopeBreakCount = loopInfo.scopeBreakCount;
+			info.Get().scopeInfo.loopBreakCount  = loopInfo.loopBreakCount;
+			info.Get().scopeInfo.scopeBreakCount = loopInfo.scopeBreakCount;
 		}
 
 		if (i == 0) {
@@ -775,12 +775,12 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) const {
 			ScanPostContents(loopInfo, info.Get(), segments[i]);
 		}
 
-		info.Get().ExitScope(segments[i].type == LoopType::For || segments[i].type == LoopType::While);
+		info.Get().scopeInfo.ExitScope(segments[i].type == LoopType::For || segments[i].type == LoopType::While);
 	}
 
-	info.Get().EnterScope();
+	info.Get().scopeInfo.EnterScope();
 	ScanCleanup(loopInfo, info.Get());
-	info.Get().ExitScope();
+	info.Get().scopeInfo.ExitScope();
 
 	return scanSet;
 }

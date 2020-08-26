@@ -75,7 +75,7 @@ void DoNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> DoNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> DoNode::Scan(ScanInfoStack& info) {
 	return nodes->Scan(info);
 }
 

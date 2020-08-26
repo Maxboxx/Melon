@@ -77,7 +77,7 @@ void CustomInitNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node->Scan(info);
 
 	Symbol s = Symbol::Find(Type(), file);

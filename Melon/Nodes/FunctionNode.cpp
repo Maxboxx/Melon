@@ -59,18 +59,11 @@ void FunctionNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 	info.Push();
 
 	Symbol::Find(this->func, file);
-	info.Get().hasReturned   = false;
-	info.Get().willNotReturn = true;
-	info.Get().loopAbortCount     = 0;
-	info.Get().scopeAbortCount    = 0;
-	info.Get().loopBreakCount     = 0;
-	info.Get().scopeBreakCount    = 0;
-	info.Get().maxLoopBreakCount  = 0;
-	info.Get().maxScopeBreakCount = 0;
+	info.Get().scopeInfo.Reset();
 	info.Get().file = file;
 
 	if (func.Pop().Last() == Scope::Init) {
@@ -91,7 +84,7 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) const {
 		Symbol::FindNearest(scope, sl, file);
 	}
 
-	if (!info.Get().hasReturned && !s.ret.IsEmpty()) {
+	if (!info.Get().scopeInfo.hasReturned && !s.ret.IsEmpty()) {
 		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(s), file));
 	}
 

@@ -107,7 +107,7 @@ void IfExprNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) const { // TODO: add cast node for conditions
+Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
 	for (const NodePtr& node : nodes) {

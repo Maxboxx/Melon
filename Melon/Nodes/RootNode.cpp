@@ -61,7 +61,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 	while (!includeScanned);
 }
 
-Set<ScanType> RootNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
 	for (const NodePtr& node : nodes) {
@@ -79,7 +79,7 @@ Set<ScanType> RootNode::Scan(ScanInfoStack& info) const {
 	return scanSet;
 }
 
-void RootNode::Scan() const {
+void RootNode::Scan() {
 	ScanInfoStack info;
 	Scan(info);
 }

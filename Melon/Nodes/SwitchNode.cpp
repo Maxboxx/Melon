@@ -234,10 +234,10 @@ SwitchNode::SwitchScanInfo SwitchNode::ScanSetup(ScanInfo& info) const {
 		}
 
 		switchInfo.hasReturned = switchInfo.willACaseRun;
-		switchInfo.willNotReturn = info.willNotReturn;
+		switchInfo.willNotReturn = info.scopeInfo.willNotReturn;
 
-		switchInfo.loopBreakCount  = info.loopBreakCount;
-		switchInfo.scopeBreakCount = info.scopeBreakCount;
+		switchInfo.loopBreakCount  = info.scopeInfo.loopBreakCount;
+		switchInfo.scopeBreakCount = info.scopeInfo.scopeBreakCount;
 	}
 
 	return switchInfo;
@@ -253,11 +253,11 @@ void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) con
 			}
 		}
 
-		info.hasReturned = false;
-		info.willNotReturn = switchInfo.willNotReturn;
+		info.scopeInfo.hasReturned = false;
+		info.scopeInfo.willNotReturn = switchInfo.willNotReturn;
 
-		info.loopBreakCount  = switchInfo.loopBreakCount;
-		info.scopeBreakCount = switchInfo.scopeBreakCount;
+		info.scopeInfo.loopBreakCount  = switchInfo.loopBreakCount;
+		info.scopeInfo.scopeBreakCount = switchInfo.scopeBreakCount;
 	}
 }
 
@@ -269,7 +269,7 @@ void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) co
 			}
 		}
 
-		if (!info.hasReturned) {
+		if (!info.scopeInfo.hasReturned) {
 			switchInfo.hasReturned = false;
 		}
 		else {
@@ -277,8 +277,8 @@ void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) co
 		}
 
 		if (switchInfo.willACaseRun) {
-			switchInfo.minLoopBreakCount  = Math::Min(switchInfo.minLoopBreakCount, info.loopBreakCount);
-			switchInfo.minScopeBreakCount = Math::Min(switchInfo.minScopeBreakCount, info.scopeBreakCount);
+			switchInfo.minLoopBreakCount  = Math::Min(switchInfo.minLoopBreakCount, info.scopeInfo.loopBreakCount);
+			switchInfo.minScopeBreakCount = Math::Min(switchInfo.minScopeBreakCount, info.scopeInfo.scopeBreakCount);
 		}
 	}
 }
@@ -299,15 +299,15 @@ void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 			}
 		}
 
-		info.hasReturned = switchInfo.hasReturned || !switchInfo.willNotReturn;
-		info.willNotReturn = switchInfo.willNotReturn && !info.hasReturned && !switchInfo.hasAReturn;
+		info.scopeInfo.hasReturned = switchInfo.hasReturned || !switchInfo.willNotReturn;
+		info.scopeInfo.willNotReturn = switchInfo.willNotReturn && !info.scopeInfo.hasReturned && !switchInfo.hasAReturn;
 
-		info.loopBreakCount  = switchInfo.loopBreakCount;
-		info.scopeBreakCount = switchInfo.scopeBreakCount;
+		info.scopeInfo.loopBreakCount  = switchInfo.loopBreakCount;
+		info.scopeInfo.scopeBreakCount = switchInfo.scopeBreakCount;
 	}
 }
 
-Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = match->Scan(info);
 
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {

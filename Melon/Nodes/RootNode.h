@@ -40,11 +40,11 @@ namespace Melon {
 
 			virtual Boxx::Mango ToMango() const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) const override;
+			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
 
 			///T Scan
 			/// Used for scanning for errors
-			void Scan() const;
+			void Scan();
 
 			///T ToString
 			/// Converts the result from <code>ToMango()</code> to a string

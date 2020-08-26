@@ -39,24 +39,24 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-Set<ScanType> BreakNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> BreakNode::Scan(ScanInfoStack& info) {
 	if (!scopeWise) {
-		if (info.Get().CanContinue()) {
+		if (info.Get().scopeInfo.CanContinue()) {
 			if (!isBreak) {
-				info.Get().loopAbortCount = Math::Max(info.Get().loopAbortCount, loops);
+				info.Get().scopeInfo.loopAbortCount = Math::Max(info.Get().scopeInfo.loopAbortCount, loops);
 			}
 
-			info.Get().loopBreakCount = Math::Max(info.Get().loopBreakCount, loops);
+			info.Get().scopeInfo.loopBreakCount = Math::Max(info.Get().scopeInfo.loopBreakCount, loops);
 		}
 
-		info.Get().maxLoopBreakCount = Math::Max(info.Get().maxLoopBreakCount, loops);
+		info.Get().scopeInfo.maxLoopBreakCount = Math::Max(info.Get().scopeInfo.maxLoopBreakCount, loops);
 	}
 	else {
-		if (info.Get().CanContinue()) {
-			info.Get().scopeBreakCount = Math::Max(info.Get().scopeBreakCount, loops);
+		if (info.Get().scopeInfo.CanContinue()) {
+			info.Get().scopeInfo.scopeBreakCount = Math::Max(info.Get().scopeInfo.scopeBreakCount, loops);
 		}
 
-		info.Get().maxScopeBreakCount = Math::Max(info.Get().maxScopeBreakCount, loops);
+		info.Get().scopeInfo.maxScopeBreakCount = Math::Max(info.Get().scopeInfo.maxScopeBreakCount, loops);
 	}
 
 	return Set<ScanType>();

@@ -120,14 +120,8 @@ namespace Melon {
 			Self
 		};
 
-		///B ScanInfo
-		/// Used for info when scanning
-		struct ScanInfo {
-			bool init = false;
-			bool assign = false;
-			Symbols::Symbol symbol;
-			FileInfo file;
-
+		///B ScopeInfo
+		struct ScopeInfo {
 			bool hasReturned   = false;
 			bool willNotReturn = true;
 
@@ -137,6 +131,18 @@ namespace Melon {
 			Boxx::UInt scopeBreakCount    = 0;
 			Boxx::UInt maxLoopBreakCount  = 0;
 			Boxx::UInt maxScopeBreakCount = 0;
+
+			void Reset() {
+				hasReturned   = false;
+				willNotReturn = true;
+
+				loopAbortCount     = 0;
+				scopeAbortCount    = 0;
+				loopBreakCount     = 0;
+				scopeBreakCount    = 0;
+				maxLoopBreakCount  = 0;
+				maxScopeBreakCount = 0;
+			}
 
 			bool CanAbort() const {return loopAbortCount > 0 || scopeAbortCount > 0;}
 			bool WillBreak() const {return loopBreakCount > 0 || scopeBreakCount > 0;}
@@ -162,6 +168,29 @@ namespace Melon {
 				if (isLoop && maxLoopBreakCount > 0) maxLoopBreakCount--;
 				if (maxScopeBreakCount > 0) maxScopeBreakCount--;
 			}
+
+			/// Creates a copy of the current scope before entering a new scope
+			ScopeInfo CopyBeforeEnter() {
+				return *this;
+			}
+
+			/// Combines the scope info with a enter copy of the scope info
+			void CombineAfterExit(const ScopeInfo& beforeEnter) {
+				loopBreakCount  = beforeEnter.loopBreakCount;
+				scopeBreakCount = beforeEnter.scopeBreakCount;
+				hasReturned     = beforeEnter.hasReturned;
+			}
+		};
+
+		///B ScanInfo
+		/// Used for info when scanning
+		struct ScanInfo {
+			bool init = false;
+			bool assign = false;
+			Symbols::Symbol symbol;
+			FileInfo file;
+			
+			ScopeInfo scopeInfo;
 		};
 
 		///B ScanInfoStack
@@ -232,7 +261,7 @@ namespace Melon {
 
 			///T Scan
 			/// Scans the node for potential errors
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) const;
+			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info);
 
 			///T Is Immediate
 			/// <code>true</code> if the compiled node is an immediate value

@@ -78,7 +78,7 @@ void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node->Scan(info);
 
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {

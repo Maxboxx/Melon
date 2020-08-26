@@ -45,7 +45,7 @@ void ConditionNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 	if (cond.Cast<AssignNode>()) {
 		ErrorLog::Error(SyntaxError("assignment condition not supported yet", file));
 		return Set<ScanType>();

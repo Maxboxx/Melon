@@ -78,14 +78,14 @@ void ReturnNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
-	if (info.Get().CanContinue()) {
-		info.Get().hasReturned = true;
+	if (info.Get().scopeInfo.CanContinue()) {
+		info.Get().scopeInfo.hasReturned = true;
 	}
 
-	info.Get().willNotReturn = false;
+	info.Get().scopeInfo.willNotReturn = false;
 
 	for (const NodePtr& node : nodes) {
 		for (const ScanType type : node->Scan(info)) {

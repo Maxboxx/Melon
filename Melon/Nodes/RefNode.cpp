@@ -48,7 +48,7 @@ void RefNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> RefNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> RefNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
 }
 

@@ -109,7 +109,7 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> DotNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 	bool assign = info.Get().assign;
 	info.Get().assign = false;
 
@@ -133,7 +133,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) const {
 				Symbol& s = Symbol::Find(scope.Pop(), file).Get(scope.Last(), file);
 
 				if (s.type == SymbolType::Variable) {
-					if (info.Get().WillContinue()) s.sign = true;
+					if (info.Get().scopeInfo.WillContinue()) s.sign = true;
 
 					scanSet.Remove(ScanType::Self);
 

@@ -40,7 +40,7 @@ void StatementsNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> StatementsNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> StatementsNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
 	for (const NodePtr& node : statements) {

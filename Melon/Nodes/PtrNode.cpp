@@ -50,7 +50,7 @@ void PtrNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> PtrNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> PtrNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
 }
 

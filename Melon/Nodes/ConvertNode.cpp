@@ -56,7 +56,7 @@ void ConvertNode::IncludeScan(ParsingInfo& info) {
 	includeScanned = true;
 }
 
-Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) const {
+Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {
 	if (node->Type() == type) return Set<ScanType>();
 	Symbol::FindExplicitConversion(node->Type(), type, file);
 	return node->Scan(info);
