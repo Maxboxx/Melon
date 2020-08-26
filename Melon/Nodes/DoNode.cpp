@@ -76,7 +76,10 @@ void DoNode::IncludeScan(ParsingInfo& info) {
 }
 
 Set<ScanType> DoNode::Scan(ScanInfoStack& info) {
-	return nodes->Scan(info);
+	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
+	Set<ScanType> scanSet = nodes->Scan(info);
+	info.Get().scopeInfo.ExitScope();
+	return scanSet;
 }
 
 Mango DoNode::ToMango() const {

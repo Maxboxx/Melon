@@ -203,7 +203,7 @@ namespace Boxx {
 
 	template <class Key, class Value>
 	inline bool Map<Key, Value>::IsEmpty() const {
-		return values.Empty();
+		return values.IsEmpty();
 	}
 
 	template <class Key, class Value>

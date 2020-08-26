@@ -15,6 +15,7 @@
 #include "GuardParser.h"
 
 #include "Melon/Nodes/StatementsNode.h"
+#include "Melon/Nodes/GuardNode.h"
 
 using namespace Boxx;
 
@@ -69,8 +70,15 @@ NodePtr StatementParser::Parse(ParsingInfo& info, const bool single) {
 NodePtr StatementParser::ParseMultiple(ParsingInfo& info) {
 	Pointer<StatementsNode> sn = new StatementsNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
-	while (NodePtr stat = StatementParser::Parse(info))
-		sn->statements.Add(stat);
+	while (NodePtr stat = StatementParser::Parse(info)) {
+		if (Pointer<GuardNode> gn = stat.Cast<GuardNode>()) {
+			gn->continue_ = StatementParser::ParseMultiple(info);
+			sn->statements.Add(gn);
+		}
+		else {
+			sn->statements.Add(stat);
+		}
+	}
 
 	return sn;
 }

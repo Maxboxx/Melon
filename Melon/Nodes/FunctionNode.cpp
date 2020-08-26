@@ -63,6 +63,7 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 	info.Push();
 
 	Symbol::Find(this->func, file);
+	info.Get().scopeInfo.type = ScopeInfo::ScopeType::Function;
 	info.Get().scopeInfo.Reset();
 	info.Get().file = file;
 

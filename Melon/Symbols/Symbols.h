@@ -202,6 +202,7 @@ namespace Melon {
 			/// Gets a list of all unassigned vars
 			///M
 			Boxx::List<Scope> GetUnassignedVars() const;
+			Boxx::Set<Scope> GetUnassignedVarsSet() const;
 			Boxx::List<Scope> GetUnassignedVars(const Boxx::List<Scope>& vars) const;
 			///M
 

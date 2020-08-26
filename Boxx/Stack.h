@@ -139,7 +139,7 @@ namespace Boxx {
 
 	template <class T>
 	inline bool Stack<T>::IsEmpty() const {
-		return stack.Empty();
+		return stack.IsEmpty();
 	}
 
 	template <class T>

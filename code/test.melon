@@ -1,8 +1,13 @@
 
-guard true else
-	int: i = 0
+function long: f(long: i)
+	guard i < 5 else
+		return 0
+	end
+	
+	guard i ~= 2 else
+		return 0
+	end
+	
+	return i
 end
 
-if false then
-	int: u = 7
-end

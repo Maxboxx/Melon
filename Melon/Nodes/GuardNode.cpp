@@ -1,7 +1,11 @@
 #include "GuardNode.h"
 
 #include "BreakNode.h"
+#include "ContinueNode.h"
+#include "ReturnNode.h"
 #include "StatementsNode.h"
+
+#include "Boxx/Math.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -36,7 +40,7 @@ CompiledNode GuardNode::Compile(CompileInfo& info) {
 
 	List<UInt> jumps;
 
-	for (const OptimizerInstruction& in : else_->Compile(info).instructions) {
+	if (else_) for (const OptimizerInstruction& in : else_->Compile(info).instructions) {
 		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
 			continue;
@@ -72,6 +76,10 @@ CompiledNode GuardNode::Compile(CompileInfo& info) {
 		info.label++;
 	}
 
+	if (end) {
+		compiled.AddInstructions(end->Compile(info).instructions);
+	}
+
 	compiled.instructions.Add(Instruction::Label(info.label));
 	compiled.instructions[jumpIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 
@@ -82,17 +90,21 @@ void GuardNode::IncludeScan(ParsingInfo& info) {
 	if (includeScanned) return;
 
 	cond->IncludeScan(info);
-	else_->IncludeScan(info);
+
+	if (else_) else_->IncludeScan(info);
 
 	includeScanned = true;
 }
 
 Set<ScanType> GuardNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = cond->Scan(info);
-	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBeforeEnter();
-	info.Get().scopeInfo.EnterScope();
 
-	for (const ScanType type : else_->Scan(info)) {
+	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
+	if (info.Get().init) scopeInfo.unassigned = info.Get().symbol.GetUnassignedVarsSet();
+
+	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
+
+	if (else_) for (const ScanType type : else_->Scan(info)) {
 		scanSet.Add(type);
 
 		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
@@ -101,13 +113,76 @@ Set<ScanType> GuardNode::Scan(ScanInfoStack& info) {
 	}
 
 	info.Get().scopeInfo.ExitScope();
-	info.Get().scopeInfo.CombineAfterExit(scopeInfo);
+
+	ScopeInfo elseScope = info.Get().scopeInfo.CopyBranch();
+	if (info.Get().init) elseScope.unassigned = info.Get().symbol.GetUnassignedVarsSet();
+
+	AddScopeBreak(info);
+
+	for (const Scope& var : scopeInfo.unassigned) {
+		info.Get().symbol.Get(var, file).sign = false;
+	}
+	
+	info.Get().scopeInfo = scopeInfo;
+
+	for (const ScanType type : continue_->Scan(info)) {
+		scanSet.Add(type);
+	}
+
+	info.Get().scopeInfo = ScopeInfo::BranchIntersection(elseScope, info.Get().scopeInfo);
+
 	return scanSet;
+}
+
+void GuardNode::AddScopeBreak(ScanInfoStack& info) {
+	if (info.Get().scopeInfo.CanContinue()) {
+		switch (info.Get().scopeInfo.type) {
+			case ScopeInfo::ScopeType::Scope: {
+				Pointer<BreakNode> bn = new BreakNode(scope, file);
+				bn->isBreak = true;
+				bn->loops = 1;
+				bn->scopeWise = true;
+				end = bn;
+
+				info.Get().scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info.Get().scopeInfo.maxScopeBreakCount);
+				break;
+			}
+
+			case ScopeInfo::ScopeType::Loop: {
+				Pointer<ContinueNode> cn = new ContinueNode(scope, file);
+				cn->loops = 1;
+				end = cn;
+
+				info.Get().scopeInfo.maxLoopBreakCount = Math::Max(cn->loops, info.Get().scopeInfo.maxLoopBreakCount);
+				break;
+			}
+
+			case ScopeInfo::ScopeType::Function: {
+				Symbol func = Symbol::FindCurrentFunction(scope, file);
+
+				if (func.ret.Size() == 0 && !info.Get().scopeInfo.hasReturned) {
+					end = new ReturnNode(scope, file);
+				}
+				else if (!info.Get().scopeInfo.hasReturned) {
+					ErrorLog::Error(CompileError("guard must return from function", file));
+				}
+
+				info.Get().scopeInfo.willNotReturn = false;
+
+				break;
+			}
+
+			case ScopeInfo::ScopeType::Main: {
+				ErrorLog::Error(CompileError("guard statements in main scope are not supported yet", file));
+				break;
+			}
+		}
+	}
 }
 
 Mango GuardNode::ToMango() const {
 	Mango mango = Mango("guard", MangoType::Map);
 	mango.Add("condition", cond->ToMango());
-	mango.Add("else", else_->ToMango());
+	if (else_) mango.Add("else", else_->ToMango());
 	return mango;
 }

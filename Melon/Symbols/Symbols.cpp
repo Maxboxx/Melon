@@ -319,6 +319,18 @@ List<Scope> Symbol::GetUnassignedVars() const {
 	return unassigned;
 }
 
+Set<Scope> Symbol::GetUnassignedVarsSet() const {
+	Set<Scope> unassigned;
+
+	for (const Pair<String, Symbol>& s : scopes) {
+		if (s.value.type == SymbolType::Variable && !s.value.sign) {
+			unassigned.Add(Scope(s.key));
+		}
+	}
+
+	return unassigned;
+}
+
 List<Scope> Symbol::GetUnassignedVars(const List<Scope>& vars) const {
 	List<Scope> unassigned;
 

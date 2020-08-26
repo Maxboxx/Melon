@@ -8,6 +8,8 @@
 
 #include "Kiwi/Kiwi.h"
 
+#include "ScopeInfo.h"
+
 #include "Melon/Symbols/ScopeList.h"
 #include "Melon/Symbols/Symbols.h"
 
@@ -118,68 +120,6 @@ namespace Melon {
 			///T Self
 			/// Used if self is used
 			Self
-		};
-
-		///B ScopeInfo
-		struct ScopeInfo {
-			bool hasReturned   = false;
-			bool willNotReturn = true;
-
-			Boxx::UInt loopAbortCount     = 0;
-			Boxx::UInt scopeAbortCount    = 0;
-			Boxx::UInt loopBreakCount     = 0;
-			Boxx::UInt scopeBreakCount    = 0;
-			Boxx::UInt maxLoopBreakCount  = 0;
-			Boxx::UInt maxScopeBreakCount = 0;
-
-			void Reset() {
-				hasReturned   = false;
-				willNotReturn = true;
-
-				loopAbortCount     = 0;
-				scopeAbortCount    = 0;
-				loopBreakCount     = 0;
-				scopeBreakCount    = 0;
-				maxLoopBreakCount  = 0;
-				maxScopeBreakCount = 0;
-			}
-
-			bool CanAbort() const {return loopAbortCount > 0 || scopeAbortCount > 0;}
-			bool WillBreak() const {return loopBreakCount > 0 || scopeBreakCount > 0;}
-			bool WillReturn() const {return hasReturned;}
-			bool WillContinue() const {return willNotReturn && maxLoopBreakCount == 0 && maxScopeBreakCount == 0;}
-			bool CanContinue() const {return !WillReturn() && !WillBreak();}
-			bool WillNotContinue() const {return WillReturn() || WillBreak();}
-
-			void EnterScope(const bool isLoop = false) {
-				if (isLoop && loopAbortCount > 0) loopAbortCount++;
-				if (scopeAbortCount > 0) scopeAbortCount++;
-				if (isLoop && loopBreakCount > 0) loopBreakCount++;
-				if (scopeBreakCount > 0) scopeBreakCount++;
-				if (isLoop && maxLoopBreakCount > 0) maxLoopBreakCount++;
-				if (maxScopeBreakCount > 0) maxScopeBreakCount++;
-			}
-
-			void ExitScope(const bool isLoop = false) {
-				if (isLoop && loopAbortCount > 0) loopAbortCount--;
-				if (scopeAbortCount > 0) scopeAbortCount--;
-				if (isLoop && loopBreakCount > 0) loopBreakCount--;
-				if (scopeBreakCount > 0) scopeBreakCount--;
-				if (isLoop && maxLoopBreakCount > 0) maxLoopBreakCount--;
-				if (maxScopeBreakCount > 0) maxScopeBreakCount--;
-			}
-
-			/// Creates a copy of the current scope before entering a new scope
-			ScopeInfo CopyBeforeEnter() {
-				return *this;
-			}
-
-			/// Combines the scope info with a enter copy of the scope info
-			void CombineAfterExit(const ScopeInfo& beforeEnter) {
-				loopBreakCount  = beforeEnter.loopBreakCount;
-				scopeBreakCount = beforeEnter.scopeBreakCount;
-				hasReturned     = beforeEnter.hasReturned;
-			}
 		};
 
 		///B ScanInfo

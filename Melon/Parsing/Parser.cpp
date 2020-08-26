@@ -110,8 +110,8 @@ void Parser::SetupTokens() {
 	patterns = List<TokenPattern>();
 
 	// Comments
-	patterns.Add(TokenPattern(TokenType::CommentLine, "%-%-~\n*", true, true));
 	patterns.Add(TokenPattern(TokenType::CommentBlock, "%-%-#%/+~{%1%-}*%1%-%-", true, true));
+	patterns.Add(TokenPattern(TokenType::CommentLine, "%-%-~\n*", true, true));
 
 	// Raw
 	patterns.Add(TokenPattern(TokenType::Float, "%d*%.%d+"));

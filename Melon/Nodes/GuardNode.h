@@ -11,10 +11,20 @@ namespace Melon {
 			NodePtr cond;
 
 			///T Else
+			/// All statements in the else block
 			NodePtr else_;
+
+			///T Continue
+			/// All statements after the guard
+			NodePtr continue_;
+
+			///T End
+			NodePtr end;
 
 			GuardNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~GuardNode();
+
+			void AddScopeBreak(ScanInfoStack& info);
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

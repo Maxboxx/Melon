@@ -81,6 +81,7 @@ Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 
 void RootNode::Scan() {
 	ScanInfoStack info;
+	info.Get().scopeInfo.type = ScopeInfo::ScopeType::Main;
 	Scan(info);
 }
 

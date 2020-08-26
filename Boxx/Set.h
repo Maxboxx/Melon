@@ -71,6 +71,24 @@ namespace Boxx {
 		void operator=(const Set<T>& set);
 		void operator=(Set<T>&& set) noexcept;
 
+		///H Static functions
+
+		///T Union
+		/// Returns the union of two sets
+		static Set<T> Union(const Set<T>& set1, const Set<T>& set2);
+
+		///T Intersection
+		/// Returns the intersection of two sets
+		static Set<T> Intersection(const Set<T>& set1, const Set<T>& set2);
+
+		///T Difference
+		/// Returns the difference of two sets
+		static Set<T> Difference(const Set<T>& set1, const Set<T>& set2);
+
+		///T Symmetric Difference
+		/// Returns the symmetric difference of two sets
+		static Set<T> SymmetricDifference(const Set<T>& set1, const Set<T>& set2);
+
 		///H Iterators
 
 		///T Iterator
@@ -231,6 +249,54 @@ namespace Boxx {
 	template <class T>
 	inline void Set<T>::operator=(Set<T>&& set) noexcept {
 		list = std::move(set.list);
+	}
+	
+	template <class T>
+	inline Set<T> Set<T>::Union(const Set<T>& set1, const Set<T>& set2) {
+		Set<T> set{set1.Size()};
+
+		for (const T& v : set1)
+			set.Add(v);
+		for (const T& v : set2)
+			set.Add(v);
+
+		return set;
+	}
+
+	template <class T>
+	inline Set<T> Set<T>::Intersection(const Set<T>& set1, const Set<T>& set2) {
+		Set<T> set;
+
+		for (const T& v : set1)
+			if (set2.Contains(v))
+				set.Add(v);
+
+		return set;
+	}
+
+	template <class T>
+	inline Set<T> Set<T>::Difference(const Set<T>& set1, const Set<T>& set2) {
+		Set<T> set;
+
+		for (const T& v : set1)
+			if (!set2.Contains(v))
+				set.Add(v);
+
+		return set;
+	}
+
+	template <class T>
+	inline Set<T> Set<T>::SymmetricDifference(const Set<T>& set1, const Set<T>& set2) {
+		Set<T> set;
+
+		for (const T& v : set1)
+			if (!set2.Contains(v))
+				set.Add(v);
+		for (const T& v : set2)
+			if (!set1.Contains(v))
+				set.Add(v);
+
+		return set;
 	}
 
 	template <class T>

@@ -736,7 +736,7 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
-	info.Get().scopeInfo.EnterScope();
+	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	LoopScanInfo loopInfo = ScanSetup(info.Get());
 	info.Get().scopeInfo.ExitScope();
 
@@ -751,7 +751,7 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 			}
 		}
 
-		info.Get().scopeInfo.EnterScope(segments[i].type == LoopType::For || segments[i].type == LoopType::While);
+		info.Get().scopeInfo.EnterScope(segments[i].type == LoopType::For || segments[i].type == LoopType::While ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
 
 		ScanPreContents(loopInfo, info.Get(), segments[i]);
 
@@ -775,10 +775,10 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 			ScanPostContents(loopInfo, info.Get(), segments[i]);
 		}
 
-		info.Get().scopeInfo.ExitScope(segments[i].type == LoopType::For || segments[i].type == LoopType::While);
+		info.Get().scopeInfo.ExitScope();
 	}
 
-	info.Get().scopeInfo.EnterScope();
+	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	ScanCleanup(loopInfo, info.Get());
 	info.Get().scopeInfo.ExitScope();
 

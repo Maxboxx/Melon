@@ -114,7 +114,7 @@ Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 	UInt loopBreaks  = info.Get().scopeInfo.loopBreakCount;
 	UInt scopeBreaks = info.Get().scopeInfo.scopeBreakCount;
 
-	info.Get().scopeInfo.EnterScope(true);
+	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Loop);
 
 	for (const ScanType type : content->Scan(info)) {
 		scanSet.Add(type);
@@ -132,7 +132,7 @@ Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	info.Get().scopeInfo.ExitScope(true);
+	info.Get().scopeInfo.ExitScope();
 	return scanSet;
 }
 

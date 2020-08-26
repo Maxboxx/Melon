@@ -390,7 +390,13 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 					break;
 				}
 				else {
+					if (funcHead.retrunTypes.Size() > 1) {
+						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("':'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+					}
+
 					info.index = retIndex;
+					funcHead.retrunTypes = List<ScopeList>();
+
 					break;
 				}
 			}
