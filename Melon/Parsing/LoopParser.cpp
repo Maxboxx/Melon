@@ -184,7 +184,9 @@ void LoopParser::ParseNone(LoopNode::LoopSegment& ls, const Boxx::String& value,
 	info.scopes = info.scopes.AddNext(ls.also ? "also" : "else");
 	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
+	info.scopeCount++;
 	ls.statements = StatementParser::ParseMultiple(info);
+	info.scopeCount--;
 }
 
 bool LoopParser::IsLoop(const TokenType t) {

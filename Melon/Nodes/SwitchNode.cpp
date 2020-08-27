@@ -261,13 +261,11 @@ void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) co
 void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
 		for (UInt i = 0; i < switchInfo.cases.Size(); i++) {
-			if (switchInfo.willACaseRun) {
-				if (i == 0) {
-					switchInfo.scope = switchInfo.cases[i];
-				}
-				else {
-					switchInfo.scope = ScopeInfo::BranchIntersection(switchInfo.scope, switchInfo.cases[i]);
-				}
+			if (i == 0) {
+				switchInfo.scope = switchInfo.cases[i];
+			}
+			else if (switchInfo.willACaseRun) {
+				switchInfo.scope = ScopeInfo::BranchIntersection(switchInfo.scope, switchInfo.cases[i]);
 			}
 			else {
 				switchInfo.scope = ScopeInfo::WeakBranchIntersection(switchInfo.scope, switchInfo.cases[i]);

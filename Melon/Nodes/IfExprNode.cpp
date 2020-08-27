@@ -110,6 +110,8 @@ void IfExprNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
+	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
+
 	for (const NodePtr& node : nodes) {
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
@@ -132,6 +134,7 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 
 	Symbol::Find(Type(), file);
 
+	info.Get().scopeInfo = scopeInfo;
 	return scanSet;
 }
 

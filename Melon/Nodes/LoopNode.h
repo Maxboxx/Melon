@@ -42,27 +42,20 @@ namespace Melon {
 				NodePtr statements;
 
 				~LoopSegment() {}
+
+				bool IsLoop() const {
+					return type == LoopType::While || type == LoopType::For;
+				}
 			};
 
 			struct LoopScanInfo {
-				Boxx::List<Symbols::Scope> unassignedVarsStart;
-				Boxx::Set<Symbols::Scope> unassignedVarsAlso;
-				Boxx::Set<Symbols::Scope> unassignedVars;
+				ScopeInfo scope;
+				ScopeInfo mainSegment;
+				Boxx::List<ScopeInfo> alsoSegments;
+				Boxx::List<ScopeInfo> elseSegments;
 
-				bool init          = false;
-				bool hasReturned   = false;
-				bool hasAReturn    = false;
-				bool willNotReturn = true;
-
-				Boxx::List<Boxx::UInt> loopBreakCounts;
-				Boxx::List<Boxx::UInt> scopeBreakCounts;
-
-				Boxx::UInt loopBreakCount  = 0;
-				Boxx::UInt scopeBreakCount = 0;
-
-				bool checkAlsoAssign = false;
+				bool init            = false;
 				bool willASegmentRun = false;
-				bool checkAlsoRet    = false;
 
 				~LoopScanInfo() {}
 			};

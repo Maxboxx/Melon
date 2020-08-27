@@ -111,9 +111,7 @@ void RepeatNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet;
 
-	UInt loopBreaks  = info.Get().scopeInfo.loopBreakCount;
-	UInt scopeBreaks = info.Get().scopeInfo.scopeBreakCount;
-
+	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
 	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Loop);
 
 	for (const ScanType type : content->Scan(info)) {
@@ -133,6 +131,7 @@ Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 	}
 
 	info.Get().scopeInfo.ExitScope();
+	info.Get().scopeInfo = ScopeInfo::WeakBranchUnion(scopeInfo, info.Get().scopeInfo);
 	return scanSet;
 }
 

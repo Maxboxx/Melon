@@ -32,7 +32,6 @@ namespace Melon {
 			bool willNotReturn = true;
 
 			Boxx::UInt loopAbortCount     = 0;
-			Boxx::UInt scopeAbortCount    = 0;
 			Boxx::UInt loopBreakCount     = 0;
 			Boxx::UInt scopeBreakCount    = 0;
 			Boxx::UInt maxLoopBreakCount  = 0;
@@ -45,7 +44,7 @@ namespace Melon {
 			void Reset();
 
 			///T Can Abort
-			/// Checks if the current scope might be aborted
+			/// Checks if the current loop might be aborted from an abort, continue or break
 			bool CanAbort() const;
 
 			///T Will Break

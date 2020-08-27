@@ -15,7 +15,6 @@ void ScopeInfo::Reset() {
 	willNotReturn = true;
 
 	loopAbortCount     = 0;
-	scopeAbortCount    = 0;
 	loopBreakCount     = 0;
 	scopeBreakCount    = 0;
 	maxLoopBreakCount  = 0;
@@ -23,7 +22,7 @@ void ScopeInfo::Reset() {
 }
 
 bool ScopeInfo::CanAbort() const {
-	return loopAbortCount > 0 || scopeAbortCount > 0;
+	return loopAbortCount > 0 || maxLoopBreakCount > 1 || maxScopeBreakCount > 1;
 }
 
 bool ScopeInfo::WillBreak() const {
@@ -53,7 +52,6 @@ void ScopeInfo::EnterScope(const ScopeType type) {
 	const bool isLoop = type == ScopeType::Loop;
 
 	if (isLoop && loopAbortCount > 0)    loopAbortCount++;
-	if (scopeAbortCount > 0)             scopeAbortCount++;
 	if (isLoop && loopBreakCount > 0)    loopBreakCount++;
 	if (scopeBreakCount > 0)             scopeBreakCount++;
 	if (isLoop && maxLoopBreakCount > 0) maxLoopBreakCount++;
@@ -65,7 +63,6 @@ void ScopeInfo::ExitScope() {
 	type = types.Pop();
 
 	if (isLoop && loopAbortCount > 0)    loopAbortCount--;
-	if (scopeAbortCount > 0)             scopeAbortCount--;
 	if (isLoop && loopBreakCount > 0)    loopBreakCount--;
 	if (scopeBreakCount > 0)             scopeBreakCount--;
 	if (isLoop && maxLoopBreakCount > 0) maxLoopBreakCount--;
@@ -106,7 +103,6 @@ ScopeInfo ScopeInfo::BranchUnion(const ScopeInfo& branch1, const ScopeInfo& bran
 	result.willNotReturn = !result.hasReturned && branch1.willNotReturn && branch2.willNotReturn;
 
 	result.loopAbortCount     = Math::Max(branch1.loopAbortCount,     branch2.loopAbortCount);
-	result.scopeAbortCount    = Math::Max(branch1.scopeAbortCount,    branch2.scopeAbortCount);
 	result.loopBreakCount     = Math::Max(branch1.loopBreakCount,     branch2.loopBreakCount);
 	result.scopeBreakCount    = Math::Max(branch1.scopeBreakCount,    branch2.scopeBreakCount);
 	result.maxLoopBreakCount  = Math::Max(branch1.maxLoopBreakCount,  branch2.maxLoopBreakCount);
@@ -123,7 +119,6 @@ ScopeInfo ScopeInfo::WeakBranchUnion(const ScopeInfo& branch1, const ScopeInfo& 
 	result.willNotReturn = !result.hasReturned && branch1.willNotReturn && branch2.willNotReturn;
 
 	result.loopAbortCount     = Math::Max(branch1.loopAbortCount,     branch2.loopAbortCount);
-	result.scopeAbortCount    = Math::Max(branch1.scopeAbortCount,    branch2.scopeAbortCount);
 	result.maxLoopBreakCount  = Math::Max(branch1.maxLoopBreakCount,  branch2.maxLoopBreakCount);
 	result.maxScopeBreakCount = Math::Max(branch1.maxScopeBreakCount, branch2.maxLoopBreakCount);
 
@@ -137,7 +132,6 @@ ScopeInfo ScopeInfo::BranchIntersection(const ScopeInfo& branch1, const ScopeInf
 	result.willNotReturn = !result.hasReturned && branch1.willNotReturn && branch2.willNotReturn;
 
 	result.loopAbortCount     = Math::Max(branch1.loopAbortCount,     branch2.loopAbortCount);
-	result.scopeAbortCount    = Math::Max(branch1.scopeAbortCount,    branch2.scopeAbortCount);
 	result.loopBreakCount     = Math::Min(branch1.loopBreakCount,     branch2.loopBreakCount);
 	result.scopeBreakCount    = Math::Min(branch1.scopeBreakCount,    branch2.scopeBreakCount);
 	result.maxLoopBreakCount  = Math::Max(branch1.maxLoopBreakCount,  branch2.maxLoopBreakCount);
@@ -154,7 +148,6 @@ ScopeInfo ScopeInfo::WeakBranchIntersection(const ScopeInfo& branch1, const Scop
 	result.willNotReturn = !result.hasReturned && branch1.willNotReturn && branch2.willNotReturn;
 
 	result.loopAbortCount     = Math::Max(branch1.loopAbortCount,     branch2.loopAbortCount);
-	result.scopeAbortCount    = Math::Max(branch1.scopeAbortCount,    branch2.scopeAbortCount);
 	result.maxLoopBreakCount  = Math::Max(branch1.maxLoopBreakCount,  branch2.maxLoopBreakCount);
 	result.maxScopeBreakCount = Math::Max(branch1.maxScopeBreakCount, branch2.maxLoopBreakCount);
 
