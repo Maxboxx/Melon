@@ -224,20 +224,11 @@ SwitchNode::SwitchScanInfo SwitchNode::ScanSetup(ScanInfo& info) const {
 
 	if (!expr) {
 		switchInfo.willACaseRun = def != nullptr;
+		switchInfo.scope = info.scopeInfo.CopyBranch();
 
 		if (switchInfo.init) {
-			switchInfo.unassignedVarsStart = info.symbol.GetUnassignedVars();
-
-			if (switchInfo.willACaseRun) for (const Scope& var : switchInfo.unassignedVarsStart) {
-				switchInfo.unassignedVars.Add(var);
-			}
+			switchInfo.scope.unassigned = info.symbol.GetUnassignedVarsSet();
 		}
-
-		switchInfo.hasReturned = switchInfo.willACaseRun;
-		switchInfo.willNotReturn = info.scopeInfo.willNotReturn;
-
-		switchInfo.loopBreakCount  = info.scopeInfo.loopBreakCount;
-		switchInfo.scopeBreakCount = info.scopeInfo.scopeBreakCount;
 	}
 
 	return switchInfo;
@@ -248,62 +239,52 @@ void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) con
 		if (switchInfo.init) {
 			info.init = true;
 
-			for (const Scope& var : switchInfo.unassignedVarsStart) {
+			for (const Scope& var : switchInfo.scope.unassigned) {
 				info.symbol.Get(var, FileInfo()).sign = false;
 			}
 		}
 
-		info.scopeInfo.hasReturned = false;
-		info.scopeInfo.willNotReturn = switchInfo.willNotReturn;
-
-		info.scopeInfo.loopBreakCount  = switchInfo.loopBreakCount;
-		info.scopeInfo.scopeBreakCount = switchInfo.scopeBreakCount;
+		info.scopeInfo = switchInfo.scope.CopyBranch();
 	}
 }
 
 void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
 		if (switchInfo.init) {
-			for (const Scope& var : info.symbol.GetUnassignedVars()) {
-				switchInfo.unassignedVars.Add(var);
-			}
+			info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
 		}
 
-		if (!info.scopeInfo.hasReturned) {
-			switchInfo.hasReturned = false;
-		}
-		else {
-			switchInfo.hasAReturn = true;
-		}
-
-		if (switchInfo.willACaseRun) {
-			switchInfo.minLoopBreakCount  = Math::Min(switchInfo.minLoopBreakCount, info.scopeInfo.loopBreakCount);
-			switchInfo.minScopeBreakCount = Math::Min(switchInfo.minScopeBreakCount, info.scopeInfo.scopeBreakCount);
-		}
+		switchInfo.cases.Add(info.scopeInfo);
 	}
 }
 
 void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
-		if (switchInfo.init) {
-			for (const Scope& var : switchInfo.unassignedVarsStart) {
-				info.symbol.Get(var, FileInfo()).sign = true;
+		for (UInt i = 0; i < switchInfo.cases.Size(); i++) {
+			if (switchInfo.willACaseRun) {
+				if (i == 0) {
+					switchInfo.scope = switchInfo.cases[i];
+				}
+				else {
+					switchInfo.scope = ScopeInfo::BranchIntersection(switchInfo.scope, switchInfo.cases[i]);
+				}
 			}
-
-			for (const Scope& var : switchInfo.unassignedVars) {
-				info.symbol.Get(var, FileInfo()).sign = false;
-			}
-
-			if (!switchInfo.unassignedVars.IsEmpty()) {
-				info.init = true;
+			else {
+				switchInfo.scope = ScopeInfo::WeakBranchIntersection(switchInfo.scope, switchInfo.cases[i]);
 			}
 		}
 
-		info.scopeInfo.hasReturned = switchInfo.hasReturned || !switchInfo.willNotReturn;
-		info.scopeInfo.willNotReturn = switchInfo.willNotReturn && !info.scopeInfo.hasReturned && !switchInfo.hasAReturn;
+		if (switchInfo.init) {
+			for (const Scope& var : switchInfo.scope.unassigned) {
+				info.symbol.Get(var, FileInfo()).sign = true;
+			}
 
-		info.scopeInfo.loopBreakCount  = switchInfo.loopBreakCount;
-		info.scopeInfo.scopeBreakCount = switchInfo.scopeBreakCount;
+			for (const Scope& var : switchInfo.scope.unassigned) {
+				info.symbol.Get(var, FileInfo()).sign = false;
+			}
+		}
+
+		info.scopeInfo = switchInfo.scope;
 	}
 }
 

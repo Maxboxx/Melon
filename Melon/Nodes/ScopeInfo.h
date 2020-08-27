@@ -82,9 +82,17 @@ namespace Melon {
 			/// Calculate the union of two branches
 			static ScopeInfo BranchUnion(const ScopeInfo& branch1, const ScopeInfo& branch2);
 
+			///T Weak Branch Union
+			/// Calculate the weak union of two branches
+			static ScopeInfo WeakBranchUnion(const ScopeInfo& branch1, const ScopeInfo& branch2);
+
 			///T Branch Intersection
 			/// Calculate the intersection between two branches
 			static ScopeInfo BranchIntersection(const ScopeInfo& branch1, const ScopeInfo& branch2);
+
+			///T Weak Branch Intersection
+			/// Calculate the weak intersection between two branches
+			static ScopeInfo WeakBranchIntersection(const ScopeInfo& branch1, const ScopeInfo& branch2);
 
 		private:
 			Boxx::Stack<ScopeType> types;

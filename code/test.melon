@@ -1,13 +1,11 @@
 
 function long: f(long: i)
-	guard i < 5 else
-		return 0
+	switch i
+		case 1 return 1
+		case 2 return 2
+		case 3 i = i + 1
+		case 4 return 4
+		
+		default return 0
 	end
-	
-	guard i ~= 2 else
-		return 0
-	end
-	
-	return i
 end
-

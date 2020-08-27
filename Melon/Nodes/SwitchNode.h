@@ -33,22 +33,13 @@ namespace Melon {
 			~SwitchNode();
 
 			struct SwitchScanInfo {
-				Boxx::List<Symbols::Scope> unassignedVarsStart;
-				Boxx::Set<Symbols::Scope> unassignedVars;
-
-				bool init          = false;
-				bool hasReturned   = false;
-				bool hasAReturn    = false;
-				bool willNotReturn = true;
+				bool init = false;
+				
+				ScopeInfo scope;
+				Boxx::List<ScopeInfo> cases;
 
 				bool isFirst = true;
 				bool willACaseRun = false;
-
-				Boxx::UInt loopBreakCount  = 0;
-				Boxx::UInt scopeBreakCount = 0;
-
-				Boxx::UInt minLoopBreakCount  = Boxx::Math::UIntMax();
-				Boxx::UInt minScopeBreakCount = Boxx::Math::UIntMax();
 			};
 
 			///T Scan Setup

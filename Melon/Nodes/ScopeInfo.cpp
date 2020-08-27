@@ -117,6 +117,19 @@ ScopeInfo ScopeInfo::BranchUnion(const ScopeInfo& branch1, const ScopeInfo& bran
 	return result;
 }
 
+ScopeInfo ScopeInfo::WeakBranchUnion(const ScopeInfo& branch1, const ScopeInfo& branch2) {
+	ScopeInfo result = branch1;
+	result = result.CopyBranch();
+	result.willNotReturn = !result.hasReturned && branch1.willNotReturn && branch2.willNotReturn;
+
+	result.loopAbortCount     = Math::Max(branch1.loopAbortCount,     branch2.loopAbortCount);
+	result.scopeAbortCount    = Math::Max(branch1.scopeAbortCount,    branch2.scopeAbortCount);
+	result.maxLoopBreakCount  = Math::Max(branch1.maxLoopBreakCount,  branch2.maxLoopBreakCount);
+	result.maxScopeBreakCount = Math::Max(branch1.maxScopeBreakCount, branch2.maxLoopBreakCount);
+
+	return result;
+}
+
 ScopeInfo ScopeInfo::BranchIntersection(const ScopeInfo& branch1, const ScopeInfo& branch2) {
 	ScopeInfo result = branch1;
 	result = result.CopyBranch();
@@ -131,6 +144,19 @@ ScopeInfo ScopeInfo::BranchIntersection(const ScopeInfo& branch1, const ScopeInf
 	result.maxScopeBreakCount = Math::Max(branch1.maxScopeBreakCount, branch2.maxLoopBreakCount);
 
 	result.unassigned = Set<Scope>::Union(branch1.unassigned, branch2.unassigned);
+
+	return result;
+}
+
+ScopeInfo ScopeInfo::WeakBranchIntersection(const ScopeInfo& branch1, const ScopeInfo& branch2) {
+	ScopeInfo result = branch1;
+	result = result.CopyBranch();
+	result.willNotReturn = !result.hasReturned && branch1.willNotReturn && branch2.willNotReturn;
+
+	result.loopAbortCount     = Math::Max(branch1.loopAbortCount,     branch2.loopAbortCount);
+	result.scopeAbortCount    = Math::Max(branch1.scopeAbortCount,    branch2.scopeAbortCount);
+	result.maxLoopBreakCount  = Math::Max(branch1.maxLoopBreakCount,  branch2.maxLoopBreakCount);
+	result.maxScopeBreakCount = Math::Max(branch1.maxScopeBreakCount, branch2.maxLoopBreakCount);
 
 	return result;
 }
