@@ -83,6 +83,8 @@ CompiledNode GuardNode::Compile(CompileInfo& info) {
 	compiled.instructions.Add(Instruction::Label(info.label));
 	compiled.instructions[jumpIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 
+	compiled.AddInstructions(continue_->Compile(info).instructions);
+
 	return compiled;
 }
 
@@ -92,6 +94,7 @@ void GuardNode::IncludeScan(ParsingInfo& info) {
 	cond->IncludeScan(info);
 
 	if (else_) else_->IncludeScan(info);
+	continue_->IncludeScan(info);
 
 	includeScanned = true;
 }
@@ -184,5 +187,6 @@ Mango GuardNode::ToMango() const {
 	Mango mango = Mango("guard", MangoType::Map);
 	mango.Add("condition", cond->ToMango());
 	if (else_) mango.Add("else", else_->ToMango());
+	mango.Add("continue", continue_->ToMango());
 	return mango;
 }

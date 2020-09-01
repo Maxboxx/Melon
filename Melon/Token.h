@@ -62,6 +62,7 @@ namespace Melon {
 		Dot,
 		Len,
 		Exclamation,
+		Question,
 
 		// Keywords
 		If,
