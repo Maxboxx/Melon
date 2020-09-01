@@ -19,7 +19,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 	const UInt startLine = info.Current().line;
 
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, isPlain)) {
-		const FunctionHead funcHead = fh;
+		const FunctionHead funcHead = (FunctionHead)fh;
 		Symbol s = Symbol(funcHead.isMethod && !funcHead.isOperator ? SymbolType::Method : SymbolType::Function);
 		s.symbolFile = info.currentFile;
 		s.symbolNamespace = info.currentNamespace;
@@ -86,7 +86,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 						ErrorLog::Error(SyntaxError(SyntaxError::ArgNameExpected, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 					}
 
-					s.args.Add(type);
+					s.args.Add((ScopeList)type);
 					s.names.Add(Scope(info.Current().value));
 					argNames.Add(info.Current().value);
 					func->argNames.Add(Scope(info.Current().value));
@@ -96,7 +96,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 					a.symbolNamespace = info.currentNamespace;
 					a.includedNamespaces = info.includedNamespaces;
 					a.statementNumber = info.statementNumber;
-					a.varType = type;
+					a.varType = (ScopeList)type;
 					a.attributes = attributes;
 					args.Add(a);
 
@@ -402,7 +402,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 			}
 
 			if (Optional<ScopeList> type = TypeParser::Parse(info)) {
-				funcHead.retrunTypes.Add(type);
+				funcHead.retrunTypes.Add((ScopeList)type);
 			}
 			else {
 				break;
@@ -411,13 +411,13 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 
 		if (!funcHead.isOperator) {
 			if (Optional<Scope> fname = ParseFunctionName(info, isPlain)) {
-				const Scope name = fname;
+				const Scope name = (Scope)fname;
 
-				if (!upper.Match(name.name).IsEmpty()) {
+				if (upper.Match(name.name)) {
 					ErrorLog::Info(InfoError(InfoError::LowerName("function", name.name), FileInfo(info.filename, startLine, info.statementNumber)));
 				}
 
-				if (!underscore.Match(name.name).IsEmpty()) {
+				if (underscore.Match(name.name)) {
 					ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("function", name.name), FileInfo(info.filename, startLine, info.statementNumber)));
 				}
 
@@ -431,7 +431,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 		}
 		else {
 			if (Optional<Scope> name = ParseOperatorName(info)) {
-				funcHead.name = name;
+				funcHead.name = (Scope)name;
 				return funcHead;
 			}
 			else {

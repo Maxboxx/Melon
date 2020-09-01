@@ -3,6 +3,7 @@
 #include "Types.h"
 #include "Vector.h"
 #include "Error.h"
+#include "String.h"
 
 ///N Matrix
 namespace Boxx {
@@ -377,7 +378,12 @@ namespace Boxx {
 	///B Determinant is zero error
 	/// Thrown if the determinant of a matrix is zero
 	class DeterminantIsZeroError : public Error {
-		public: DeterminantIsZeroError() : Error("Determinant is zero") {}
+	public: 
+		DeterminantIsZeroError() : Error("Determinant is zero") {}
+
+		virtual String Name() const override {
+			return "DeterminantIsZeroError";
+		}
 	};
 
 	inline Matrix2::Matrix2() {values[0] = 1.f; values[1] = 0.f; values[2] = 0.f; values[3] = 1.f;}

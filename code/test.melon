@@ -13,7 +13,10 @@ function long: f(long: i)
 		i = 10
 	alsoif true then
 		guard i ~= 4 else
-			guard i == 4
+			guard i == 4 else
+				return -1
+			end
+			
 			return 1
 		end
 		

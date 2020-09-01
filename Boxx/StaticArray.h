@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Types.h"
-#include "Error.h"
 #include "Array.h"
+#include "Error.h"
 
 ///N StaticArray
 namespace Boxx {
@@ -38,7 +38,7 @@ namespace Boxx {
 
 		///T Size
 		/// Returns the size of the array
-		UInt Size() const;
+		constexpr UInt Size() const;
 
 		///T Last value
 		/// Returns an element near the end of the array
@@ -47,6 +47,10 @@ namespace Boxx {
 		T& Last(const UInt pos = 0);
 		const T& Last(const UInt pos = 0) const;
 		///M
+
+		///T Copy
+		/// Creates a copy of the collection
+		StaticArray<T, S> Copy() const;
 
 		///H Operators
 
@@ -111,6 +115,8 @@ namespace Boxx {
 	public:
 		ArrayError():Error(){}
 		ArrayError(const char* const msg):Error(msg){}
+
+		virtual String Name() const override;
 	};
 
 	///B Array size error
@@ -119,6 +125,8 @@ namespace Boxx {
 	public:
 		ArraySizeError():ArrayError(){}
 		ArraySizeError(const char* const msg):ArrayError(msg){}
+
+		virtual String Name() const override;
 	};
 
 	template <class T, UInt S>
@@ -142,7 +150,7 @@ namespace Boxx {
 	template <class T, UInt S>
 	inline StaticArray<T, S>::StaticArray(const Array<T>& arr) {
 		if (S != arr.Size())
-			throw ArraySizeError();
+			throw ArraySizeError("Array size mismatch");
 
 		array = arr.array;
 		ref = arr.ref;
@@ -174,7 +182,7 @@ namespace Boxx {
 	}
 
 	template <class T, UInt S>
-	inline UInt StaticArray<T, S>::Size() const {
+	inline constexpr UInt StaticArray<T, S>::Size() const {
 		return S;
 	}
 
@@ -186,6 +194,21 @@ namespace Boxx {
 	template <class T, UInt S>
 	inline const T& StaticArray<T, S>::Last(const UInt pos) const {
 		return array[Size() - pos - 1];
+	}
+
+	template <class T, UInt S>
+	inline StaticArray<T, S> StaticArray<T, S>::Copy() const {
+		StaticArray<T, S> arr;
+
+		T* const last = &arr.array[Size()];
+		T* source = array;
+
+		if (std::is_trivially_copyable<T>::value)
+			memmove(arr.array, array, sizeof(T) * Size());
+		else for (T* dest = arr.array; dest != last; dest++, source++)
+			*dest = *source;
+
+		return arr;
 	}
 
 	template <class T, UInt S>

@@ -138,7 +138,7 @@ bool Symbol::Add(const ScopeList& scopes, const Symbol& symbol, const FileInfo& 
 				Symbol sym = symbol;
 				Scope symScope = scopes.Last();
 				sym.scope = scopes;
-				s.scopes[scopes.Last().name].variants[scopes.Last().variant] = sym;
+				s.scopes[scopes.Last().name].variants[(UInt)scopes.Last().variant] = sym;
 			}
 		}
 		else {
@@ -439,7 +439,7 @@ Symbol Symbol::FindInNamespace(const ScopeList& scopes, const FileInfo& file) {
 		}
 	}
 
-	if (foundSymbol) return foundSymbol;
+	if (foundSymbol) return (Symbol)foundSymbol;
 
 	ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + scopes.ToString() + SymbolError::NotFoundEnd, file));
 	return Symbol();

@@ -57,6 +57,10 @@ namespace Boxx {
 		const T& Last(const UInt pos = 0) const;
 		///M
 
+		///T Copy
+		/// Creates a copy of the array
+		Array<T> Copy() const;
+
 		///H Operators
 
 		///T Indexing
@@ -190,6 +194,21 @@ namespace Boxx {
 	template <class T>
 	inline const T& Array<T>::Last(const UInt pos) const {
 		return array[Size() - pos - 1];
+	}
+
+	template <class T>
+	inline Array<T> Array<T>::Copy() const {
+		Array<T> arr{Size()};
+		
+		T* const last = &arr.array[Size()];
+		T* source = array;
+
+		if (std::is_trivially_copyable<T>::value)
+			memmove(arr.array, array, sizeof(T) * Size());
+		else for (T* dest = arr.array; dest != last; dest++, source++)
+			*dest = *source;
+
+		return arr;
 	}
 
 	template <class T>

@@ -32,11 +32,11 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 	const Scope structName = Scope(info.Current().value);
 
-	if (!lower.Match(info.Current().value).IsEmpty()) {
+	if (lower.Match(info.Current().value)) {
 		ErrorLog::Info(InfoError(InfoError::UpperName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 	}
 
-	if (!underscore.Match(info.Current().value).IsEmpty()) {
+	if (underscore.Match(info.Current().value)) {
 		ErrorLog::Info(InfoError(InfoError::UpperUnderscoreName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 	}
 

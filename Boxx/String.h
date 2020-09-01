@@ -4,10 +4,12 @@
 #include <cstring>
 #include <sstream>
 #include <iomanip>
+#include "Error.h"
 #include "Types.h"
 #include "List.h"
 #include "Array.h"
 #include "StaticArray.h"
+#include "Optional.h"
 
 ///N String
 namespace Boxx {
@@ -208,6 +210,26 @@ namespace Boxx {
 		return String(what());
 	}
 
+	inline String Error::Name() const {
+		return "Error";
+	}
+
+	inline String SystemNotSupportedError::Name() const {
+		return "SystemNotSupportedError";
+	}
+
+	inline String OptionalError::Name() const  {
+		return "OptionalError";
+	}
+
+	inline String ArrayError::Name() const {
+		return "ArrayError";
+	}
+
+	inline String ArraySizeError::Name() const {
+		return "ArraySizeError";
+	}
+
 	inline String::String() {
 		str = new char[1] {'\0'};
 		len = 0;
@@ -347,6 +369,9 @@ namespace Boxx {
 
 	inline String String::Trim() const {
 		static const char whitespace[] = {' ', '\t', '\n', '\r', '\v', '\0'};
+
+		if (Size() == 0) return String();
+
 		UInt start;
 		Long end;
 
@@ -365,7 +390,7 @@ namespace Boxx {
 			}
 		}
 
-		for (end = Size() - 1; end >= 0; end--) {
+		for (end = (Long)Size() - 1; end >= 0; end--) {
 			bool white = false;
 
 			for (UInt i = 0; i < 6; i++) {

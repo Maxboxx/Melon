@@ -59,6 +59,10 @@ namespace Boxx {
 		/// Checks if the stack is empty
 		bool IsEmpty() const;
 
+		///T Copy
+		/// Creates a copy of the stack
+		Stack<T> Copy() const;
+
 		///H Operators
 
 		void operator=(const Stack<T>& stack);
@@ -140,6 +144,13 @@ namespace Boxx {
 	template <class T>
 	inline bool Stack<T>::IsEmpty() const {
 		return stack.IsEmpty();
+	}
+
+	template <class T>
+	inline Stack<T> Stack<T>::Copy() const {
+		Stack<T> s;
+		s.stack = stack.Copy();
+		return s;
 	}
 
 	template <class T>

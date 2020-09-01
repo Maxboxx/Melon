@@ -4,6 +4,7 @@
 #include "Boxx/List.h"
 #include "Boxx/Array.h"
 #include "Boxx/Pair.h"
+#include "Boxx/Optional.h"
 
 #include "Token.h"
 #include "Errors.h"
@@ -23,7 +24,7 @@ namespace Melon {
 			static Boxx::Regex whiteSpace = Boxx::Regex("^%n*");
 			static Boxx::Regex undefinedToken = Boxx::Regex("^~%n*");
 
-			Boxx::String match = whiteSpace.Match(code)[0];
+			Boxx::String match = whiteSpace.Match(code).Get().match;
 			Boxx::UInt line = 1 + Lines(match);
 			Boxx::UInt i = match.Size();
 			Boxx::List<Token> tokens;
@@ -32,16 +33,14 @@ namespace Melon {
 				bool found = false;
             
 				for (const TokenPattern& pattern : patterns) {
-					Boxx::Array<Boxx::String> match = pattern.pattern.Match(code, i);
-
-					if (!match.IsEmpty()) {
-						i += match[0].Size();
+					if (Boxx::Optional<Boxx::Match> match = pattern.pattern.Match(code, i)) {
+						i += match.Get().match.Size();
 
 						if (!pattern.ignore) {
-                   			tokens.Add(Token(pattern.type, match[0], line));
+                   			tokens.Add(Token(pattern.type, match.Get().match, line));
 						}
 
-						line += Lines(match[0]);
+						line += Lines(match.Get().match);
 					
 						found = true;
 						break;
@@ -49,15 +48,13 @@ namespace Melon {
 				}
             
 				if (!found) {
-					Boxx::Array<Boxx::String> match = undefinedToken.Match(code, i);
-
-					if (!match.IsEmpty()) {
-						ErrorLog::Error(TokenError(TokenError::UndefinedStart + match[0] + TokenError::UndefinedEnd, FileInfo(filename, line, 0)));
+					if (Boxx::Optional<Boxx::Match> match = undefinedToken.Match(code, i)) {
+						ErrorLog::Error(TokenError(TokenError::UndefinedStart + match.Get().match + TokenError::UndefinedEnd, FileInfo(filename, line, 0)));
 					}
 				}
             
 				if (i < code.Size()) {
-					const Boxx::String match = whiteSpace.Match(code, i)[0];
+					const Boxx::String match = whiteSpace.Match(code, i).Get().match;
 					i += match.Size();
 					line += Lines(match);
 				}

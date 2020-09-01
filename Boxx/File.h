@@ -153,6 +153,10 @@ namespace Boxx {
 	public:
 		FileError():Error(){}
 		FileError(const char* const msg):Error(msg){}
+
+		virtual String Name() const override {
+			return "FileError";
+		}
 	};
 
 	///B FileNotFoundError
@@ -161,6 +165,10 @@ namespace Boxx {
 	public:
 		FileNotFoundError():FileError(){}
 		FileNotFoundError(const char* const msg):FileError(msg){}
+
+		virtual String Name() const override {
+			return "FileNotFoundError";
+		}
 	};
 
 	///B FileOpenError
@@ -169,6 +177,10 @@ namespace Boxx {
 		public:
 		FileOpenError():FileError(){}
 		FileOpenError(const char* const msg):FileError(msg){}
+
+		virtual String Name() const override {
+			return "FileOpenError";
+		}
 	};
 
 	///B FileClosedError
@@ -177,6 +189,10 @@ namespace Boxx {
 	public:
 		FileClosedError():FileError(){}
 		FileClosedError(const char* const msg):FileError(msg){}
+
+		virtual String Name() const override {
+			return "FileClosedError";
+		}
 	};
 
 	///B EndOfFileError
@@ -185,6 +201,10 @@ namespace Boxx {
 	public:
 		EndOfFileError():FileError(){}
 		EndOfFileError(const char* const msg):FileError(msg){}
+
+		virtual String Name() const override {
+			return "EndOfFileError";
+		}
 	};
 
 	inline FileReader::FileReader() {
@@ -260,7 +280,7 @@ namespace Boxx {
 	}
 
 	inline void FileReader::Close() {
-		if (!IsOpen()) throw FileClosedError();
+		if (!IsOpen()) throw FileClosedError("File is closed");
 		file->close();
 	}
 
@@ -357,7 +377,7 @@ namespace Boxx {
 	}
 
 	inline void FileWriter::Close() {
-		if (!IsOpen()) throw FileClosedError();
+		if (!IsOpen()) throw FileClosedError("File is closed");
 		file->close();
 	}
 

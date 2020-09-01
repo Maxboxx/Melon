@@ -217,6 +217,10 @@ namespace Boxx {
 	public:
 		MangoError() : Error() {}
 		MangoError(const char* const msg) : Error(msg) {}
+
+		virtual String Name() const override {
+			return "MangoError";
+		}
 	};
 
 	///B MangoTypeError
@@ -225,6 +229,10 @@ namespace Boxx {
 	public:
 		MangoTypeError() : MangoError() {}
 		MangoTypeError(const char* const msg) : MangoError(msg) {}
+
+		virtual String Name() const override {
+			return "MangoTypeError";
+		}
 	};
 
 	///B MangoKeyError
@@ -233,6 +241,10 @@ namespace Boxx {
 	public:
 		MangoKeyError() : MangoError() {}
 		MangoKeyError(const char* const msg) : MangoError(msg) {}
+
+		virtual String Name() const override {
+			return "MangoKeyError";
+		}
 	};
 
 	///B MangoDecodeError
@@ -241,6 +253,10 @@ namespace Boxx {
 	public:
 		MangoDecodeError() : MangoError() {}
 		MangoDecodeError(const char* const msg) : MangoError(msg) {}
+
+		virtual String Name() const override {
+			return "MangoDecodeError";
+		}
 	};
 
 	inline Mango::Mango() {
@@ -397,95 +413,95 @@ namespace Boxx {
 	}
 
 	inline void Mango::Add(const Mango& mango) {
-		if (type != MangoType::List) throw MangoTypeError();
+		if (type != MangoType::List) throw MangoTypeError("Type is not list");
 		list.Add(mango);
 	}
 
 	inline void Mango::Add(const String& key, const Mango& mango) {
-		if (type != MangoType::Map) throw MangoTypeError();
+		if (type != MangoType::Map) throw MangoTypeError("Type is not map");
 
 		try {
 			map.Add(key, mango);
 		}
 		catch (MapKeyError) {
-			throw MangoKeyError();
+			throw MangoKeyError("Key already exists");
 		}
 	}
 
 	inline UInt Mango::Size() const {
-		if (type != MangoType::List) throw MangoTypeError();
+		if (type != MangoType::List) throw MangoTypeError("Type is not list");
 		return list.Size();
 	}
 
 	inline Mango::operator bool() const {
-		if (type != MangoType::Boolean) throw MangoTypeError();
+		if (type != MangoType::Boolean) throw MangoTypeError("Type is not boolean");
 		return boolean;
 	}
 
 	inline Mango::operator Int() const {
-		if (type != MangoType::Number) throw MangoTypeError();
+		if (type != MangoType::Number) throw MangoTypeError("Type is not number");
 		return (Int)number;
 	}
 
 	inline Mango::operator Long() const {
-		if (type != MangoType::Number) throw MangoTypeError();
+		if (type != MangoType::Number) throw MangoTypeError("Type is not number");
 		return (Long)number;
 	}
 
 	inline Mango::operator float() const {
-		if (type != MangoType::Number) throw MangoTypeError();
+		if (type != MangoType::Number) throw MangoTypeError("Type is not number");
 		return (float)number;
 	}
 
 	inline Mango::operator double() const {
-		if (type != MangoType::Number) throw MangoTypeError();
+		if (type != MangoType::Number) throw MangoTypeError("Type is not number");
 		return number;
 	}
 
 	inline Mango::operator String() const {
-		if (type != MangoType::String) throw MangoTypeError();
+		if (type != MangoType::String) throw MangoTypeError("Type is not string");
 		return string;
 	}
 
 	inline Mango::operator List<Mango>() const {
-		if (type != MangoType::List) throw MangoTypeError();
+		if (type != MangoType::List) throw MangoTypeError("Type is not list");
 		return list;
 	}
 
 	inline Mango::operator Map<String, Mango>() const {
-		if (type != MangoType::Map) throw MangoTypeError();
+		if (type != MangoType::Map) throw MangoTypeError("Type is not map");
 		return map;
 	}
 
 	inline Mango& Mango::operator[](const UInt index) {
-		if (type != MangoType::List) throw MangoTypeError();
+		if (type != MangoType::List) throw MangoTypeError("Type is not list");
 		return list[index];
 	}
 
 	inline const Mango& Mango::operator[](const UInt index) const {
-		if (type != MangoType::List) throw MangoTypeError();
+		if (type != MangoType::List) throw MangoTypeError("Type is not list");
 		return list[index];
 	}
 
 	inline Mango& Mango::operator[](const String& key) {
-		if (type != MangoType::Map) throw MangoTypeError();
+		if (type != MangoType::Map) throw MangoTypeError("Type is not map");
 
 		try {
 			return map[key];
 		}
 		catch (MapKeyError) {
-			throw MangoKeyError();
+			throw MangoKeyError("Key not found");
 		}
 	}
 
 	inline const Mango& Mango::operator[](const String& key) const {
-		if (type != MangoType::Map) throw MangoTypeError();
+		if (type != MangoType::Map) throw MangoTypeError("Type is not map");
 		
 		try {
 			return map[key];
 		}
 		catch (MapKeyError) {
-			throw MangoKeyError();
+			throw MangoKeyError("Key not found");
 		}
 	}
 
@@ -591,10 +607,10 @@ namespace Boxx {
 		String str = "";
 
 		if (mango.label.Size() > 0) {
-			if (labelPattern.Match(mango.label).IsEmpty())
-				str += "\"" + mango.label.Escape() + "\":";
-			else
+			if (labelPattern.Match(mango.label))
 				str += mango.label + ":";
+			else
+				str += "\"" + mango.label.Escape() + "\":";
 		}
 
 		switch (mango.type) {
@@ -630,10 +646,10 @@ namespace Boxx {
 				str += "{";
 
 				for (const Pair<String, Mango>& m : mango.map) {
-					if (labelPattern.Match(m.key).IsEmpty())
-						str += "\"" + m.key.Escape() + "\":";
-					else
+					if (labelPattern.Match(m.key))
 						str += m.key + ":";
+					else
+						str += "\"" + m.key.Escape() + "\":";
 
 					str += EncodeNode(m.value) + " ";
 				}
@@ -653,10 +669,10 @@ namespace Boxx {
 		String str = "";
 
 		if (mango.label.Size() > 0) {
-			if (labelPattern.Match(mango.label).IsEmpty())
-				str += "\"" + mango.label.Escape() + "\": ";
-			else
+			if (labelPattern.Match(mango.label))
 				str += mango.label + ": ";
+			else
+				str += "\"" + mango.label.Escape() + "\": ";
 		}
 
 		switch (mango.type) {
@@ -692,10 +708,10 @@ namespace Boxx {
 				str += "{\n";
 
 				for (const Pair<String, Mango>& m : mango.map) {
-					if (labelPattern.Match(m.key).IsEmpty())
-						str += nextTabs + "\"" + m.key.Escape() + "\": ";
-					else
+					if (labelPattern.Match(m.key))
 						str += nextTabs + m.key + ": ";
+					else
+						str += nextTabs + "\"" + m.key.Escape() + "\": ";
 
 					str += EncodeNode(m.value, nextTabs);
 				}
@@ -710,13 +726,13 @@ namespace Boxx {
 
 	inline Mango Mango::Decode(const String& mango) {
 		List<TokenPattern<MangoTokenType>> patterns;
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Comment, "%-%-#{%/+}~{%0%-}*%0%-%-", true, true));
 		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Comment, "%-%-~\n*", true, true));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Comment, "%-#%/+./%1%-", true, true));
 
 		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Boolean, "true|false"));
 		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Nil, "nil"));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Name, "[%a_]%w*"));
 		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Number, "%d*%.?%d+"));
+		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Name, "%w+"));
 		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::String, "\"()\"", true));
 		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::String, "\"(./~{{\\\\}*\\})\"", true));
 
@@ -741,10 +757,10 @@ namespace Boxx {
 		UInt index = 0;
 		Optional<Mango> mango = DecodeValue(tokens, index);
 
-		if (index < tokens.Size()) throw MangoDecodeError("Unecpected token: '" + tokens[index].value + "'");
+		if (index < tokens.Size()) throw MangoDecodeError("Unexpected token: '" + tokens[index].value + "'");
 
 		if (mango) {
-			return mango;
+			return (Mango)mango;
 		}
 		else {
 			throw MangoDecodeError("Invalid value");
@@ -786,7 +802,7 @@ namespace Boxx {
 				Mango list = Mango(label, MangoType::List);
 
 				while (Optional<Mango> value = DecodeValue(tokens, index)) {
-					list.Add(value);
+					list.Add((Mango)value);
 				}
 
 				if (index >= tokens.Size()) throw MangoDecodeError("Unexpected end of string");
@@ -806,7 +822,7 @@ namespace Boxx {
 
 				while (Optional<String> key = DecodeLabel(tokens, index)) {
 					if (Optional<Mango> m = DecodeValue(tokens, index)) {
-						map.Add(key, m);
+						map.Add((String)key, (Mango)m);
 					}
 					else {
 						throw MangoDecodeError("Value expected after map key");

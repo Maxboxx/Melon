@@ -17,6 +17,11 @@ namespace Boxx {
 		///T Get message
 		/// Returns the error message of the error
 		String Message() const;
+
+		///T Name
+		/// Returns the name of the error class
+		/// All errors should override this method
+		virtual String Name() const;
 	};
 
 	///B SystemNotSupportedError
@@ -25,5 +30,7 @@ namespace Boxx {
 	public:
 		SystemNotSupportedError() : Error() {}
 		SystemNotSupportedError(const char* const msg) : Error(msg) {}
+
+		virtual String Name() const override;
 	};
 }

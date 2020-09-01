@@ -68,6 +68,10 @@ namespace Boxx {
 		/// Generates all combinations of the set
 		Collection<Set<T>> AllCombinations() const;
 
+		///T Copy
+		/// Creates a copy of the set
+		Set<T> Copy() const;
+
 		void operator=(const Set<T>& set);
 		void operator=(Set<T>&& set) noexcept;
 
@@ -183,7 +187,7 @@ namespace Boxx {
 	}
 
 	template <class T>
-	Collection<Set<T>> Set<T>::Combinations(const UInt numElements) const {
+	inline Collection<Set<T>> Set<T>::Combinations(const UInt numElements) const {
 		Collection<Set<T>> combinations;
 		Array<bool> used = Array<bool>(Size());
 
@@ -196,7 +200,7 @@ namespace Boxx {
 	}
 
 	template <class T>
-	Collection<Set<T>> Set<T>::AllCombinations() const {
+	inline Collection<Set<T>> Set<T>::AllCombinations() const {
 		Collection<Set<T>> combinations;
 		Array<bool> used = Array<bool>(Size());
 
@@ -210,7 +214,7 @@ namespace Boxx {
 	}
 
 	template <class T>
-	void Set<T>::Combinations(Array<bool>& used, UInt index, UInt count, UInt numElements, Collection<Set<T>>& combinations) const {
+	inline void Set<T>::Combinations(Array<bool>& used, UInt index, UInt count, UInt numElements, Collection<Set<T>>& combinations) const {
 		if (numElements == 0) {
 			combinations.Add(Set<T>());
 		}
@@ -239,6 +243,13 @@ namespace Boxx {
 			used[index] = false;
 			Combinations(used, index + 1, count, numElements, combinations);
 		}
+	}
+
+	template <class T>
+	inline Set<T> Set<T>::Copy() const {
+		Set<T> set;
+		set.list = list.Copy();
+		return set;
 	}
 
 	template <class T>

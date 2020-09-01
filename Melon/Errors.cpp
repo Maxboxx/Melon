@@ -1,6 +1,7 @@
 #include "Errors.h"
 
 #include "Boxx/Map.h"
+#include "Boxx/Console.h"
 
 #include "Melon/Symbols/Symbols.h"
 
@@ -36,7 +37,7 @@ void ErrorLog::Error(const CompileError& error) {
 
 void ErrorLog::Fatal(const CompileError& error) {
 	errors.Add(Tuple<LogLevel, CompileError>(LogLevel::Fatal, error));
-	logger.Fatal(error.Message());
+	throw FatalLoggerError();
 }
 
 void ErrorLog::AddMark() {
@@ -94,7 +95,11 @@ void ErrorLog::LogErrors() {
 					case LogLevel::Info:    logger.Info(error.value2.Message()); break;
 					case LogLevel::Warning: logger.Warning(error.value2.Message()); break;
 					case LogLevel::Error:   logger.Error(error.value2.Message()); break;
-					case LogLevel::Fatal:   logger.Fatal(error.value2.Message()); break;
+					case LogLevel::Fatal:   {
+						logger.Write("fatal: " + error.value2.Message());
+						Console::Print("fatal: " + error.value2.Message());
+						break;
+					}
 				}
 			//}
 		}

@@ -114,6 +114,10 @@ namespace Boxx {
 	public:
 		BufferError() : Error() {}
 		BufferError(const char* const msg) : Error(msg) {}
+
+		virtual String Name() const override {
+			return "BufferError";
+		}
 	};
 
 	///B BufferReadError
@@ -122,6 +126,10 @@ namespace Boxx {
 	public:
 		BufferReadError() : BufferError() {}
 		BufferReadError(const char* const msg) : BufferError(msg) {}
+
+		virtual String Name() const override {
+			return "BufferReadError";
+		}
 	};
 
 	///B BufferPosError
@@ -130,6 +138,10 @@ namespace Boxx {
 		public:
 		BufferPosError() : BufferError() {}
 		BufferPosError(const char* const msg) : BufferError(msg) {}
+
+		virtual String Name() const override {
+			return "BufferPosError";
+		}
 	};
 
 	inline Buffer::Buffer() {

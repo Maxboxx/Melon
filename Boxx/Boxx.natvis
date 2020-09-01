@@ -15,6 +15,15 @@
 			<Item Name="value" Condition="hasValue == true">value</Item>
 		</Expand>
 	</Type>
+
+	<Type Name="Boxx::Either&lt;*&gt;">
+		<DisplayString Condition="isLeft == true">{left}</DisplayString>
+		<DisplayString Condition="isLeft == false">{right}</DisplayString>
+		<Expand>
+			<Item Name="value" Condition="isLeft == true">left</Item>
+			<Item Name="value" Condition="isLeft == false">right</Item>
+		</Expand>
+	</Type>
 	
 	<Type Name="Boxx::Pointer&lt;*&gt;">
 		<DisplayString>{*ptr}</DisplayString>

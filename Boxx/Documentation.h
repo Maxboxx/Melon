@@ -139,12 +139,13 @@ namespace Boxx {
 		doc.name = filename;
 
 		for (const String& line : file) {
-			Array<String> matches = comment.Match(line);
+			Optional<Match> match = comment.Match(line);
+
 			DocComment c;
 			bool add = true;
 
-			if (matches.Size() == 3) {
-				UByte level = matches[0].Size();
+			if (match && match.Get().matches.Size() == 3) {
+				UByte level = match.Get().matches[0].Size();
 
 				if (commentLevel < level) {
 					currentLevel++;
@@ -154,11 +155,11 @@ namespace Boxx {
 				}
 
 				commentLevel = level;
-				c.commentType = matches[1][0];
-				c.content = matches[2];
+				c.commentType = match.Get().matches[1][0];
+				c.content = match.Get().matches[2];
 			}
-			else if (matches.Size() == 2) {
-				UByte level = matches[0].Size();
+			else if (match && match.Get().matches.Size() == 2) {
+				UByte level = match.Get().matches[0].Size();
 
 				if (commentLevel < level) {
 					currentLevel++;
@@ -168,7 +169,7 @@ namespace Boxx {
 				}
 
 				commentLevel = level;
-				c.content = matches[1];
+				c.content = match.Get().matches[1];
 			}
 			else if (findCode) {
 				if (!hasS) {
@@ -191,7 +192,7 @@ namespace Boxx {
 				add = false;
 			}
 
-			if (!matches.IsEmpty()) {
+			if (match) {
 				if (c.commentType == 'T' || c.commentType == 'B') {
 					findCode = true;
 
@@ -358,11 +359,11 @@ namespace Boxx {
 				currentSection.title = catName;
 
 				if (commentType != 'W') {
-					Array<String> m = splitValue.Match(comments[index].content);
-					currentSection.code.Add(m[0].Replace("::", ":"));
+					Match m = splitValue.Match(comments[index].content).Get();
+					currentSection.code.Add(m.matches[0].Replace("::", ":"));
 
-					if (m.Size() > 1) {
-						currentSection.description.Add(m[1]);
+					if (m.matches.Size() > 1) {
+						currentSection.description.Add(m.matches[1]);
 					}
 				}
 				else {

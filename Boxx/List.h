@@ -99,6 +99,10 @@ namespace Boxx {
 		/// Converts the list to an array
 		Array<T> ToArray() const;
 
+		///T Copy
+		/// Creates a copy of the list
+		List<T> Copy() const;
+
 		///H Operators
 
 		///T Index operators
@@ -313,6 +317,22 @@ namespace Boxx {
 		}
 
 		return arr;
+	}
+
+	template <class T>
+	inline List<T> List<T>::Copy() const {
+		List<T> lst{Size()};
+		lst.list->size = Size();
+
+		T* const last = &lst.list->list[Size()];
+		T* source = list->list;
+
+		if (std::is_trivially_copyable<T>::value)
+			memmove(lst.list->list, list->list, sizeof(T) * Size());
+		else for (T* dest = lst.list->list; dest != last; dest++, source++)
+			*dest = *source;
+
+		return lst;
 	}
 
 	template <class T>

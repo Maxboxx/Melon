@@ -31,7 +31,15 @@ using namespace Melon::Optimizing;
 
 CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 	FileReader file = FileReader(mangoFile);
-	Mango mango = Mango::Decode(file.ReadAll());
+	Mango mango;
+	
+	try {
+		mango = Mango::Decode(file.ReadAll());
+	}
+	catch (MangoDecodeError e) {
+		ErrorLog::Fatal(PlainError(mangoFile + ": " + e.Message()));
+	}
+
 	file.Close();
 
 	CompilerOptions options;
@@ -108,10 +116,10 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		compOptions.includeDirectories.Add(dir);
 	}
 
-	compOptions.includeDirectories.Add(Regex("^(~[%/\\]*){[%/\\].*}?$").Match(filename)[0]);
+	compOptions.includeDirectories.Add(Regex::Match("^(~[%/\\]*){[%/\\].*}?$", filename).Get().match);
 
 	if (compOptions.outputName.Size() == 0) {
-		compOptions.outputName = Regex("(~[%/\\]-){%.~[%/\\%.]*}?$").Match(filename)[0];
+		compOptions.outputName = Regex::Match("(~[%/\\]-){%.~[%/\\%.]*}?$", filename).Get().match;
 	}
 
 	for (UInt i = 0; i < compOptions.includeDirectories.Size(); i++) {

@@ -5,6 +5,7 @@
 #include "List.h"
 #include "Error.h"
 #include "Math.h"
+#include "String.h"
 
 ///N Map
 namespace Boxx {
@@ -67,6 +68,10 @@ namespace Boxx {
 		/// Checks if the map is empty
 		bool IsEmpty() const;
 
+		///T Copy
+		/// Creates a copy of the map
+		Map<Key, Value> Copy() const;
+
 		///H Operators
 
 		///T Indexing
@@ -109,6 +114,10 @@ namespace Boxx {
 	public:
 		MapError():Error(){}
 		MapError(const char* const msg):Error(msg){}
+
+		virtual String Name() const override {
+			return "MapError";
+		}
 	};
 
 	///B MapKeyError
@@ -117,6 +126,10 @@ namespace Boxx {
 	public:
 		MapKeyError():MapError(){}
 		MapKeyError(const char* const msg):MapError(msg){}
+
+		virtual String Name() const override {
+			return "MapKeyError";
+		}
 	};
 
 	template <class Key, class Value>
@@ -158,7 +171,7 @@ namespace Boxx {
 				end = i;
 			}
 			else if (pair.key == values[i].key) {
-				throw MapKeyError();
+				throw MapKeyError("key already exists");
 			}
 			else {
 				start = i + 1;
@@ -207,16 +220,23 @@ namespace Boxx {
 	}
 
 	template <class Key, class Value>
+	inline Map<Key, Value> Map<Key, Value>::Copy() const {
+		Map<Key, Value> map;
+		map.values = values.Copy();
+		return map;
+	}
+
+	template <class Key, class Value>
 	inline Value& Map<Key, Value>::operator[](const Key& key) {
 		const UInt i = BinarySearch(key);
-		if (i == Math::UIntMax()) throw MapKeyError();
+		if (i == Math::UIntMax()) throw MapKeyError("Key not found");
 		return values[i].value;
 	}
 
 	template <class Key, class Value>
 	inline const Value& Map<Key, Value>::operator[](const Key& key) const {
 		const UInt i = BinarySearch(key);
-		if (i == Math::UIntMax()) throw MapKeyError();
+		if (i == Math::UIntMax()) throw MapKeyError("Key not found");
 		return values[i].value;
 	}
 

@@ -57,14 +57,12 @@ namespace Boxx {
 		///T Conversion to value
 		///E OptionalError: Thrown if the optional is empty
 		///M
-		operator T() const;
-		operator T&();
+		explicit operator T() const;
+		explicit operator T&();
 		///M
 
 		///T Conversion to bool
 		///R bool: <code>true</code> if the optional has a value. <code>false</code> otherwise
-		///W The <code>T</code> conversion operator is used instead of this in some cases if <code>T</code> is an integer type
-		///W Use <code>HasValue()</code> to avoid this problem
 		explicit operator bool() const;
 
 	private:
@@ -78,6 +76,8 @@ namespace Boxx {
 	public:
 		OptionalError() : Error() {}
 		OptionalError(const char* const msg) : Error(msg) {}
+
+		virtual String Name() const override;
 	};
 
 	template <class T>

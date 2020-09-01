@@ -60,6 +60,13 @@ namespace Boxx {
 		Pointer<U> Cast() const;
 		///M
 
+		///T Is
+		/// Checks if the pointer is of a specific type
+		///M
+		template<class U>
+		bool Is() const;
+		///M
+
 		///H Operators
 
 		///T Structure dereference
@@ -181,6 +188,13 @@ namespace Boxx {
 		///M
 		template<class U>
 		WeakPointer<U> Cast() const;
+		///M
+
+		///T Is
+		/// Checks if the pointer is of a specific type
+		///M
+		template<class U>
+		bool Is() const;
 		///M
 
 		///H Operators
@@ -344,6 +358,12 @@ namespace Boxx {
 	template<class U>
 	Pointer<U> Pointer<T>::Cast() const {
 		return Pointer<U>(*this, true);
+	}
+
+	template<class T>
+	template<class U>
+	bool Pointer<T>::Is() const {
+		return Pointer<U>(*this, true) != nullptr;
 	}
 
 	template <class T>
@@ -576,6 +596,12 @@ namespace Boxx {
 	template<class U>
 	WeakPointer<U> WeakPointer<T>::Cast() const {
 		return WeakPointer<U>(*this, true);
+	}
+
+	template<class T>
+	template<class U>
+	bool WeakPointer<T>::Is() const {
+		return WeakPointer<U>(*this, true) != nullptr;
 	}
 
 	template <class T>

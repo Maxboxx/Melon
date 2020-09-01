@@ -38,11 +38,11 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 
 	const Scope enumName = Scope(info.Current().value);
 
-	if (!lower.Match(info.Current().value).IsEmpty()) {
+	if (lower.Match(info.Current().value)) {
 		ErrorLog::Info(InfoError(InfoError::UpperName("enum", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 	}
 
-	if (!underscore.Match(info.Current().value).IsEmpty()) {
+	if (underscore.Match(info.Current().value)) {
 		ErrorLog::Info(InfoError(InfoError::UpperUnderscoreName("enum", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 	}
 
@@ -160,13 +160,13 @@ List<EnumParser::EnumValue> EnumParser::ParseValues(ParsingInfo& info) {
 	ULong currentValue = 0;
 
 	if (Optional<EnumValue> value = ParseValue(info, currentValue)) {
-		values.Add(value);
+		values.Add((EnumValue)value);
 
 		while (info.Current().type == TokenType::Comma) {
 			info.index++;
 
 			if (Optional<EnumValue> value = ParseValue(info, currentValue)) {
-				values.Add(value);
+				values.Add((EnumValue)value);
 			}
 			else {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("name", "','"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));

@@ -143,6 +143,10 @@ namespace Melon {
 			}
 		}
 
+		virtual Boxx::String Name() const override {
+			return "CompileError";
+		}
+
 		///T Func Not Return
 		static Boxx::String FuncNotReturn(const Symbols::Symbol& func);
 
@@ -189,6 +193,10 @@ namespace Melon {
 			type = ErrorType::Token;
 		}
 
+		virtual Boxx::String Name() const override {
+			return "TokenError";
+		}
+
 		///T Errors
 		/// All token error messages
 		///M
@@ -204,6 +212,10 @@ namespace Melon {
 		///T Constructor
 		SyntaxError(const char* const msg, const FileInfo& file) : CompileError(msg, file) {
 			type = ErrorType::Syntax;
+		}
+
+		virtual Boxx::String Name() const override {
+			return "SyntaxError";
 		}
 
 		static Boxx::String ExpectedAfterIn(const Boxx::String& expected, const Boxx::String& after, const Boxx::String& in);
@@ -252,6 +264,10 @@ namespace Melon {
 			type = ErrorType::Symbol;
 		}
 
+		virtual Boxx::String Name() const override {
+			return "SymbolError";
+		}
+
 		static Boxx::String Function(const Boxx::String& func, const Boxx::List<Boxx::String>& args);
 
 		///T Errors
@@ -278,6 +294,10 @@ namespace Melon {
 			type = ErrorType::Type;
 		}
 
+		virtual Boxx::String Name() const override {
+			return "TypeError";
+		}
+
 		static Boxx::String Operator(const Boxx::String& op, const Boxx::String& type);
 		static Boxx::String Operator(const Boxx::String& op, const Boxx::String& type1, const Boxx::String& type2);
 		static Boxx::String Assignment(const Boxx::String& type1, const Boxx::String& type2);
@@ -298,6 +318,10 @@ namespace Melon {
 			type = ErrorType::Info;
 		}
 
+		virtual Boxx::String Name() const override {
+			return "InfoError";
+		}
+
 		static Boxx::String UpperName(const Boxx::String& type, const Boxx::String& name);
 		static Boxx::String LowerName(const Boxx::String& type, const Boxx::String& name);
 		static Boxx::String UpperUnderscoreName(const Boxx::String& type, const Boxx::String& name);
@@ -309,6 +333,10 @@ namespace Melon {
 	public:
 		PlainError(const char* const msg) : CompileError(msg, FileInfo()) {
 			type = ErrorType::Plain;
+		}
+
+		virtual Boxx::String Name() const override {
+			return "PlainError";
 		}
 	};
 }

@@ -50,11 +50,11 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 			node->names.Add(Scope(info.Current().value));
 
-			if (!upper.Match(info.Current().value).IsEmpty()) {
+			if (upper.Match(info.Current().value)) {
 				ErrorLog::Info(InfoError(InfoError::LowerName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 			}
 
-			if (!underscore.Match(info.Current().value).IsEmpty()) {
+			if (underscore.Match(info.Current().value)) {
 				ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 			}
 

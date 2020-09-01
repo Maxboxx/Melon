@@ -6,6 +6,7 @@
 #include "List.h"
 #include "Array.h"
 #include "Error.h"
+#include "String.h"
 
 ///N Lexer
 
@@ -43,6 +44,10 @@ namespace Boxx {
 	public:
 		LexerError() : Error() {}
 		LexerError(const char* const msg) : Error(msg) {}
+
+		virtual String Name() const override {
+			return "LexerError";
+		}
 	};
 
 	template <class T>
@@ -52,7 +57,7 @@ namespace Boxx {
 
 		if (code.Size() == 0) return List<Token<T>>();
 
-		String match = whiteSpace.Match(code)[0];
+		String match = whiteSpace.Match(code).Get().match;
 		UInt line = 1 + Lines(match);
 		UInt i = match.Size();
 		List<Token<T>> tokens;
@@ -61,16 +66,18 @@ namespace Boxx {
 			bool found = false;
 
 			for (const TokenPattern<T>& pattern : patterns) {
-				Array<String> match = pattern.pattern.Match(code, i);
+				Optional<Match> match = pattern.pattern.Match(code, i);
 
-				if (!match.IsEmpty()) {
-					i += match[0].Size();
+				if (match) {
+					Match m = (Match)match;
+
+					i += m.matches[0].Size();
 
 					if (!pattern.ignore) {
-						tokens.Add(Token<T>(pattern.type, match.Size() > 1 ? match[1] : match[0], line));
+						tokens.Add(Token<T>(pattern.type, m.matches.Size() > 1 ? m.matches[1] : m.matches[0], line));
 					}
 
-					line += Lines(match[0]);
+					line += Lines(m.matches[0]);
 
 					found = true;
 					break;
@@ -78,15 +85,15 @@ namespace Boxx {
 			}
 
 			if (!found) {
-				Array<String> match = undefinedToken.Match(code, i);
+				Optional<Match> match = undefinedToken.Match(code, i);
 
-				if (!match.IsEmpty()) {
-					throw LexerError("Undefined token '" + match[0] + "'");
+				if (match) {
+					throw LexerError("Undefined token '" + match.Get().match + "'");
 				}
 			}
 
 			if (i < code.Size()) {
-				const String match = whiteSpace.Match(code, i)[0];
+				const String match = whiteSpace.Match(code, i).Get().match;
 				i += match.Size();
 				line += Lines(match);
 			}

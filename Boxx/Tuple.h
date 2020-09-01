@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Types.h"
-
+#include "String.h"
 #include "Error.h"
 
 ///N Tuple
@@ -41,6 +41,10 @@ namespace Boxx {
 	public:
 		TupleError() : Error() {}
 		TupleError(const char* const msg) : Error(msg) {}
+
+		virtual String Name() const override {
+			return "TupleError";
+		}
 	};
 
 	template <class ... T>

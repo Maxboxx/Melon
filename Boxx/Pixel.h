@@ -141,6 +141,10 @@ namespace Boxx {
 	public:
 		PixelError() : Error() {}
 		PixelError(const char* const msg) : Error(msg) {}
+
+		virtual String Name() const override {
+			return "PixelError";
+		}
 	};
 
 	///B PixelLoadError
@@ -149,22 +153,34 @@ namespace Boxx {
 	public:
 		PixelLoadError() : PixelError() {}
 		PixelLoadError(const char* const msg) : PixelError(msg) {}
+
+		virtual String Name() const override {
+			return "PixelLoadError";
+		}
 	};
 
 	///B PixelEncodeError
 	/// Error thrown if encoding fails
 	class PixelEncodeError : public PixelError {
-		public:
+	public:
 		PixelEncodeError() : PixelError() {}
 		PixelEncodeError(const char* const msg) : PixelError(msg) {}
+
+		virtual String Name() const override {
+			return "PixelEncodeError";
+		}
 	};
 
 	///B PixelSizeError
 	/// Error thrown if a mismatch in size occurs
 	class PixelSizeError : public PixelError {
-		public:
+	public:
 		PixelSizeError() : PixelError() {}
 		PixelSizeError(const char* const msg) : PixelError(msg) {}
+
+		virtual String Name() const override {
+			return "PixelSizeError";
+		}
 	};
 
 	inline Pixel::Pixel() {
@@ -599,8 +615,8 @@ namespace Boxx {
 					data.Write<UShort>(y, Endian::Big);
 				}
 				else {
-					data.Write<UByte>(x, Endian::Big);
-					data.Write<UByte>(y, Endian::Big);
+					data.Write<UByte>((UByte)x, Endian::Big);
+					data.Write<UByte>((UByte)y, Endian::Big);
 				}
 
 				EncodeDefault(colors, colorList.ToArray(), data, format);
@@ -699,8 +715,8 @@ namespace Boxx {
 					data.Write<UShort>(y, Endian::Big);
 				}
 				else {
-					data.Write<UByte>(x, Endian::Big);
-					data.Write<UByte>(y, Endian::Big);
+					data.Write<UByte>((UByte)x, Endian::Big);
+					data.Write<UByte>((UByte)y, Endian::Big);
 				}
 
 				for (const RepeatColor& color : repeatColors) {

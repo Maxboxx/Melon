@@ -77,6 +77,10 @@ namespace Boxx {
 		/// Converts the collection to an array
 		Array<T> ToArray() const;
 
+		///T Copy
+		/// Creates a copy of the collection
+		Collection<T> Copy() const;
+
 		///H Operators
 
 		///T Indexing
@@ -252,6 +256,22 @@ namespace Boxx {
 		}
 
 		return arr;
+	}
+
+	template <class T>
+	inline Collection<T> Collection<T>::Copy() const {
+		Collection<T> collection{Size()};
+		collection.list->size = Size();
+
+		T* const last = &collection.list->list[Size()];
+		T* source = list->list;
+
+		if (std::is_trivially_copyable<T>::value)
+			memmove(collection.list->list, list->list, sizeof(T) * Size());
+		else for (T* dest = collection.list->list; dest != last; dest++, source++)
+			*dest = *source;
+
+		return collection;
 	}
 
 	template <class T>

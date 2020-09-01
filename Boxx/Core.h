@@ -28,15 +28,15 @@
 
 ///T Version number 1
 /// The first number of the current version
-#define BOXX_VERSION_V1 2
+#define BOXX_VERSION_V1 3
 
 ///T Version number 2
 /// The middle number of the current version
-#define BOXX_VERSION_V2 4
+#define BOXX_VERSION_V2 0
 
 ///T Version number 3
 /// The last number of the current version
-#define BOXX_VERSION_V3 1
+#define BOXX_VERSION_V3 0
 
 ///T Version string
 /// A string containing the current version
