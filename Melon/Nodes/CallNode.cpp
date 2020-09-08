@@ -220,7 +220,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 				assignArgs.Add(this->args[i]);
 			}
 
-			c.AddInstructions(assign.node->Compile(assignArgs, info).instructions);
+			c.AddInstructions(assign.symbolNode->Compile(assignArgs, info).instructions);
 
 			info.stack.Push(type.size);
 		}
@@ -259,15 +259,11 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 }
 
 void CallNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	node->IncludeScan(info);
 
 	for (NodePtr arg : args) {
 		arg->IncludeScan(info);
 	}
-
-	includeScanned = true;
 }
 
 Set<ScanType> CallNode::Scan(ScanInfoStack& info) {

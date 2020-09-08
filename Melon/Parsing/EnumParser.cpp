@@ -95,7 +95,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	assign.symbolNamespace = info.currentNamespace;
 	assign.includedNamespaces = info.includedNamespaces;
 	assign.args.Add(info.scopes);
-	assign.node = new IntegerAssignNode(enumSymbol.size);
+	assign.symbolNode = new IntegerAssignNode(enumSymbol.size);
 	enumSymbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	Symbol eq = Symbol(SymbolType::Function);
@@ -105,7 +105,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	eq.args.Add(info.scopes);
 	eq.args.Add(info.scopes);
 	eq.ret.Add(ScopeList().Add(Scope::Bool));
-	eq.node = new IntegerBinaryOperatorNode(enumSymbol.size, enumSymbol.sign, InstructionType::Eq);
+	eq.symbolNode = new IntegerBinaryOperatorNode(enumSymbol.size, enumSymbol.sign, InstructionType::Eq);
 	enumSymbol.Add(Scope::Equal, eq, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	Symbol ne = Symbol(SymbolType::Function);
@@ -115,7 +115,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	ne.args.Add(info.scopes);
 	ne.args.Add(info.scopes);
 	ne.ret.Add(ScopeList().Add(Scope::Bool));
-	ne.node = new IntegerBinaryOperatorNode(enumSymbol.size, enumSymbol.sign, InstructionType::Ne);
+	ne.symbolNode = new IntegerBinaryOperatorNode(enumSymbol.size, enumSymbol.sign, InstructionType::Ne);
 	enumSymbol.Add(Scope::NotEqual, ne, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	Symbol::Add(info.scopes, enumSymbol, FileInfo(info.filename, enumLine, info.statementNumber), true);

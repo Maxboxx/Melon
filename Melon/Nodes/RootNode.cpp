@@ -1,5 +1,7 @@
 #include "RootNode.h"
 
+#include "StructNode.h"
+
 #include "Melon/Parsing/Parser.h"
 
 using namespace Boxx;
@@ -47,18 +49,43 @@ List<OptimizerInstruction> RootNode::Compile() {
 }
 
 void RootNode::IncludeScan(ParsingInfo& info) {
-	do {
-		includeScanned = true;
+	UInt nodeIndex = 0;
+	UInt funcIndex = 0;
+	UInt templateIndex = 0;
 
-		for (NodePtr node : nodes) {
-			node->IncludeScan(info);
+	do {
+		for (; nodeIndex < nodes.Size(); nodeIndex++) {
+			nodes[nodeIndex]->IncludeScan(info);
 		}
 
-		for (NodePtr func : funcs) {
-			func->IncludeScan(info);
+		for (; funcIndex < funcs.Size(); funcIndex++) {
+			funcs[funcIndex]->IncludeScan(info);
+		}
+
+		for (; templateIndex < Symbol::templateSymbols.Size(); templateIndex++) {
+			Tuple<Symbol, List<ScopeList>> templateInfo = Symbol::FindTemplateArgs(Symbol::templateSymbols[templateIndex]);
+			Scope templateScope = templateInfo.value1.scope.Last().Copy();
+			templateScope.types = templateInfo.value2;
+
+			if (Symbol::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) continue;
+
+			Symbol s = templateInfo.value1.SpecializeTemplate(templateInfo.value2);
+			Symbol::Add(s.scope, s, FileInfo(), true);
+
+			if (s.type == SymbolType::Struct) {
+				Pointer<StructNode> sn = new StructNode(Symbol::templateSymbols[templateIndex].scope, Symbol::templateSymbols[templateIndex].file);
+				sn->name = s.scope.Last();
+				sn->symbol = s;
+				
+				for (const ScopeList& var : s.args) {
+					sn->vars.Add(var.Last());
+				}
+
+				nodes.Add(sn);
+			}
 		}
 	}
-	while (!includeScanned);
+	while (nodeIndex < nodes.Size() || funcIndex < funcs.Size() || templateIndex < Symbol::templateSymbols.Size());
 }
 
 Set<ScanType> RootNode::Scan(ScanInfoStack& info) {

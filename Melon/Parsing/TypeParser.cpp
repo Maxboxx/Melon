@@ -1,22 +1,52 @@
 #include "TypeParser.h"
 
+#include "TemplateParser.h"
+
+#include "Melon/Nodes/NameNode.h"
+#include "Melon/Nodes/DotNode.h"
+
 using namespace Boxx;
 
 using namespace Melon;
+using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
 Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
-	if (info.Current().type == TokenType::Name || info.Current().type == TokenType::Global) {
-		ScopeList type = ScopeList().Add(Scope(info.Current().value));
+	Optional<Scope> first = nullptr;
+
+	if (info.Current().type == TokenType::Global) {
+		first = Scope::Global;
 		info.index++;
+	}
+	else {
+		first = ParseScope(info);
+	}
+
+	if (first) {
+		ScopeList type = ScopeList().Add((Scope)first);
 
 		while (true) {
 			if (info.Current().type != TokenType::Dot) break;
-			if (info.Current(1).type != TokenType::Name) break;
+			info.index++;
 
-			type = type.Add(Scope(info.Current(1).value));
-			info.index += 2;
+			if (Optional<Scope> scope = ParseScope(info)) {
+				if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
+					scope.Get().types = templateArgs;
+				}
+
+				type = type.Add((Scope)scope);
+
+				Symbol::TemplateSymbol ts;
+				ts.type = type;
+				ts.scope = info.scopes;
+				ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
+				Symbol::templateSymbols.Add(ts);
+			}
+			else {
+				info.index--;
+				break;
+			}
 		}
 
 		if (type.Size() == 1 && type[0] == Scope::Global) {
@@ -34,4 +64,23 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 	}
 
 	return nullptr;
+}
+
+Optional<Scope> TypeParser::ParseScope(ParsingInfo& info) {
+	if (info.Current().type != TokenType::Name) return nullptr;
+
+	Scope scope = Scope(info.Current().value);
+	info.index++;
+
+	if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
+		scope.types = templateArgs;
+
+		Symbol::TemplateSymbol ts;
+		ts.type = ScopeList().Add(scope);
+		ts.scope = info.scopes;
+		ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
+		Symbol::templateSymbols.Add(ts);
+	}
+
+	return scope;
 }

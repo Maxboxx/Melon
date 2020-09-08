@@ -90,7 +90,6 @@ void IncludeParser::ParseInclude(const ScopeList& include, ParsingInfo& info) {
 	Symbol s = Symbol::Find(include.Pop(), FileInfo());
 
 	if (System::DirectoryExists(s.symbolPath + "/" + include.Last().ToString())) {
-		info.root.includeScanned = false;
 		ParseDirectory(s.symbolPath + "/" + include.Last().ToString(), include, info);
 	}
 }

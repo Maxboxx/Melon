@@ -46,8 +46,8 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 	nodes.Add(node2);
 	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	if (s.node) {
-		return s.node->Compile(nodes, info);
+	if (s.symbolNode) {
+		return s.symbolNode->Compile(nodes, info);
 	}
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
@@ -63,12 +63,8 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 }
 
 void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	node1->IncludeScan(info);
 	node2->IncludeScan(info);
-
-	includeScanned = true;
 }
 
 Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {

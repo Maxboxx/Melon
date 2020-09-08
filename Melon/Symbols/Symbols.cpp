@@ -19,11 +19,14 @@
 using namespace Boxx;
 using namespace Kiwi;
 
+using namespace Melon;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
 Symbol Symbol::symbols = Symbol(SymbolType::Namespace);
 Symbol Symbol::empty = Symbol(SymbolType::None);
+
+List<Symbol::TemplateSymbol> Symbol::templateSymbols;
 
 Symbol::Symbol() {
 
@@ -46,6 +49,11 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 				f.scope = this->scope.Add(scope);
 				scopes.Add(scope.name, f);
 			}
+			else if (scopes[scope.name].variants.Size() == 1) {
+				if (scopes[scope.name].variants[0].type == SymbolType::Scope) {
+					scopes[scope.name].variants.RemoveAt(0);
+				}
+			}
 
 			for (const Symbol& s : scopes[scope.name].variants) {
 				if (s.args.Size() != symbol.args.Size()) continue;
@@ -65,15 +73,66 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 				}
 			}
 
-			Symbol sym = symbol;
-			Scope symScope = scope;
-			symScope.variant = scopes[scope.name].variants.Size();
-			sym.scope = this->scope.Add(symScope);
-			scopes[scope.name].variants.Add(sym);
+			if (!redefine) {
+				Symbol sym = symbol;
+				Scope symScope = scope;
+				symScope.variant = scopes[scope.name].variants.Size();
+				sym.scope = this->scope.Add(symScope);
+				scopes[scope.name].variants.Add(sym);
+			}
+			else {
+				Symbol sym = symbol;
+				Scope symScope = scope;
+				sym.scope = this->scope.Add(scope);
+				scopes[scope.name].variants[(UInt)scope.variant] = sym;
+			}
+		}
+		else if (!symbol.templateArgs.IsEmpty()) {
+			Symbol parent;
+
+			if (!scopes.Contains(scope.name, parent)) {
+				parent = Symbol(SymbolType::Scope);
+				scopes.Add(scope.name, parent);
+			}
+
+			Optional<UInt> found = nullptr;
+
+			for (UInt i = 0; i < parent.templateVariants.Size(); i++) {
+				if (parent.templateVariants[i].templateArgs.Size() == symbol.templateArgs.Size()) {
+					bool match = true;
+
+					for (UInt u = 0; u < symbol.templateArgs.Size(); u++) {
+						if (parent.templateVariants[i].templateArgs[u] != symbol.templateArgs[u]) {
+							match = false;
+							break;
+						}
+					}
+
+					if (match) {
+						found = i;
+						break;
+					}
+				}
+			}
+
+			if (found && !redefine) {
+				ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + scope.ToString() + SymbolError::RedefinitionEnd, file));
+			}
+
+			if (!redefine || !found) {
+				Symbol sym = symbol;
+				sym.scope = sym.scope.Pop().Add(scope);
+				parent.templateVariants.Add(sym);
+			}
+			else {
+				Symbol sym = symbol;
+				sym.scope = sym.scope.Pop().Add(scope);
+				parent.templateVariants[(UInt)found] = sym;
+			}
 		}
 		else {
 			if (!redefine && scopes.Contains(scope.name)) {
-				ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + this->scope.Add(scope).ToString() + SymbolError::RedefinitionEnd, file));
+				ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + scope.ToString() + SymbolError::RedefinitionEnd, file));
 			}
 
 			Symbol sym = symbol;
@@ -96,60 +155,7 @@ bool Symbol::Add(const ScopeList& scopes, const Symbol& symbol, const FileInfo& 
 			s = s.Get(scopes[i], file);
 		}
 
-		if (symbol.type == SymbolType::Function || symbol.type == SymbolType::Method) {
-			if (!s.scopes.Contains(scopes.Last().name)) {
-				Symbol f;
-				f.type = SymbolType::Function;
-				f.scope = scopes;
-				s.scopes.Add(scopes.Last().name, f);
-			}
-			else if (s.scopes[scopes.Last().name].variants.Size() == 1) {
-				if (s.scopes[scopes.Last().name].variants[0].type == SymbolType::Scope) {
-					s.scopes[scopes.Last().name].variants.RemoveAt(0);
-				}
-			}
-
-			for (const Symbol& s : s.scopes[scopes.Last().name].variants) {
-				if (s.args.Size() != symbol.args.Size()) continue;
-				if (s.type != symbol.type) continue;
-
-				bool same = true;
-
-				for (UInt i = 0; i < s.args.Size(); i++) {
-					if (s.args[i] != symbol.args[i]) {
-						same = false;
-						break;
-					}
-				}
-
-				if (!redefine && same) {
-					ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + s.scope.ToString() + SymbolError::RedefinitionEnd, file));
-				}
-			}
-
-			if (!redefine) {
-				Symbol sym = symbol;
-				Scope symScope = scopes.Last();
-				symScope.variant = s.scopes[scopes.Last().name].variants.Size();
-				sym.scope = scopes.Pop().Add(symScope);
-				s.scopes[scopes.Last().name].variants.Add(sym);
-			}
-			else {
-				Symbol sym = symbol;
-				Scope symScope = scopes.Last();
-				sym.scope = scopes;
-				s.scopes[scopes.Last().name].variants[(UInt)scopes.Last().variant] = sym;
-			}
-		}
-		else {
-			if (!redefine && s.scopes.Contains(scopes.Last().name)) {
-				ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + scopes.ToString() + SymbolError::RedefinitionEnd, file));
-			}
-
-			Symbol sym = symbol;
-			sym.scope = scopes;
-			s.scopes.Add(scopes.Last().name, sym);
-		}
+		return s.Add(scopes.Last(), symbol, file, redefine);
 	}
 	catch (MapError e) {
 		return false;
@@ -158,28 +164,91 @@ bool Symbol::Add(const ScopeList& scopes, const Symbol& symbol, const FileInfo& 
 	return true;
 }
 
-Symbol Symbol::Get(const Scope& scope, const FileInfo& file) const {
-	try {
-		if (scope.variant) {
-			return scopes[scope.name].variants[scope.variant.Get()];
+Symbol& Symbol::GetTemplate(const Scope& scope, const FileInfo& file) {
+	if (scope.types) {
+		List<ScopeList> templateArgs = scope.types.Get();
+
+		bool found = false;
+
+		for (Symbol& sym : templateVariants) {
+			if (sym.templateArgs.Size() == templateArgs.Size()) {
+				bool match = true;
+
+				for (UInt i = 0; i < templateArgs.Size(); i++) {
+					if (sym.templateArgs[i] != templateArgs[i]) {
+						match = false;
+						break;
+					}
+				}
+
+				if (match) {
+					return sym;
+				}
+			}
 		}
 
-		return scopes[scope.name];
-	}
-	catch (MapKeyError e) {
-		ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + this->scope.Add(scope).ToString() + SymbolError::NotFoundEnd, file));
+		if (!found) {
+			return empty;
+		}
 	}
 
-	return empty;
+	return *this;
+}
+
+Tuple<Symbol, List<ScopeList>> Symbol::FindTemplateArgs(const TemplateSymbol& symbol) {
+	List<ScopeList> templateArgs = symbol.type.Last().types.Get().Copy();
+
+	for (ScopeList& type : templateArgs) {
+		type = Symbol::FindNearestInNamespace(symbol.scope, type, symbol.file).scope;
+	}
+
+	Scope last = symbol.type.Last();
+	last.types = nullptr;
+
+	Symbol sym = Symbol::FindNearestInNamespace(symbol.scope, symbol.type.Pop().Add(last), symbol.file);
+
+	bool found = false;
+
+	for (const Symbol& variant : sym.templateVariants) {
+		if (variant.templateArgs.Size() == templateArgs.Size()) {
+			bool match = true;
+
+			for (UInt i = 0; i < templateArgs.Size(); i++) {
+				FileInfo info = variant.GetFileInfo();
+				info.statementNumber++;
+				Symbol symArg = Symbol::FindNearestInNamespace(variant.scope, variant.templateArgs[i], info);
+
+				if (symArg.type == SymbolType::Template) continue;
+				if (symArg.scope == templateArgs[i]) continue;
+
+				match = false;
+				break;
+			}
+
+			if (match) {
+				return Tuple<Symbol, List<ScopeList>>(variant, templateArgs);
+			}
+		}
+	}
+
+	ErrorLog::Error(SymbolError("template error", symbol.file));
+	return Tuple<Symbol, List<ScopeList>>(empty, templateArgs);;
+}
+
+Symbol Symbol::Get(const Scope& scope, const FileInfo& file) const {
+	Symbol s = *this;
+	return s.Get(scope, file);
 }
 
 Symbol& Symbol::Get(const Scope& scope, const FileInfo& file) {
 	try {
+		Symbol& s = scope.types ? scopes[scope.name].GetTemplate(scope, file) : scopes[scope.name];
+
 		if (scope.variant) {
-			return scopes[scope.name].variants[scope.variant.Get()];
+			return s.variants[scope.variant.Get()];
 		}
 
-		return scopes[scope.name];
+		return s;
 	}
 	catch (MapKeyError e) {
 		ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + this->scope.Add(scope).ToString() + SymbolError::NotFoundEnd, file));
@@ -223,16 +292,23 @@ Symbol Symbol::GetArgumentType(const UInt index) const {
 	return FindNearestInNamespace(scope.Pop(), args[index], file);
 }
 
+FileInfo Symbol::GetFileInfo() const {
+	return FileInfo(
+		"",
+		0,
+		statementNumber,
+		symbolNamespace,
+		includedNamespaces
+	);
+}
+
 bool Symbol::Contains(const Scope& scope) const {
-	if (!scope.variant.HasValue()) return scopes.Contains(scope.name);
+	ErrorLog::AddMark();
+	Symbol s = Get(scope, FileInfo());
+	ErrorLog::RevertToMark();
+	ErrorLog::RemoveMark();
 
-	Symbol s;
-
-	if (scopes.Contains(scope.name, s)) {
-		return s.variants.Size() > scope.variant.Get();
-	}
-
-	return false;
+	return s.type != SymbolType::None;
 }
 
 bool Symbol::Contains(const ScopeList& scope, const FileInfo& file) const {
@@ -356,6 +432,93 @@ List<Scope> Symbol::GetUnassignedVars(const List<Scope>& vars) const {
 
 bool Symbol::IsValid() const {
 	return type != SymbolType::None;
+}
+
+bool Symbol::HasTypeArgs() const {
+	return type == SymbolType::Function || type == SymbolType::Method;
+}
+
+bool Symbol::HasTypeReturns() const {
+	return type == SymbolType::Function || type == SymbolType::Method;
+}
+
+Symbol Symbol::SpecializeTemplate(const List<ScopeList>& types) const {
+	return SpecializeTemplate(*this, types);
+}
+
+Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<ScopeList>& types) const {
+	Symbol symbol = *this;
+
+	if (!symbol.templateArgs.IsEmpty()) {
+		symbol.templateArgs = types.Copy();
+	}
+
+	symbol.scope   = ReplaceTemplates(symbol.scope, templateSymbol, types);
+	symbol.varType = ReplaceTemplates(symbol.varType, templateSymbol, types);
+
+	if (HasTypeArgs()) {
+		symbol.args = List<ScopeList>();
+
+		for (const ScopeList& arg : args) {
+			symbol.args.Add(ReplaceTemplates(arg, templateSymbol, types));
+		}
+	}
+	else {
+		symbol.args = args.Copy();
+	}
+
+	if (HasTypeReturns()) {
+		symbol.ret = List<ScopeList>();
+
+		for (const ScopeList& r : ret) {
+			symbol.args.Add(ReplaceTemplates(r, templateSymbol, types));
+		}
+	}
+	else {
+		symbol.ret = ret.Copy();
+	}
+
+	symbol.scopes = Map<String, Symbol>();
+
+	for (const Pair<String, Symbol>& scope : scopes) {
+		if (scope.value.type != SymbolType::Template) {
+			symbol.scopes.Add(scope.key, scope.value.SpecializeTemplate(templateSymbol, types));
+		}
+	}
+
+	symbol.variants = List<Symbol>();
+
+	for (const Symbol& variant : variants) {
+		symbol.variants.Add(variant.SpecializeTemplate(templateSymbol, types));
+	}
+
+	return symbol;
+}
+
+ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& templateSymbol, const List<ScopeList>& types) {
+	ScopeList list;
+
+	for (UInt i = 0; i < type.Size(); i++) {
+		Scope scope = type[i].Copy();
+
+		if (scope.types) {
+			for (UInt u = 0; u < scope.types.Get().Size(); u++) {
+				scope.types.Get()[u] = ReplaceTemplates(scope.types.Get()[u], templateSymbol, types);
+			}
+		}
+
+		list = list.Add(scope);
+	}
+
+	FileInfo file = templateSymbol.GetFileInfo();
+	file.statementNumber++;
+	Symbol s = Symbol::FindNearestInNamespace(templateSymbol.scope, list, file);
+
+	if (s.type == SymbolType::Template) {
+		return types[s.size];
+	}
+
+	return list;
 }
 
 Symbol Symbol::Find(const ScopeList& scopes, const FileInfo& file) {
@@ -784,7 +947,9 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) const {
 	}
 	else if (type == SymbolType::Variable) {
 		Mango m = Mango(scope.ToString(), MangoType::Map);
-		m.Add("type", GetType(FileInfo()).scope.ToString());
+		FileInfo file;
+		file.statementNumber++;
+		m.Add("type", GetType(file).scope.ToString());
 
 		bool onlyType = true;
 
@@ -836,6 +1001,15 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) const {
 		list[list.Size() - 1].variant = i;
 
 		for (const Mango& m : variants[i].ToMangoList(list)) {
+			symbols.Add(m);
+		}
+	}
+
+	for (UInt i = 0; i < templateVariants.Size(); i++) {
+		ScopeList list = scope;
+		list[list.Size() - 1].types = templateVariants[i].templateArgs;
+
+		for (const Mango& m : templateVariants[i].ToMangoList(list)) {
 			symbols.Add(m);
 		}
 	}
@@ -899,7 +1073,7 @@ void Symbol::Setup() {
 
 		// Neg
 		Symbol neg = Symbol(SymbolType::Function);
-		neg.node = new IntegerUnaryOperatorNode(abs(integer.value), InstructionType::Neg);
+		neg.symbolNode = new IntegerUnaryOperatorNode(abs(integer.value), InstructionType::Neg);
 
 		if (integer.key.name[0] == 'u') {
 			neg.args.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
@@ -914,7 +1088,7 @@ void Symbol::Setup() {
 
 		// Not
 		Symbol bnot = Symbol(SymbolType::Function);
-		bnot.node = new IntegerUnaryOperatorNode(abs(integer.value), InstructionType::Not);
+		bnot.symbolNode = new IntegerUnaryOperatorNode(abs(integer.value), InstructionType::Not);
 
 		if (integer.key.name[0] == 'u') {
 			bnot.args.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
@@ -931,7 +1105,7 @@ void Symbol::Setup() {
 		for (const Pair<Scope, Byte> integer2 : integers) {
 			Symbol intAssign = Symbol(SymbolType::Function);
 			intAssign.args.Add(ScopeList().Add(Scope(integer2.key)));
-			intAssign.node = new IntegerAssignNode(integer.value);
+			intAssign.symbolNode = new IntegerAssignNode(integer.value);
 			intSym.Add(Scope::Assign, intAssign, FileInfo());
 
 			for (const Pair<Scope, InstructionType>& op : binOps) {
@@ -954,7 +1128,7 @@ void Symbol::Setup() {
 
 				intOp.args.Add(ScopeList().Add(integer.key));
 				intOp.args.Add(ScopeList().Add(integer2.key));
-				intOp.node = new IntegerBinaryOperatorNode(
+				intOp.symbolNode = new IntegerBinaryOperatorNode(
 					v1 > v2 ? v1 : v2,
 					sign,
 					op.value
@@ -975,13 +1149,13 @@ void Symbol::Setup() {
 
 	Symbol boolAssign = Symbol(SymbolType::Function);
 	boolAssign.args.Add(ScopeList().Add(Scope::Bool));
-	boolAssign.node = new BooleanAssignNode();
+	boolAssign.symbolNode = new BooleanAssignNode();
 	boolSym.Add(Scope::Assign, boolAssign, FileInfo());
 
 	Symbol boolToBool = Symbol(SymbolType::Function);
 	boolToBool.args.Add(ScopeList().Add(Scope::Bool));
 	boolToBool.ret.Add(ScopeList().Add(Scope::Bool));
-	boolToBool.node = new BooleanToBooleanNode();
+	boolToBool.symbolNode = new BooleanToBooleanNode();
 	boolSym.Add(Scope::As, boolToBool, FileInfo());
 
 	symbols.Add(Scope::Bool, boolSym, FileInfo());

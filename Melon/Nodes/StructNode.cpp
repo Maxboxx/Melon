@@ -18,28 +18,18 @@ StructNode::~StructNode() {
 }
 
 CompiledNode StructNode::Compile(CompileInfo& info) {
-	const ScopeList globalName = scope.Add(name);
-
-	Symbol& s = Symbol::Find(scope, file).Get(name, file);
-	s.varType = globalName;
-	s.size = 0;
-
-	for (const Scope& var : vars) {
-		Symbol& v = Symbol::Find(globalName, file).Get(var, file);
-		v.stack = s.size;
-		s.size += s.Get(var, file).GetType(file).size;
-	}
-
 	return CompiledNode();
 }
 
-Set<ScanType> StructNode::Scan(ScanInfoStack& info) const {
-	const ScopeList globalName = scope.Add(name);
-
-	Symbol s = Symbol::Find(globalName, file);
+Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
+	Symbol& s = Symbol::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
+	s.varType = symbol.scope;
+	s.size = 0;
 
 	for (const Scope& var : vars) {
-		s.Get(var, file).GetType(file);
+		Symbol& v = Symbol::Find(symbol.scope, file).Get(var, file);
+		v.stack = s.size;
+		s.size += s.Get(var, file).GetType(file).size;
 	}
 
 	return Set<ScanType>();

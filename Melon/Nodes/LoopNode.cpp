@@ -474,8 +474,6 @@ void LoopNode::CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, Seg
 }
 
 void LoopNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	for (LoopSegment& segment : segments) {
 		if (segment.type != LoopType::None) {
 			segment.condition->IncludeScan(info);
@@ -483,8 +481,6 @@ void LoopNode::IncludeScan(ParsingInfo& info) {
 
 		segment.statements->IncludeScan(info);
 	}
-
-	includeScanned = true;
 }
 
 bool LoopNode::WillASegmentRun() const {

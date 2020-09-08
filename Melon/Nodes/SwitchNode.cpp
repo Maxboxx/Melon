@@ -55,7 +55,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	List<NodePtr> nodeArgs;
 	nodeArgs.Add(matchStack);
 	nodeArgs.Add(this->match);
-	CompiledNode match = Symbol::FindFunction(this->match->Type().Add(Scope::Assign), args, this->match->file).node->Compile(nodeArgs, info);
+	CompiledNode match = Symbol::FindFunction(this->match->Type().Add(Scope::Assign), args, this->match->file).symbolNode->Compile(nodeArgs, info);
 
 	cn.AddInstructions(match.instructions);
 
@@ -72,7 +72,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 			nodeArgs.Add(matchStack);
 			nodeArgs.Add(node);
 
-			CompiledNode comp = Symbol::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file).node->Compile(nodeArgs, info);
+			CompiledNode comp = Symbol::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file).symbolNode->Compile(nodeArgs, info);
 			cn.AddInstructions(comp.instructions);
 
 			Instruction eq = Instruction(InstructionType::Ne, 1);
@@ -201,8 +201,6 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 }
 
 void SwitchNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	match->IncludeScan(info);
 
 	for (NodePtr node : nodes) {
@@ -214,8 +212,6 @@ void SwitchNode::IncludeScan(ParsingInfo& info) {
 			c->IncludeScan(info);
 		}
 	}
-
-	includeScanned = true;
 }
 
 SwitchNode::SwitchScanInfo SwitchNode::ScanSetup(ScanInfo& info) const {

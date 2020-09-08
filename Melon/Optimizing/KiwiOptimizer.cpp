@@ -284,7 +284,7 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 
 					instructions[i].instruction.sizes[0] = totalSize;
 					instructions[i].instruction.sizes[1] = totalSize;
-					instructions[i].instruction.arguments[0].mem.offset -= totalSize - 1;
+					instructions[i].instruction.arguments[0].mem.offset -= totalSize - sizes[0];
 					instructions[i].instruction.arguments[1].number = 0;
 
 					for (UInt u = i; u < i + insts.Size(); u++) {

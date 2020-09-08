@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="Kiwi::Register">
+		<DisplayString Condition="type == Kiwi::RegisterType::Register">R{index}</DisplayString>
+		<DisplayString Condition="type == Kiwi::RegisterType::Stack">SP</DisplayString>
+		<DisplayString Condition="type == Kiwi::RegisterType::Name">name</DisplayString>
+	</Type>
+
+	<Type Name="Kiwi::MemoryLocation">
+		<DisplayString>{reg}[{offset}]</DisplayString>
+	</Type>
+
+	<Type Name="Kiwi::Argument">
+		<DisplayString Condition="type == Kiwi::ArgumentType::Register">{reg}</DisplayString>
+		<DisplayString Condition="type == Kiwi::ArgumentType::Memory">{mem}</DisplayString>
+		<DisplayString Condition="type == Kiwi::ArgumentType::Number">{number}</DisplayString>
+		<DisplayString Condition="type == Kiwi::ArgumentType::Label">{label}</DisplayString>
+	</Type>
+
+	<Type Name="Kiwi::Instruction">
+		<DisplayString Condition="type == Kiwi::InstructionType::Custom">{instructionName}</DisplayString>
+		<DisplayString Condition="type != Kiwi::InstructionType::Custom">{type, en}</DisplayString>
+	</Type>
+</AutoVisualizer>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="Melon::Symbols::Scope">
+		<DisplayString Condition="!types.hasValue &amp;&amp; !variant.hasValue">{name.str, sb}</DisplayString>
+
+		<DisplayString Condition="!types.hasValue &amp;&amp; variant.hasValue">{name.str, sb}:{variant.value}</DisplayString>
+		
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; !variant.hasValue">
+			{name.str, sb}&lt;&gt;
+		</DisplayString>
+		
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; !variant.hasValue">
+			{name.str, sb}&lt;{types.value.list->list[0]}&gt;
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; !variant.hasValue">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; !variant.hasValue">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; !variant.hasValue">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;
+		</DisplayString>
+		
+		
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; variant.hasValue">
+			{name.str, sb}&lt;&gt;:{variant.value}
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; variant.hasValue">
+			{name.str, sb}&lt;{types.value.list->list[0]}&gt;:{variant.value}
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; variant.hasValue">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;:{variant.value}
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; variant.hasValue">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;:{variant.value}
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; variant.hasValue">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;:{variant.value}
+		</DisplayString>
+	</Type>
+
+	<Type Name="Melon::Symbols::ScopeList">
+		<DisplayString Condition="scopes.list->size == 0">""</DisplayString>
+		<DisplayString Condition="scopes.list->size == 1">{scopes.list->list[0]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 2">{scopes.list->list[0]}.{scopes.list->list[1]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 3">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 4">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 5">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]}</DisplayString>
+		<DisplayString Condition="scopes.list->size > 5">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]} ...</DisplayString>
+	</Type>
+
+	<Type Name="Melon::Symbols::Symbol">
+		<DisplayString>{{type={type, en}, scope={scope}}}</DisplayString>
+	</Type>
+</AutoVisualizer>

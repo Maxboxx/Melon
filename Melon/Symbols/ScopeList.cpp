@@ -100,9 +100,10 @@ String Scope::ToString() const {
 
 		for (const ScopeList& scopes : types.Get()) {
 			if (!first) {
-				first = false;
 				scope += ",";
 			}
+
+			first = false;
 
 			scope += scopes.ToString();
 		}
@@ -113,6 +114,12 @@ String Scope::ToString() const {
 	if (variant)
 		return scope + ":" + String::ToString((Boxx::Int)variant.Get());
 
+	return scope;
+}
+
+Scope Scope::Copy() const {
+	Scope scope = *this;
+	if (types) scope.types = types.Get().Copy();
 	return scope;
 }
 

@@ -68,11 +68,7 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 }
 
 void DoNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	nodes->IncludeScan(info);
-
-	includeScanned = true;
 }
 
 Set<ScanType> DoNode::Scan(ScanInfoStack& info) {

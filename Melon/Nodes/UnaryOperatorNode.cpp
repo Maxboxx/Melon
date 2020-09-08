@@ -54,8 +54,8 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 	const ScopeList type = node->Type();
 	const Symbol s = Symbol::FindFunction(type.Add(op), args, file);
 
-	if (s.node) {
-		return s.node->Compile(nodes, info);
+	if (s.symbolNode) {
+		return s.symbolNode->Compile(nodes, info);
 	}
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
@@ -71,11 +71,7 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 }
 
 void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	node->IncludeScan(info);
-
-	includeScanned = true;
 }
 
 Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {

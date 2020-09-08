@@ -51,6 +51,9 @@ namespace Melon {
 			/// Converts the scope to a string
 			Boxx::String ToString() const;
 
+			///T Copy
+			Scope Copy() const;
+
 			///H Operators
 
 			///T Equality operators

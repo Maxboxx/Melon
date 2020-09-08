@@ -94,8 +94,6 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 }
 
 void IfExprNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	for (NodePtr node : nodes) {
 		node->IncludeScan(info);
 	}
@@ -103,8 +101,6 @@ void IfExprNode::IncludeScan(ParsingInfo& info) {
 	for (NodePtr condition : conditions) {
 		condition->IncludeScan(info);
 	}
-
-	includeScanned = true;
 }
 
 Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {

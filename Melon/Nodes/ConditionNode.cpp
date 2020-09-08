@@ -38,11 +38,7 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 }
 
 void ConditionNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	cond->IncludeScan(info);
-
-	includeScanned = true;
 }
 
 Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {

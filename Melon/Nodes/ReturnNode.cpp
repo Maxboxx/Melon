@@ -61,7 +61,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 		assignArgs.Add(nodes[i]);
 
 		info.important = true;
-		c.AddInstructions(assign.node->Compile(assignArgs, info).instructions);
+		c.AddInstructions(assign.symbolNode->Compile(assignArgs, info).instructions);
 		info.important = false;
 	}
 
@@ -69,13 +69,9 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 }
 
 void ReturnNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	for (NodePtr node : nodes) {
 		node->IncludeScan(info);
 	}
-
-	includeScanned = true;
 }
 
 Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {

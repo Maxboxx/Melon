@@ -25,7 +25,7 @@ DotNode::~DotNode() {
 ScopeList DotNode::Type() const {
 	const Symbol s = GetSymbol();
 
-	if (s.type == SymbolType::Value) {
+	if (s.type == SymbolType::Value || s.type == SymbolType::Variable) {
 		return s.varType;
 	}
 	else if (s.type != SymbolType::None) {
@@ -48,10 +48,8 @@ Symbol DotNode::GetSymbol() const {
 		Symbol s = Symbol::Find(node->Type(), file);
 
 		if (s.type == SymbolType::Struct) {
-			Symbol varType = Symbol::FindNearest(s.scope, s.varType, file);
-
-			if (varType.type != SymbolType::None && varType.Contains(name)) {
-				const Symbol s2 = varType.Get(name, file);
+			if (s.type != SymbolType::None && s.Contains(name)) {
+				const Symbol s2 = s.Get(name, file);
 
 				if (s2.type != SymbolType::None) {
 					return Symbol::FindNearest(s2.scope, s2.varType, file);
@@ -60,8 +58,7 @@ Symbol DotNode::GetSymbol() const {
 		}
 	}
 	else {
-		Symbol s = Symbol::Find(nodeSymbol.scope, file);
-		return s.Get(name, file);
+		return nodeSymbol.Get(name, file);
 	}
 
 	return Symbol();
@@ -96,8 +93,6 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 }
 
 void DotNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	node->IncludeScan(info);
 	
 	Symbol s = node->GetSymbol();
@@ -105,8 +100,6 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 	if (s.type == SymbolType::Namespace && !s.Contains(name)) {
 		IncludeParser::ParseInclude(s.scope.Add(name), info);
 	}
-
-	includeScanned = true;
 }
 
 Set<ScanType> DotNode::Scan(ScanInfoStack& info) {

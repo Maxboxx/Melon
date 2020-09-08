@@ -2,6 +2,7 @@
 
 #include "NewVariableParser.h"
 #include "FunctionParser.h"
+#include "TemplateParser.h"
 
 #include "Melon/Symbols/Nodes/StructAssignNode.h"
 
@@ -19,39 +20,15 @@ using namespace Melon::Symbols::Nodes;
 using namespace Melon::Parsing;
 
 NodePtr StructParser::Parse(ParsingInfo& info) {
-	static Regex lower = Regex("^%l");
-	static Regex underscore = Regex("%a_+%a");
-
 	if (info.Current().type != TokenType::Struct) return nullptr;
 
 	const UInt structLine = info.Current().line;
 	info.index++;
 
-	if (info.Current().type != TokenType::Name)
-		ErrorLog::Error(SyntaxError(SyntaxError::StructName, FileInfo(info.filename, structLine, info.statementNumber)));
+	Pointer<StructNode> sn = ParseName(info, structLine);
 
-	const Scope structName = Scope(info.Current().value);
-
-	if (lower.Match(info.Current().value)) {
-		ErrorLog::Info(InfoError(InfoError::UpperName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
-	}
-
-	if (underscore.Match(info.Current().value)) {
-		ErrorLog::Info(InfoError(InfoError::UpperUnderscoreName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
-	}
-
-	info.index++;
-	Symbol structSymbol = Symbol(SymbolType::Struct);
-	structSymbol.symbolFile = info.currentFile;
-	structSymbol.symbolNamespace = info.currentNamespace;
-	structSymbol.includedNamespaces = info.includedNamespaces;
-	structSymbol.scope = info.scopes.Add(structName);
-	Pointer<StructNode> sn = new StructNode(info.scopes, FileInfo(info.filename, structLine, info.statementNumber));
-
-	sn->name = structName;
-
-	info.scopes = info.scopes.Add(structName);
-	Symbol::Add(info.scopes, structSymbol, FileInfo(info.filename, info.Current().line, info.statementNumber));
+	info.scopes = info.scopes.Add(sn->name);
+	Symbol::Add(info.scopes, sn->symbol, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	while (true) {
 		bool found = false;
@@ -72,9 +49,9 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 				v.attributes = nn->attributes[i];
 
-				structSymbol.Add(nn->names[i], v, FileInfo(info.filename, info.Current().line, info.statementNumber));
+				sn->symbol.Add(nn->names[i], v, FileInfo(info.filename, info.Current().line, info.statementNumber));
 				sn->vars.Add(nn->names[i]);
-				structSymbol.args.Add(ScopeList().Add(nn->names[i]));
+				sn->symbol.args.Add(ScopeList().Add(nn->names[i]));
 			}
 
 			found = true;
@@ -94,14 +71,62 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	assign.symbolNamespace = info.currentNamespace;
 	assign.includedNamespaces = info.includedNamespaces;
 	assign.args.Add(info.scopes);
-	assign.node = new StructAssignNode();
-	structSymbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line, info.statementNumber));
+	assign.symbolNode = new StructAssignNode();
+	sn->symbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
-	Symbol::Add(info.scopes, structSymbol, FileInfo(info.filename, structLine, info.statementNumber), true);
+	Symbol::Add(info.scopes, sn->symbol, FileInfo(info.filename, structLine, info.statementNumber), true);
+
+	for (UInt i = 0; i < sn->symbol.templateArgs.Size(); i++) {
+		Symbol t = Symbol(SymbolType::Template);
+		t.size = i;
+		sn->symbol.Add(sn->symbol.templateArgs[i].Last(), t, FileInfo(info.filename, structLine, info.statementNumber));
+	}
 
 	info.index++;
 
 	info.scopes = info.scopes.Pop();
+	return sn;
+}
+
+Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt structLine) {
+	static Regex lower = Regex("^%l");
+	static Regex underscore = Regex("%a_+%a");
+
+	if (info.Current().type != TokenType::Name)
+		ErrorLog::Error(SyntaxError(SyntaxError::StructName, FileInfo(info.filename, structLine, info.statementNumber)));
+
+	Scope structName = Scope(info.Current().value);
+
+	if (lower.Match(info.Current().value)) {
+		ErrorLog::Info(InfoError(InfoError::UpperName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+	}
+
+	if (underscore.Match(info.Current().value)) {
+		ErrorLog::Info(InfoError(InfoError::UpperUnderscoreName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+	}
+
+	info.index++;
+	Symbol structSymbol = Symbol(SymbolType::Struct);
+	structSymbol.symbolFile = info.currentFile;
+	structSymbol.symbolNamespace = info.currentNamespace;
+	structSymbol.includedNamespaces = info.includedNamespaces;
+	
+	if (Optional<List<Scope>> templateList = TemplateParser::ParseDefine(info)) {
+		for (const Scope& arg : templateList.Get()) {
+			structSymbol.templateArgs.Add(ScopeList().Add(arg));
+		}
+
+		structName.types = structSymbol.templateArgs;
+		info.statementNumber++;
+	}
+
+	structSymbol.scope = info.scopes.Add(structName);
+
+	Pointer<StructNode> sn = new StructNode(info.scopes, FileInfo(info.filename, structLine, info.statementNumber));
+	sn->name = structName;
+	structSymbol.node = sn;
+	sn->symbol = structSymbol;
+
 	return sn;
 }
 

@@ -100,12 +100,8 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 }
 
 void RepeatNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	content->IncludeScan(info);
 	condition->IncludeScan(info);
-
-	includeScanned = true;
 }
 
 Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {

@@ -44,7 +44,7 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 		args.Add(sn2);
 
 		info.important = important;
-		c1.AddInstructions(argAssign.node->Compile(args, info).instructions);
+		c1.AddInstructions(argAssign.symbolNode->Compile(args, info).instructions);
 		info.important = false;
 	}
 

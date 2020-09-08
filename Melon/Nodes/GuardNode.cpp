@@ -89,14 +89,10 @@ CompiledNode GuardNode::Compile(CompileInfo& info) {
 }
 
 void GuardNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	cond->IncludeScan(info);
 
 	if (else_) else_->IncludeScan(info);
 	continue_->IncludeScan(info);
-
-	includeScanned = true;
 }
 
 Set<ScanType> GuardNode::Scan(ScanInfoStack& info) {

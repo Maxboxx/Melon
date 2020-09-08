@@ -9,6 +9,7 @@
 #include "MethodCallParser.h"
 #include "DotParser.h"
 #include "CustomInitParser.h"
+#include "TypeParser.h"
 
 #include "Melon/Nodes/BinaryOperatorNode.h"
 #include "Melon/Nodes/UnaryOperatorNode.h"
@@ -211,6 +212,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 
 NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement) {
 	const UInt startIndex = info.index;
+	const UInt startLine  = info.Current().line;
 
 	if (info.Current().type == TokenType::ParenOpen) {
 		info.index++;
@@ -284,6 +286,11 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 
 		info.index = startIndex;
 		return nullptr;
+	}
+	else if (Optional<Scope> node = TypeParser::ParseScope(info)) {
+		Pointer<NameNode> nn = new NameNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber));
+		nn->name = (Scope)node;
+		return nn;
 	}
 	else if (NodePtr node = NameParser::Parse(info)) {
 		return node;

@@ -1,5 +1,7 @@
 #include "DotParser.h"
 
+#include "TemplateParser.h"
+
 #include "Melon/Nodes/DotNode.h"
 
 using namespace Boxx;
@@ -17,6 +19,11 @@ NodePtr DotParser::Parse(ParsingInfo& info) {
 
 	Pointer<DotNode> dn = new DotNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 	dn->name = Scope(info.Current().value);
+
+	if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
+		dn->name.types = templateArgs;
+	}
+
 	info.index++;
 
 	return dn;

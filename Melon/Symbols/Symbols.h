@@ -5,14 +5,18 @@
 #include "Boxx/Map.h"
 #include "Boxx/Pointer.h"
 #include "Boxx/Mango.h"
+#include "Boxx/Tuple.h"
 
 #include "ScopeList.h"
 
 #include "Melon/Errors.h"
 
 namespace Melon {
-	namespace Symbols {
+	namespace Nodes {
+		class Node;
+	}
 
+	namespace Symbols {
 		namespace Nodes {
 			class SymbolNode;
 		}
@@ -32,7 +36,8 @@ namespace Melon {
 			Interface,
 			Scope,
 			Namespace,
-			Value
+			Value,
+			Template
 			///M
 		};
 
@@ -73,6 +78,7 @@ namespace Melon {
 			///T Size/Function
 			/// The size of the type if <code>type</code> is <code>SymbolType::Type</code>, <code>SymbolType::Struct</code>, <code>SymbolType::Class</code> or <code>SymbolType::Enum</code>
 			/// The function id if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
+			/// The template index if <code>type</code> is <code>SymbolType::Template</code>
 			Boxx::UInt size = 0;
 
 			///T Signed/Assigned
@@ -92,7 +98,11 @@ namespace Melon {
 
 			///T Symbol node
 			/// Used for basic operations instead of having to call a function
-			Boxx::Pointer<Nodes::SymbolNode> node;
+			Boxx::Pointer<Nodes::SymbolNode> symbolNode;
+
+			///T Node
+			/// A node for the symbol
+			Boxx::Pointer<Melon::Nodes::Node> node;
 
 			///T Return values
 			/// The relative types for the return values
@@ -104,6 +114,9 @@ namespace Melon {
 			/// The list of variables if <code>type</code> is <code>SymbolType::Struct</code> or <code>SymbolType::Class</code>
 			Boxx::List<ScopeList> args;
 
+			///T Template arguments
+			Boxx::List<ScopeList> templateArgs;
+
 			///T Names
 			/// Names of function arguments
 			Boxx::List<Scope> names;
@@ -111,6 +124,10 @@ namespace Melon {
 			///T Variants
 			/// A list of overloads for the symbol
 			Boxx::List<Symbol> variants;
+
+			///T Template variants
+			/// A list of template variants for the symbol
+			Boxx::List<Symbol> templateVariants;
 
 			///T Scopes
 			/// A map containing all child scopes
@@ -147,6 +164,14 @@ namespace Melon {
 
 			~Symbol();
 
+		private:
+			Symbol& GetTemplate(const Scope& scope, const FileInfo& file);
+
+		public:
+			struct TemplateSymbol;
+
+			static Boxx::Tuple<Symbol, Boxx::List<ScopeList>> FindTemplateArgs(const TemplateSymbol& symbol);
+
 			///T Get
 			/// Get a specific child symbol
 			///M
@@ -163,6 +188,8 @@ namespace Melon {
 
 			///T Get Argument Type
 			Symbol GetArgumentType(const Boxx::UInt index) const;
+
+			FileInfo GetFileInfo() const;
 
 			///T Contains
 			/// Checks if the symbol contains a specific child symbol
@@ -210,12 +237,31 @@ namespace Melon {
 			/// Checks if the symbol is valid
 			bool IsValid() const;
 
+			///T Has Type Args
+			/// Checks if the <code>args</code> member contains types
+			bool HasTypeArgs() const;
+
+			///T Has Type Returns
+			/// Checks if the <code>ret</code> member contains types
+			bool HasTypeReturns() const;
+
+			///T Specialize Template
+			/// Specializes a template symbol
+			///M
+			Symbol SpecializeTemplate(const Boxx::List<ScopeList>& types) const;
+			Symbol SpecializeTemplate(const Symbol& templateSymbol, const Boxx::List<ScopeList>& types) const;
+			///M
+
 			///H Static functions
+
+			///T Replace Templates
+			/// Replaces template arguments with real types
+			static ScopeList ReplaceTemplates(const ScopeList& type, const Symbol& templateSymbol, const Boxx::List<ScopeList>& types);
 
 			///T Add
 			/// Adds a new symbol
 			static bool Add(const ScopeList& scopes, const Symbol& symbol, const FileInfo& file, const bool redefine = false);
-	
+
 			///T Find
 			/// Find a specific symbol
 			static Symbol Find(const ScopeList& scopes, const FileInfo& file);
@@ -291,11 +337,19 @@ namespace Melon {
 			/// Setup the basic types for the symbol table
 			static void Setup();
 
+			static Boxx::List<TemplateSymbol> templateSymbols;
+
 		private:
 			static Symbol symbols;
 			static Symbol empty;
 
 			Boxx::List<Boxx::Mango> ToMangoList(const ScopeList& scopes) const;
+		};
+
+		struct Symbol::TemplateSymbol {
+			ScopeList type;
+			ScopeList scope;
+			FileInfo file;
 		};
 	}
 }

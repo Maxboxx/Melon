@@ -120,7 +120,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 				Symbol s = Symbol::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file);
 
 				info.important = true;
-				CompiledNode c1 = s.node->Compile(nodes, info);
+				CompiledNode c1 = s.symbolNode->Compile(nodes, info);
 				info.important = false;
 				c.AddInstructions(c1.instructions);
 
@@ -147,7 +147,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 			Symbol s = Symbol::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file);
 			info.important = true;
-			CompiledNode c1 = s.node->Compile(nodes, info);
+			CompiledNode c1 = s.symbolNode->Compile(nodes, info);
 			info.important = false;
 			c.AddInstructions(c1.instructions);
 		}
@@ -163,8 +163,6 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 }
 
 void AssignNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	if (newVars) newVars->IncludeScan(info);
 	
 	for (NodePtr var : vars) {
@@ -174,8 +172,6 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 	for (NodePtr value : values) {
 		value->IncludeScan(info);
 	}
-
-	includeScanned = true;
 }
 
 Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {

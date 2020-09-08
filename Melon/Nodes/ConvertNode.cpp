@@ -32,8 +32,8 @@ CompiledNode ConvertNode::Compile(CompileInfo& info) {
 	List<NodePtr> nodes;
 	nodes.Add(node);
 
-	if (convert.node) {
-		return convert.node->Compile(nodes, info);
+	if (convert.symbolNode) {
+		return convert.symbolNode->Compile(nodes, info);
 	}
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
@@ -49,11 +49,7 @@ CompiledNode ConvertNode::Compile(CompileInfo& info) {
 }
 
 void ConvertNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	node->IncludeScan(info);
-
-	includeScanned = true;
 }
 
 Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {

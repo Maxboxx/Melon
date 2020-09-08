@@ -31,7 +31,7 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 
 	Symbol s = Symbol::Find(Type(), file);
 
-	UInt offset = s.size - 1;
+	UInt offset = s.size;
 
 	info.stack.Push(s.size);
 
@@ -47,13 +47,13 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 		Symbol a = Symbol::FindFunction(type.Add(Scope::Assign), argTypes, expressions[i]->file);
 
 		if (s.type == SymbolType::Struct) {
-			Pointer<StackNode> sn = new StackNode(info.stack.Offset() + offset - v.stack);
+			Pointer<StackNode> sn = new StackNode(info.stack.Offset() + offset - v.stack - varType.size);
 			sn->type = type;
 
 			List<NodePtr> args;
 			args.Add(sn);
 			args.Add(expressions[i]);
-			c.AddInstructions(a.node->Compile(args, info).instructions);
+			c.AddInstructions(a.symbolNode->Compile(args, info).instructions);
 		}
 
 		info.index = index;
@@ -66,21 +66,19 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 }
 
 void CustomInitNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	node->IncludeScan(info);
 
 	for (NodePtr expression : expressions) {
 		expression->IncludeScan(info);
 	}
-
-	includeScanned = true;
 }
 
 Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node->Scan(info);
 
 	Symbol s = Symbol::Find(Type(), file);
+
+	if (s.type == SymbolType::None) return scanSet;
 
 	for (const Scope& var : s.GetUnassignedVars(vars)) {
 		ErrorLog::Error(CompileError(CompileError::VarNotCustomInitStart + var.ToString() + CompileError::VarNotCustomInitEnd, file));

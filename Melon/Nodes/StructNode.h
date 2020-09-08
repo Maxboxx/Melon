@@ -18,11 +18,14 @@ namespace Melon {
 			/// The variables of the struct
 			Boxx::List<Symbols::Scope> vars;
 
+			///T Symbol
+			Symbols::Symbol symbol;
+
 			StructNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~StructNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) const;
+			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
 			virtual Boxx::Mango ToMango() const override;
 		};
 	}

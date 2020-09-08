@@ -163,9 +163,6 @@ namespace Melon {
 			/// The file info of the node
 			FileInfo file;
 
-			///T Include scanned
-			bool includeScanned = false;
-
 			///H Constructors
 
 			///T Constructor

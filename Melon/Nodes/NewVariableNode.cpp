@@ -66,8 +66,6 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 }
 
 void NewVariableNode::IncludeScan(ParsingInfo& info) {
-	if (includeScanned) return;
-
 	for (const ScopeList& type : types) {
 		while (true) {
 			Symbol s = Symbol::FindInNamespace(ScopeList().Add(type[0]), file);
@@ -90,8 +88,6 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 			if (done) break;
 		}
 	}
-
-	includeScanned = true;
 }
 
 Set<ScanType> NewVariableNode::Scan(ScanInfoStack& info) {

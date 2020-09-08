@@ -37,7 +37,15 @@ ScopeList NameNode::Type() const {
 }
 
 Symbol NameNode::GetSymbol() const {
-	return Symbol::FindNearestInNamespace(scope, name, file);
+	Scope s = name.Copy();
+
+	if (s.types) {
+		for (ScopeList& type : s.types.Get()) {
+			type = Symbol::FindNearestInNamespace(scope, type, file).scope;
+		}
+	}
+
+	return Symbol::FindNearestInNamespace(scope, s, file);
 }
 
 CompiledNode NameNode::Compile(CompileInfo& info) {
