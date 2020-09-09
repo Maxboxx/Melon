@@ -134,6 +134,12 @@ namespace Melon {
 			static const Scope Index;
 			static const Scope As;
 			///M
+
+			///T Misc
+			/// A collection of scopes
+			///M
+			static const Scope TemplateSymbol;
+			///M
 		private:
 			Boxx::Map<Boxx::String, Boxx::UInt> scopes;
 		};

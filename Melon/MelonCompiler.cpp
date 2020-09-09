@@ -217,9 +217,11 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		if (error) throw CompileError("", FileInfo());
 
+		ErrorLog::Success(PlainError("compilation successful"));
 		ErrorLog::LogErrors();
 	}
 	catch (CompileError e) {
+		ErrorLog::Error(PlainError("compilation failed"));
 		ErrorLog::LogErrors();
 	}
 }

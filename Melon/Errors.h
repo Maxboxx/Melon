@@ -25,6 +25,9 @@ namespace Melon {
 		///T Info
 		static void Info(const class CompileError& error);
 
+		///T Success
+		static void Success(const class CompileError& error);
+
 		///T Warning
 		static void Warning(const class CompileError& error);
 
@@ -65,6 +68,7 @@ namespace Melon {
 		enum class LogLevel {
 			Log,
 			Info,
+			Success,
 			Warning,
 			Error,
 			Fatal

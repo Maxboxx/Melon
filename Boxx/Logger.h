@@ -51,6 +51,11 @@ namespace Boxx {
 		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
 		void Info(const String& str);
 
+		///T Success
+		/// Writes a success message to the log file and the console
+		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
+		void Success(const String& str);
+
 		///T Warning
 		/// Writes a warning to the log file and the console
 		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
@@ -88,6 +93,7 @@ namespace Boxx {
 			Write,
 			Log,
 			Info,
+			Success,
 			Warning,
 			Error,
 			Fatal
@@ -189,6 +195,15 @@ namespace Boxx {
 		const String s = "info: " + str + "\n";
 		Console::Write(s);
 		loggedMessages.Add(Tuple<LogLevel, String>(LogLevel::Info, s));
+		if (!file) return;
+		if (!file.Get().IsOpen()) throw LoggerFileError("File is not open");
+		file.Get().Write(s);
+	}
+
+	inline void Logger::Success(const String& str) {
+		const String s = "success: " + str + "\n";
+		Console::Write(s);
+		loggedMessages.Add(Tuple<LogLevel, String>(LogLevel::Success, s));
 		if (!file) return;
 		if (!file.Get().IsOpen()) throw LoggerFileError("File is not open");
 		file.Get().Write(s);

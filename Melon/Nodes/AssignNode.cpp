@@ -30,8 +30,6 @@ List<Pair<ScopeList, NodePtr>> AssignNode::Values() const {
 	List<Pair<ScopeList, NodePtr>> types;
 
 	for (UInt i = 0; i < vars.Size(); i++) {
-		types.Add(Pair<ScopeList, NodePtr>(values[i]->Type(), values[i]));
-
 		if (i + 1 >= values.Size()) {
 			List<ScopeList> returnTypes = values[i]->Types();
 
@@ -40,6 +38,9 @@ List<Pair<ScopeList, NodePtr>> AssignNode::Values() const {
 			}
 
 			break;
+		}
+		else {
+			types.Add(Pair<ScopeList, NodePtr>(values[i]->Type(), values[i]));
 		}
 	}
 

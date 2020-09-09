@@ -16,10 +16,15 @@
 
 #include "ScopeList.h"
 
+#include "Melon/Parsing/Parser.h"
+#include "Melon/Nodes/FunctionNode.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon;
+using namespace Melon::Nodes;
+using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
@@ -282,6 +287,7 @@ Symbol Symbol::GetReturnType(const UInt index) const {
 	FileInfo file;
 	file.currentNamespace = symbolNamespace;
 	file.includedNamespaces = includedNamespaces;
+	file.statementNumber = Math::UIntMax();
 	return FindNearestInNamespace(scope.Pop(), ret[index], file);
 }
 
@@ -289,6 +295,7 @@ Symbol Symbol::GetArgumentType(const UInt index) const {
 	FileInfo file;
 	file.currentNamespace = symbolNamespace;
 	file.includedNamespaces = includedNamespaces;
+	file.statementNumber = Math::UIntMax();
 	return FindNearestInNamespace(scope.Pop(), args[index], file);
 }
 
@@ -442,19 +449,21 @@ bool Symbol::HasTypeReturns() const {
 	return type == SymbolType::Function || type == SymbolType::Method;
 }
 
-Symbol Symbol::SpecializeTemplate(const List<ScopeList>& types) const {
-	return SpecializeTemplate(*this, types);
+Symbol Symbol::SpecializeTemplate(const List<ScopeList>& types, ParsingInfo& info) const {
+	return SpecializeTemplate(*this, types, info);
 }
 
-Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<ScopeList>& types) const {
+Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<ScopeList>& types, ParsingInfo& info) const {
 	Symbol symbol = *this;
+
+	symbol.varType = ReplaceTemplates(symbol.varType, templateSymbol, types);
 
 	if (!symbol.templateArgs.IsEmpty()) {
 		symbol.templateArgs = types.Copy();
+		symbol.varType      = templateSymbol.scope;
 	}
 
 	symbol.scope   = ReplaceTemplates(symbol.scope, templateSymbol, types);
-	symbol.varType = ReplaceTemplates(symbol.varType, templateSymbol, types);
 
 	if (HasTypeArgs()) {
 		symbol.args = List<ScopeList>();
@@ -471,7 +480,7 @@ Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<Scope
 		symbol.ret = List<ScopeList>();
 
 		for (const ScopeList& r : ret) {
-			symbol.args.Add(ReplaceTemplates(r, templateSymbol, types));
+			symbol.ret.Add(ReplaceTemplates(r, templateSymbol, types));
 		}
 	}
 	else {
@@ -482,14 +491,30 @@ Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<Scope
 
 	for (const Pair<String, Symbol>& scope : scopes) {
 		if (scope.value.type != SymbolType::Template) {
-			symbol.scopes.Add(scope.key, scope.value.SpecializeTemplate(templateSymbol, types));
+			symbol.scopes.Add(scope.key, scope.value.SpecializeTemplate(templateSymbol, types, info));
 		}
 	}
 
 	symbol.variants = List<Symbol>();
 
 	for (const Symbol& variant : variants) {
-		symbol.variants.Add(variant.SpecializeTemplate(templateSymbol, types));
+		symbol.variants.Add(variant.SpecializeTemplate(templateSymbol, types, info));
+	}
+
+	if (type == SymbolType::Function || type == SymbolType::Method) {
+		if (node != nullptr) {
+			Pointer<FunctionNode> funcNode = node.Cast<FunctionNode>();
+			Pointer<FunctionNode> fn = new FunctionNode(funcNode->scope, funcNode->file);
+			fn->argNames = funcNode->argNames;
+			fn->func = symbol.scope;
+			fn->node = funcNode->node;
+
+			symbol.node = fn;
+			symbol.size = info.root.funcs.Size();
+
+			fn->s    = symbol;
+			info.root.funcs.Add(symbol.node);
+		}
 	}
 
 	return symbol;
@@ -519,6 +544,57 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& template
 	}
 
 	return list;
+}
+
+ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const FileInfo& file) {
+	ScopeList list;
+
+	for (UInt i = 0; i < type.Size(); i++) {
+		Scope scope = type[i].Copy();
+
+		if (scope.types) {
+			Symbol s = Find(list.Add(scope), file);
+
+			for (UInt u = 0; u < scope.types.Get().Size(); u++) {
+				if (scope.types.Get().Size() == 1) {
+					if (s.Contains(scope.types.Get()[u].Last())) {
+						Symbol arg = s.Get(scope.types.Get()[u].Last(), file);
+
+						if (arg.type == SymbolType::Template) {
+							scope.types.Get()[u] = arg.varType;
+							continue;
+						}
+					}
+				}
+
+				scope.types.Get()[u] = ReplaceTemplates(scope.types.Get()[u], file);
+			}
+		}
+
+		list = list.Add(scope);
+	}
+
+	return list;
+}
+
+void Symbol::SetTemplateValues(const ScopeList& scope, const FileInfo& file) {
+	Symbol s = symbols;
+
+	for (UInt i = 0; i < scope.Size(); i++) {
+		s = s.Get(scope[i], file);
+
+		if (!s.templateArgs.IsEmpty()) {
+			Symbol t = Find(s.varType, file);
+
+			for (UInt u = 0; u < s.templateArgs.Size(); u++) {
+				if (t.templateArgs[u].Size() == 1) {
+					if (t.Contains(t.templateArgs[u].Last())) {
+						t.Get(t.templateArgs[u].Last(), file).varType = s.templateArgs[u];
+					}
+				}
+			}
+		}
+	}
 }
 
 Symbol Symbol::Find(const ScopeList& scopes, const FileInfo& file) {
@@ -914,7 +990,7 @@ Symbol Symbol::FindExplicitConversion(const ScopeList& from, const ScopeList& to
 Mango Symbol::ToMango(const bool ignoreBasic) {
 	Mango symbols = Mango("symbols", MangoType::List);
 	
-	for (const Pair<String, Symbol>& pair : Symbol::symbols.scopes) {
+	for (Pair<String, Symbol>& pair : Symbol::symbols.scopes) {
 		if (!ignoreBasic || !pair.value.basic) {
 			for (const Mango& m : pair.value.ToMangoList(ScopeList().Add(Scope(pair.key)))) {
 				symbols.Add(m);
@@ -925,7 +1001,7 @@ Mango Symbol::ToMango(const bool ignoreBasic) {
 	return symbols;
 }
 
-List<Mango> Symbol::ToMangoList(const ScopeList& scope) const {
+List<Mango> Symbol::ToMangoList(const ScopeList& scope) {
 	List<Mango> symbols;
 
 	if (type == SymbolType::Type || type == SymbolType::Struct || type == SymbolType::Class || type == SymbolType::Enum || type == SymbolType::Interface) {
@@ -947,6 +1023,8 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) const {
 	}
 	else if (type == SymbolType::Variable) {
 		Mango m = Mango(scope.ToString(), MangoType::Map);
+		this->scope = scope;
+
 		FileInfo file;
 		file.statementNumber++;
 		m.Add("type", GetType(file).scope.ToString());
@@ -1014,7 +1092,7 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) const {
 		}
 	}
 	
-	for (const Pair<String, Symbol>& pair : scopes) {
+	for (Pair<String, Symbol>& pair : scopes) {
 		for (const Mango& m : pair.value.ToMangoList(scope.Add(Scope(pair.key)))) {
 			symbols.Add(m);
 		}

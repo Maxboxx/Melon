@@ -18,8 +18,19 @@ NewVariableNode::~NewVariableNode() {
 
 }
 
+ScopeList NewVariableNode::GetType(const UInt index) const {
+	Symbol s = Symbol::FindInNamespace(types[types.Size() > 1 ? index : 0], file);
+
+	if (s.type == SymbolType::Template) {
+		return s.varType;
+	}
+	else {
+		return s.scope;
+	}
+}
+
 ScopeList NewVariableNode::Type() const {
-	return Symbol::FindInNamespace(types[0], file).scope;
+	return GetType(0);
 }
 
 List<ScopeList> NewVariableNode::GetVariables() const {
@@ -40,7 +51,7 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 		info.stack.Push(info.stack.ptrSize);
 	}
 	else {
-		info.stack.Push(Symbol::FindInNamespace(types[0], file).size);
+		info.stack.Push(Symbol::Find(GetType(0), file).size);
 	}
 
 	Symbol::Find(scope, file).Get(names[0], file).stack = info.stack.top;
@@ -51,12 +62,7 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			if (types.Size() == 1) {
-				info.stack.Push(Symbol::FindInNamespace(types[0], file).size);
-			}
-			else {
-				info.stack.Push(Symbol::FindInNamespace(types[i], file).size);
-			}
+			info.stack.Push(Symbol::Find(GetType(i), file).size);
 		}
 
 		Symbol::Find(scope, file).Get(names[i], file).stack = info.stack.top;
@@ -93,8 +99,8 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> NewVariableNode::Scan(ScanInfoStack& info) {
 	Symbol::Find(Type(), file);
 
-	for (const ScopeList& s : types) {
-		Symbol::FindInNamespace(s, file);
+	for (UInt i = 0; i < types.Size(); i++) {
+		GetType(i);
 	}
 
 	for (const Scope& n : names) {
@@ -108,10 +114,7 @@ Mango NewVariableNode::ToMango() const {
 	Mango mango = Mango("newvar", MangoType::List);
 
 	for (UInt i = 0; i < names.Size(); i++) {
-		if (types.Size() == 1)
-			mango.Add(Mango(Symbol::FindInNamespace(types[0], file).scope.ToString(), scope.Add(names[i]).ToString()));
-		else
-			mango.Add(Mango(Symbol::FindInNamespace(types[i], file).scope.ToString(), scope.Add(names[i]).ToString()));
+		mango.Add(Mango(GetType(i).ToString(), scope.Add(names[i]).ToString()));
 	}
 
 	return mango;

@@ -30,6 +30,9 @@ namespace Melon {
 			/// Gets the absolute name of the variables
 			Boxx::List<Symbols::ScopeList> GetVariables() const;
 
+			///T Get the type of the specified type index
+			Symbols::ScopeList GetType(const Boxx::UInt index) const;
+
 			virtual Symbols::ScopeList Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

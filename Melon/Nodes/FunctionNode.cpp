@@ -17,7 +17,36 @@ FunctionNode::~FunctionNode() {
 
 }
 
+bool FunctionNode::IsNotSpecialized() const {
+	Symbol sym = Symbol::Find(ScopeList().Add(s.scope[0]), file);
+
+	for (UInt i = 0; i < s.scope.Size(); i++) {
+		if (i > 0) {
+			sym = sym.Get(s.scope[i], file);
+		}
+
+		if (!sym.templateArgs.IsEmpty()) {
+			for (const ScopeList& type : sym.templateArgs) {
+				if (type.Size() == 1 && sym.Contains(type.Last())) {
+					if (sym.Get(type.Last(), file).type == SymbolType::Template) {
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+void FunctionNode::SetTemplateValues() const {
+	Symbol::SetTemplateValues(func, file);
+}
+
 CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate arg error lines
+	if (IsNotSpecialized()) return CompiledNode();
+	SetTemplateValues();
+
 	CompiledNode c;
 
 	Instruction func = Instruction::Function(Symbol::Find(this->func, file).size);
@@ -52,10 +81,16 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate ar
 }
 
 void FunctionNode::IncludeScan(ParsingInfo& info) {
+	if (IsNotSpecialized()) return;
+	SetTemplateValues();
+
 	node->IncludeScan(info);
 }
 
 Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
+	if (IsNotSpecialized()) return Set<ScanType>();
+	SetTemplateValues();
+
 	info.Push();
 
 	Symbol::Find(this->func, file);

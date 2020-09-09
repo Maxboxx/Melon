@@ -21,6 +21,10 @@ namespace Melon {
 			ReturnNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~ReturnNode();
 
+			///T Get Types
+			/// Get the symbols of the return values
+			Boxx::List<Symbols::Symbol> GetTypes() const;
+
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;

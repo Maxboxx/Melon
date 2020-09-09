@@ -31,17 +31,15 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 			info.index++;
 
 			if (Optional<Scope> scope = ParseScope(info)) {
-				if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
-					scope.Get().types = templateArgs;
-				}
-
 				type = type.Add((Scope)scope);
 
-				Symbol::TemplateSymbol ts;
-				ts.type = type;
-				ts.scope = info.scopes;
-				ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-				Symbol::templateSymbols.Add(ts);
+				if (scope.Get().types) {
+					Symbol::TemplateSymbol ts;
+					ts.type = type;
+					ts.scope = info.scopes;
+					ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
+					Symbol::templateSymbols[Symbol::templateSymbols.Size() - 1] = ts;
+				}
 			}
 			else {
 				info.index--;

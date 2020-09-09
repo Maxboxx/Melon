@@ -37,15 +37,34 @@ ScopeList NameNode::Type() const {
 }
 
 Symbol NameNode::GetSymbol() const {
+	ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
 	Scope s = name.Copy();
 
 	if (s.types) {
 		for (ScopeList& type : s.types.Get()) {
-			type = Symbol::FindNearestInNamespace(scope, type, file).scope;
+			Symbol sym = Symbol::FindNearestInNamespace(replacedScope, type, file);
+			
+			if (sym.type == SymbolType::Template) {
+				type = sym.varType;
+			}
+			else {
+				type = sym.scope;
+			}
 		}
 	}
 
-	return Symbol::FindNearestInNamespace(scope, s, file);
+	Scope noTemplateScope = s.Copy();
+	noTemplateScope.types = nullptr;
+
+	Symbol sym = Symbol::FindNearestInNamespace(Symbol::ReplaceTemplates(replacedScope, file), noTemplateScope, file);
+
+	if (sym.type == SymbolType::Template) {
+		ScopeList type = sym.varType;
+		type[type.Size() - 1].types = s.types;
+		return Symbol::Find(type, file);
+	}
+
+	return Symbol::FindNearestInNamespace(replacedScope, s, file);
 }
 
 CompiledNode NameNode::Compile(CompileInfo& info) {

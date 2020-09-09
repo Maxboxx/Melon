@@ -116,6 +116,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		}
 
 		info.statementNumber++;
+		s.node = func;
 
 		if (!funcHead.isOperator) {
 			info.scopes = info.scopes.Pop();

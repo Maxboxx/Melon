@@ -25,7 +25,7 @@ DotNode::~DotNode() {
 ScopeList DotNode::Type() const {
 	const Symbol s = GetSymbol();
 
-	if (s.type == SymbolType::Value || s.type == SymbolType::Variable) {
+	if (s.type == SymbolType::Value || s.type == SymbolType::Variable || s.type == SymbolType::Template) {
 		return s.varType;
 	}
 	else if (s.type != SymbolType::None) {

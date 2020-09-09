@@ -32,7 +32,10 @@ ScopeList UnaryOperatorNode::Type() const {
 	if (s.type != SymbolType::None && !s.ret.IsEmpty()) {
 		const Symbol s2 = Symbol::FindNearest(s.scope.Pop(), s.ret[0], file);
 
-		if (s2.type != SymbolType::None) {
+		if (s2.type == SymbolType::Template) {
+			return s2.varType;
+		}
+		else if (s2.type != SymbolType::None) {
 			return s2.scope;
 		}
 	}

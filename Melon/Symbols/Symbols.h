@@ -16,6 +16,10 @@ namespace Melon {
 		class Node;
 	}
 
+	namespace Parsing {
+		struct ParsingInfo;
+	}
+
 	namespace Symbols {
 		namespace Nodes {
 			class SymbolNode;
@@ -67,8 +71,9 @@ namespace Melon {
 			SymbolType type;
 
 			///T Variable type
-			/// The type of the variable
-			/// Only used if <code>type</code> is <code>SymbolType::Variable</code>
+			/// The type of the variable if <code>type</code> is <code>SymbolType::Variable</code>
+			/// The type of the template argument if <code>type</code> is <code>SymbolType::Template</code>
+			/// The main template symbol if the symbol has template arguments
 			ScopeList varType;
 
 			///T Scope
@@ -248,8 +253,8 @@ namespace Melon {
 			///T Specialize Template
 			/// Specializes a template symbol
 			///M
-			Symbol SpecializeTemplate(const Boxx::List<ScopeList>& types) const;
-			Symbol SpecializeTemplate(const Symbol& templateSymbol, const Boxx::List<ScopeList>& types) const;
+			Symbol SpecializeTemplate(const Boxx::List<ScopeList>& types, Parsing::ParsingInfo& info) const;
+			Symbol SpecializeTemplate(const Symbol& templateSymbol, const Boxx::List<ScopeList>& types, Parsing::ParsingInfo& info) const;
 			///M
 
 			///H Static functions
@@ -257,6 +262,11 @@ namespace Melon {
 			///T Replace Templates
 			/// Replaces template arguments with real types
 			static ScopeList ReplaceTemplates(const ScopeList& type, const Symbol& templateSymbol, const Boxx::List<ScopeList>& types);
+			static ScopeList ReplaceTemplates(const ScopeList& type, const FileInfo& file);
+
+			///T Set Template Values
+			/// Sets the values of templates
+			static void SetTemplateValues(const ScopeList& scope, const FileInfo& file);
 
 			///T Add
 			/// Adds a new symbol
@@ -343,7 +353,7 @@ namespace Melon {
 			static Symbol symbols;
 			static Symbol empty;
 
-			Boxx::List<Boxx::Mango> ToMangoList(const ScopeList& scopes) const;
+			Boxx::List<Boxx::Mango> ToMangoList(const ScopeList& scopes);
 		};
 
 		struct Symbol::TemplateSymbol {

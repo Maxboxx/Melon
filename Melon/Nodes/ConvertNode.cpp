@@ -21,13 +21,25 @@ ConvertNode::~ConvertNode() {
 }
 
 ScopeList ConvertNode::Type() const {
-	return type;
+	Symbol s = Symbol::FindNearestInNamespace(scope, type, file);
+
+	if (s.type == SymbolType::Template) {
+		return s.varType;
+	}
+	else if (s.type != SymbolType::None) {
+		return s.scope;
+	}
+	else {
+		return ScopeList::undefined;
+	}
 }
 
 CompiledNode ConvertNode::Compile(CompileInfo& info) {
-	if (node->Type() == type) return node->Compile(info);
+	ScopeList convertType = Type();
 
-	Symbol convert = Symbol::FindExplicitConversion(node->Type(), type, file);
+	if (node->Type() == convertType) return node->Compile(info);
+
+	Symbol convert = Symbol::FindExplicitConversion(node->Type(), convertType, file);
 
 	List<NodePtr> nodes;
 	nodes.Add(node);
@@ -53,15 +65,17 @@ void ConvertNode::IncludeScan(ParsingInfo& info) {
 }
 
 Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {
-	if (node->Type() == type) return Set<ScanType>();
-	Symbol::FindExplicitConversion(node->Type(), type, file);
+	ScopeList convertType = Type();
+
+	if (node->Type() == convertType) return Set<ScanType>();
+	Symbol::FindExplicitConversion(node->Type(), convertType, file);
 	return node->Scan(info);
 }
 
 Mango ConvertNode::ToMango() const {
 	Mango mango = Mango("as", MangoType::Map);
 	mango.Add("from", node->ToMango());
-	mango.Add("to", type.ToString());
+	mango.Add("to", Type().ToString());
 	mango.Add("explicit", isExplicit);
 	return mango;
 }

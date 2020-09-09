@@ -136,17 +136,6 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 
 	CompiledNode c;
 
-	// Push registers to stack
-	for (UInt i = 0; i < info.index; i++) {
-		Instruction mov = Instruction(InstructionType::Mov, info.stack.ptrSize);
-
-		info.stack.Push(info.stack.ptrSize);
-		mov.arguments.Add(Argument(MemoryLocation(info.stack.Offset())));
-		mov.arguments.Add(Argument(Register(i)));
-
-		c.instructions.Add(mov);
-	}
-
 	// Calculate return size
 	for (const ScopeList& type : s.ret)
 		retSize += Symbol::FindNearestInNamespace(s.scope.Pop(), type, FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
@@ -179,6 +168,8 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 				r = new RefNode(args[i]);
 			}
 
+			UInt regIndex = info.index;
+
 			CompiledNode n = r->Compile(info);
 
 			c.AddInstructions(n.instructions);
@@ -192,6 +183,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 			c.instructions.Add(in);
 
 			info.stack.Push(info.stack.ptrSize);
+			info.index = regIndex;
 		}
 		else {
 			Int i = IsInit() ? u - 1 : u;

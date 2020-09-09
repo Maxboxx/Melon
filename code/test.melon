@@ -1,22 +1,26 @@
 
-struct Pair<T1, T2>
-	T1: value1
-	T2: value2
+struct Value<T>
+	T: value
+	
+	function init(T: value)
+		self.value = value
+	end
+	
+	function T: get()
+		return self.value
+	end
+	
+	function set(T: value)
+		self.value = value
+	end
 end
 
-Pair<int, bool>: pair1 = Pair<int, bool> {
-	value1 = 2,
-	value2 = true
-}
+int: x, y = 45, 56
 
-Pair<ubyte, Pair<short, long>>: pair2 = Pair<ubyte, Pair<short, long>> {
-	value1 = 45,
-	
-	value2 = Pair<short, long> {
-		value1 = 12,
-		value2 = 34
-	}
-}
+Value<int>: value = Value<int>(x)
 
-int: i = pair2.value2.value1
+int: a = value:get()
 
+value:set(y)
+
+int: b = value:get()

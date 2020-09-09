@@ -23,6 +23,10 @@ void ErrorLog::Info(const CompileError& error) {
 	errors.Add(Tuple<LogLevel, CompileError>(LogLevel::Info, error));
 }
 
+void ErrorLog::Success(const CompileError& error) {
+	errors.Add(Tuple<LogLevel, CompileError>(LogLevel::Success, error));
+}
+
 void ErrorLog::Warning(const CompileError& error) {
 	errors.Add(Tuple<LogLevel, CompileError>(LogLevel::Warning, error));
 }
@@ -93,6 +97,7 @@ void ErrorLog::LogErrors() {
 				switch (error.value1) {
 					case LogLevel::Log:     logger.Log(error.value2.Message()); break;
 					case LogLevel::Info:    logger.Info(error.value2.Message()); break;
+					case LogLevel::Success: logger.Success(error.value2.Message()); break;
 					case LogLevel::Warning: logger.Warning(error.value2.Message()); break;
 					case LogLevel::Error:   logger.Error(error.value2.Message()); break;
 					case LogLevel::Fatal:   {

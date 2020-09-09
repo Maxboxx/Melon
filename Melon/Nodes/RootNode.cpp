@@ -69,7 +69,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 
 			if (Symbol::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) continue;
 
-			Symbol s = templateInfo.value1.SpecializeTemplate(templateInfo.value2);
+			Symbol s = templateInfo.value1.SpecializeTemplate(templateInfo.value2, info);
 			Symbol::Add(s.scope, s, FileInfo(), true);
 
 			if (s.type == SymbolType::Struct) {
