@@ -23,7 +23,6 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 
 Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
 	Symbol& s = Symbol::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
-	s.varType = symbol.scope;
 	s.size = 0;
 
 	for (const Scope& var : vars) {

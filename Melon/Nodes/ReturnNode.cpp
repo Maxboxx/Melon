@@ -51,7 +51,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	}
 
 	for (UInt i = 0; i < s.args.Size(); i++) {
-		Symbol sym = Symbol::FindNearestInNamespace(Symbol::ReplaceTemplates(s.scope.Pop(), file), s.args[i], file);
+		Symbol sym = Symbol::FindNearestInNamespace(s.scope.Pop(), s.args[i], file);
 
 		if (Symbol::Find(s.scope.Add(s.names[i]), file).attributes.Contains(SymbolAttribute::Ref)) {
 			stackOffset += info.stack.ptrSize;
@@ -69,13 +69,13 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 
 		Symbol assign = Symbol::FindFunction(args.Last().Add(Scope::Assign), args, nodes[i]->file);		
 
+		stackOffset -= types[i].size;
+
 		List<NodePtr> assignArgs;
 		Pointer<StackNode> sn = new StackNode(stackOffset);
 		sn->type = types[i].scope;
 		assignArgs.Add(sn);
 		assignArgs.Add(nodes[i]);
-
-		stackOffset -= types[i].size;
 
 		info.important = true;
 		c.AddInstructions(assign.symbolNode->Compile(assignArgs, info).instructions);

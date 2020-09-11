@@ -7,7 +7,6 @@ struct Value<T>
 	end
 	
 	function T: get()
-		T: t = 1
 		return self.value
 	end
 	
@@ -18,10 +17,10 @@ end
 
 int: x, y = 45, 56
 
-Value<int>: value = Value<int>(x)
+Value<Value<int>>: value = Value<Value<int>>(Value<int>(x))
 
-int: a = value:get()
+int: a = value.value:get()
 
-value:set(y)
+value.value:set(y)
 
-int: b = value:get()
+int: b = value:get():get()

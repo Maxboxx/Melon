@@ -456,11 +456,12 @@ Symbol Symbol::SpecializeTemplate(const List<ScopeList>& types, ParsingInfo& inf
 Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<ScopeList>& types, ParsingInfo& info) const {
 	Symbol symbol = *this;
 
-	symbol.varType = ReplaceTemplates(symbol.varType, templateSymbol, types);
-
 	if (!symbol.templateArgs.IsEmpty()) {
 		symbol.templateArgs = types.Copy();
 		symbol.varType      = templateSymbol.scope;
+	}
+	else {
+		symbol.varType = ReplaceTemplates(symbol.varType, templateSymbol, types);
 	}
 
 	symbol.scope   = ReplaceTemplates(symbol.scope, templateSymbol, types);

@@ -11,6 +11,11 @@ StackNode::StackNode(const Boxx::Int stack) : Node(ScopeList(), FileInfo()) {
 	this->stack = stack;
 }
 
+StackNode::StackNode(const Boxx::UInt regIndex, const Boxx::Int stack) : Node(ScopeList(), FileInfo()) {
+	this->regIndex = regIndex;
+	this->stack = stack;
+}
+
 StackNode::~StackNode() {
 
 }
@@ -22,6 +27,11 @@ ScopeList StackNode::Type() const {
 CompiledNode StackNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = Argument(MemoryLocation(stack));
+
+	if (regIndex) {
+		c.argument.mem.reg = Register((UInt)regIndex);
+	}
+
 	c.size = Symbol::Find(type, file).size;
 	return c;
 }

@@ -5,7 +5,10 @@
 
 #include "Melon/Nodes/StackNode.h"
 
+#include "Kiwi/Kiwi.h"
+
 using namespace Boxx;
+using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
@@ -38,8 +41,18 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 		List<NodePtr> args;
 		Pointer<StackNode> sn1 = new StackNode(c1.argument.mem.offset + offset);
 		sn1->type = typeName;
+
+		if (c1.argument.mem.reg.type == RegisterType::Register) {
+			sn1->regIndex = c1.argument.mem.reg.index;
+		}
+
 		Pointer<StackNode> sn2 = new StackNode(c2.argument.mem.offset + offset);
 		sn2->type = typeName;
+
+		if (c2.argument.mem.reg.type == RegisterType::Register) {
+			sn2->regIndex = c2.argument.mem.reg.index;
+		}
+
 		args.Add(sn1);
 		args.Add(sn2);
 

@@ -134,7 +134,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 	Int retSize = 0;
 	Int argSize = 0;
 
-	CompiledNode c;
+	CompiledNode c = Pointer<RefNode>(new RefNode(node))->Compile(info);
 
 	// Calculate return size
 	for (const ScopeList& type : s.ret)
@@ -154,10 +154,11 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 		}
 	}
 
+	info.stack.top = info.stack.base;
 	info.stack.Push(retSize);
 	info.stack.PushBase(retSize + argSize);
 
-	UInt stackIndex = argSize;
+	UInt stackIndex = info.stack.Offset();
 
 	c.instructions.Add(Instruction(InstructionType::Push, retSize + argSize));
 
@@ -168,14 +169,15 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 		if (Symbol::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
 			Pointer<RefNode> r = nullptr;
 			Int i = IsInit() ? u - 1 : u;
+			bool isCompiled = false;
 
 			if (i == -1) {
-				Pointer<StackNode> sn = new StackNode(stack.Offset() + retSize);
+				Pointer<StackNode> sn = new StackNode(stackIndex);
 				r = new RefNode(sn);
 			}
 			else if (IsSelfPassing()) {
 				if (i == 0) {
-					r = new RefNode(node);
+					isCompiled = true;
 				}
 				else {
 					r = new RefNode(args[i - 1]);
@@ -186,21 +188,28 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 			}
 
 			UInt regIndex = info.index;
-
-			CompiledNode n = r->Compile(info);
-
-			c.AddInstructions(n.instructions);
-			
 			stackIndex -= info.stack.ptrSize;
 
-			Instruction in = Instruction(InstructionType::Mov, info.stack.ptrSize);
-			in.arguments.Add(Argument(MemoryLocation(stackIndex)));
-			in.arguments.Add(n.argument);
+			if (!isCompiled) {
+				CompiledNode n = r->Compile(info);
 
-			c.instructions.Add(in);
+				c.AddInstructions(n.instructions);
+			
+				Instruction in = Instruction(InstructionType::Mov, info.stack.ptrSize);
+				in.arguments.Add(Argument(MemoryLocation(stackIndex)));
+				in.arguments.Add(n.argument);
 
-			info.stack.Push(info.stack.ptrSize);
-			info.index = regIndex;
+				c.instructions.Add(in);
+
+				info.stack.Push(info.stack.ptrSize);
+				info.index = regIndex;
+			}
+			else {
+				Instruction in = Instruction(InstructionType::Mov, info.stack.ptrSize);
+				in.arguments.Add(Argument(MemoryLocation(stackIndex)));
+				in.arguments.Add(c.argument);
+				c.instructions.Add(in);
+			}
 		}
 		else {
 			Int i = IsInit() ? u - 1 : u;

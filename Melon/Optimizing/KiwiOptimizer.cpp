@@ -407,6 +407,8 @@ void KiwiOptimizer::CombinePushPop(Boxx::List<OptimizerInstruction>& instruction
 						instructions.RemoveAt(i);
 						i--;
 					}
+
+					break;
 				}
 			}
 		}

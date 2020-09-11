@@ -17,8 +17,11 @@ namespace Melon {
 			/// Absolute type name for the stack value
 			Symbols::ScopeList type;
 
+			Boxx::Optional<Boxx::UInt> regIndex;
+
 			///T Constructor
 			StackNode(const Boxx::Int stack);
+			StackNode(const Boxx::UInt regIndex, const Boxx::Int stack);
 			~StackNode();
 
 			virtual Symbols::ScopeList Type() const override;
