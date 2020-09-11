@@ -17,6 +17,10 @@ FunctionNode::~FunctionNode() {
 
 }
 
+bool FunctionNode::IsScope() const {
+	return true;
+}
+
 bool FunctionNode::IsNotSpecialized() const {
 	Symbol sym = Symbol::Find(ScopeList().Add(s.scope[0]), file);
 
@@ -52,8 +56,14 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate ar
 	Instruction func = Instruction::Function(Symbol::Find(this->func, file).size);
 	c.instructions.Add(func);
 
+	UInt funcSize = node->GetSize();
+
+	if (funcSize > 0) {
+		c.instructions.Add(Instruction(InstructionType::Push, funcSize));
+	}
+
 	StackPtr stack = info.stack;
-	info.stack.base = 0;
+	info.stack.base = funcSize;
 	info.stack.top = 0;
 
 	Long size = info.stack.ptrSize;
@@ -74,6 +84,10 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate ar
 	info.stack = stack;
 
 	if (c.instructions.Last().instruction.type != InstructionType::Ret) {
+		if (funcSize > 0) {
+			c.instructions.Add(Instruction(InstructionType::Pop, funcSize));
+		}
+
 		c.instructions.Add(Instruction(InstructionType::Ret));
 	}
 

@@ -59,6 +59,8 @@ namespace Melon {
 			void ScanCleanup(SwitchScanInfo& loopInfo, ScanInfo& info) const;
 
 			virtual Symbols::ScopeList Type() const override;
+			virtual Boxx::UInt GetSize() const override;
+			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;

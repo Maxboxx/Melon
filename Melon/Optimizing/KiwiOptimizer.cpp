@@ -17,6 +17,7 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 			ReduceMov(segment.value);
 			RemoveDuplicates(segment.value);
 			CombineMov(segment.value);
+			CombinePushPop(segment.value);
 		}
 	}
 
@@ -361,6 +362,40 @@ void KiwiOptimizer::CombineComp(Boxx::List<OptimizerInstruction>& instructions) 
 						}
 
 						instructions[i].instruction.arguments[2] = inst2.instruction.arguments.Size() == 3 ? inst2.instruction.arguments[2] : inst2.instruction.arguments[0];
+						instructions.RemoveAt(i + 1);
+					}
+				}
+			}
+		}
+	}
+}
+
+void KiwiOptimizer::CombinePushPop(Boxx::List<OptimizerInstruction>& instructions) {
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		const OptimizerInstruction inst = instructions[i];
+
+		if ((inst.instruction.type == InstructionType::Push || inst.instruction.type == InstructionType::Pop) && inst.instruction.arguments.Size() == 0) {
+			Long num = inst.instruction.type == InstructionType::Push ? inst.instruction.sizes[0] : -inst.instruction.sizes[0];
+
+			if (i + 1 < instructions.Size()) {
+				const OptimizerInstruction inst2 = instructions[i + 1];
+
+				if ((inst2.instruction.type == InstructionType::Push || inst2.instruction.type == InstructionType::Pop) && inst2.instruction.arguments.Size() == 0) {
+					Long num2 = inst2.instruction.type == InstructionType::Push ? inst2.instruction.sizes[0] : -inst2.instruction.sizes[0];
+					Long combinedNum = num + num2;
+
+					if (combinedNum == 0) {
+						instructions.RemoveAt(i, 2);
+						i--;
+					}
+					else if (combinedNum > 0) {
+						instructions[i].instruction.type = InstructionType::Push;
+						instructions[i].instruction.sizes[0] = combinedNum;
+						instructions.RemoveAt(i + 1);
+					}
+					else if (combinedNum < 0) {
+						instructions[i].instruction.type = InstructionType::Pop;
+						instructions[i].instruction.sizes[0] = -combinedNum;
 						instructions.RemoveAt(i + 1);
 					}
 				}

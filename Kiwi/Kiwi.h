@@ -53,6 +53,8 @@ namespace Kiwi {
 		Ret,
 		Adr,
 		Exit,
+		Push,
+		Pop,
 
 		Add,
 		Sub,
@@ -528,6 +530,8 @@ namespace Kiwi {
 				case InstructionType::Ret:  inst = "Ret "; break;
 				case InstructionType::Adr:  inst = "Adr "; break;
 				case InstructionType::Exit: inst = "Exit"; break;
+				case InstructionType::Push: inst = "Push"; break;
+				case InstructionType::Pop:  inst = "Pop "; break;
 
 				case InstructionType::Add:  inst = "Add "; break;
 				case InstructionType::Sub:  inst = "Sub "; break;
@@ -794,6 +798,11 @@ namespace Kiwi {
 
 				case InstructionType::Ret: {
 					return ValidateNoArg(inst, logger, errInfo);
+				}
+
+				case InstructionType::Push:
+				case InstructionType::Pop: {
+					return ValidatePushPop(inst, logger, errInfo);
 				}
 
 				default: {
@@ -1100,6 +1109,21 @@ namespace Kiwi {
 				logger.Error(errInfo.ManyArgs());
 				return false;
 			}
+		}
+
+		static bool ValidatePushPop(const Instruction& instruction, Boxx::Logger& logger, const ErrorInfo& errInfo) {
+			const bool isPush = instruction.type == InstructionType::Push;
+
+			if (instruction.arguments.Size() > 0) {
+				logger.Warning(errInfo.CreateMessage(Boxx::String(isPush ? "Push" : "Pop") + " instruction might not work"));
+				return false;
+			}
+
+			if (instruction.sizes[0] == 0) {
+				logger.Error(errInfo.CreateMessage("size can not be 0"));
+			}
+
+			return true;
 		}
 	};
 

@@ -1,6 +1,7 @@
 #include "RootNode.h"
 
 #include "StructNode.h"
+#include "StatementsNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -23,11 +24,27 @@ RootNode::~RootNode() {
 CompiledNode RootNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
+	Pointer<StatementsNode> statements = new StatementsNode(ScopeList(), FileInfo());
+	statements->statements = nodes;
+	UInt size = statements->GetSize();
+
+	if (size > 0) {
+		cn.instructions.Add(Instruction(InstructionType::Push, size));
+	}
+
+	info.stack.PushBase(size);
+
 	for (const NodePtr& node : nodes) {
 		for (const OptimizerInstruction& instruction : node->Compile(info).instructions) {
 			cn.instructions.Add(instruction);
 		}
 	}
+
+	if (size > 0) {
+		cn.instructions.Add(Instruction(InstructionType::Pop, size));
+	}
+
+	info.stack.PopBase(size);
 
 	Instruction in = Instruction(InstructionType::Exit, info.stack.ptrSize);
 	in.arguments.Add(Argument(0));

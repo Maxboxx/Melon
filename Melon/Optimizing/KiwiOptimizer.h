@@ -19,6 +19,7 @@ namespace Melon {
 			static void CombineMov(Boxx::List<OptimizerInstruction>& instructions);
 			static void RemoveDuplicates(Boxx::List<OptimizerInstruction>& instructions);
 			static void CombineComp(Boxx::List<OptimizerInstruction>& instructions);
+			static void CombinePushPop(Boxx::List<OptimizerInstruction>& instructions);
 
 			static Kiwi::InstructionType OppositeComp(const Kiwi::InstructionType type);
 

@@ -19,6 +19,10 @@ ForConditionNode::~ForConditionNode() {
 
 }
 
+UInt ForConditionNode::GetSize() const {
+	return loopInit->GetSize() + loopCondition->GetSize() + loopStep->GetSize();
+}
+
 CompiledNode ForConditionNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }

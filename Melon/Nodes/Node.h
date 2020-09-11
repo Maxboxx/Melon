@@ -5,6 +5,8 @@
 #include "Boxx/Mango.h"
 #include "Boxx/Set.h"
 #include "Boxx/Stack.h"
+#include "Boxx/Tuple.h"
+#include "Boxx/Math.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -37,7 +39,7 @@ namespace Melon {
 			Boxx::Long top = 0;
 
 			///T Pointer size
-			Boxx::UByte ptrSize = 8;
+			static const Boxx::UByte ptrSize = 8;
 
 			///H Methods
 
@@ -183,6 +185,14 @@ namespace Melon {
 			///T Get Symbol
 			/// Returns the symbol for the current node
 			virtual Symbols::Symbol GetSymbol() const;
+
+			///T Get Size
+			/// Gets the byte size of the node
+			virtual Boxx::UInt GetSize() const;
+
+			///T Is Scope
+			/// Whether or not the node is a scope
+			virtual bool IsScope() const;
 
 			///T Compile
 			/// Compiles the node

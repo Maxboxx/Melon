@@ -27,6 +27,28 @@ LoopNode::~LoopNode() {
 
 }
 
+UInt LoopNode::GetSize() const {
+	UInt size = 0;
+	
+	for (const LoopSegment& segment : segments) {
+		UInt segSize = segment.statements->GetSize();
+
+		if (segment.type != LoopType::None) {
+			segSize += segment.condition->GetSize();
+		}
+
+		if (size < segSize) {
+			size = segSize;
+		}
+	}
+
+	return size;
+}
+
+bool LoopNode::IsScope() const {
+	return true;
+}
+
 CompiledNode LoopNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 

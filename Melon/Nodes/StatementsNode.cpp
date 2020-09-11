@@ -17,6 +17,23 @@ StatementsNode::~StatementsNode() {
 
 }
 
+UInt StatementsNode::GetSize() const {
+	UInt size = 0;
+
+	for (UInt i = statements.Size(); i > 0;) {
+		i--;
+
+		if (statements[i]->IsScope()) {
+			size = Math::Max(size, statements[i]->GetSize());
+		}
+		else {
+			size += statements[i]->GetSize();
+		}
+	}
+
+	return size;
+}
+
 CompiledNode StatementsNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 

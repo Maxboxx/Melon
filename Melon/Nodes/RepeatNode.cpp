@@ -19,6 +19,14 @@ RepeatNode::~RepeatNode() {
 
 }
 
+UInt RepeatNode::GetSize() const {
+	return content->GetSize();
+}
+
+bool RepeatNode::IsScope() const {
+	return true;
+}
+
 CompiledNode RepeatNode::Compile(CompileInfo& info) {
 	CompiledNode compiled;
 

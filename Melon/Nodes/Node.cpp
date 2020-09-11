@@ -46,6 +46,14 @@ Symbol Node::GetSymbol() const {
 	return Symbol();
 }
 
+UInt Node::GetSize() const {
+	return 0;
+}
+
+bool Node::IsScope() const {
+	return false;
+}
+
 bool Node::IsImmediate() const {
 	return false;
 }

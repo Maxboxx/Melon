@@ -430,6 +430,12 @@ namespace Kiwi {
 						break;
 					}
 
+					case InstructionType::Push:
+					case InstructionType::Pop: {
+						ConvertPushPop(converted, inst);
+						break;
+					}
+
 					default: {
 						Instruction in = inst.Copy();
 						in.instructionName = "undefined";
@@ -1512,6 +1518,23 @@ namespace Kiwi {
 			}
 
 			return 0;
+		}
+
+		void ConvertPushPop(Boxx::List<Instruction>& instructions, const Instruction& instruction) {
+			const bool isPush = instruction.type == InstructionType::Push;
+
+			if (instruction.arguments.IsEmpty()) {
+				Instruction inst = Instruction(isPush ? InstructionType::Sub : InstructionType::Add, KiwiLang::maxSize);
+				inst.arguments.Add(Argument(Register(RegisterType::Stack)));
+				inst.arguments.Add(Argument(instruction.sizes[0]));
+				ConvertBinaryOperator(instructions, inst);
+			}
+			else {
+				Instruction inst = instruction.Copy();
+				inst.type = InstructionType::Custom;
+				inst.instructionName = GetSizeName(isPush ? "push" : "pop", inst.sizes[0]);
+				instructions.Add(inst);
+			}
 		}
 	};
 }

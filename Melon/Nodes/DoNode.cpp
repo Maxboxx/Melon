@@ -23,6 +23,14 @@ DoNode::~DoNode() {
 
 }
 
+UInt DoNode::GetSize() const {
+	return nodes->GetSize();
+}
+
+bool DoNode::IsScope() const {
+	return true;
+}
+
 CompiledNode DoNode::Compile(CompileInfo& info) {
 	CompiledNode compiled;
 

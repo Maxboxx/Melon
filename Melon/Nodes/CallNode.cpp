@@ -142,9 +142,26 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 
 	if (IsInit()) retSize = Symbol::Find(Type(), node->file).size;
 
-	info.stack.Push(retSize);
+	// Calculate arg size
+	for (UInt u = 0; u < s.args.Size(); u++) {
+		Symbol type = Symbol::FindNearestInNamespace(scope, s.args[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
 
-	// Calculate argument size and compile arguments
+		if (Symbol::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+			argSize += info.stack.ptrSize;
+		}
+		else {
+			argSize += type.size;
+		}
+	}
+
+	info.stack.Push(retSize);
+	info.stack.PushBase(retSize + argSize);
+
+	UInt stackIndex = argSize;
+
+	c.instructions.Add(Instruction(InstructionType::Push, retSize + argSize));
+
+	// Calculate compile arguments
 	for (UInt u = 0; u < s.args.Size(); u++) {
 		Symbol type = Symbol::FindNearestInNamespace(scope, s.args[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
 
@@ -153,7 +170,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 			Int i = IsInit() ? u - 1 : u;
 
 			if (i == -1) {
-				Pointer<StackNode> sn = new StackNode(stack.Offset() - retSize);
+				Pointer<StackNode> sn = new StackNode(stack.Offset() + retSize);
 				r = new RefNode(sn);
 			}
 			else if (IsSelfPassing()) {
@@ -173,11 +190,11 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 			CompiledNode n = r->Compile(info);
 
 			c.AddInstructions(n.instructions);
-
-			argSize += info.stack.ptrSize;
+			
+			stackIndex -= info.stack.ptrSize;
 
 			Instruction in = Instruction(InstructionType::Mov, info.stack.ptrSize);
-			in.arguments.Add(Argument(MemoryLocation(stack.Offset() - retSize - argSize)));
+			in.arguments.Add(Argument(MemoryLocation(stackIndex)));
 			in.arguments.Add(n.argument);
 
 			c.instructions.Add(in);
@@ -187,7 +204,8 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 		}
 		else {
 			Int i = IsInit() ? u - 1 : u;
-			argSize += type.size;
+
+			stackIndex -= type.size;
 
 			List<ScopeList> args;
 
@@ -201,7 +219,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 			Symbol assign = Symbol::FindFunction(type.scope.Add(Scope::Assign), args, node->file);
 
 			List<NodePtr> assignArgs;
-			Pointer<StackNode> sn = new StackNode(stack.Offset() - retSize - argSize);
+			Pointer<StackNode> sn = new StackNode(stackIndex);
 			sn->type = type.scope;
 			assignArgs.Add(sn);
 
@@ -218,10 +236,6 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 		}
 	}
 
-	info.stack.base = info.stack.top;
-	const UInt stackSize = info.stack.top - stack.base;
-	info.stack.Push(info.stack.ptrSize);
-
 	if (!s.ret.IsEmpty()) {
 		c.size = Symbol::FindNearestInNamespace(s.symbolNamespace, s.ret[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
 	}
@@ -229,22 +243,12 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 		c.size = info.stack.ptrSize;
 	}
 
-	Instruction sub = Instruction(InstructionType::Sub, info.stack.ptrSize);
-	sub.arguments.Add(Argument(Register(RegisterType::Stack)));
-	sub.arguments.Add(Argument(stackSize));
-	c.instructions.Add(sub);
-
 	Instruction inst = Instruction(InstructionType::Call);
 	inst.arguments.Add(Argument(ArgumentType::Function, s.size));
-
 	c.instructions.Add(inst);
+	c.instructions.Add(Instruction(InstructionType::Pop, retSize + argSize));
 
-	Instruction add = Instruction(InstructionType::Add, info.stack.ptrSize);
-	add.arguments.Add(Argument(Register(RegisterType::Stack)));
-	add.arguments.Add(Argument(stackSize));
-	c.instructions.Add(add);
-
-	c.argument = Argument(MemoryLocation(stack.Offset() - (s.ret.IsEmpty() ? retSize : Symbol::FindNearestInNamespace(s.symbolNamespace, s.ret[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size)));
+	c.argument = Argument(MemoryLocation(-retSize));
 
 	info.stack = stack;
 	return c;

@@ -43,6 +43,21 @@ List<ScopeList> NewVariableNode::GetVariables() const {
 	return vars;
 }
 
+UInt NewVariableNode::GetSize() const {
+	UInt size = 0;
+
+	for (UInt i = 0; i < names.Size(); i++) {
+		if (attributes[i].Contains(SymbolAttribute::Ref)) {
+			size += StackPtr::ptrSize;
+		}
+		else {
+			size += Symbol::Find(GetType(i), file).size;
+		}
+	}
+
+	return size;
+}
+
 CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate error lines
 	CompiledNode cn;
 	cn.size = Symbol::Find(Type(), file).size;

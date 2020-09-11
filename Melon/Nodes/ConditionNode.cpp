@@ -24,8 +24,12 @@ ScopeList ConditionNode::Type() const {
 	return ScopeList().Add(Scope::Bool);
 }
 
+UInt ConditionNode::GetSize() const {
+	return cond.Is<AssignNode>() ? cond->GetSize() : 0;
+}
+
 CompiledNode ConditionNode::Compile(CompileInfo& info) {
-	if (cond.Cast<AssignNode>()) {
+	if (cond.Is<AssignNode>()) {
 		return CompiledNode();
 	}
 	else {

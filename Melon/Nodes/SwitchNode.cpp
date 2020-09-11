@@ -39,6 +39,22 @@ ScopeList SwitchNode::Type() const {
 	return type;
 }
 
+UInt SwitchNode::GetSize() const {
+	if (expr) return 0;
+
+	UInt size = 0;
+
+	for (const NodePtr& node : nodes) {
+		size = Math::Max(size, node->GetSize());
+	}
+
+	return size;
+}
+
+bool SwitchNode::IsScope() const {
+	return !expr;
+}
+
 CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 

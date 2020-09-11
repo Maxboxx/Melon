@@ -28,6 +28,14 @@ GuardNode::~GuardNode() {
 
 }
 
+UInt GuardNode::GetSize() const {
+	return Math::Max(cond->GetSize() + continue_->GetSize(), else_->GetSize());
+}
+
+bool GuardNode::IsScope() const {
+	return true;
+}
+
 CompiledNode GuardNode::Compile(CompileInfo& info) {
 	CompiledNode compiled = cond->Compile(info);
 

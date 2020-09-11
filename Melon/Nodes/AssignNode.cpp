@@ -47,6 +47,10 @@ List<Pair<ScopeList, NodePtr>> AssignNode::Values() const {
 	return types;
 }
 
+UInt AssignNode::GetSize() const {
+	return newVars ? newVars->GetSize() : 0;
+}
+
 CompiledNode AssignNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 
@@ -76,7 +80,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			}
 		}
 
-		info.stack.Pop(varSize);
+		//info.stack.Pop(varSize);
 	}
 
 	List<Pair<ScopeList, NodePtr>> values = Values();
@@ -157,7 +161,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 	}
 
 	if (newVars) {
-		info.stack.Push(varSize);
+		//info.stack.Push(varSize);
 	}
 
 	return c;
