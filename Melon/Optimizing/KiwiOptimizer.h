@@ -21,6 +21,7 @@ namespace Melon {
 			static void CombineComp(Boxx::List<OptimizerInstruction>& instructions);
 			static void CombinePushPop(Boxx::List<OptimizerInstruction>& instructions);
 
+			static void OffsetStackPointer(Boxx::List<OptimizerInstruction>& instructions, const Boxx::UInt start, const Boxx::UInt end, const Boxx::UInt offset);
 			static Kiwi::InstructionType OppositeComp(const Kiwi::InstructionType type);
 
 			static Boxx::UInt NextAssign(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const Kiwi::Argument& arg);

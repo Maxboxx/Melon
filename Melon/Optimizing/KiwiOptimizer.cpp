@@ -377,27 +377,44 @@ void KiwiOptimizer::CombinePushPop(Boxx::List<OptimizerInstruction>& instruction
 		if ((inst.instruction.type == InstructionType::Push || inst.instruction.type == InstructionType::Pop) && inst.instruction.arguments.Size() == 0) {
 			Long num = inst.instruction.type == InstructionType::Push ? inst.instruction.sizes[0] : -inst.instruction.sizes[0];
 
-			if (i + 1 < instructions.Size()) {
-				const OptimizerInstruction inst2 = instructions[i + 1];
+			for (UInt u = i + 1; u < instructions.Size(); u++) {
+				const OptimizerInstruction inst2 = instructions[u];
 
 				if ((inst2.instruction.type == InstructionType::Push || inst2.instruction.type == InstructionType::Pop) && inst2.instruction.arguments.Size() == 0) {
 					Long num2 = inst2.instruction.type == InstructionType::Push ? inst2.instruction.sizes[0] : -inst2.instruction.sizes[0];
-					Long combinedNum = num + num2;
+					Long combinedNum = num + num2;					
 
 					if (combinedNum == 0) {
-						instructions.RemoveAt(i, 2);
+						OffsetStackPointer(instructions, i + 1, u - 1, num2);
+						instructions.RemoveAt(u);
+						instructions.RemoveAt(i);
 						i--;
 					}
 					else if (combinedNum > 0) {
+						OffsetStackPointer(instructions, i + 1, u - 1, num2);
 						instructions[i].instruction.type = InstructionType::Push;
 						instructions[i].instruction.sizes[0] = combinedNum;
-						instructions.RemoveAt(i + 1);
+						instructions.RemoveAt(u);
 					}
 					else if (combinedNum < 0) {
-						instructions[i].instruction.type = InstructionType::Pop;
-						instructions[i].instruction.sizes[0] = -combinedNum;
-						instructions.RemoveAt(i + 1);
+						OffsetStackPointer(instructions, i + 1, u - 1, -num);
+						instructions[u].instruction.type = InstructionType::Pop;
+						instructions[u].instruction.sizes[0] = -combinedNum;
+						instructions.RemoveAt(i);
+						i--;
 					}
+				}
+			}
+		}
+	}
+}
+
+void KiwiOptimizer::OffsetStackPointer(List<OptimizerInstruction>& instructions, const UInt start, const UInt end, const UInt offset) {
+	for (UInt i = start; i < end + 1; i++) {
+		if (!instructions[i].instruction.arguments.IsEmpty()) {
+			for (Argument& arg : instructions[i].instruction.arguments) {
+				if (arg.type == ArgumentType::Memory && arg.mem.reg == RegisterType::Stack) {
+					arg.mem.offset += offset;
 				}
 			}
 		}
