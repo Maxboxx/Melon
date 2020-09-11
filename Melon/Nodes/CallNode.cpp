@@ -134,7 +134,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 	Int retSize = 0;
 	Int argSize = 0;
 
-	CompiledNode c = Pointer<RefNode>(new RefNode(node))->Compile(info);
+	CompiledNode c;
 
 	// Calculate return size
 	for (const ScopeList& type : s.ret)
@@ -154,13 +154,32 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 		}
 	}
 
-	info.stack.top = info.stack.base;
+	UInt pushSize = 0;
+
+	if (info.stack.top + retSize + argSize <= info.stack.frame) {
+		pushSize = 0;
+		info.stack.top = (Long)info.stack.frame - retSize - argSize;
+	}
+	else {
+		Long diff = ((Long)retSize + argSize) - info.stack.Offset();
+
+		if (diff >= 0) {
+			pushSize = diff;
+		}
+		else {
+			info.stack.top = info.stack.frame;
+			pushSize = retSize + argSize;
+		}
+	}
+
 	info.stack.Push(retSize);
-	info.stack.PushBase(retSize + argSize);
+	info.stack.PushFrame(pushSize);
 
 	UInt stackIndex = info.stack.Offset();
 
-	c.instructions.Add(Instruction(InstructionType::Push, retSize + argSize));
+	if (pushSize > 0) {
+		c.instructions.Add(Instruction(InstructionType::Push, pushSize));
+	}
 
 	// Calculate compile arguments
 	for (UInt u = 0; u < s.args.Size(); u++) {
@@ -178,6 +197,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 			else if (IsSelfPassing()) {
 				if (i == 0) {
 					isCompiled = true;
+					r = new RefNode(node);
 				}
 				else {
 					r = new RefNode(args[i - 1]);
@@ -190,26 +210,34 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 			UInt regIndex = info.index;
 			stackIndex -= info.stack.ptrSize;
 
-			if (!isCompiled) {
-				CompiledNode n = r->Compile(info);
+			info.stack.Push(info.stack.ptrSize);
 
-				c.AddInstructions(n.instructions);
+			CompiledNode n;
 			
-				Instruction in = Instruction(InstructionType::Mov, info.stack.ptrSize);
-				in.arguments.Add(Argument(MemoryLocation(stackIndex)));
-				in.arguments.Add(n.argument);
+			if (isCompiled) {
+				StackPtr temp = info.stack;
+				info.stack = stack;
 
-				c.instructions.Add(in);
+				n = r->Compile(info);
 
-				info.stack.Push(info.stack.ptrSize);
-				info.index = regIndex;
+				info.stack = temp;
+
+				for (UInt i = 0; i < n.instructions.Size(); i++) {
+					c.instructions.Insert(i, n.instructions[i]);
+				}
 			}
 			else {
-				Instruction in = Instruction(InstructionType::Mov, info.stack.ptrSize);
-				in.arguments.Add(Argument(MemoryLocation(stackIndex)));
-				in.arguments.Add(c.argument);
-				c.instructions.Add(in);
+				n = r->Compile(info);
+				c.AddInstructions(n.instructions);
 			}
+			
+			Instruction in = Instruction(InstructionType::Mov, info.stack.ptrSize);
+			in.arguments.Add(Argument(MemoryLocation(stackIndex)));
+			in.arguments.Add(n.argument);
+
+			c.instructions.Add(in);
+
+			info.index = regIndex;
 		}
 		else {
 			Int i = IsInit() ? u - 1 : u;
@@ -239,9 +267,8 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 				assignArgs.Add(this->args[i]);
 			}
 
-			c.AddInstructions(assign.symbolNode->Compile(assignArgs, info).instructions);
-
 			info.stack.Push(type.size);
+			c.AddInstructions(assign.symbolNode->Compile(assignArgs, info).instructions);
 		}
 	}
 
@@ -255,9 +282,15 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 	Instruction inst = Instruction(InstructionType::Call);
 	inst.arguments.Add(Argument(ArgumentType::Function, s.size));
 	c.instructions.Add(inst);
-	c.instructions.Add(Instruction(InstructionType::Pop, retSize + argSize));
 
-	c.argument = Argument(MemoryLocation(-retSize));
+	if (pushSize > 0) {
+		c.instructions.Add(Instruction(InstructionType::Pop, pushSize));
+	}
+
+	info.stack.PopFrame(pushSize);
+	info.stack.Pop(argSize);
+
+	c.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	info.stack = stack;
 	return c;

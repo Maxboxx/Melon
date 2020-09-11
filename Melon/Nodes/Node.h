@@ -32,8 +32,8 @@ namespace Melon {
 		struct StackPtr {
 			///H Members
 
-			///T Stack base
-			Boxx::UInt base = 0;
+			///T Stack frame
+			Boxx::UInt frame = 0;
 
 			///T Stack top
 			Boxx::Long top = 0;
@@ -55,28 +55,28 @@ namespace Melon {
 				top -= bytes;
 			}
 
-			///T Push base
-			///A bytes: The number of bytes to push on the stack base
-			void PushBase(const Boxx::UInt bytes) {
-				base += bytes;
+			///T Push frame
+			///A bytes: The number of bytes to push on the stack frame
+			void PushFrame(const Boxx::UInt bytes) {
+				frame += bytes;
 			}
 
-			///T Pop base
-			///A bytes: The number of bytes to pop from the stack base
-			void PopBase(const Boxx::UInt bytes) {
-				base -= bytes;
+			///T Pop frame
+			///A bytes: The number of bytes to pop from the stack frame
+			void PopFrame(const Boxx::UInt bytes) {
+				frame -= bytes;
 			}
 
 			///T Offset
-			/// Gets the offset between the top and base
+			/// Gets the offset between the top and frame
 			Boxx::Long Offset() const {
-				return base - top;
+				return frame - top;
 			}
 
 			///T Offset
-			/// Gets the offset between <code>index</code> and base
+			/// Gets the offset between <code>index</code> and frame
 			Boxx::Long Offset(const Boxx::Long index) const {
-				return base - index;
+				return frame - index;
 			}
 		};
 

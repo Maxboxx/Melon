@@ -34,7 +34,7 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 		cn.instructions.Add(push);
 	}
 
-	info.stack.PushBase(size);
+	info.stack.PushFrame(size);
 
 	for (const NodePtr& node : nodes) {
 		for (const OptimizerInstruction& instruction : node->Compile(info).instructions) {
@@ -48,7 +48,7 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 		cn.instructions.Add(pop);
 	}
 
-	info.stack.PopBase(size);
+	info.stack.PopFrame(size);
 
 	Instruction in = Instruction(InstructionType::Exit, info.stack.ptrSize);
 	in.arguments.Add(Argument(0));

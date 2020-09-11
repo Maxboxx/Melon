@@ -24,3 +24,4 @@ int: a = value.value:get()
 value.value:set(y)
 
 int: b = value:get():get()
+

@@ -68,7 +68,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate ar
 	}
 
 	StackPtr stack = info.stack;
-	info.stack.base = funcSize;
+	info.stack.frame = funcSize;
 	info.stack.top = 0;
 
 	Long size = info.stack.ptrSize;
