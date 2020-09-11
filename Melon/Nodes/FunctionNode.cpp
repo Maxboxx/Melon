@@ -2,12 +2,15 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Optimizing/OptimizerInstruction.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
+using namespace Melon::Optimizing;
 
 FunctionNode::FunctionNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
 
@@ -59,7 +62,9 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate ar
 	UInt funcSize = node->GetSize();
 
 	if (funcSize > 0) {
-		c.instructions.Add(Instruction(InstructionType::Push, funcSize));
+		OptimizerInstruction push = Instruction(InstructionType::Push, funcSize);
+		push.important = true;
+		c.instructions.Add(push);
 	}
 
 	StackPtr stack = info.stack;
@@ -85,7 +90,9 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate ar
 
 	if (c.instructions.Last().instruction.type != InstructionType::Ret) {
 		if (funcSize > 0) {
-			c.instructions.Add(Instruction(InstructionType::Pop, funcSize));
+			OptimizerInstruction pop = Instruction(InstructionType::Pop, funcSize);
+			pop.important = true;
+			c.instructions.Add(pop);
 		}
 
 		c.instructions.Add(Instruction(InstructionType::Ret));

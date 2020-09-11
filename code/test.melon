@@ -7,6 +7,7 @@ struct Value<T>
 	end
 	
 	function T: get()
+		T: t = 1
 		return self.value
 	end
 	

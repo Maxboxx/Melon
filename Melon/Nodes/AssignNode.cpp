@@ -63,7 +63,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			varSize += info.stack.ptrSize;
 		}
 		else {
-			varSize += Symbol::FindInNamespace(newVars->types[0], file).size;
+			varSize += Symbol::Find(newVars->GetType(0), file).size;
 		}
 
 		for (UInt i = 1; i < newVars->names.Size(); i++) {
@@ -71,12 +71,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 				varSize += info.stack.ptrSize;
 			}
 			else {
-				if (newVars->types.Size() == 1) {
-					varSize += Symbol::FindInNamespace(newVars->types[0], file).size;
-				}
-				else {
-					varSize += Symbol::FindInNamespace(newVars->types[i], file).size;
-				}
+				varSize += Symbol::Find(newVars->GetType(i), file).size;
 			}
 		}
 

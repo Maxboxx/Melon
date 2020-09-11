@@ -24,10 +24,10 @@ ReturnNode::~ReturnNode() {
 List<Symbol> ReturnNode::GetTypes() const {
 	List<Symbol> types;
 
-	Symbol s = Symbol::Find(func, file);
+	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
 	
 	for (ScopeList type : s.ret) {
-		Symbol sym = Symbol::FindNearestInNamespace(s.scope.Pop(), type, file);
+		Symbol sym = Symbol::FindNearestInNamespace(Symbol::ReplaceTemplates(s.scope.Pop(), file), type, file);
 
 		if (sym.type == SymbolType::Template) {
 			types.Add(Symbol::Find(sym.varType, file));
@@ -41,7 +41,7 @@ List<Symbol> ReturnNode::GetTypes() const {
 }
 
 CompiledNode ReturnNode::Compile(CompileInfo& info) {
-	Symbol s = Symbol::Find(func, file);
+	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
 
 	UInt stackOffset = info.stack.ptrSize;
 	List<Symbol> types = GetTypes();
@@ -51,7 +51,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	}
 
 	for (UInt i = 0; i < s.args.Size(); i++) {
-		Symbol sym = Symbol::FindNearestInNamespace(s.scope.Pop(), s.args[i], file);
+		Symbol sym = Symbol::FindNearestInNamespace(Symbol::ReplaceTemplates(s.scope.Pop(), file), s.args[i], file);
 
 		if (Symbol::Find(s.scope.Add(s.names[i]), file).attributes.Contains(SymbolAttribute::Ref)) {
 			stackOffset += info.stack.ptrSize;
@@ -67,15 +67,15 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 		List<ScopeList> args;
 		args.Add(types[i].scope);
 
-		Symbol assign = Symbol::FindFunction(types[i].scope.Add(Scope::Assign), args, nodes[i]->file);
-
-		stackOffset -= types[i].size;
+		Symbol assign = Symbol::FindFunction(args.Last().Add(Scope::Assign), args, nodes[i]->file);		
 
 		List<NodePtr> assignArgs;
 		Pointer<StackNode> sn = new StackNode(stackOffset);
 		sn->type = types[i].scope;
 		assignArgs.Add(sn);
 		assignArgs.Add(nodes[i]);
+
+		stackOffset -= types[i].size;
 
 		info.important = true;
 		c.AddInstructions(assign.symbolNode->Compile(assignArgs, info).instructions);
@@ -106,7 +106,7 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	Symbol s = Symbol::Find(func, file);
+	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
 
 	if (s.ret.Size() != nodes.Size()) {
 		ErrorLog::Error(CompileError(CompileError::Return(s.ret.Size(), nodes.Size()), file));

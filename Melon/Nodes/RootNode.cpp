@@ -29,7 +29,9 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	UInt size = statements->GetSize();
 
 	if (size > 0) {
-		cn.instructions.Add(Instruction(InstructionType::Push, size));
+		OptimizerInstruction push = Instruction(InstructionType::Push, size);
+		push.important = true;
+		cn.instructions.Add(push);
 	}
 
 	info.stack.PushBase(size);
@@ -41,7 +43,9 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	}
 
 	if (size > 0) {
-		cn.instructions.Add(Instruction(InstructionType::Pop, size));
+		OptimizerInstruction pop = Instruction(InstructionType::Pop, size);
+		pop.important = true;
+		cn.instructions.Add(pop);
 	}
 
 	info.stack.PopBase(size);

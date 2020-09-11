@@ -382,7 +382,11 @@ void KiwiOptimizer::CombinePushPop(Boxx::List<OptimizerInstruction>& instruction
 
 				if ((inst2.instruction.type == InstructionType::Push || inst2.instruction.type == InstructionType::Pop) && inst2.instruction.arguments.Size() == 0) {
 					Long num2 = inst2.instruction.type == InstructionType::Push ? inst2.instruction.sizes[0] : -inst2.instruction.sizes[0];
-					Long combinedNum = num + num2;					
+					Long combinedNum = num + num2;
+
+					if (inst.important && Math::Abs(num) > Math::Abs(combinedNum)) {
+						break;
+					}
 
 					if (combinedNum == 0) {
 						OffsetStackPointer(instructions, i + 1, u - 1, num2);
