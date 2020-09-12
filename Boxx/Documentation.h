@@ -144,8 +144,8 @@ namespace Boxx {
 			DocComment c;
 			bool add = true;
 
-			if (match && match.Get().matches.Size() == 3) {
-				UByte level = match.Get().matches[0].Size();
+			if (match && match.Get().groups.Size() == 3) {
+				UByte level = match.Get().groups[0].Size();
 
 				if (commentLevel < level) {
 					currentLevel++;
@@ -155,11 +155,11 @@ namespace Boxx {
 				}
 
 				commentLevel = level;
-				c.commentType = match.Get().matches[1][0];
-				c.content = match.Get().matches[2];
+				c.commentType = match.Get().groups[1][0];
+				c.content = match.Get().groups[2];
 			}
-			else if (match && match.Get().matches.Size() == 2) {
-				UByte level = match.Get().matches[0].Size();
+			else if (match && match.Get().groups.Size() == 2) {
+				UByte level = match.Get().groups[0].Size();
 
 				if (commentLevel < level) {
 					currentLevel++;
@@ -169,7 +169,7 @@ namespace Boxx {
 				}
 
 				commentLevel = level;
-				c.content = match.Get().matches[1];
+				c.content = match.Get().groups[1];
 			}
 			else if (findCode) {
 				if (!hasS) {
@@ -360,10 +360,10 @@ namespace Boxx {
 
 				if (commentType != 'W') {
 					Match m = splitValue.Match(comments[index].content).Get();
-					currentSection.code.Add(m.matches[0].Replace("::", ":"));
+					currentSection.code.Add(m.groups[0].Replace("::", ":"));
 
-					if (m.matches.Size() > 1) {
-						currentSection.description.Add(m.matches[1]);
+					if (m.groups.Size() > 1) {
+						currentSection.description.Add(m.groups[1]);
 					}
 				}
 				else {

@@ -11,17 +11,25 @@ struct Value<T>
 	end
 	
 	function set(T: value)
+		--/struct V<P>
+			P: v
+		end
+		
+		V<T>: v = V<T> {
+			v = value
+		}/--
+	
 		self.value = value
 	end
 end
 
 int: x, y = 45, 56
 
-Value<Value<int>>: value = Value<Value<int>>(Value<int>(x))
+Value<int>: value = Value<int>(x)
 
-int: a = value.value:get()
+int: a = value:get()
 
-value.value:set(y)
+value:set(y)
 
-int: b = value:get():get()
+int: b = value:get()
 

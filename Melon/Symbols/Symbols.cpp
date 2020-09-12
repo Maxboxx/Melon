@@ -97,42 +97,22 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 
 			if (!scopes.Contains(scope.name, parent)) {
 				parent = Symbol(SymbolType::Scope);
+				parent.scope = this->scope.Add(Scope(scope.name));
 				scopes.Add(scope.name, parent);
 			}
 
-			Optional<UInt> found = nullptr;
-
-			for (UInt i = 0; i < parent.templateVariants.Size(); i++) {
-				if (parent.templateVariants[i].templateArgs.Size() == symbol.templateArgs.Size()) {
-					bool match = true;
-
-					for (UInt u = 0; u < symbol.templateArgs.Size(); u++) {
-						if (parent.templateVariants[i].templateArgs[u] != symbol.templateArgs[u]) {
-							match = false;
-							break;
-						}
-					}
-
-					if (match) {
-						found = i;
-						break;
-					}
-				}
-			}
-
-			if (found && !redefine) {
-				ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + scope.ToString() + SymbolError::RedefinitionEnd, file));
-			}
-
-			if (!redefine || !found) {
+			if (redefine) {
 				Symbol sym = symbol;
 				sym.scope = sym.scope.Pop().Add(scope);
-				parent.templateVariants.Add(sym);
+				parent.templateVariants[(UInt)scope.variant] = sym;
 			}
 			else {
+				Scope newScope = scope.Copy();
+				newScope.variant = parent.templateVariants.Size();
+
 				Symbol sym = symbol;
-				sym.scope = sym.scope.Pop().Add(scope);
-				parent.templateVariants[(UInt)found] = sym;
+				sym.scope = sym.scope.Pop().Add(newScope);
+				parent.templateVariants.Add(sym);
 			}
 		}
 		else {
@@ -247,13 +227,20 @@ Symbol Symbol::Get(const Scope& scope, const FileInfo& file) const {
 
 Symbol& Symbol::Get(const Scope& scope, const FileInfo& file) {
 	try {
-		Symbol& s = scope.types ? scopes[scope.name].GetTemplate(scope, file) : scopes[scope.name];
-
-		if (scope.variant) {
-			return s.variants[scope.variant.Get()];
+		if (scope.types) {
+			if (scope.variant) {
+				return scopes[scope.name].templateVariants[scope.variant.Get()];
+			}
+			else if (!scope.types.Get().IsEmpty()) {
+				return scopes[scope.name].GetTemplate(scope, file);
+			}
 		}
 
-		return s;
+		if (scope.variant) {
+			return scopes[scope.name].variants[scope.variant.Get()];
+		}
+
+		return scopes[scope.name];
 	}
 	catch (MapKeyError e) {
 		ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + this->scope.Add(scope).ToString() + SymbolError::NotFoundEnd, file));
@@ -464,7 +451,18 @@ Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<Scope
 		symbol.varType = ReplaceTemplates(symbol.varType, templateSymbol, types);
 	}
 
-	symbol.scope   = ReplaceTemplates(symbol.scope, templateSymbol, types);
+	symbol.scope = ReplaceTemplates(symbol.scope, templateSymbol, types);
+
+	if (symbol.scope.Last().types && !symbol.scope.Last().types.Get().IsEmpty()) {
+		Scope last = symbol.scope.Last();
+		last.types = List<ScopeList>();
+
+		Symbol::Add(symbol.scope.Pop().Add(last), symbol, FileInfo());
+
+		last.variant = Find(symbol.scope.Pop().Add(Scope(last.name)), FileInfo()).templateVariants.Size() - 1;
+		symbol.scope = symbol.scope.Pop().Add(last);
+		SetTemplateValues(symbol.scope, FileInfo());
+	}
 
 	if (HasTypeArgs()) {
 		symbol.args = List<ScopeList>();
@@ -528,8 +526,34 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& template
 		Scope scope = type[i].Copy();
 
 		if (scope.types) {
-			for (UInt u = 0; u < scope.types.Get().Size(); u++) {
-				scope.types.Get()[u] = ReplaceTemplates(scope.types.Get()[u], templateSymbol, types);
+			Symbol s = Find(list.Add(scope), FileInfo());
+			List<ScopeList> args;
+
+			bool isTemplate = false;
+
+			if (i < type.Size() - 1) {
+				if (s.Contains(type[i + 1])) {
+					if (s.Get(type[i + 1], FileInfo()).type == SymbolType::Template) {
+						isTemplate = true;
+					}
+				}
+			}
+
+			if (!isTemplate) {
+				for (const ScopeList& arg : s.templateArgs) {
+					args.Add(ReplaceTemplates(arg, templateSymbol, types));
+				}
+
+				Scope newScope = scope.Copy();
+				newScope.types = args;
+				newScope.variant = nullptr;
+
+				if (Symbol::Contains(list.Add(newScope))) {
+					scope = Find(list.Add(newScope), FileInfo()).scope.Last();
+				}
+				else {
+					scope = newScope;
+				}
 			}
 		}
 
@@ -538,10 +562,20 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& template
 
 	FileInfo file = templateSymbol.GetFileInfo();
 	file.statementNumber++;
+
+	ErrorLog::AddMark();
 	Symbol s = Symbol::FindNearestInNamespace(templateSymbol.scope, list, file);
+	ErrorLog::RevertToMark();
+	ErrorLog::RemoveMark();
 
 	if (s.type == SymbolType::Template) {
-		return types[s.size];
+		for (UInt i = 0; i < templateSymbol.templateArgs.Size(); i++) {
+			Symbol a = Symbol::FindNearestInNamespace(templateSymbol.scope, templateSymbol.templateArgs[i], file);
+
+			if (s.scope == a.scope) {
+				return types[i];
+			}
+		}
 	}
 
 	return list;
@@ -554,21 +588,40 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const FileInfo& file) 
 		Scope scope = type[i].Copy();
 
 		if (scope.types) {
-			Symbol s = Find(list.Add(scope), file);
+			Symbol s = Find(list.Add(scope), FileInfo());
+			List<ScopeList> args;
 
-			for (UInt u = 0; u < scope.types.Get().Size(); u++) {
-				if (scope.types.Get().Size() == 1) {
-					if (s.Contains(scope.types.Get()[u].Last())) {
-						Symbol arg = s.Get(scope.types.Get()[u].Last(), file);
+			bool isTemplate = false;
 
-						if (arg.type == SymbolType::Template) {
-							scope.types.Get()[u] = arg.varType;
-							continue;
-						}
+			if (i < type.Size() - 1) {
+				if (s.Contains(type[i + 1])) {
+					Symbol t = s.Get(type[i + 1], FileInfo());
+
+					if (t.type == SymbolType::Template) {
+						isTemplate = true;
+
+						list = t.varType;
+						i++;
+						continue;
 					}
 				}
+			}
 
-				scope.types.Get()[u] = ReplaceTemplates(scope.types.Get()[u], file);
+			if (!isTemplate) {
+				for (const ScopeList& arg : s.templateArgs) {
+					args.Add(ReplaceTemplates(arg, file));
+				}
+
+				Scope newScope = scope.Copy();
+				newScope.types = args;
+				newScope.variant = nullptr;
+
+				if (Symbol::Contains(list.Add(newScope))) {
+					scope = Find(list.Add(newScope), FileInfo()).scope.Last();
+				}
+				else {
+					scope = newScope;
+				}
 			}
 		}
 
@@ -588,10 +641,10 @@ void Symbol::SetTemplateValues(const ScopeList& scope, const FileInfo& file) {
 			Symbol t = Find(s.varType, file);
 
 			for (UInt u = 0; u < s.templateArgs.Size(); u++) {
-				if (t.templateArgs[u].Size() == 1) {
-					if (t.Contains(t.templateArgs[u].Last())) {
-						t.Get(t.templateArgs[u].Last(), file).varType = s.templateArgs[u];
-					}
+				Symbol& arg = Find(t.templateArgs[u].Pop(), file).Get(t.templateArgs[u].Last(), file);
+
+				if (arg.type == SymbolType::Template) {
+					arg.varType = s.templateArgs[u];
 				}
 			}
 		}

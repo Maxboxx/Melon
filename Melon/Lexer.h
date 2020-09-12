@@ -34,10 +34,10 @@ namespace Melon {
             
 				for (const TokenPattern& pattern : patterns) {
 					if (Boxx::Optional<Boxx::Match> match = pattern.pattern.Match(code, i)) {
-						i += match.Get().match.Size();
+						i += match.Get().length;
 
 						if (!pattern.ignore) {
-                   			tokens.Add(Token(pattern.type, match.Get().match, line));
+                   			tokens.Add(Token(pattern.type, match.Get().groups.IsEmpty() ? match.Get().match : match.Get().groups[0], line));
 						}
 
 						line += Lines(match.Get().match);

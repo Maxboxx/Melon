@@ -55,10 +55,10 @@ namespace Boxx {
 			this->ignore = ignore;
 
 			if (ignoreBoundary) {
-				this->pattern = Regex("^(" + pattern + ")");
+				this->pattern = Regex("^{" + pattern + "}");
 			}
 			else {
-				this->pattern = Regex("^(" + pattern + ")%b");
+				this->pattern = Regex("^{" + pattern + "}%b");
 			}
 		}
 	};

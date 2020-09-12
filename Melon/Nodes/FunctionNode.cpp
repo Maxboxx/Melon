@@ -34,8 +34,8 @@ bool FunctionNode::IsNotSpecialized() const {
 
 		if (!sym.templateArgs.IsEmpty()) {
 			for (const ScopeList& type : sym.templateArgs) {
-				if (type.Size() == 1 && sym.Contains(type.Last())) {
-					if (sym.Get(type.Last(), file).type == SymbolType::Template) {
+				if (Symbol::Contains(type)) {
+					if (Symbol::Find(type, file).type == SymbolType::Template) {
 						return true;
 					}
 				}

@@ -87,6 +87,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			Tuple<Symbol, List<ScopeList>> templateInfo = Symbol::FindTemplateArgs(Symbol::templateSymbols[templateIndex]);
 			Scope templateScope = templateInfo.value1.scope.Last().Copy();
 			templateScope.types = templateInfo.value2;
+			templateScope.variant = nullptr;
 
 			if (Symbol::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) continue;
 

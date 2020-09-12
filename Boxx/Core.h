@@ -36,7 +36,7 @@
 
 ///T Version number 3
 /// The last number of the current version
-#define BOXX_VERSION_V3 1
+#define BOXX_VERSION_V3 2
 
 ///T Version string
 /// A string containing the current version

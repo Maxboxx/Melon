@@ -30,6 +30,14 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	info.scopes = info.scopes.Add(sn->name);
 	Symbol::Add(info.scopes, sn->symbol, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
+	sn->name.variant = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber)).templateVariants.Size() - 1;
+	info.scopes = info.scopes.Pop().Add(sn->name);
+	sn->symbol.scope = info.scopes;
+
+	for (ScopeList& arg : sn->symbol.templateArgs) {
+		arg = info.scopes.Add(arg);
+	}
+
 	while (true) {
 		bool found = false;
 
@@ -110,17 +118,16 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 	structSymbol.symbolFile = info.currentFile;
 	structSymbol.symbolNamespace = info.currentNamespace;
 	structSymbol.includedNamespaces = info.includedNamespaces;
+	structSymbol.scope = info.scopes.Add(structName);
 	
 	if (Optional<List<Scope>> templateList = TemplateParser::ParseDefine(info)) {
 		for (const Scope& arg : templateList.Get()) {
 			structSymbol.templateArgs.Add(ScopeList().Add(arg));
 		}
 
-		structName.types = structSymbol.templateArgs;
+		structName.types = List<ScopeList>();
 		info.statementNumber++;
 	}
-
-	structSymbol.scope = info.scopes.Add(structName);
 
 	Pointer<StructNode> sn = new StructNode(info.scopes, FileInfo(info.filename, structLine, info.statementNumber));
 	sn->name = structName;

@@ -71,13 +71,13 @@ namespace Boxx {
 				if (match) {
 					Match m = (Match)match;
 
-					i += m.matches[0].Size();
+					i += m.length;
 
 					if (!pattern.ignore) {
-						tokens.Add(Token<T>(pattern.type, m.matches.Size() > 1 ? m.matches[1] : m.matches[0], line));
+						tokens.Add(Token<T>(pattern.type, m.groups.IsEmpty() ? m.match : m.groups[0], line));
 					}
 
-					line += Lines(m.matches[0]);
+					line += Lines(m.match);
 
 					found = true;
 					break;

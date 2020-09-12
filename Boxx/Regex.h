@@ -90,6 +90,13 @@ namespace Boxx {
 		///R Optional<Match>: Contains a value if a match was found
 		Optional<Boxx::Match> Match(const String& str, const UInt pos = 0) const;
 
+		///T Match Global
+		/// Find all matches in a string
+		///A const String& str: The string to find matches in
+		///A const UInt pos: The position in the string to start at
+		///R List<Match>: Contains all matches found in the string
+		List<Boxx::Match> GlobalMatch(const String& str, UInt pos = 0) const;
+
 		///H Static functions
 
 		///T Match
@@ -100,6 +107,14 @@ namespace Boxx {
 		///R Optional<Match>: Contains a value if a match was found
 		static Optional<Boxx::Match> Match(const String& pattern, const String& str, const UInt pos = 0);
 
+		///T Match Global
+		/// Find all matches in a string
+		///A const String& pattern: The regex pattern to use
+		///A const String& str: The string to find matches in
+		///A const UInt pos: The position in the string to start at
+		///R Optional<Match>: Contains a value if a match was found
+		static List<Boxx::Match> GlobalMatch(const String& pattern, const String& str, UInt pos = 0);
+
 		///T Escape
 		/// Escapes meta characters in a string to make the regex engine interpret the string literally
 		static String Escape(const String& str);
@@ -108,7 +123,6 @@ namespace Boxx {
 		void operator=(Regex&& regex) noexcept;
 
 	private:
-		String pattern;
 
 		struct Pattern {
 			String pattern;
@@ -601,12 +615,12 @@ namespace Boxx {
 		UInt length = 0;
 
 		///T Match
-		/// Contains the contents of the first group or the entire string if no groups are part of the pattern
+		/// Contains the entire matched string
 		String match;
 
-		///T Matches
+		///T Groups
 		/// A list of all matched groups
-		List<String> matches;
+		List<String> groups;
 	};
 
 	///B RegexPatternError
@@ -636,7 +650,6 @@ namespace Boxx {
 			Pattern p;
 			p.pattern = pattern;
 			root = ParsePattern(p, i);
-			this->pattern = pattern;
 		}
 		catch (RegexPatternError e) {
 			throw e;
@@ -666,18 +679,13 @@ namespace Boxx {
 			Boxx::Match match;
 			match.index   = info.matchStart;
 			match.length  = info.matchEnd - info.matchStart;
-			match.matches = info.groups;
+			match.groups  = info.groups;
 
-			if (info.groups.IsEmpty()) {
-				if (match.length > 0) {
-					match.match = str.Sub(info.matchStart, info.matchEnd - 1);
-				}
-				else {
-					match.match = "";
-				}
+			if (match.length > 0) {
+				match.match = str.Sub(info.matchStart, info.matchEnd - 1);
 			}
 			else {
-				match.match = info.groups[0];
+				match.match = "";
 			}
 
 			return match;
@@ -687,9 +695,29 @@ namespace Boxx {
 		}
 	}
 
+	inline List<Match> Regex::GlobalMatch(const String& str, UInt pos) const {
+		List<Boxx::Match> matches;
+
+		while (Optional<Boxx::Match> match = Match(str, pos)) {
+			matches.Add(match.Get());
+			pos = match.Get().index + match.Get().length;
+		}
+
+		return matches;
+	}
+
 	inline Optional<Match> Regex::Match(const String& pattern, const String& str, const UInt pos) {
 		try {
 			return Regex(pattern).Match(str, pos);
+		}
+		catch (RegexPatternError e) {
+			throw e;
+		}
+	}
+
+	inline List<Match> Regex::GlobalMatch(const String& pattern, const String& str, const UInt pos) {
+		try {
+			return Regex(pattern).GlobalMatch(str, pos);
 		}
 		catch (RegexPatternError e) {
 			throw e;
@@ -1825,12 +1853,13 @@ namespace Boxx {
 
 	inline const char* Regex::ElementEndNode::Match(const char* str, MatchInfo& info) {
 		const char* start = info.elementStack.Peek();
+		info.elements.Add(String(start, (UInt)(str - start)));
 
 		if (const char* c = next->Match(str, info)) {
-			info.elements.Add(String(start, (UInt)(str - start)));
 			return c;
 		}
 
+		info.elements.RemoveLast();
 		return nullptr;
 	}
 
