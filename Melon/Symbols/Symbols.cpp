@@ -436,32 +436,57 @@ bool Symbol::HasTypeReturns() const {
 	return type == SymbolType::Function || type == SymbolType::Method;
 }
 
-Symbol Symbol::SpecializeTemplate(const List<ScopeList>& types, ParsingInfo& info) const {
-	return SpecializeTemplate(*this, types, info);
+void Symbol::SpecializeTemplate(Symbol& symbol, const List<ScopeList>& types, ParsingInfo& info) const {
+	return SpecializeTemplate(symbol, *this, types, info);
 }
 
-Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<ScopeList>& types, ParsingInfo& info) const {
-	Symbol symbol = *this;
+void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, const List<ScopeList>& types, ParsingInfo& info) const {
+	symbol = *this;
+
+	bool isNotTemplateVariant = true;
 
 	if (!symbol.templateArgs.IsEmpty()) {
-		symbol.templateArgs = types.Copy();
-		symbol.varType      = templateSymbol.scope;
+		isNotTemplateVariant = symbol.varType != templateSymbol.scope;
+
+		if (!isNotTemplateVariant) {
+			symbol.templateArgs = types.Copy();
+			symbol.varType      = templateSymbol.scope;
+		}
+		else {
+			symbol.varType = ReplaceTemplates(symbol.varType.Pop(), templateSymbol, types).Add(symbol.varType.Last());
+
+			symbol.templateArgs = List<ScopeList>();
+
+			for (const ScopeList& arg : templateArgs) {
+				symbol.templateArgs.Add(ReplaceTemplates(arg, templateSymbol, types));
+			}
+		}
 	}
-	else {
+	else if (symbol.varType.Size() > 0) {
+		FileInfo file = symbol.GetFileInfo();
+		file.statementNumber++;
+		symbol.varType = FindNearestInNamespace(symbol.scope, symbol.varType, file).scope;
 		symbol.varType = ReplaceTemplates(symbol.varType, templateSymbol, types);
 	}
 
-	symbol.scope = ReplaceTemplates(symbol.scope, templateSymbol, types);
-
-	if (symbol.scope.Last().types && !symbol.scope.Last().types.Get().IsEmpty()) {
+	if (isNotTemplateVariant) {
+		symbol.scope = ReplaceTemplates(symbol.scope.Pop(), templateSymbol, types).Add(symbol.scope.Last());
+	}
+	else {
 		Scope last = symbol.scope.Last();
-		last.types = List<ScopeList>();
 
-		Symbol::Add(symbol.scope.Pop().Add(last), symbol, FileInfo());
+		if (last.types && last.variant) {
+			last.variant = (UInt)last.variant + 1;
+			symbol.scope = symbol.scope.Pop().Add(last);
+			symbol.scope = ReplaceTemplates(symbol.scope, templateSymbol, types);
 
-		last.variant = Find(symbol.scope.Pop().Add(Scope(last.name)), FileInfo()).templateVariants.Size() - 1;
-		symbol.scope = symbol.scope.Pop().Add(last);
-		SetTemplateValues(symbol.scope, FileInfo());
+			if ((UInt)symbol.scope.Last().variant == (UInt)last.variant) {
+				SetTemplateValues(symbol.scope, FileInfo());
+			}
+		}
+		else {
+			symbol.scope = ReplaceTemplates(symbol.scope, templateSymbol, types);
+		}
 	}
 
 	if (HasTypeArgs()) {
@@ -490,14 +515,39 @@ Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<Scope
 
 	for (const Pair<String, Symbol>& scope : scopes) {
 		if (scope.value.type != SymbolType::Template) {
-			symbol.scopes.Add(scope.key, scope.value.SpecializeTemplate(templateSymbol, types, info));
+			symbol.scopes.Add(scope.key, Symbol(SymbolType::Scope));
+			scope.value.SpecializeTemplate(symbol.scopes[scope.key], templateSymbol, types, info);
+		}
+		else {
+			Symbol t  = scope.value;
+			t.varType = t.scope;
+			t.scope   = symbol.scope.Add(Scope(scope.key));
+
+			symbol.scopes.Add(scope.key, t);
 		}
 	}
 
 	symbol.variants = List<Symbol>();
 
 	for (const Symbol& variant : variants) {
-		symbol.variants.Add(variant.SpecializeTemplate(templateSymbol, types, info));
+		symbol.variants.Add(Symbol(SymbolType::Scope));
+		variant.SpecializeTemplate(symbol.variants.Last(), templateSymbol, types, info);
+	}
+
+	symbol.templateVariants = List<Symbol>();
+
+	for (const Symbol& variant : templateVariants) {
+		symbol.templateVariants.Add(Symbol(SymbolType::Scope));
+		variant.SpecializeTemplate(symbol.templateVariants.Last(), templateSymbol, types, info);
+	}
+
+	for (const Symbol& variant : symbol.templateVariants) {
+		symbol.templateVariants.Add(Symbol(SymbolType::Scope));
+		variant.SpecializeTemplate(symbol.templateVariants.Last(), Find(variant.varType, FileInfo()), types, info);
+
+		if (symbol.templateVariants.Last().scope.Last().variant.Get() != symbol.templateVariants.Size() - 1) {
+			symbol.templateVariants.RemoveLast();
+		}
 	}
 
 	if (type == SymbolType::Function || type == SymbolType::Method) {
@@ -515,8 +565,6 @@ Symbol Symbol::SpecializeTemplate(const Symbol& templateSymbol, const List<Scope
 			info.root.funcs.Add(symbol.node);
 		}
 	}
-
-	return symbol;
 }
 
 ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& templateSymbol, const List<ScopeList>& types) {
@@ -541,7 +589,12 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& template
 
 			if (!isTemplate) {
 				for (const ScopeList& arg : s.templateArgs) {
-					args.Add(ReplaceTemplates(arg, templateSymbol, types));
+					if (arg != type) {
+						args.Add(ReplaceTemplates(arg, templateSymbol, types));
+					}
+					else {
+						args.Add(arg);
+					}
 				}
 
 				Scope newScope = scope.Copy();
@@ -600,7 +653,13 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const FileInfo& file) 
 					if (t.type == SymbolType::Template) {
 						isTemplate = true;
 
-						list = t.varType;
+						if (t.varType != t.scope) {
+							list = ReplaceTemplates(t.varType, file);
+						}
+						else {
+							list = t.varType;
+						}
+
 						i++;
 						continue;
 					}
@@ -629,6 +688,20 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const FileInfo& file) 
 	}
 
 	return list;
+}
+
+ScopeList Symbol::ReplaceNearestTemplates(const ScopeList& scope, const ScopeList& type, const FileInfo& file) {
+	ScopeList typeScope = type;
+
+	for (UInt i = 0; i < typeScope.Size(); i++) {
+		if (typeScope[i].types) {
+			for (ScopeList& type : typeScope[i].types.Get()) {
+				type = ReplaceTemplates(FindNearestInNamespace(scope, type, file).scope, file);
+			}
+		}
+	}
+
+	return typeScope;
 }
 
 void Symbol::SetTemplateValues(const ScopeList& scope, const FileInfo& file) {
@@ -780,17 +853,26 @@ Symbol Symbol::FindNearestInNamespace(const ScopeList& scopes, const Scope& scop
 }
 
 Symbol Symbol::FindNearestInNamespace(const ScopeList& scopes, const ScopeList& scope, const FileInfo& file) {
+	ScopeList scopeList = scope;
+
+	for (UInt i = 0; i < scopeList.Size(); i++) {
+		if (scopeList[i].types) {
+			for (ScopeList& type : scopeList[i].types.Get()) {
+				type = FindNearestInNamespace(scopes, type, file).scope;
+			}
+		}
+	}
+
 	if (scopes.Size() > 0) {
 		ScopeList list = scopes;
 
 		while (list.Size() > 0) {
 			Symbol s = FindInNamespace(list, file);
 
-			if (s.Contains(scope, file)) {
-				Symbol sym = s.Get(scope, file);
+			if (s.Contains(scopeList, file)) {
+				Symbol sym = s.Get(scopeList, file);
 
 				if (sym.statementNumber < file.statementNumber) {
-					sym.scope = list.Add(scope);
 					return sym;
 				}
 			}
@@ -799,7 +881,7 @@ Symbol Symbol::FindNearestInNamespace(const ScopeList& scopes, const ScopeList& 
 		}
 	}
 
-	return FindInNamespace(scope, file);
+	return FindInNamespace(scopeList, file);
 }
 
 Symbol Symbol::FindNearestType(const ScopeList& scopes, const Scope& scope, const FileInfo& file) {
@@ -1139,7 +1221,8 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) {
 
 	for (UInt i = 0; i < templateVariants.Size(); i++) {
 		ScopeList list = scope;
-		list[list.Size() - 1].types = templateVariants[i].templateArgs;
+		list[list.Size() - 1].types = List<ScopeList>();
+		list[list.Size() - 1].variant = i;
 
 		for (const Mango& m : templateVariants[i].ToMangoList(list)) {
 			symbols.Add(m);

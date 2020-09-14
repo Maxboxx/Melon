@@ -91,8 +91,16 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 
 			if (Symbol::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) continue;
 
-			Symbol s = templateInfo.value1.SpecializeTemplate(templateInfo.value2, info);
-			Symbol::Add(s.scope, s, FileInfo(), true);
+			Scope last = templateInfo.value1.scope.Last();
+			last.variant = nullptr;
+			last.types   = nullptr;
+
+			Symbol templateSym = Symbol::Find(templateInfo.value1.scope.Pop().Add(last), file);
+			templateSym.templateVariants.Add(Symbol(templateInfo.value1.type));
+
+			Symbol& s = templateSym.templateVariants.Last();
+
+			templateInfo.value1.SpecializeTemplate(s, templateInfo.value2, info);
 
 			if (s.type == SymbolType::Struct) {
 				Pointer<StructNode> sn = new StructNode(Symbol::templateSymbols[templateIndex].scope, Symbol::templateSymbols[templateIndex].file);

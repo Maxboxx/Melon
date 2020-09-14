@@ -19,7 +19,9 @@ NewVariableNode::~NewVariableNode() {
 }
 
 ScopeList NewVariableNode::GetType(const UInt index) const {
-	Symbol s = Symbol::FindNearestInNamespace(scope, types[types.Size() > 1 ? index : 0], file);
+	ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
+
+	Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, types[types.Size() > 1 ? index : 0], file), file);
 
 	if (s.type == SymbolType::Template) {
 		return s.varType;
@@ -89,7 +91,9 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 void NewVariableNode::IncludeScan(ParsingInfo& info) {
 	for (const ScopeList& type : types) {
 		while (true) {
-			Symbol s = Symbol::FindInNamespace(ScopeList().Add(type[0]), file);
+			ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
+
+			Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, type, file), file);
 
 			bool done = true;
 

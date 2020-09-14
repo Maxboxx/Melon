@@ -56,7 +56,7 @@ Symbol NameNode::GetSymbol() const {
 	Scope noTemplateScope = s.Copy();
 	noTemplateScope.types = nullptr;
 
-	Symbol sym = Symbol::FindNearestInNamespace(Symbol::ReplaceTemplates(replacedScope, file), noTemplateScope, file);
+	Symbol sym = Symbol::FindNearestInNamespace(replacedScope, noTemplateScope, file);
 
 	if (sym.type == SymbolType::Template) {
 		ScopeList type = sym.varType;
@@ -64,7 +64,7 @@ Symbol NameNode::GetSymbol() const {
 		return Symbol::Find(type, file);
 	}
 
-	return Symbol::FindNearestInNamespace(replacedScope, s, file);
+	return Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, ScopeList().Add(s), file), file);
 }
 
 CompiledNode NameNode::Compile(CompileInfo& info) {

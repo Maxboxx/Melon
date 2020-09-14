@@ -11,15 +11,15 @@ struct Value<T>
 	end
 	
 	function set(T: value)
-		--/struct V<P>
+		struct V<P>
 			P: v
 		end
 		
 		V<T>: v = V<T> {
 			v = value
-		}/--
+		}
 	
-		self.value = value
+		self.value = v.v
 	end
 end
 

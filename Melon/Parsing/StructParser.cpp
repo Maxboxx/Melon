@@ -33,6 +33,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	sn->name.variant = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber)).templateVariants.Size() - 1;
 	info.scopes = info.scopes.Pop().Add(sn->name);
 	sn->symbol.scope = info.scopes;
+	sn->symbol.varType = sn->symbol.scope;
 
 	for (ScopeList& arg : sn->symbol.templateArgs) {
 		arg = info.scopes.Add(arg);
@@ -87,6 +88,8 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	for (UInt i = 0; i < sn->symbol.templateArgs.Size(); i++) {
 		Symbol t = Symbol(SymbolType::Template);
 		t.size = i;
+		t.scope = sn->symbol.scope.Add(sn->symbol.templateArgs[i].Last());
+		t.varType = t.scope;
 		sn->symbol.Add(sn->symbol.templateArgs[i].Last(), t, FileInfo(info.filename, structLine, info.statementNumber));
 	}
 

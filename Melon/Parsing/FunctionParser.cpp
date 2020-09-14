@@ -67,6 +67,8 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 			List<Symbol> args;
 			List<String> argNames;
 
+			s.scope = info.scopes;
+
 			while (info.Current().type != TokenType::ParenClose) {
 				if (!args.IsEmpty()) {
 					if (info.Current().type != TokenType::Comma) {
@@ -98,6 +100,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 					a.statementNumber = info.statementNumber;
 					a.varType = (ScopeList)type;
 					a.attributes = attributes;
+					a.scope = info.scopes.Add(Scope(info.Current().value));
 					args.Add(a);
 
 					info.index++;

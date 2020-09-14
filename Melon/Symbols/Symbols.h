@@ -253,8 +253,8 @@ namespace Melon {
 			///T Specialize Template
 			/// Specializes a template symbol
 			///M
-			Symbol SpecializeTemplate(const Boxx::List<ScopeList>& types, Parsing::ParsingInfo& info) const;
-			Symbol SpecializeTemplate(const Symbol& templateSymbol, const Boxx::List<ScopeList>& types, Parsing::ParsingInfo& info) const;
+			void SpecializeTemplate(Symbol& symbol, const Boxx::List<ScopeList>& types, Parsing::ParsingInfo& info) const;
+			void SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, const Boxx::List<ScopeList>& types, Parsing::ParsingInfo& info) const;
 			///M
 
 			///H Static functions
@@ -263,6 +263,7 @@ namespace Melon {
 			/// Replaces template arguments with real types
 			static ScopeList ReplaceTemplates(const ScopeList& type, const Symbol& templateSymbol, const Boxx::List<ScopeList>& types);
 			static ScopeList ReplaceTemplates(const ScopeList& type, const FileInfo& file);
+			static ScopeList ReplaceNearestTemplates(const ScopeList& scope, const ScopeList& type, const FileInfo& file);
 
 			///T Set Template Values
 			/// Sets the values of templates
