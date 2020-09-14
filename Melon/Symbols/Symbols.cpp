@@ -13,6 +13,7 @@
 #include "Nodes/BooleanBinaryOperatorNode.h"
 #include "Nodes/BooleanUnaryOperatorNode.h"
 #include "Nodes/BooleanToBooleanNode.h"
+#include "Nodes/OptionalAssignValueNode.h"
 
 #include "ScopeList.h"
 
@@ -1374,4 +1375,49 @@ void Symbol::Setup() {
 	boolSym.Add(Scope::As, boolToBool, FileInfo());
 
 	symbols.Add(Scope::Bool, boolSym, FileInfo());
+
+	// ----------------- Optional ---------------------
+	Symbol optionalScope = Symbol(SymbolType::Scope);
+	optionalScope.scope  = ScopeList().Add(Scope::Optional);
+
+	{
+		Symbol optionalSym = Symbol(SymbolType::Struct);
+		Scope last   = optionalScope.scope.Last();
+		last.types   = List<ScopeList>();
+		last.variant = (UInt)0;
+
+		optionalSym.scope  = optionalScope.scope.Pop().Add(last);
+		optionalSym.varType = optionalSym.scope;
+
+		optionalSym.args.Add(ScopeList().Add(Scope::HasValue));
+		optionalSym.args.Add(ScopeList().Add(Scope::Value));
+
+		optionalSym.templateArgs.Add(ScopeList().Add(Scope("T")));
+
+		{
+			Symbol templateArg  = Symbol(SymbolType::Template);
+			templateArg.scope   = optionalSym.scope.Add(ScopeList().Add(Scope("T")));
+			templateArg.varType = templateArg.scope;
+			optionalSym.Add(templateArg.scope.Last(), templateArg, FileInfo());
+
+			Symbol hasSym  = Symbol(SymbolType::Variable);
+			hasSym.varType = ScopeList().Add(Scope::Bool);
+			hasSym.scope   = optionalSym.scope.Add(Scope::HasValue);
+			optionalSym.Add(Scope::HasValue, hasSym, FileInfo());
+
+			Symbol valueSym  = Symbol(SymbolType::Variable);
+			valueSym.varType = templateArg.scope;
+			valueSym.scope   = optionalSym.scope.Add(Scope::Value);
+			optionalSym.Add(Scope::Value, valueSym, FileInfo());
+
+			Symbol optionalAssign = Symbol(SymbolType::Function);
+			optionalAssign.args.Add(valueSym.varType);
+			optionalAssign.symbolNode = new OptionalAssignValueNode();
+			optionalSym.Add(Scope::Assign, optionalAssign, FileInfo());
+		}
+
+		optionalScope.templateVariants.Add(optionalSym);
+	}
+
+	symbols.Add(Scope::Optional, optionalScope, FileInfo());
 }

@@ -24,6 +24,21 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 	}
 
 	if (first) {
+		while (info.Current().type == TokenType::Question) {
+			info.index++;
+
+			Scope optionalScope = Scope::Optional;
+			optionalScope.types = List<ScopeList>();
+			optionalScope.types.Get().Add(ScopeList().Add((Scope)first));
+			first = optionalScope;
+
+			Symbol::TemplateSymbol ts;
+			ts.type = ScopeList().Add((Scope)first);
+			ts.scope = info.scopes;
+			ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
+			Symbol::templateSymbols.Add(ts);
+		}
+
 		ScopeList type = ScopeList().Add((Scope)first);
 
 		while (true) {
@@ -39,6 +54,21 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 					ts.scope = info.scopes;
 					ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
 					Symbol::templateSymbols[Symbol::templateSymbols.Size() - 1] = ts;
+				}
+
+				while (info.Current().type == TokenType::Question) {
+					info.index++;
+
+					Scope optionalScope = Scope::Optional;
+					optionalScope.types = List<ScopeList>();
+					optionalScope.types.Get().Add(ScopeList().Add(type));
+					type = ScopeList().Add(optionalScope);
+
+					Symbol::TemplateSymbol ts;
+					ts.type = ScopeList().Add(type);
+					ts.scope = info.scopes;
+					ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
+					Symbol::templateSymbols.Add(ts);
 				}
 			}
 			else {

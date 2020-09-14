@@ -139,6 +139,9 @@ namespace Melon {
 			/// A collection of scopes
 			///M
 			static const Scope TemplateSymbol;
+			static const Scope Optional;
+			static const Scope HasValue;
+			static const Scope Value;
 			///M
 		private:
 			Boxx::Map<Boxx::String, Boxx::UInt> scopes;

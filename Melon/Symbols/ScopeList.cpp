@@ -66,6 +66,9 @@ const Scope Scope::Index  = Scope("[]");
 const Scope Scope::As = Scope("as");
 
 const Scope Scope::TemplateSymbol = Scope("<template>");
+const Scope Scope::Optional       = Scope("?");
+const Scope Scope::HasValue       = Scope("<hasvalue>");
+const Scope Scope::Value          = Scope("<value>");
 
 Scope::Scope() {
 	

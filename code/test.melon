@@ -1,35 +1,3 @@
 
-struct Value<T>
-	T: value
-	
-	function init(T: value)
-		self.value = value
-	end
-	
-	function T: get()
-		return self.value
-	end
-	
-	function set(T: value)
-		struct V<P>
-			P: v
-		end
-		
-		V<T>: v = V<T> {
-			v = value
-		}
-	
-		self.value = v.v
-	end
-end
-
-int: x, y = 45, 56
-
-Value<int>: value = Value<int>(x)
-
-int: a = value:get()
-
-value:set(y)
-
-int: b = value:get()
+long?: num = 34
 
