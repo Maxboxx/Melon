@@ -22,11 +22,14 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 	CompiledNode c1 = nodes[0]->Compile(info);
 
 	const ScopeList type = nodes[0]->Type();
+	const bool isNil = nodes[1]->Type() == ScopeList().Add(Scope::Nil);
 
 	Symbol s = Symbol::Find(type, nodes[0]->file);
 	UInt offset = s.size;
 
 	for (UInt i = 0; i < s.args.Size(); i++) {
+		if (i > 0 && isNil) break;
+
 		Symbol argSym = s.Get(s.args[i], nodes[0]->file);
 		Symbol argType = argSym.GetType(nodes[0]->file);
 		offset -= argType.size;
@@ -53,7 +56,7 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 		}
 		else {
 			Pointer<BooleanNode> bn = new BooleanNode(nodes[0]->file);
-			bn->boolean = true;
+			bn->boolean = !isNil;
 			args.Add(bn);
 		}
 

@@ -47,16 +47,6 @@ Set<SymbolAttribute> VariableAttributeParser::Parse(ParsingInfo& info) {
 			attributes.Add(SymbolAttribute::Copy);
 			info.index++;
 		}
-		else if (info.Current().type == TokenType::Nil) {
-			for (const SymbolAttribute a : attributes) {
-				if (a == SymbolAttribute::Nil) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("nil"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
-				}
-			}
-
-			attributes.Add(SymbolAttribute::Nil);
-			info.index++;
-		}
 		else {
 			break;
 		}

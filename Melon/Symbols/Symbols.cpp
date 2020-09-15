@@ -13,6 +13,7 @@
 #include "Nodes/BooleanBinaryOperatorNode.h"
 #include "Nodes/BooleanUnaryOperatorNode.h"
 #include "Nodes/BooleanToBooleanNode.h"
+#include "Nodes/OptionalAssignNode.h"
 #include "Nodes/OptionalAssignValueNode.h"
 
 #include "ScopeList.h"
@@ -1176,7 +1177,6 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) {
 					case SymbolAttribute::Const: attr.Add(Mango(String("const"))); break;
 					case SymbolAttribute::Copy: attr.Add(Mango(String("copy"))); break;
 					case SymbolAttribute::Ref: attr.Add(Mango(String("ref"))); break;
-					case SymbolAttribute::Nil: attr.Add(Mango(String("nil"))); break;
 				}
 			}
 
@@ -1376,9 +1376,18 @@ void Symbol::Setup() {
 
 	symbols.Add(Scope::Bool, boolSym, FileInfo());
 
+	// ----------------- Nil ---------------------
+
+	Symbol nilSym = Symbol(SymbolType::Type);
+	nilSym.scope  = ScopeList().Add(Scope::Nil);
+	nilSym.size   = 0;
+	nilSym.basic  = true;
+	symbols.Add(Scope::Nil, nilSym, FileInfo());
+
 	// ----------------- Optional ---------------------
 	Symbol optionalScope = Symbol(SymbolType::Scope);
 	optionalScope.scope  = ScopeList().Add(Scope::Optional);
+	optionalScope.basic  = true;
 
 	{
 		Symbol optionalSym = Symbol(SymbolType::Struct);
@@ -1411,9 +1420,19 @@ void Symbol::Setup() {
 			optionalSym.Add(Scope::Value, valueSym, FileInfo());
 
 			Symbol optionalAssign = Symbol(SymbolType::Function);
-			optionalAssign.args.Add(valueSym.varType);
-			optionalAssign.symbolNode = new OptionalAssignValueNode();
+			optionalAssign.args.Add(optionalSym.scope);
+			optionalAssign.symbolNode = new OptionalAssignNode();
 			optionalSym.Add(Scope::Assign, optionalAssign, FileInfo());
+
+			Symbol valueAssign = Symbol(SymbolType::Function);
+			valueAssign.args.Add(valueSym.varType);
+			valueAssign.symbolNode = new OptionalAssignValueNode();
+			optionalSym.Add(Scope::Assign, valueAssign, FileInfo());
+
+			Symbol nilAssign = Symbol(SymbolType::Function);
+			nilAssign.args.Add(ScopeList().Add(Scope::Nil));
+			nilAssign.symbolNode = new OptionalAssignValueNode();
+			optionalSym.Add(Scope::Assign, nilAssign, FileInfo());
 		}
 
 		optionalScope.templateVariants.Add(optionalSym);

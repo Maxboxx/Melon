@@ -1,3 +1,6 @@
 
-long?: num = 34
+long?: num1 = 3
+long?: num2 = num1
 
+num1 = nil
+num2 = num1

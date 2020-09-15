@@ -51,7 +51,6 @@ namespace Melon {
 			Const,
 			Ref,
 			Copy,
-			Nil,
 
 			// Function attributes
 			Static,

@@ -18,6 +18,7 @@
 #include "Melon/Nodes/DotNode.h"
 #include "Melon/Nodes/CustomInitNode.h"
 #include "Melon/Nodes/NameNode.h"
+#include "Melon/Nodes/NilNode.h"
 
 using namespace Boxx;
 
@@ -227,6 +228,11 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		return node;
 	}
 	else if (NodePtr node = BooleanParser::Parse(info)) {
+		return node;
+	}
+	else if (info.Current().type == TokenType::Nil) {
+		Pointer<NilNode> node = new NilNode(FileInfo(info.filename, info.Current().line, info.statementNumber));
+		info.index++;
 		return node;
 	}
 

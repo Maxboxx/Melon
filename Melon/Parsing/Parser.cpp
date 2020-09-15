@@ -201,7 +201,22 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Const, "const"));
 	patterns.Add(TokenPattern(TokenType::Ref, "ref"));
 	patterns.Add(TokenPattern(TokenType::Copy, "copy"));
+
 	patterns.Add(TokenPattern(TokenType::Nil, "nil"));
+
+	patterns.Add(TokenPattern(TokenType::Type, "bool"));
+	patterns.Add(TokenPattern(TokenType::Type, "char"));
+	patterns.Add(TokenPattern(TokenType::Type, "byte"));
+	patterns.Add(TokenPattern(TokenType::Type, "ubyte"));
+	patterns.Add(TokenPattern(TokenType::Type, "short"));
+	patterns.Add(TokenPattern(TokenType::Type, "ushort"));
+	patterns.Add(TokenPattern(TokenType::Type, "int"));
+	patterns.Add(TokenPattern(TokenType::Type, "uint"));
+	patterns.Add(TokenPattern(TokenType::Type, "long"));
+	patterns.Add(TokenPattern(TokenType::Type, "ulong"));
+	patterns.Add(TokenPattern(TokenType::Type, "float"));
+	patterns.Add(TokenPattern(TokenType::Type, "double"));
+	patterns.Add(TokenPattern(TokenType::Type, "string"));
 
 	patterns.Add(TokenPattern(TokenType::Static, "static"));
 	patterns.Add(TokenPattern(TokenType::Override, "override"));

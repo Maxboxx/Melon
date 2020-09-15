@@ -56,7 +56,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 					Symbol::templateSymbols[Symbol::templateSymbols.Size() - 1] = ts;
 				}
 
-				while (info.Current().type == TokenType::Question) {
+				while (!info.EndOfFile() && info.Current().type == TokenType::Question) {
 					info.index++;
 
 					Scope optionalScope = Scope::Optional;
@@ -95,10 +95,18 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 }
 
 Optional<Scope> TypeParser::ParseScope(ParsingInfo& info) {
-	if (info.Current().type != TokenType::Name) return nullptr;
+	if (
+		info.Current().type != TokenType::Name &&
+		info.Current().type != TokenType::Type &&
+		info.Current().type != TokenType::Nil
+	) {
+		return nullptr;
+	}
 
 	Scope scope = Scope(info.Current().value);
 	info.index++;
+
+	if (info.EndOfFile()) return scope;
 
 	if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
 		scope.types = templateArgs;

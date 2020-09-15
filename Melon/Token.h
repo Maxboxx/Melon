@@ -15,6 +15,7 @@ namespace Melon {
 		Boolean,
 		Name,
 		Nil,
+		Type,
 
 		// Math
 		Plus,
