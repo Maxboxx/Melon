@@ -335,6 +335,14 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 				continue;
 			}
 
+			if (info.Current().type == TokenType::Exclamation) {
+				Pointer<UnaryOperatorNode> unwrap = new UnaryOperatorNode(info.scopes, Scope::Unwrap, FileInfo(info.filename, info.Current().line, info.statementNumber));
+				unwrap->node = node;
+				info.index++;
+				node = unwrap;
+				continue;
+			}
+
 			break;
 		}
 

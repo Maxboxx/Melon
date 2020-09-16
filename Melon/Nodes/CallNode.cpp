@@ -83,21 +83,7 @@ bool CallNode::IsInit() const {
 }
 
 ScopeList CallNode::Type() const {
-	if (IsInit()) return node->Type();
-
-	UInt errorCount = ErrorLog::ErrorCount();
-
-	const Symbol s = GetFunc();
-
-	if (errorCount < ErrorLog::ErrorCount()) {
-		return ScopeList::undefined;
-	}
-
-	if (s.type != SymbolType::None) {
-		return ScopeList().Add(s.ret[0]);
-	}
-
-	return ScopeList::undefined;
+	return Types()[0];
 }
 
 List<ScopeList> CallNode::Types() const {
@@ -114,7 +100,7 @@ List<ScopeList> CallNode::Types() const {
 		types.Add(node->Type());
 	}
 	else for (const ScopeList& type : s.ret) {
-		const Symbol s2 = Symbol::FindNearest(s.scope.Pop(), type, node->file);
+		const Symbol s2 = Symbol::FindNearestInNamespace(s.scope.Pop(), type, node->file);
 
 		if (s2.type != SymbolType::None) {
 			types.Add(s2.scope);

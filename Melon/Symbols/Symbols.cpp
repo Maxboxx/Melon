@@ -15,6 +15,7 @@
 #include "Nodes/BooleanToBooleanNode.h"
 #include "Nodes/OptionalAssignNode.h"
 #include "Nodes/OptionalAssignValueNode.h"
+#include "Nodes/OptionalUnwrapNode.h"
 
 #include "ScopeList.h"
 
@@ -478,7 +479,10 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 		Scope last = symbol.scope.Last();
 
 		if (last.types && last.variant) {
-			last.variant = (UInt)last.variant + 1;
+			last.types   = nullptr;
+			last.variant = nullptr;
+			last.variant = Find(symbol.scope.Pop().Add(last), FileInfo()).templateVariants.Size() - 1;
+			last.types   = List<ScopeList>();
 			symbol.scope = symbol.scope.Pop().Add(last);
 			symbol.scope = ReplaceTemplates(symbol.scope, templateSymbol, types);
 
@@ -1433,6 +1437,12 @@ void Symbol::Setup() {
 			nilAssign.args.Add(ScopeList().Add(Scope::Nil));
 			nilAssign.symbolNode = new OptionalAssignValueNode();
 			optionalSym.Add(Scope::Assign, nilAssign, FileInfo());
+
+			Symbol unwrap = Symbol(SymbolType::Function);
+			unwrap.args.Add(ScopeList().Add(optionalSym.scope));
+			unwrap.ret.Add(ScopeList().Add(templateArg.scope));
+			unwrap.symbolNode = new OptionalUnwrapNode();
+			optionalSym.Add(Scope::Unwrap, unwrap, FileInfo());
 		}
 
 		optionalScope.templateVariants.Add(optionalSym);

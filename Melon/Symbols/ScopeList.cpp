@@ -68,6 +68,7 @@ const Scope Scope::As = Scope("as");
 
 const Scope Scope::TemplateSymbol = Scope("<template>");
 const Scope Scope::Optional       = Scope("?");
+const Scope Scope::Unwrap         = Scope("!");
 const Scope Scope::HasValue       = Scope("<hasvalue>");
 const Scope Scope::Value          = Scope("<value>");
 
@@ -165,7 +166,7 @@ ScopeList::ScopeList(const ScopeList& scopeList) {
 	baseScope = scopeList.baseScope;
 
 	for (const Scope& scope : scopeList.scopes) {
-		scopes.Add(scope);
+		scopes.Add(scope.Copy());
 	}
 }
 
@@ -175,7 +176,7 @@ ScopeList::~ScopeList() {
 
 ScopeList ScopeList::Add(const Scope& scope) const {
 	ScopeList list = *this;
-	list.scopes.Add(scope);
+	list.scopes.Add(scope.Copy());
 	return list;
 }
 
@@ -183,7 +184,7 @@ ScopeList ScopeList::Add(const ScopeList& scopes) const {
 	ScopeList list = *this;
 
 	for (UInt i = 0; i < scopes.Size(); i++)
-		list.scopes.Add(scopes[i]);
+		list.scopes.Add(scopes[i].Copy());
 
 	return list;
 }
@@ -269,7 +270,7 @@ void ScopeList::operator=(const ScopeList& scopeList) {
 	baseScope = scopeList.baseScope;
 
 	for (const Scope& scope : scopeList.scopes) {
-		scopes.Add(scope);
+		scopes.Add(scope.Copy());
 	}
 }
 

@@ -43,7 +43,7 @@ List<Symbol> ReturnNode::GetTypes() const {
 CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
 
-	UInt stackOffset = info.stack.ptrSize;
+	UInt stackOffset = info.stack.ptrSize + info.stack.frame;
 	List<Symbol> types = GetTypes();
 
 	for (const Symbol& sym : types) {
@@ -65,9 +65,9 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
 		List<ScopeList> args;
-		args.Add(types[i].scope);
+		args.Add(nodes[i]->Type());
 
-		Symbol assign = Symbol::FindFunction(args.Last().Add(Scope::Assign), args, nodes[i]->file);		
+		Symbol assign = Symbol::FindFunction(types[i].scope.Add(Scope::Assign), args, nodes[i]->file);		
 
 		stackOffset -= types[i].size;
 

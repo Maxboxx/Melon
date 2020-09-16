@@ -20,6 +20,8 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	info.important = false;
 
 	CompiledNode c1 = nodes[0]->Compile(info);
+	CompiledNode c2 = nodes[1]->Compile(info);
+	c1.AddInstructions(c2.instructions);
 
 	const ScopeList type1 = nodes[0]->Type();
 	const ScopeList type2 = nodes[1]->Type();
@@ -59,9 +61,6 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	args.Add(sn1);
 
 	Symbol s2 = Symbol::Find(type2, nodes[1]->file);
-
-	CompiledNode c2 = nodes[1]->Compile(info);
-	c1.AddInstructions(c2.instructions);
 
 	c1.instructions[compIndex].instruction.arguments[0].mem.offset = c2.argument.mem.offset + s2.size - 1;
 
