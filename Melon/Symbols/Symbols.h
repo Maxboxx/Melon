@@ -81,13 +81,11 @@ namespace Melon {
 
 			///T Size/Function
 			/// The size of the type if <code>type</code> is <code>SymbolType::Type</code>, <code>SymbolType::Struct</code>, <code>SymbolType::Class</code> or <code>SymbolType::Enum</code>
-			/// The byte offset of a member variable if <code>type</code> is <code>SymbolType::Variable</code>
 			/// The function id if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
 			/// The template index if <code>type</code> is <code>SymbolType::Template</code>
 			///M
 			union {
 				Boxx::UInt size = 0;
-				Boxx::UInt offset;
 				Boxx::UInt functionID;
 				Boxx::UInt templateIndex;
 			};
@@ -111,10 +109,12 @@ namespace Melon {
 
 			///T Stack
 			/// The stack index of the variable if <code>type</code> is <code>SymbolType::Variable</code>
+			/// The stack offset if the symbol is a member variable
 			/// The value if <code>type</code> is <code>SymbolType::Value</code>
 			///M
 			union {
 				Boxx::Long stackIndex = 0;
+				Boxx::Long offset;
 				Boxx::Long value;
 			};
 			///M

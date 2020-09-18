@@ -25,12 +25,10 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 	const ScopeList type = nodes[0]->Type();
 
 	Symbol s = Symbol::Find(type, nodes[0]->file);
-	UInt offset = s.size;
 
 	for (UInt i = 0; i < s.arguments.Size(); i++) {
 		Symbol argSym = s.Get(s.arguments[i], nodes[0]->file);
 		Symbol argType = argSym.GetType(nodes[0]->file);
-		offset -= argType.size;
 
 		const ScopeList typeName = argType.scope;
 
@@ -39,14 +37,14 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 		Symbol argAssign = Symbol::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
 
 		List<NodePtr> args;
-		Pointer<StackNode> sn1 = new StackNode(c1.argument.mem.offset + offset);
+		Pointer<StackNode> sn1 = new StackNode(c1.argument.mem.offset + argSym.offset);
 		sn1->type = typeName;
 
 		if (c1.argument.mem.reg.type == RegisterType::Register) {
 			sn1->regIndex = c1.argument.mem.reg.index;
 		}
 
-		Pointer<StackNode> sn2 = new StackNode(c2.argument.mem.offset + offset);
+		Pointer<StackNode> sn2 = new StackNode(c2.argument.mem.offset + argSym.offset);
 		sn2->type = typeName;
 
 		if (c2.argument.mem.reg.type == RegisterType::Register) {

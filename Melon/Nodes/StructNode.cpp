@@ -27,7 +27,7 @@ Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
 
 	for (const Scope& var : vars) {
 		Symbol& v = Symbol::Find(symbol.scope, file).Get(var, file);
-		v.stackIndex = s.size;
+		v.offset = s.size;
 		s.size += s.Get(var, file).GetType(file).size;
 	}
 

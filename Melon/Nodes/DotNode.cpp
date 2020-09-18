@@ -70,19 +70,11 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 	CompiledNode c = node->Compile(info);
 
 	if (s.type == SymbolType::Struct) {
-		UInt offset = s.size;
+		Symbol var = s.Get(name, file);
+		Symbol varType = var.GetType(file);
 
-		for (UInt i = 0; i < s.arguments.Size(); i++) {
-			Symbol var = Symbol::FindNearest(type, s.arguments[i], file);
-			Symbol varType = Symbol::FindNearest(type, var.varType, file);
-			offset -= varType.size;
-
-			if (s.arguments[i] == ScopeList().Add(name)) {
-				c.argument.mem.offset += offset;
-				c.size = varType.size;
-				break;	
-			}
-		}
+		c.argument.mem.offset += var.offset;
+		c.size = varType.size;
 	}
 	else if (s.type == SymbolType::Enum) {
 		c.argument = Argument(s.Get(name, file).stackIndex);
