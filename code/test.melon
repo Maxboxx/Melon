@@ -1,15 +1,5 @@
 
-function short???: get()
-	short:   s0 = 3
-	short?:  s1 = s0
-	short??: s2 = s1
-	return s2
-end
+long?: a = nil
 
-
-short???: a = get()
-short??:  b = a!
-short?:   c = b!
-short:    d = c!
-short:    e = a!!!
+long: b = a ?? 5
 

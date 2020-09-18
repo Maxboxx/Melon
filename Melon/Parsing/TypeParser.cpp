@@ -24,19 +24,22 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 	}
 
 	if (first) {
-		while (info.Current().type == TokenType::Question) {
+		while (!info.EndOfFile() && (info.Current().type == TokenType::Question || info.Current().type == TokenType::DoubleQuestion)) {
+			UInt n = info.Current().type == TokenType::Question ? 1 : 2;
 			info.index++;
 
-			Scope optionalScope = Scope::Optional;
-			optionalScope.types = List<ScopeList>();
-			optionalScope.types.Get().Add(ScopeList().Add((Scope)first));
-			first = optionalScope;
+			for (UInt i = 0; i < n; i++) {
+				Scope optionalScope = Scope::Optional;
+				optionalScope.types = List<ScopeList>();
+				optionalScope.types.Get().Add(ScopeList().Add((Scope)first));
+				first = optionalScope;
 
-			Symbol::TemplateSymbol ts;
-			ts.type = ScopeList().Add((Scope)first);
-			ts.scope = info.scopes;
-			ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-			Symbol::templateSymbols.Add(ts);
+				Symbol::TemplateSymbol ts;
+				ts.type = ScopeList().Add((Scope)first);
+				ts.scope = info.scopes;
+				ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
+				Symbol::templateSymbols.Add(ts);
+			}
 		}
 
 		ScopeList type = ScopeList().Add((Scope)first);
@@ -56,19 +59,22 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 					Symbol::templateSymbols[Symbol::templateSymbols.Size() - 1] = ts;
 				}
 
-				while (!info.EndOfFile() && info.Current().type == TokenType::Question) {
+				while (!info.EndOfFile() && (info.Current().type == TokenType::Question || info.Current().type == TokenType::DoubleQuestion)) {
+					UInt n = info.Current().type == TokenType::Question ? 1 : 2;
 					info.index++;
 
-					Scope optionalScope = Scope::Optional;
-					optionalScope.types = List<ScopeList>();
-					optionalScope.types.Get().Add(ScopeList().Add(type));
-					type = ScopeList().Add(optionalScope);
+					for (UInt i = 0; i < n; i++) {
+						Scope optionalScope = Scope::Optional;
+						optionalScope.types = List<ScopeList>();
+						optionalScope.types.Get().Add(ScopeList().Add(type));
+						type = ScopeList().Add(optionalScope);
 
-					Symbol::TemplateSymbol ts;
-					ts.type = ScopeList().Add(type);
-					ts.scope = info.scopes;
-					ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-					Symbol::templateSymbols.Add(ts);
+						Symbol::TemplateSymbol ts;
+						ts.type = ScopeList().Add(type);
+						ts.scope = info.scopes;
+						ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
+						Symbol::templateSymbols.Add(ts);
+					}
 				}
 			}
 			else {

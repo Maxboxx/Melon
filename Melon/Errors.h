@@ -312,6 +312,7 @@ namespace Melon {
 		///M
 		static const char* const IfExprType;
 		static const char* const SwitchExprType;
+		static const char* const DefaultType;
 		///M
 	};
 

@@ -16,6 +16,9 @@ using namespace Kiwi;
 
 using namespace Melon;
 
+// TODO: Assign compile/scan function
+// TODO: Swap struct values
+
 int main() {
 	try {
 		CompilerOptions options = CompilerOptions::LoadFromFile("code/options.mango");

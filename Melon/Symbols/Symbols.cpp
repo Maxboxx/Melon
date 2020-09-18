@@ -16,6 +16,7 @@
 #include "Nodes/OptionalAssignNode.h"
 #include "Nodes/OptionalAssignValueNode.h"
 #include "Nodes/OptionalUnwrapNode.h"
+#include "Nodes/OptionalToBooleanNode.h"
 
 #include "ScopeList.h"
 
@@ -1439,10 +1440,17 @@ void Symbol::Setup() {
 			optionalSym.Add(Scope::Assign, nilAssign, FileInfo());
 
 			Symbol unwrap = Symbol(SymbolType::Function);
-			unwrap.args.Add(ScopeList().Add(optionalSym.scope));
-			unwrap.ret.Add(ScopeList().Add(templateArg.scope));
+			unwrap.args.Add(optionalSym.scope);
+			unwrap.ret.Add(templateArg.scope);
 			unwrap.symbolNode = new OptionalUnwrapNode();
 			optionalSym.Add(Scope::Unwrap, unwrap, FileInfo());
+
+			Symbol toBool = Symbol(SymbolType::Function);
+			toBool.args.Add(optionalSym.scope);
+			toBool.ret.Add(ScopeList().Add(Scope::Bool));
+			toBool.sign = true;
+			toBool.symbolNode = new OptionalToBooleanNode();
+			optionalSym.Add(Scope::As, toBool, FileInfo());
 		}
 
 		optionalScope.templateVariants.Add(optionalSym);

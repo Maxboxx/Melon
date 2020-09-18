@@ -142,6 +142,7 @@ namespace Melon {
 			static const Scope TemplateSymbol;
 			static const Scope Optional;
 			static const Scope Unwrap;
+			static const Scope Default;
 			static const Scope HasValue;
 			static const Scope Value;
 			///M

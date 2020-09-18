@@ -19,6 +19,7 @@
 #include "Melon/Nodes/CustomInitNode.h"
 #include "Melon/Nodes/NameNode.h"
 #include "Melon/Nodes/NilNode.h"
+#include "Melon/Nodes/DefaultNode.h"
 
 using namespace Boxx;
 
@@ -47,6 +48,9 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 
 					if (IsLogic(token.type)) {
 						node = new LogicNode(info.scopes, token.type, FileInfo(info.filename, token.line, info.statementNumber));
+					}
+					else if (token.type == TokenType::DoubleQuestion) {
+						node = new DefaultNode(info.scopes, FileInfo(info.filename, token.line, info.statementNumber));
 					}
 					else {
 						node = new BinaryOperatorNode(info.scopes, Scope(token.value), FileInfo(info.filename, token.line, info.statementNumber));
@@ -101,7 +105,7 @@ UByte ExpressionParser::Precedence(const TokenType op) {
 	switch (op) {
 		//case TokenType::As return 8;
 
-		case TokenType::Pow: return 7;
+		case TokenType::DoubleQuestion: return 7;
 
 		case TokenType::Mul:  return 6;
 		case TokenType::Div:  return 6;
@@ -142,7 +146,7 @@ bool ExpressionParser::IsBinaryOperator(const TokenType op) {
 	switch (op) {
 		//case TokenType::As return true;
 
-		case TokenType::Pow: return true;
+		case TokenType::DoubleQuestion: return true;
 
 		case TokenType::Mul:  return true;
 		case TokenType::Div:  return true;

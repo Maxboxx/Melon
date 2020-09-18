@@ -257,10 +257,9 @@ namespace Kiwi {
 					case 1: return "cl";
 				}
 			}
-			else {
-				logger.Error("undefined reserved register");
-				return "undefined reserved register";
-			}
+			
+			logger.Error("undefined reserved register");
+			return "undefined reserved register";
 		}
 
 		Boxx::String GetRegisterName(const Register& reg, const Boxx::UByte size) {

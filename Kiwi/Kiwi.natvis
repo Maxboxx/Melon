@@ -3,7 +3,7 @@
 	<Type Name="Kiwi::Register">
 		<DisplayString Condition="type == Kiwi::RegisterType::Register">R{index}</DisplayString>
 		<DisplayString Condition="type == Kiwi::RegisterType::Stack">SP</DisplayString>
-		<DisplayString Condition="type == Kiwi::RegisterType::Name">name</DisplayString>
+		<DisplayString Condition="type == Kiwi::RegisterType::Name">{name}</DisplayString>
 	</Type>
 
 	<Type Name="Kiwi::MemoryLocation">

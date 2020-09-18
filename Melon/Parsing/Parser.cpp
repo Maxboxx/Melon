@@ -164,6 +164,7 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Dot, "%.", true));
 	patterns.Add(TokenPattern(TokenType::Len, "%#", true));
 	patterns.Add(TokenPattern(TokenType::Exclamation, "%!", true));
+	patterns.Add(TokenPattern(TokenType::DoubleQuestion, "%?%?", true));
 	patterns.Add(TokenPattern(TokenType::Question, "%?", true));
 
 	// Keywords

@@ -265,6 +265,7 @@ String TypeError::Dot(const String& var, const String& type) {
 
 const char* const TypeError::IfExprType     = "if expression type error";
 const char* const TypeError::SwitchExprType = "switch expression type error";
+const char* const TypeError::DefaultType    = "default expression type error";
 
 String InfoError::UpperName(const String& type, const String& name) {
 	return type + " name: '" + name + "' does not start with an upper case character";
