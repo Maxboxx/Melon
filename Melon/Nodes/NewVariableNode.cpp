@@ -71,7 +71,7 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 		info.stack.Push(Symbol::Find(GetType(0), file).size);
 	}
 
-	Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[0], file).stack = info.stack.top;
+	Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[0], file).stackIndex = info.stack.top;
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	for (UInt i = 1; i < names.Size(); i++) {
@@ -82,7 +82,7 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate
 			info.stack.Push(Symbol::Find(GetType(i), file).size);
 		}
 
-		Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[i], file).stack = info.stack.top;
+		Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[i], file).stackIndex = info.stack.top;
 	}
 
 	return cn;

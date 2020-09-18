@@ -38,7 +38,7 @@ Symbol Symbol::empty = Symbol(SymbolType::None);
 List<Symbol::TemplateSymbol> Symbol::templateSymbols;
 
 Symbol::Symbol() {
-
+	this->type = SymbolType::None;
 }
 
 Symbol::Symbol(const SymbolType type) {
@@ -65,13 +65,13 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 			}
 
 			for (const Symbol& s : scopes[scope.name].variants) {
-				if (s.args.Size() != symbol.args.Size()) continue;
+				if (s.arguments.Size() != symbol.arguments.Size()) continue;
 				if (s.type != symbol.type) continue;
 
 				bool same = true;
 
-				for (UInt i = 0; i < s.args.Size(); i++) {
-					if (s.args[i] != symbol.args[i]) {
+				for (UInt i = 0; i < s.arguments.Size(); i++) {
+					if (s.arguments[i] != symbol.arguments[i]) {
 						same = false;
 						break;
 					}
@@ -279,7 +279,7 @@ Symbol Symbol::GetReturnType(const UInt index) const {
 	file.currentNamespace = symbolNamespace;
 	file.includedNamespaces = includedNamespaces;
 	file.statementNumber = Math::UIntMax();
-	return FindNearestInNamespace(scope.Pop(), ret[index], file);
+	return FindNearestInNamespace(scope.Pop(), returnValues[index], file);
 }
 
 Symbol Symbol::GetArgumentType(const UInt index) const {
@@ -287,7 +287,7 @@ Symbol Symbol::GetArgumentType(const UInt index) const {
 	file.currentNamespace = symbolNamespace;
 	file.includedNamespaces = includedNamespaces;
 	file.statementNumber = Math::UIntMax();
-	return FindNearestInNamespace(scope.Pop(), args[index], file);
+	return FindNearestInNamespace(scope.Pop(), arguments[index], file);
 }
 
 FileInfo Symbol::GetFileInfo() const {
@@ -336,7 +336,7 @@ bool Symbol::IsType() const {
 void Symbol::ClearAssign() {
 	for (Pair<String, Symbol>& s : scopes) {
 		if (s.value.type == SymbolType::Variable) {
-			s.value.sign = false;
+			s.value.isAssigned = false;
 		}
 	}
 }
@@ -344,14 +344,14 @@ void Symbol::ClearAssign() {
 void Symbol::AssignAll() {
 	for (Pair<String, Symbol>& s : scopes) {
 		if (s.value.type == SymbolType::Variable) {
-			s.value.sign = true;
+			s.value.isAssigned = true;
 		}
 	}
 }
 
 bool Symbol::IsAssigned() const {
 	for (const Pair<String, Symbol>& s : scopes) {
-		if (s.value.type == SymbolType::Variable && !s.value.sign) {
+		if (s.value.type == SymbolType::Variable && !s.value.isAssigned) {
 			return false;
 		}
 	}
@@ -385,7 +385,7 @@ List<Scope> Symbol::GetUnassignedVars() const {
 	List<Scope> unassigned;
 
 	for (const Pair<String, Symbol>& s : scopes) {
-		if (s.value.type == SymbolType::Variable && !s.value.sign) {
+		if (s.value.type == SymbolType::Variable && !s.value.isAssigned) {
 			unassigned.Add(Scope(s.key));
 		}
 	}
@@ -397,7 +397,7 @@ Set<Scope> Symbol::GetUnassignedVarsSet() const {
 	Set<Scope> unassigned;
 
 	for (const Pair<String, Symbol>& s : scopes) {
-		if (s.value.type == SymbolType::Variable && !s.value.sign) {
+		if (s.value.type == SymbolType::Variable && !s.value.isAssigned) {
 			unassigned.Add(Scope(s.key));
 		}
 	}
@@ -497,25 +497,25 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 	}
 
 	if (HasTypeArgs()) {
-		symbol.args = List<ScopeList>();
+		symbol.arguments = List<ScopeList>();
 
-		for (const ScopeList& arg : args) {
-			symbol.args.Add(ReplaceTemplates(arg, templateSymbol, types));
+		for (const ScopeList& arg : arguments) {
+			symbol.arguments.Add(ReplaceTemplates(arg, templateSymbol, types));
 		}
 	}
 	else {
-		symbol.args = args.Copy();
+		symbol.arguments = arguments.Copy();
 	}
 
 	if (HasTypeReturns()) {
-		symbol.ret = List<ScopeList>();
+		symbol.returnValues = List<ScopeList>();
 
-		for (const ScopeList& r : ret) {
-			symbol.ret.Add(ReplaceTemplates(r, templateSymbol, types));
+		for (const ScopeList& r : returnValues) {
+			symbol.returnValues.Add(ReplaceTemplates(r, templateSymbol, types));
 		}
 	}
 	else {
-		symbol.ret = ret.Copy();
+		symbol.returnValues = returnValues.Copy();
 	}
 
 	symbol.scopes = Map<String, Symbol>();
@@ -972,9 +972,9 @@ Symbol Symbol::FindOperator(const Scope& op, const ScopeList& type1, const Scope
 	for (UInt i = 0; i < s.variants.Size(); i++) {
 		if (
 			s.variants[i].type == SymbolType::Function &&
-			s.variants[i].args.Size() == 2 &&
-			FindNearest(type1, s.variants[i].args[0], file).scope == type1 &&
-			FindNearest(type1, s.variants[i].args[1], file).scope == type2
+			s.variants[i].arguments.Size() == 2 &&
+			FindNearest(type1, s.variants[i].arguments[0], file).scope == type1 &&
+			FindNearest(type1, s.variants[i].arguments[1], file).scope == type2
 		) {
 			Symbol sym = s.variants[i];
 
@@ -991,9 +991,9 @@ Symbol Symbol::FindOperator(const Scope& op, const ScopeList& type1, const Scope
 	for (UInt i = 0; i < s.variants.Size(); i++) {
 		if (
 			s.variants[i].type == SymbolType::Function &&
-			s.variants[i].args.Size() == 2 &&
-			FindNearest(type2, s.variants[i].args[0], file).scope == type1 &&
-			FindNearest(type2, s.variants[i].args[1], file).scope == type2
+			s.variants[i].arguments.Size() == 2 &&
+			FindNearest(type2, s.variants[i].arguments[0], file).scope == type1 &&
+			FindNearest(type2, s.variants[i].arguments[1], file).scope == type2
 		) {
 			Symbol sym = s.variants[i];
 
@@ -1012,11 +1012,11 @@ Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types,
 	Symbol s = Find(func, file);
 
 	for (UInt i = 0; i < s.variants.Size(); i++) {
-		if (s.variants[i].type == SymbolType::Function && s.variants[i].args.Size() == types.Size()) {
+		if (s.variants[i].type == SymbolType::Function && s.variants[i].arguments.Size() == types.Size()) {
 			bool match = true;
 
 			for (UInt a = 0; a < types.Size(); a++) {
-				if (types[a] != FindNearestType(func.Pop(), s.variants[i].args[a], file).scope) {
+				if (types[a] != FindNearestType(func.Pop(), s.variants[i].arguments[a], file).scope) {
 					match = false;
 					break;
 				}
@@ -1049,11 +1049,11 @@ Symbol Symbol::FindMethod(const ScopeList& func, const List<ScopeList>& types, c
 	Symbol s = Find(func, file);
 
 	for (UInt i = 0; i < s.variants.Size(); i++) {
-		if (s.variants[i].type == SymbolType::Method && s.variants[i].args.Size() == types.Size() + 1) {
+		if (s.variants[i].type == SymbolType::Method && s.variants[i].arguments.Size() == types.Size() + 1) {
 			bool match = true;
 
 			for (UInt a = 0; a < types.Size(); a++) {
-				if (types[a] != FindNearest(func, s.variants[i].args[a + 1], file).scope) {
+				if (types[a] != FindNearest(func, s.variants[i].arguments[a + 1], file).scope) {
 					match = false;
 					break;
 				}
@@ -1077,7 +1077,7 @@ Symbol Symbol::FindMethod(const ScopeList& func, const List<ScopeList>& types, c
 Symbol Symbol::FindImplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file) {
 	Symbol convert = FindExplicitConversion(from, to, file);
 
-	if (convert.sign) {
+	if (convert.isExplicit) {
 		ErrorLog::Error(SymbolError("implicit convert error", file));
 		return Symbol();
 	}
@@ -1091,10 +1091,10 @@ Symbol Symbol::FindExplicitConversion(const ScopeList& from, const ScopeList& to
 	for (UInt i = 0; i < s.variants.Size(); i++) {
 		if (
 			s.variants[i].type == SymbolType::Function &&
-			s.variants[i].args.Size() == 1 &&
-			s.variants[i].ret.Size() == 1 &&
-			FindNearest(from, s.variants[i].args[0], file).scope == from &&
-			FindNearest(from, s.variants[i].ret[0], file).scope == to
+			s.variants[i].arguments.Size() == 1 &&
+			s.variants[i].returnValues.Size() == 1 &&
+			FindNearest(from, s.variants[i].arguments[0], file).scope == from &&
+			FindNearest(from, s.variants[i].returnValues[0], file).scope == to
 		) {
 			Symbol sym = s.variants[i];
 
@@ -1111,10 +1111,10 @@ Symbol Symbol::FindExplicitConversion(const ScopeList& from, const ScopeList& to
 	for (UInt i = 0; i < s.variants.Size(); i++) {
 		if (
 			s.variants[i].type == SymbolType::Function &&
-			s.variants[i].args.Size() == 1 &&
-			s.variants[i].ret.Size() == 1 &&
-			FindNearest(to, s.variants[i].args[0], file).scope == from &&
-			FindNearest(to, s.variants[i].ret[0], file).scope == to
+			s.variants[i].arguments.Size() == 1 &&
+			s.variants[i].returnValues.Size() == 1 &&
+			FindNearest(to, s.variants[i].arguments[0], file).scope == from &&
+			FindNearest(to, s.variants[i].returnValues[0], file).scope == to
 		) {
 			Symbol sym = s.variants[i];
 
@@ -1199,7 +1199,7 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) {
 	else if (variants.IsEmpty() && (type == SymbolType::Function || type == SymbolType::Method)) {
 		String r = "";
 
-		for (UInt i = 0; i < ret.Size(); i++) {
+		for (UInt i = 0; i < returnValues.Size(); i++) {
 			if (i > 0) r += ", ";
 			r += GetReturnType(i).scope.ToString();
 		}
@@ -1208,7 +1208,7 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) {
 
 		String a = "";
 
-		for (UInt i = 0; i < args.Size(); i++) {
+		for (UInt i = 0; i < arguments.Size(); i++) {
 			if (i > 0) a += ", ";
 			a += GetArgumentType(i).scope.ToString();
 		}
@@ -1282,7 +1282,7 @@ void Symbol::Setup() {
 		Symbol intSym = Symbol(SymbolType::Type);
 		intSym.basic = true;
 		intSym.size = integer.value < 0 ? -integer.value : integer.value;
-		intSym.sign = integer.value < 0;
+		intSym.isSigned = integer.value < 0;
 
 		// Min max
 		/*
@@ -1297,12 +1297,12 @@ void Symbol::Setup() {
 		neg.symbolNode = new IntegerUnaryOperatorNode(abs(integer.value), InstructionType::Neg);
 
 		if (integer.key.name[0] == 'u') {
-			neg.args.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
-			neg.ret.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
+			neg.arguments.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
+			neg.returnValues.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
 		}
 		else {
-			neg.args.Add(ScopeList().Add(integer.key));
-			neg.ret.Add(ScopeList().Add(integer.key));
+			neg.arguments.Add(ScopeList().Add(integer.key));
+			neg.returnValues.Add(ScopeList().Add(integer.key));
 		}
 
 		intSym.Add(Scope::Neg, neg, FileInfo());
@@ -1312,12 +1312,12 @@ void Symbol::Setup() {
 		bnot.symbolNode = new IntegerUnaryOperatorNode(abs(integer.value), InstructionType::Not);
 
 		if (integer.key.name[0] == 'u') {
-			bnot.args.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
-			bnot.ret.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
+			bnot.arguments.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
+			bnot.returnValues.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
 		}
 		else {
-			bnot.args.Add(ScopeList().Add(integer.key));
-			bnot.ret.Add(ScopeList().Add(integer.key));
+			bnot.arguments.Add(ScopeList().Add(integer.key));
+			bnot.returnValues.Add(ScopeList().Add(integer.key));
 		}
 
 		intSym.Add(Scope::BitNot, bnot, FileInfo());
@@ -1325,7 +1325,7 @@ void Symbol::Setup() {
 		// Binary operators
 		for (const Pair<Scope, Byte> integer2 : integers) {
 			Symbol intAssign = Symbol(SymbolType::Function);
-			intAssign.args.Add(ScopeList().Add(Scope(integer2.key)));
+			intAssign.arguments.Add(ScopeList().Add(Scope(integer2.key)));
 			intAssign.symbolNode = new IntegerAssignNode(integer.value);
 			intSym.Add(Scope::Assign, intAssign, FileInfo());
 
@@ -1337,18 +1337,18 @@ void Symbol::Setup() {
 				bool sign = integer.value < 0 || integer2.value < 0;
 
 				if (Instruction::IsComp(op.value))
-					intOp.ret.Add(ScopeList().Add(Scope::Bool));
+					intOp.returnValues.Add(ScopeList().Add(Scope::Bool));
 				else {
 					const Scope name = v1 > v2 ? integer.key : integer2.key;
 
 					if (sign && name.name[0] == 'u')
-						intOp.ret.Add(ScopeList().Add(Scope(name.name.Sub(1))));
+						intOp.returnValues.Add(ScopeList().Add(Scope(name.name.Sub(1))));
 					else
-						intOp.ret.Add(ScopeList().Add(name));
+						intOp.returnValues.Add(ScopeList().Add(name));
 				}
 
-				intOp.args.Add(ScopeList().Add(integer.key));
-				intOp.args.Add(ScopeList().Add(integer2.key));
+				intOp.arguments.Add(ScopeList().Add(integer.key));
+				intOp.arguments.Add(ScopeList().Add(integer2.key));
 				intOp.symbolNode = new IntegerBinaryOperatorNode(
 					v1 > v2 ? v1 : v2,
 					sign,
@@ -1365,17 +1365,18 @@ void Symbol::Setup() {
 	// ----------------- Boolean ---------------------
 	Symbol boolSym = Symbol(SymbolType::Type);
 	boolSym.size = 1;
-	boolSym.sign = false;
+	boolSym.isSigned = false;
 	boolSym.basic = true;
 
 	Symbol boolAssign = Symbol(SymbolType::Function);
-	boolAssign.args.Add(ScopeList().Add(Scope::Bool));
+	boolAssign.arguments.Add(ScopeList().Add(Scope::Bool));
 	boolAssign.symbolNode = new BooleanAssignNode();
 	boolSym.Add(Scope::Assign, boolAssign, FileInfo());
 
 	Symbol boolToBool = Symbol(SymbolType::Function);
-	boolToBool.args.Add(ScopeList().Add(Scope::Bool));
-	boolToBool.ret.Add(ScopeList().Add(Scope::Bool));
+	boolToBool.arguments.Add(ScopeList().Add(Scope::Bool));
+	boolToBool.returnValues.Add(ScopeList().Add(Scope::Bool));
+	boolToBool.isExplicit = false;
 	boolToBool.symbolNode = new BooleanToBooleanNode();
 	boolSym.Add(Scope::As, boolToBool, FileInfo());
 
@@ -1403,8 +1404,8 @@ void Symbol::Setup() {
 		optionalSym.scope  = optionalScope.scope.Pop().Add(last);
 		optionalSym.varType = optionalSym.scope;
 
-		optionalSym.args.Add(ScopeList().Add(Scope::HasValue));
-		optionalSym.args.Add(ScopeList().Add(Scope::Value));
+		optionalSym.arguments.Add(ScopeList().Add(Scope::HasValue));
+		optionalSym.arguments.Add(ScopeList().Add(Scope::Value));
 
 		optionalSym.templateArgs.Add(ScopeList().Add(Scope("T")));
 
@@ -1425,30 +1426,30 @@ void Symbol::Setup() {
 			optionalSym.Add(Scope::Value, valueSym, FileInfo());
 
 			Symbol optionalAssign = Symbol(SymbolType::Function);
-			optionalAssign.args.Add(optionalSym.scope);
+			optionalAssign.arguments.Add(optionalSym.scope);
 			optionalAssign.symbolNode = new OptionalAssignNode();
 			optionalSym.Add(Scope::Assign, optionalAssign, FileInfo());
 
 			Symbol valueAssign = Symbol(SymbolType::Function);
-			valueAssign.args.Add(valueSym.varType);
+			valueAssign.arguments.Add(valueSym.varType);
 			valueAssign.symbolNode = new OptionalAssignValueNode();
 			optionalSym.Add(Scope::Assign, valueAssign, FileInfo());
 
 			Symbol nilAssign = Symbol(SymbolType::Function);
-			nilAssign.args.Add(ScopeList().Add(Scope::Nil));
+			nilAssign.arguments.Add(ScopeList().Add(Scope::Nil));
 			nilAssign.symbolNode = new OptionalAssignValueNode();
 			optionalSym.Add(Scope::Assign, nilAssign, FileInfo());
 
 			Symbol unwrap = Symbol(SymbolType::Function);
-			unwrap.args.Add(optionalSym.scope);
-			unwrap.ret.Add(templateArg.scope);
+			unwrap.arguments.Add(optionalSym.scope);
+			unwrap.returnValues.Add(templateArg.scope);
 			unwrap.symbolNode = new OptionalUnwrapNode();
 			optionalSym.Add(Scope::Unwrap, unwrap, FileInfo());
 
 			Symbol toBool = Symbol(SymbolType::Function);
-			toBool.args.Add(optionalSym.scope);
-			toBool.ret.Add(ScopeList().Add(Scope::Bool));
-			toBool.sign = true;
+			toBool.arguments.Add(optionalSym.scope);
+			toBool.returnValues.Add(ScopeList().Add(Scope::Bool));
+			toBool.isExplicit = true;
 			toBool.symbolNode = new OptionalToBooleanNode();
 			optionalSym.Add(Scope::As, toBool, FileInfo());
 		}

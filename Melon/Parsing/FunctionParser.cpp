@@ -25,7 +25,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		s.symbolNamespace = info.currentNamespace;
 		s.includedNamespaces = info.includedNamespaces;
 		if (isPlain) s.statementNumber = info.statementNumber;
-		s.ret = funcHead.retrunTypes;
+		s.returnValues = funcHead.retrunTypes;
 		s.size = info.root.funcId++;
 		s.varType = ScopeList().Add(funcHead.name);
 		s.attributes = funcHead.attributes;
@@ -88,7 +88,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 						ErrorLog::Error(SyntaxError(SyntaxError::ArgNameExpected, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 					}
 
-					s.args.Add((ScopeList)type);
+					s.arguments.Add((ScopeList)type);
 					s.names.Add(Scope(info.Current().value));
 					argNames.Add(info.Current().value);
 					func->argNames.Add(Scope(info.Current().value));

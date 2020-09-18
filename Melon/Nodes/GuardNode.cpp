@@ -127,7 +127,7 @@ Set<ScanType> GuardNode::Scan(ScanInfoStack& info) {
 	AddScopeBreak(info);
 
 	for (const Scope& var : scopeInfo.unassigned) {
-		info.Get().symbol.Get(var, file).sign = false;
+		info.Get().symbol.Get(var, file).isAssigned = false;
 	}
 	
 	info.Get().scopeInfo = scopeInfo;
@@ -167,7 +167,7 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 			case ScopeInfo::ScopeType::Function: {
 				Symbol func = Symbol::FindCurrentFunction(scope, file);
 
-				if (func.ret.Size() == 0 && !info.Get().scopeInfo.hasReturned) {
+				if (func.returnValues.Size() == 0 && !info.Get().scopeInfo.hasReturned) {
 					end = new ReturnNode(scope, file);
 				}
 				else if (!info.Get().scopeInfo.hasReturned) {

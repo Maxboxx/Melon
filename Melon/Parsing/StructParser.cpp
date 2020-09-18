@@ -30,7 +30,12 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	info.scopes = info.scopes.Add(sn->name);
 	Symbol::Add(info.scopes, sn->symbol, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
-	sn->name.variant = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber)).templateVariants.Size() - 1;
+	Symbol s = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+	if (!s.templateVariants.IsEmpty()) {
+		sn->name.variant = s.templateVariants.Size() - 1;
+	}
+
 	info.scopes = info.scopes.Pop().Add(sn->name);
 	sn->symbol.scope = info.scopes;
 	sn->symbol.varType = sn->symbol.scope;
@@ -60,7 +65,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 				sn->symbol.Add(nn->names[i], v, FileInfo(info.filename, info.Current().line, info.statementNumber));
 				sn->vars.Add(nn->names[i]);
-				sn->symbol.args.Add(ScopeList().Add(nn->names[i]));
+				sn->symbol.arguments.Add(ScopeList().Add(nn->names[i]));
 			}
 
 			found = true;
@@ -79,7 +84,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	assign.symbolFile = info.currentFile;
 	assign.symbolNamespace = info.currentNamespace;
 	assign.includedNamespaces = info.includedNamespaces;
-	assign.args.Add(info.scopes);
+	assign.arguments.Add(info.scopes);
 	assign.symbolNode = new StructAssignNode();
 	sn->symbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
@@ -152,7 +157,7 @@ NodePtr StructParser::ParseFunction(ParsingInfo& info) {
 					a.attributes.Add(SymbolAttribute::Ref);
 					//a.attributes.Add(SymbolAttribute::Const);	Add to class
 
-					fn->s.args.Insert(0, info.scopes);
+					fn->s.arguments.Insert(0, info.scopes);
 					fn->s.names.Insert(0, Scope::Self);
 					fn->argNames.Insert(0, Scope::Self);
 

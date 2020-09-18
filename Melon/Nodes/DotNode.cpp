@@ -72,12 +72,12 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 	if (s.type == SymbolType::Struct) {
 		UInt offset = s.size;
 
-		for (UInt i = 0; i < s.args.Size(); i++) {
-			Symbol var = Symbol::FindNearest(type, s.args[i], file);
+		for (UInt i = 0; i < s.arguments.Size(); i++) {
+			Symbol var = Symbol::FindNearest(type, s.arguments[i], file);
 			Symbol varType = Symbol::FindNearest(type, var.varType, file);
 			offset -= varType.size;
 
-			if (s.args[i] == ScopeList().Add(name)) {
+			if (s.arguments[i] == ScopeList().Add(name)) {
 				c.argument.mem.offset += offset;
 				c.size = varType.size;
 				break;	
@@ -85,7 +85,7 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 		}
 	}
 	else if (s.type == SymbolType::Enum) {
-		c.argument = Argument(s.Get(name, file).stack);
+		c.argument = Argument(s.Get(name, file).stackIndex);
 		c.size = s.size;
 	}
 
@@ -126,7 +126,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 				Symbol& s = Symbol::Find(scope.Pop(), file).Get(scope.Last(), file);
 
 				if (s.type == SymbolType::Variable) {
-					if (info.Get().scopeInfo.WillContinue()) s.sign = true;
+					if (info.Get().scopeInfo.WillContinue()) s.isAssigned = true;
 
 					scanSet.Remove(ScanType::Self);
 
@@ -146,7 +146,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 				Symbol& s = Symbol::Find(scope.Pop(), file).Get(scope.Last(), file);
 
 				if (s.type == SymbolType::Variable) {
-					if (!s.sign) {
+					if (!s.isAssigned) {
 						ErrorLog::Error(CompileError(CompileError::SelfVarUseStart + name.ToString() + CompileError::SelfVarUseEnd, file));
 					}
 				}

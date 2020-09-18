@@ -25,8 +25,8 @@ BinaryOperatorNode::~BinaryOperatorNode() {
 ScopeList BinaryOperatorNode::Type() const {
 	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	if (s.type != SymbolType::None && !s.ret.IsEmpty()) {
-		const Symbol s2 = Symbol::FindNearest(s.scope.Pop(), s.ret[0], file);
+	if (s.type != SymbolType::None && !s.returnValues.IsEmpty()) {
+		const Symbol s2 = Symbol::FindNearest(s.scope.Pop(), s.returnValues[0], file);
 
 		if (s2.type == SymbolType::Template) {
 			return s2.varType;

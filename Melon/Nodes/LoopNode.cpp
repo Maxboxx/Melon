@@ -324,7 +324,7 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 		bool createAssign = true;
 
 		if (Pointer<CallNode> call = cond->loopStep.Cast<CallNode>()) {
-			createAssign = !call->GetFunc().ret.IsEmpty();
+			createAssign = !call->GetFunc().returnValues.IsEmpty();
 		}
 
 		if (createAssign) {
@@ -545,12 +545,12 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 	if (loopInfo.init) {
 		if (!segment.also) {
 			for (const Scope& var : loopInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).sign = false;
+				info.symbol.Get(var, FileInfo()).isAssigned = false;
 			}
 		}
 		else {
 			for (const Scope& var : loopInfo.mainSegment.unassigned) {
-				info.symbol.Get(var, FileInfo()).sign = false;
+				info.symbol.Get(var, FileInfo()).isAssigned = false;
 			}
 		}
 	}

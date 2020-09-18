@@ -27,8 +27,8 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 	Symbol s = Symbol::Find(type, nodes[0]->file);
 	UInt offset = s.size;
 
-	for (UInt i = 0; i < s.args.Size(); i++) {
-		Symbol argSym = s.Get(s.args[i], nodes[0]->file);
+	for (UInt i = 0; i < s.arguments.Size(); i++) {
+		Symbol argSym = s.Get(s.arguments[i], nodes[0]->file);
 		Symbol argType = argSym.GetType(nodes[0]->file);
 		offset -= argType.size;
 

@@ -79,7 +79,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 		return ptr->Compile(info);
 	}
 	else {
-		cn.argument = Argument(MemoryLocation(info.stack.Offset(s.stack)));
+		cn.argument = Argument(MemoryLocation(info.stack.Offset(s.stackIndex)));
 	}
 
 	cn.size = s.GetType(file).size;

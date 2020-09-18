@@ -252,7 +252,7 @@ void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) con
 			info.init = true;
 
 			for (const Scope& var : switchInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).sign = false;
+				info.symbol.Get(var, FileInfo()).isAssigned = false;
 			}
 		}
 
@@ -286,11 +286,11 @@ void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 
 		if (switchInfo.init) {
 			for (const Scope& var : switchInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).sign = true;
+				info.symbol.Get(var, FileInfo()).isAssigned = true;
 			}
 
 			for (const Scope& var : switchInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).sign = false;
+				info.symbol.Get(var, FileInfo()).isAssigned = false;
 			}
 		}
 

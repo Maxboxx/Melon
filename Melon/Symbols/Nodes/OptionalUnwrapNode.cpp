@@ -21,7 +21,7 @@ CompiledNode OptionalUnwrapNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	Symbol s = Symbol::FindFunction(args[0].Add(Scope::Unwrap), args, nodes[0]->file);
 	if (s.type == SymbolType::None) return c;
 
-	Symbol r = Symbol::Find(s.ret[0], nodes[0]->file);
+	Symbol r = Symbol::Find(s.returnValues[0], nodes[0]->file);
 	if (r.type == SymbolType::None) return c;
 	c.size = r.size;
 

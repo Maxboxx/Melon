@@ -23,7 +23,7 @@ CompiledNode OptionalToBooleanNode::Compile(const Boxx::List<NodePtr>& nodes, Co
 	Symbol s = Symbol::Find(type, nodes[0]->file);
 	UInt offset = s.size;
 
-	Symbol argSym = s.Get(s.args[0], nodes[0]->file);
+	Symbol argSym = s.Get(s.arguments[0], nodes[0]->file);
 	Symbol argType = argSym.GetType(nodes[0]->file);
 	offset -= argType.size;
 

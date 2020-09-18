@@ -67,7 +67,7 @@ namespace Melon {
 
 			///T Type
 			/// The symbol type
-			SymbolType type;
+			SymbolType type = SymbolType::None;
 
 			///T Variable type
 			/// The type of the variable if <code>type</code> is <code>SymbolType::Variable</code>
@@ -81,15 +81,29 @@ namespace Melon {
 
 			///T Size/Function
 			/// The size of the type if <code>type</code> is <code>SymbolType::Type</code>, <code>SymbolType::Struct</code>, <code>SymbolType::Class</code> or <code>SymbolType::Enum</code>
+			/// The byte offset of a member variable if <code>type</code> is <code>SymbolType::Variable</code>
 			/// The function id if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
 			/// The template index if <code>type</code> is <code>SymbolType::Template</code>
-			Boxx::UInt size = 0;
+			///M
+			union {
+				Boxx::UInt size = 0;
+				Boxx::UInt offset;
+				Boxx::UInt functionID;
+				Boxx::UInt templateIndex;
+			};
+			///M
 
-			///T Signed/Assigned
+			///T Signed/Assigned/Explicit
 			/// Whether or not the type is signed if <code>type</code> is <code>SymbolType::Type</code>
 			/// Whether or not the variable has been assigned if <code>type</code> is <code>SymbolType::Variable</code>
 			/// Whether or not the conversion operator is explicit if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
-			bool sign = false;
+			///M
+			union {
+				bool isSigned = false;
+				bool isAssigned;
+				bool isExplicit;
+			};
+			///M
 
 			///T Basic
 			/// Wheter or not the symbol is a basic symbol
@@ -98,7 +112,12 @@ namespace Melon {
 			///T Stack
 			/// The stack index of the variable if <code>type</code> is <code>SymbolType::Variable</code>
 			/// The value if <code>type</code> is <code>SymbolType::Value</code>
-			Boxx::Long stack = 0;
+			///M
+			union {
+				Boxx::Long stackIndex = 0;
+				Boxx::Long value;
+			};
+			///M
 
 			///T Symbol node
 			/// Used for basic operations instead of having to call a function
@@ -111,12 +130,12 @@ namespace Melon {
 			///T Return values
 			/// The relative types for the return values
 			/// Only used if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
-			Boxx::List<ScopeList> ret;
+			Boxx::List<ScopeList> returnValues;
 
 			///T Argument values
 			/// The relative types for the arguments if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
 			/// The list of variables if <code>type</code> is <code>SymbolType::Struct</code> or <code>SymbolType::Class</code>
-			Boxx::List<ScopeList> args;
+			Boxx::List<ScopeList> arguments;
 
 			///T Template arguments
 			Boxx::List<ScopeList> templateArgs;

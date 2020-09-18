@@ -47,7 +47,7 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 		Symbol a = Symbol::FindFunction(type.Add(Scope::Assign), argTypes, expressions[i]->file);
 
 		if (s.type == SymbolType::Struct) {
-			Pointer<StackNode> sn = new StackNode(info.stack.Offset() + offset - v.stack - varType.size);
+			Pointer<StackNode> sn = new StackNode(info.stack.Offset() + offset - v.stackIndex - varType.size);
 			sn->type = type;
 
 			List<NodePtr> args;

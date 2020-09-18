@@ -73,14 +73,14 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate ar
 
 	Long size = info.stack.ptrSize;
 
-	for (Int i = s.args.Size() - 1; i >= 0; i--) {
-		s.Get(argNames[i], file).stack = -size;
+	for (Int i = s.arguments.Size() - 1; i >= 0; i--) {
+		s.Get(argNames[i], file).stackIndex = -size;
 
 		if (s.Get(argNames[i], file).attributes.Contains(SymbolAttribute::Ref)) {
 			size += info.stack.ptrSize;
 		}
 		else {
-			size += Symbol::FindNearest(scope, s.args[i], file).size;
+			size += Symbol::FindNearest(scope, s.arguments[i], file).size;
 		}
 	}
 
@@ -133,11 +133,11 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	for (const ScopeList& sl : s.args) {
+	for (const ScopeList& sl : s.arguments) {
 		Symbol::FindNearest(scope, sl, file);
 	}
 
-	if (!info.Get().scopeInfo.hasReturned && !s.ret.IsEmpty()) {
+	if (!info.Get().scopeInfo.hasReturned && !s.returnValues.IsEmpty()) {
 		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(s), file));
 	}
 

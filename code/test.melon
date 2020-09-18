@@ -1,5 +1,12 @@
 
-long?: a = nil
+struct A
+	byte, short, int, long: a, b, c, d
+end
 
-long: b = a ?? 5
+A: a = A {
+	a = 1,
+	b = 2,
+	c = 3,
+	d = 4
+}
 
