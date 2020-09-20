@@ -1,6 +1,7 @@
 #include "ReturnNode.h"
 
 #include "StackNode.h"
+#include "TypeNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -64,21 +65,13 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
-		List<ScopeList> args;
-		args.Add(nodes[i]->Type());
-
-		Symbol assign = Symbol::FindFunction(types[i].scope.Add(Scope::Assign), args, nodes[i]->file);		
-
 		stackOffset -= types[i].size;
 
-		List<NodePtr> assignArgs;
 		Pointer<StackNode> sn = new StackNode(stackOffset);
 		sn->type = types[i].scope;
-		assignArgs.Add(sn);
-		assignArgs.Add(nodes[i]);
 
 		info.important = true;
-		c.AddInstructions(assign.symbolNode->Compile(assignArgs, info).instructions);
+		c.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
 		info.important = false;
 	}
 
@@ -120,9 +113,7 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 	}
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
-		List<ScopeList> args;
-		args.Add(types[i].scope);
-		Symbol::FindFunction(types[i].scope.Add(Scope::Assign), args, nodes[i]->file);
+		ScanAssignment(new TypeNode(types[i].scope), nodes[i], info, nodes[i]->file);
 	}
 
 	return scanSet;

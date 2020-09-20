@@ -1,14 +1,16 @@
 
 struct A
 	byte, short, int, long: a, b, c, d
+	
+	function init()
+		self.a = 9
+		self.b = 9
+		self.c = 9
+		self.d = 9
+	end
 end
 
-A: a = A {
-	a = 1,
-	b = 2,
-	c = 3,
-	d = 4
-}
+A?: a = nil
 
-int: i = a.c
+A: b = a ?? A()
 

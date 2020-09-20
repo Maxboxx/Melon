@@ -50,7 +50,7 @@ void FunctionNode::SetTemplateValues() const {
 	Symbol::SetTemplateValues(func, file);
 }
 
-CompiledNode FunctionNode::Compile(CompileInfo& info) { //TODO: more accurate arg error lines
+CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
 	if (IsNotSpecialized()) return CompiledNode();
 	SetTemplateValues();
 

@@ -60,7 +60,7 @@ UInt NewVariableNode::GetSize() const {
 	return size;
 }
 
-CompiledNode NewVariableNode::Compile(CompileInfo& info) { //TODO: more accurate error lines
+CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurate error lines
 	CompiledNode cn;
 	cn.size = Symbol::Find(Type(), file).size;
 

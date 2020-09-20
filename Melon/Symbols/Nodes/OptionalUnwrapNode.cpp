@@ -24,6 +24,7 @@ CompiledNode OptionalUnwrapNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	Symbol r = Symbol::Find(s.returnValues[0], nodes[0]->file);
 	if (r.type == SymbolType::None) return c;
 	c.size = r.size;
+	c.argument.mem.offset += 1;
 
 	return c;
 }

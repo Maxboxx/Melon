@@ -1,5 +1,8 @@
 #include "IfExprNode.h"
 
+#include "StackNode.h"
+#include "TypeNode.h"
+
 #include "Melon/Parsing/Parser.h"
 
 using namespace Boxx;
@@ -37,6 +40,9 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	info.stack.Push(Symbol::Find(Type(), file).size);
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
+	Pointer<StackNode> sn = new StackNode(cn.argument.mem.offset);
+	sn->type = Type();
+
 	for (UInt i = 0; i < conditions.Size(); i++) {
 		CompiledNode cond = conditions[i]->Compile(info);
 
@@ -51,18 +57,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 		UInt jump = cn.instructions.Size() - 1;
 
-		CompiledNode expr = nodes[i]->Compile(info);
-
-		for (const OptimizerInstruction& inst : expr.instructions) {
-			cn.instructions.Add(inst);
-		}
-
-		if (cn.argument != expr.argument) {
-			Instruction mov = Instruction(InstructionType::Mov, cn.size);
-			mov.arguments.Add(cn.argument);
-			mov.arguments.Add(expr.argument);
-			cn.instructions.Add(mov);
-		}
+		cn.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
 
 		jumps.Add(cn.instructions.Size());
 		cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
@@ -71,16 +66,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 		cn.instructions.Add(Instruction::Label(info.label++));
 	}
 
-	CompiledNode expr = nodes.Last()->Compile(info);
-
-	for (const OptimizerInstruction& inst : expr.instructions) {
-		cn.instructions.Add(inst);
-	}
-
-	Instruction mov = Instruction(InstructionType::Mov, cn.size);
-	mov.arguments.Add(cn.argument);
-	mov.arguments.Add(expr.argument);
-	cn.instructions.Add(mov);
+	cn.AddInstructions(CompileAssignment(sn, nodes.Last(), info, nodes.Last()->file).instructions);
 
 	for (UInt i : jumps) {
 		cn.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
@@ -108,6 +94,8 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 
 	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
 
+	Pointer<TypeNode> type = new TypeNode(Type());
+
 	for (const NodePtr& node : nodes) {
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
@@ -116,6 +104,8 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
 		}
+
+		ScanAssignment(type, node, info, node->file);
 	}
 
 	for (const NodePtr& node : conditions) {

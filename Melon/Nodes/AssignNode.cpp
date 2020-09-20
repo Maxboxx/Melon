@@ -4,6 +4,7 @@
 #include "RefNode.h"
 #include "StackNode.h"
 #include "NameNode.h"
+#include "TypeNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -138,18 +139,9 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			Pointer<StackNode> sn = new StackNode(info.stack.Offset(returnSizes[i - values.Size()]));
 			sn->type = values[i].key;
 
-			List<NodePtr> nodes;
-			nodes.Add(vars[i]);
-			nodes.Add(sn);
-
-			List<ScopeList> args;
-			args.Add(values[i].key);
-
-			Symbol s = Symbol::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file);
 			info.important = true;
-			CompiledNode c1 = s.symbolNode->Compile(nodes, info);
+			c.AddInstructions(CompileAssignment(vars[i], sn, info, vars[i]->file).instructions);
 			info.important = false;
-			c.AddInstructions(c1.instructions);
 		}
 
 		info.index = regIndex;
@@ -213,9 +205,8 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 		}
 
 		if (!errors) {
-			List<ScopeList> args; //TODO: check for valid ref
-			args.Add(values[i].key);
-			Symbol::FindFunction(node->Type().Add(Scope::Assign), args, node->file);
+			// TODO: check for valid ref
+			ScanAssignment(node, new TypeNode(values[i].key), info, node->file);
 		}
 	}
 

@@ -214,6 +214,16 @@ namespace Melon {
 			/// <code>true</code> if the compiled node is an immediate value
 			/// Defaults to <code>false</code>
 			virtual bool IsImmediate() const;
+
+			///H Static functions
+
+			///T Scan Assignment
+			/// Scans an assignment
+			static void ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file);
+
+			///T Compile Assignment
+			/// Compiles an assignment
+			static CompiledNode CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file);
 		};
 	}
 }

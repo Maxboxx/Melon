@@ -2,6 +2,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/Nodes/SymbolNode.h"
+
 using namespace Boxx;
 
 using namespace Melon::Nodes;
@@ -57,3 +59,28 @@ bool Node::IsScope() const {
 bool Node::IsImmediate() const {
 	return false;
 }
+
+void Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
+	List<ScopeList> args;
+	args.Add(value->Type());
+	Symbol::FindFunction(var->Type().Add(Scope::Assign), args, file);
+}
+
+CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file) {
+	List<ScopeList> args;
+	args.Add(value->Type());
+
+	Symbol assign = Symbol::FindFunction(var->Type().Add(Scope::Assign), args, file);
+
+	if (assign.type != SymbolType::None) {
+		List<NodePtr> nodes;
+		nodes.Add(var);
+		nodes.Add(value);
+
+		return assign.symbolNode->Compile(nodes, info);
+	}
+	else {
+		return CompiledNode();
+	}
+}
+

@@ -1,6 +1,7 @@
 #include "CustomInitNode.h"
 
 #include "StackNode.h"
+#include "TypeNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -42,18 +43,11 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 		Symbol varType = v.GetType(file);
 		const ScopeList type = varType.scope;
 
-		List<ScopeList> argTypes;
-		argTypes.Add(expressions[i]->Type());
-		Symbol a = Symbol::FindFunction(type.Add(Scope::Assign), argTypes, expressions[i]->file);
-
 		if (s.type == SymbolType::Struct) {
 			Pointer<StackNode> sn = new StackNode(info.stack.Offset() + v.offset);
 			sn->type = type;
 
-			List<NodePtr> args;
-			args.Add(sn);
-			args.Add(expressions[i]);
-			c.AddInstructions(a.symbolNode->Compile(args, info).instructions);
+			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->file).instructions);
 		}
 
 		info.index = index;
@@ -93,11 +87,8 @@ Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 
 		Symbol v = s.Get(vars[i], file);
 		Symbol varType = v.GetType(file);
-		const ScopeList type = varType.scope;
 
-		List<ScopeList> argTypes;
-		argTypes.Add(expressions[i]->Type());
-		Symbol a = Symbol::FindFunction(type.Add(Scope::Assign), argTypes, expressions[i]->file);
+		ScanAssignment(new TypeNode(varType.scope), expressions[i], info, expressions[i]->file);
 
 		if (s.type != SymbolType::Struct) {
 			ErrorLog::Error(CompileError(CompileError::InvalidCustomInit, file));

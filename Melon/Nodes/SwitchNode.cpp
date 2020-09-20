@@ -4,6 +4,7 @@
 
 #include "StackNode.h"
 #include "BreakNode.h"
+#include "TypeNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -113,6 +114,9 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 
 	Argument result = Argument(MemoryLocation(info.stack.Offset()));
 
+	Pointer<StackNode> sn = new StackNode(result.mem.offset);
+	sn->type = Type();
+
 	for (NodePtr expr : nodes) {
 		cn.instructions.Add(Instruction::Label(info.label));
 
@@ -123,37 +127,35 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 		info.label++;
 		exprIndex++;
 
-		CompiledNode compExpr = expr->Compile(info);
+		if (!this->expr) {
+			CompiledNode compExpr = expr->Compile(info);
 
-		for (const OptimizerInstruction& in : compExpr.instructions) {
-			if (in.instruction.type != InstructionType::Custom) {
-				cn.instructions.Add(in);
-				continue;
-			}
+			for (const OptimizerInstruction& in : compExpr.instructions) {
+				if (in.instruction.type != InstructionType::Custom) {
+					cn.instructions.Add(in);
+					continue;
+				}
 
-			const String type = in.instruction.instructionName;
+				const String type = in.instruction.instructionName;
 
-			if (type != BreakNode::scopeBreakInstName) {
-				cn.instructions.Add(in);
-				continue;
-			}
+				if (type != BreakNode::scopeBreakInstName) {
+					cn.instructions.Add(in);
+					continue;
+				}
 
-			if (in.instruction.sizes[0] > 1) {
-				OptimizerInstruction inst = in;
-				inst.instruction.sizes[0]--;
-				cn.instructions.Add(inst);
-			}
-			else {
-				endJumps.Add(cn.instructions.Size());
-				cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
+				if (in.instruction.sizes[0] > 1) {
+					OptimizerInstruction inst = in;
+					inst.instruction.sizes[0]--;
+					cn.instructions.Add(inst);
+				}
+				else {
+					endJumps.Add(cn.instructions.Size());
+					cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
+				}
 			}
 		}
-
-		if (this->expr && result != compExpr.argument) {
-			Instruction mov = Instruction(InstructionType::Mov, cn.size);
-			mov.arguments.Add(result);
-			mov.arguments.Add(compExpr.argument);
-			cn.instructions.Add(mov);
+		else {
+			cn.AddInstructions(CompileAssignment(sn, expr, info, expr->file).instructions);
 		}
 
 		endJumps.Add(cn.instructions.Size());
@@ -165,38 +167,35 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	info.label++;
 
 	if (def) {
-		CompiledNode defNode = def->Compile(info);
+		if (!this->expr) {
+			CompiledNode defNode = def->Compile(info);
 
-		for (const OptimizerInstruction& in : defNode.instructions) {
-			if (in.instruction.type != InstructionType::Custom) {
-				cn.instructions.Add(in);
-				continue;
-			}
+			for (const OptimizerInstruction& in : defNode.instructions) {
+				if (in.instruction.type != InstructionType::Custom) {
+					cn.instructions.Add(in);
+					continue;
+				}
 
-			const String type = in.instruction.instructionName;
+				const String type = in.instruction.instructionName;
 
-			if (type != BreakNode::scopeBreakInstName) {
-				cn.instructions.Add(in);
-				continue;
-			}
+				if (type != BreakNode::scopeBreakInstName) {
+					cn.instructions.Add(in);
+					continue;
+				}
 
-			if (in.instruction.sizes[0] > 1) {
-				OptimizerInstruction inst = in;
-				inst.instruction.sizes[0]--;
-				cn.instructions.Add(inst);
-			}
-			else {
-				endJumps.Add(cn.instructions.Size());
-				cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
+				if (in.instruction.sizes[0] > 1) {
+					OptimizerInstruction inst = in;
+					inst.instruction.sizes[0]--;
+					cn.instructions.Add(inst);
+				}
+				else {
+					endJumps.Add(cn.instructions.Size());
+					cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
+				}
 			}
 		}
-
-		if (this->expr) {
-			Instruction mov = Instruction(InstructionType::Mov, cn.size);
-			mov.arguments.Add(result);
-			mov.arguments.Add(defNode.argument);
-
-			cn.instructions.Add(mov);
+		else {
+			cn.AddInstructions(CompileAssignment(sn, def, info, def->file).instructions);
 		}
 	}
 
@@ -317,6 +316,8 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 
 	SwitchScanInfo switchInfo = ScanSetup(info.Get());
 
+	Pointer<TypeNode> type = new TypeNode(Type());
+
 	for (const NodePtr& node : nodes) {
 		ScanPreContents(switchInfo, info.Get());
 
@@ -326,6 +327,10 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
+		}
+
+		if (expr) {
+			ScanAssignment(type, node, info, node->file);
 		}
 
 		ScanPostContents(switchInfo, info.Get());
@@ -340,6 +345,10 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, def->file));
 			}
+		}
+
+		if (expr) {
+			ScanAssignment(type, def, info, def->file);
 		}
 
 		ScanPostContents(switchInfo, info.Get());

@@ -2,6 +2,7 @@
 
 #include "RefNode.h"
 #include "StackNode.h"
+#include "TypeNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -113,7 +114,7 @@ List<ScopeList> CallNode::Types() const {
 	return types;
 }
 
-CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg error lines
+CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
 	Symbol s = GetFunc();
 
 	StackPtr stack = info.stack;
@@ -230,31 +231,17 @@ CompiledNode CallNode::Compile(CompileInfo& info) { //TODO: more accurate arg er
 
 			stackIndex -= type.size;
 
-			List<ScopeList> args;
-
-			if (IsSelfPassing()) {
-				args.Add(this->args[i - 1]->Type());
-			}
-			else {
-				args.Add(this->args[i]->Type());
-			}
-
-			Symbol assign = Symbol::FindFunction(type.scope.Add(Scope::Assign), args, node->file);
-
-			List<NodePtr> assignArgs;
 			Pointer<StackNode> sn = new StackNode(stackIndex);
 			sn->type = type.scope;
-			assignArgs.Add(sn);
-
-			if (isMethod) {
-				assignArgs.Add(this->args[i - 1]);
-			}
-			else {
-				assignArgs.Add(this->args[i]);
-			}
 
 			info.stack.Push(type.size);
-			c.AddInstructions(assign.symbolNode->Compile(assignArgs, info).instructions);
+
+			if (isMethod) {
+				c.AddInstructions(CompileAssignment(sn, this->args[i - 1], info, node->file).instructions);
+			}
+			else {
+				c.AddInstructions(CompileAssignment(sn, this->args[i], info, node->file).instructions);
+			}
 		}
 	}
 
@@ -313,23 +300,23 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 		Int i = IsInit() ? u - 1 : u;
 		Symbol type = Symbol::FindNearestInNamespace(s.symbolNamespace, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
 		Symbol::Find(s.scope.Add(s.names[u]), node->file);
-		List<ScopeList> args;
+		NodePtr arg;
 
 		if (i < 0) continue;
 
 		if (IsSelfPassing()) {
 			if (i == 0) {
-				args.Add(node->Type());
+				arg = node;
 			}
 			else {
-				args.Add(this->args[i - 1]->Type());
+				arg = this->args[i - 1];
 			}
 		}
 		else {
-			args.Add(this->args[i]->Type());
+			arg = this->args[i];
 		}
 
-		Symbol assign = Symbol::FindFunction(type.scope.Add(Scope::Assign), args, node->file);
+		ScanAssignment(new TypeNode(type.scope), arg, info, node->file);
 	}
 
 	return scanSet;

@@ -25,14 +25,13 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 	const bool isNil = nodes[1]->Type() == ScopeList().Add(Scope::Nil);
 
 	Symbol s = Symbol::Find(type, nodes[0]->file);
-	UInt offset = s.size;
+	UInt offset = 0;
 
 	for (UInt i = 0; i < s.arguments.Size(); i++) {
 		if (i > 0 && isNil) break;
 
 		Symbol argSym = s.Get(s.arguments[i], nodes[0]->file);
 		Symbol argType = argSym.GetType(nodes[0]->file);
-		offset -= argType.size;
 
 		const ScopeList typeName = argType.scope;
 
@@ -43,6 +42,13 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 		List<NodePtr> args;
 		
 		Pointer<StackNode> sn1 = new StackNode(c1.argument.mem.offset + offset);
+
+		offset++;
+
+		if (c1.argument.mem.reg.type == RegisterType::Register) {
+			sn1->regIndex = c1.argument.mem.reg.index;
+		} 
+
 		sn1->type = typeName;
 
 		if (c1.argument.mem.reg.type == RegisterType::Register) {

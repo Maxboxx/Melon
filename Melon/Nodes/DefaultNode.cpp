@@ -1,5 +1,8 @@
 #include "DefaultNode.h"
 
+#include "StackNode.h"
+#include "TypeNode.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -42,14 +45,22 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	UInt eqIndex = cn.instructions.Size();
 
 	Instruction eq = Instruction(InstructionType::Eq, 1);
-	eq.arguments.Add(MemoryLocation(c1.argument.mem.offset + Symbol::Find((node1->Type()), file).size - 1));
+	eq.arguments.Add(c1.argument);
 	eq.arguments.Add(Argument(0));
 	cn.instructions.Add(eq);
 
-	Instruction mov1 = Instruction(InstructionType::Mov, c1.size - 1);
-	mov1.arguments.Add(cn.argument);
-	mov1.arguments.Add(c1.argument);
-	cn.instructions.Add(mov1);
+	Pointer<StackNode> sn1 = new StackNode(cn.argument.mem.offset);
+	sn1->type = Type();
+
+	Pointer<StackNode> sn2 = new StackNode(c1.argument.mem.offset + 1);
+
+	if (c1.argument.mem.reg.type == RegisterType::Register) {
+		sn2->regIndex = c1.argument.mem.reg.index;
+	}
+
+	sn2->type = Symbol::Find(node1->Type(), file).Get(Scope::Value, file).varType;
+
+	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
 
 	UInt jmp = cn.instructions.Size();
 	cn.instructions.Add(Instruction(InstructionType::Jmp));
@@ -57,13 +68,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(Instruction::Label(info.label));
 	cn.instructions[eqIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 
-	CompiledNode c2 = node2->Compile(info);
-	cn.AddInstructions(c2.instructions);
-
-	Instruction mov2 = Instruction(InstructionType::Mov, c2.size);
-	mov2.arguments.Add(cn.argument);
-	mov2.arguments.Add(c2.argument);
-	cn.instructions.Add(mov2);
+	cn.AddInstructions(CompileAssignment(sn1, node2, info, file).instructions);
 
 	cn.instructions.Add(Instruction::Label(info.label));
 	cn.instructions[jmp].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
@@ -100,6 +105,8 @@ Set<ScanType> DefaultNode::Scan(ScanInfoStack& info) {
 	}
 
 	Symbol::Find(Type(), file);
+	ScanAssignment(new TypeNode(Type()), new TypeNode(Symbol::Find(node1->Type(), node1->file).Get(Scope::Value, node1->file).varType), info, file);
+	ScanAssignment(new TypeNode(Type()), node2, info, file);
 
 	info.Get().scopeInfo = scopeInfo;
 	return scanSet;
