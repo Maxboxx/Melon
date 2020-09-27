@@ -74,13 +74,46 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 	UInt funcIndex = 0;
 	UInt templateIndex = 0;
 
+	Collection<UInt> failedNodes;
+	Collection<UInt> failedFuncs;
+
 	do {
+		for (UInt i = 0; i < failedNodes.Size();) {
+			try {
+				nodes[failedNodes[i]]->IncludeScan(info);
+				failedNodes.RemoveAt(i);
+			}
+			catch (IncludeScanError& e) {
+				i++;
+			}
+		}
+
+		for (UInt i = 0; i < failedFuncs.Size();) {
+			try {
+				funcs[failedFuncs[i]]->IncludeScan(info);
+				failedFuncs.RemoveAt(i);
+			}
+			catch (IncludeScanError& e) {
+				i++;
+			}
+		}
+
 		for (; nodeIndex < nodes.Size(); nodeIndex++) {
-			nodes[nodeIndex]->IncludeScan(info);
+			try {
+				nodes[nodeIndex]->IncludeScan(info);
+			}
+			catch (IncludeScanError& e) {
+				failedNodes.Add(nodeIndex);
+			}
 		}
 
 		for (; funcIndex < funcs.Size(); funcIndex++) {
-			funcs[funcIndex]->IncludeScan(info);
+			try {
+				funcs[funcIndex]->IncludeScan(info);
+			}
+			catch (IncludeScanError& e) {
+				failedFuncs.Add(nodeIndex);
+			}
 		}
 
 		for (; templateIndex < Symbol::templateSymbols.Size(); templateIndex++) {
@@ -115,7 +148,13 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			}
 		}
 	}
-	while (nodeIndex < nodes.Size() || funcIndex < funcs.Size() || templateIndex < Symbol::templateSymbols.Size());
+	while (
+		nodeIndex < nodes.Size() ||
+		funcIndex < funcs.Size() ||
+		!failedNodes.IsEmpty() ||
+		!failedFuncs.IsEmpty() ||
+		templateIndex < Symbol::templateSymbols.Size()
+	);
 }
 
 Set<ScanType> RootNode::Scan(ScanInfoStack& info) {

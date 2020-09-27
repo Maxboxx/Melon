@@ -83,6 +83,22 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 
 void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	node->IncludeScan(info);
+
+	const ScopeList nodeType = node->Type();
+
+	if (nodeType == ScopeList::undefined) {
+		throw IncludeScanError();
+	}
+
+	Scope type = Scope::Optional;
+	type.types = List<ScopeList>();
+	type.types.Get().Add(nodeType);
+
+	Symbol::TemplateSymbol ts;
+	ts.type = ScopeList().Add(type);
+	ts.scope = scope;
+	ts.file = file;
+	Symbol::templateSymbols.Add(ts);
 }
 
 Set<ScanType> SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {

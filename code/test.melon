@@ -10,6 +10,8 @@ struct A
 	end
 end
 
-A?: a = A()
+A?: a = nil
 
-int?: c = a?.c
+int: i = 5
+int: c = a?.c ?? i
+

@@ -7,6 +7,7 @@
 #include "Boxx/Stack.h"
 #include "Boxx/Tuple.h"
 #include "Boxx/Math.h"
+#include "Boxx/Error.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -224,6 +225,18 @@ namespace Melon {
 			///T Compile Assignment
 			/// Compiles an assignment
 			static CompiledNode CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file);
+		};
+
+		///B IncludeScanError
+		/// Used in include scan if more info is needed for the scan
+		class IncludeScanError : public Boxx::Error {
+		public:
+			IncludeScanError() : Error() {}
+			IncludeScanError(const char* const msg) : Error(msg) {}
+
+			virtual Boxx::String Name() const override {
+				return "IncludeScanError";
+			}
 		};
 	}
 }
