@@ -10,6 +10,7 @@
 #include "DotParser.h"
 #include "CustomInitParser.h"
 #include "TypeParser.h"
+#include "AsParser.h"
 
 #include "Melon/Nodes/BinaryOperatorNode.h"
 #include "Melon/Nodes/UnaryOperatorNode.h"
@@ -22,6 +23,7 @@
 #include "Melon/Nodes/DefaultNode.h"
 #include "Melon/Nodes/SafeUnwrapNode.h"
 #include "Melon/Nodes/SafeUnwrapEndNode.h"
+#include "Melon/Nodes/ConvertNode.h"
 
 using namespace Boxx;
 
@@ -43,29 +45,37 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 			Token token = info.Current();
 
 			if (IsBinaryOperator(token.type)) {
-				info.index++;
-
-				if (NodePtr valueNode2 = ParseValue(info)) {
-					Pointer<BinaryOperatorNode> node;
-
-					if (IsLogic(token.type)) {
-						node = new LogicNode(info.scopes, token.type, FileInfo(info.filename, token.line, info.statementNumber));
+				if (token.type == TokenType::As) {
+					if (NodePtr node = AsParser::Parse(info)) {
+						node.Cast<ConvertNode>()->node = nodes.Last();
+						nodes[nodes.Size() - 1] = node;
 					}
-					else if (token.type == TokenType::DoubleQuestion) {
-						node = new DefaultNode(info.scopes, FileInfo(info.filename, token.line, info.statementNumber));
-					}
-					else {
-						node = new BinaryOperatorNode(info.scopes, Scope(token.value), FileInfo(info.filename, token.line, info.statementNumber));
-					}
-
-					operators.Add(Pair<TokenType, Pointer<BinaryOperatorNode>>(token.type, node));
-					nodes.Add(valueNode2);
-
-					if (highestPrecedence < Precedence(token.type)) highestPrecedence = Precedence(token.type);
 				}
 				else {
-					info.index--;
-					break;
+					info.index++;
+
+					if (NodePtr valueNode2 = ParseValue(info)) {
+						Pointer<BinaryOperatorNode> node;
+
+						if (IsLogic(token.type)) {
+							node = new LogicNode(info.scopes, token.type, FileInfo(info.filename, token.line, info.statementNumber));
+						}
+						else if (token.type == TokenType::DoubleQuestion) {
+							node = new DefaultNode(info.scopes, FileInfo(info.filename, token.line, info.statementNumber));
+						}
+						else {
+							node = new BinaryOperatorNode(info.scopes, Scope(token.value), FileInfo(info.filename, token.line, info.statementNumber));
+						}
+
+						operators.Add(Pair<TokenType, Pointer<BinaryOperatorNode>>(token.type, node));
+						nodes.Add(valueNode2);
+
+						if (highestPrecedence < Precedence(token.type)) highestPrecedence = Precedence(token.type);
+					}
+					else {
+						info.index--;
+						break;
+					}
 				}
 			}
 			else {
@@ -105,7 +115,7 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 
 UByte ExpressionParser::Precedence(const TokenType op) {
 	switch (op) {
-		//case TokenType::As return 8;
+		case TokenType::As: return 8;
 
 		case TokenType::DoubleQuestion: return 7;
 
@@ -146,7 +156,7 @@ UByte ExpressionParser::Precedence(const TokenType op) {
 
 bool ExpressionParser::IsBinaryOperator(const TokenType op) {
 	switch (op) {
-		//case TokenType::As return true;
+		case TokenType::As: return true;
 
 		case TokenType::DoubleQuestion: return true;
 

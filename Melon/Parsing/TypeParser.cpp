@@ -44,7 +44,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 
 		ScopeList type = ScopeList().Add((Scope)first);
 
-		while (true) {
+		while (!info.EndOfFile()) {
 			if (info.Current().type != TokenType::Dot) break;
 			info.index++;
 

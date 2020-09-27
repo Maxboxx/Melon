@@ -17,6 +17,7 @@
 #include "Nodes/OptionalAssignValueNode.h"
 #include "Nodes/OptionalUnwrapNode.h"
 #include "Nodes/OptionalToBooleanNode.h"
+#include "Nodes/IntegerConvertNode.h"
 
 #include "ScopeList.h"
 
@@ -74,6 +75,15 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 					if (s.arguments[i] != symbol.arguments[i]) {
 						same = false;
 						break;
+					}
+				}
+
+				if (scope.name == Scope::As.name) {
+					for (UInt i = 0; i < s.returnValues.Size(); i++) {
+						if (s.returnValues[i] != symbol.returnValues[i]) {
+							same = false;
+							break;
+						}
 					}
 				}
 
@@ -1328,6 +1338,19 @@ void Symbol::Setup() {
 			intAssign.arguments.Add(ScopeList().Add(Scope(integer2.key)));
 			intAssign.symbolNode = new IntegerAssignNode(integer.value);
 			intSym.Add(Scope::Assign, intAssign, FileInfo());
+
+			Symbol intConvert = Symbol(SymbolType::Function);
+			intConvert.arguments.Add(ScopeList().Add(Scope(integer.key)));
+			intConvert.returnValues.Add(ScopeList().Add(Scope(integer2.key)));
+
+			Pointer<IntegerConvertNode> cn = new IntegerConvertNode();
+			cn->size = Math::Abs(integer.value);
+			cn->sign = integer.value < 0;
+			cn->targetSize = Math::Abs(integer2.value);
+
+			intConvert.symbolNode = cn;
+			intConvert.isExplicit = false;
+			intSym.Add(Scope::As, intConvert, FileInfo());
 
 			for (const Pair<Scope, InstructionType>& op : binOps) {
 				Symbol intOp = Symbol(SymbolType::Function);

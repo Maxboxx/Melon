@@ -105,6 +105,7 @@ namespace Melon {
 		Debug,
 		Include,
 		Global,
+		As,
 
 		// Logic
 		Not,

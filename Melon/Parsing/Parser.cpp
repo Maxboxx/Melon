@@ -145,7 +145,6 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::IDiv, "%/%/", true));
 	patterns.Add(TokenPattern(TokenType::Div, "%/", true));
 	patterns.Add(TokenPattern(TokenType::Mod, "%%", true));
-	//patterns.Add(TokenPattern(TokenType::Pow, "%^", true));
 
 	// Assign
 	patterns.Add(TokenPattern(TokenType::Assign, "%=", true));
@@ -198,6 +197,7 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Struct, "struct"));
 	patterns.Add(TokenPattern(TokenType::Enum, "enum"));
 	patterns.Add(TokenPattern(TokenType::Init, "init"));
+	patterns.Add(TokenPattern(TokenType::As, "as"));
 
 	patterns.Add(TokenPattern(TokenType::Const, "const"));
 	patterns.Add(TokenPattern(TokenType::Ref, "ref"));

@@ -12,6 +12,5 @@ end
 
 A?: a = nil
 
-int: i = 5
-int: c = a?.c ?? i
+int: c = a?.c ?? 5 as int
 
