@@ -114,7 +114,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 	if (info.Get().assign) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
-				const ScopeList scope = node->Type().Add(name);
+				const ScopeList scope = type.Add(name);
 				Symbol& s = Symbol::Find(scope.Pop(), file).Get(scope.Last(), file);
 
 				if (s.type == SymbolType::Variable) {
@@ -134,7 +134,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 	else if (info.Get().init) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
-				const ScopeList scope = node->Type().Add(name);
+				const ScopeList scope = type.Add(name);
 				Symbol& s = Symbol::Find(scope.Pop(), file).Get(scope.Last(), file);
 
 				if (s.type == SymbolType::Variable) {

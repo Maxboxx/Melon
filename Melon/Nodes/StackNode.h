@@ -22,6 +22,7 @@ namespace Melon {
 			///T Constructor
 			StackNode(const Boxx::Int stack);
 			StackNode(const Boxx::UInt regIndex, const Boxx::Int stack);
+			StackNode(const Kiwi::MemoryLocation& mem);
 			~StackNode();
 
 			virtual Symbols::ScopeList Type() const override;

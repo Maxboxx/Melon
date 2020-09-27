@@ -20,6 +20,8 @@
 #include "Melon/Nodes/NameNode.h"
 #include "Melon/Nodes/NilNode.h"
 #include "Melon/Nodes/DefaultNode.h"
+#include "Melon/Nodes/SafeUnwrapNode.h"
+#include "Melon/Nodes/SafeUnwrapEndNode.h"
 
 using namespace Boxx;
 
@@ -312,6 +314,8 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 
 NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool statement) {
 	if (NodePtr node = ParseRawValue(info, statement)) {
+		bool hasSafeUnwrap = false;
+
 		while (!info.EndOfFile()) {
 			if (NodePtr call = CallParser::Parse(info)) {
 				call.Cast<CallNode>()->node = node;
@@ -347,7 +351,23 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 				continue;
 			}
 
+			if (info.Current().type == TokenType::Question) {
+				hasSafeUnwrap = true;
+
+				Pointer<SafeUnwrapNode> unwrap = new SafeUnwrapNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+				unwrap->node = node;
+				info.index++;
+				node = unwrap;
+				continue;
+			}
+
 			break;
+		}
+
+		if (hasSafeUnwrap) {
+			Pointer<SafeUnwrapEndNode> unwrap = new SafeUnwrapEndNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			unwrap->node = node;
+			node = unwrap;
 		}
 
 		return node;

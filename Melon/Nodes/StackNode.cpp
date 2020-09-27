@@ -16,6 +16,14 @@ StackNode::StackNode(const Boxx::UInt regIndex, const Boxx::Int stack) : Node(Sc
 	this->stack = stack;
 }
 
+StackNode::StackNode(const MemoryLocation& mem) : Node(ScopeList(), FileInfo()) {
+	if (mem.reg.type == RegisterType::Register) {
+		this->regIndex = mem.reg.index;
+	}
+
+	this->stack = mem.offset;
+}
+
 StackNode::~StackNode() {
 
 }

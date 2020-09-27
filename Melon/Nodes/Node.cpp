@@ -28,13 +28,13 @@ Node::~Node() {
 
 ScopeList Node::Type() const {
 	return ScopeList::undefined;
-};
+}
 
 List<ScopeList> Node::Types() const {
 	List<ScopeList> types;
 	types.Add(Type());
 	return types;
-};
+}
 
 Set<ScanType> Node::Scan(ScanInfoStack& info) {
 	return Set<ScanType>();
