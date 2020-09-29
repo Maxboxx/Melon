@@ -1,7 +1,5 @@
 
-function f(int: i)
-	
-end
+int?: a = nil
 
-f(5)
+int:  b = a ?? 5
 

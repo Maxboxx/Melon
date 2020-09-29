@@ -24,7 +24,7 @@ ScopeList DefaultNode::Type() const {
 	ScopeList type = node1->Type();
 	type = Symbol::Find(type, file).Get(Scope::Value, file).varType;
 
-	if (type != node2->Type()) ErrorLog::Error(TypeError(TypeError::DefaultType, file));
+	if (!Symbol::HasImplicitConversion(node2->Type(), type)) ErrorLog::Error(TypeError(TypeError::DefaultType, file));
 
 	return type;
 }
