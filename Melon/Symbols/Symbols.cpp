@@ -311,10 +311,10 @@ FileInfo Symbol::GetFileInfo() const {
 }
 
 bool Symbol::Contains(const Scope& scope) const {
-	ErrorLog::AddMark();
+	ErrorLog::AddMarker();
 	Symbol s = Get(scope, FileInfo());
-	ErrorLog::RevertToMark();
-	ErrorLog::RemoveMark();
+	ErrorLog::RevertToMarker();
+	ErrorLog::RemoveMarker();
 
 	return s.type != SymbolType::None;
 }
@@ -633,10 +633,10 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& template
 	FileInfo file = templateSymbol.GetFileInfo();
 	file.statementNumber++;
 
-	ErrorLog::AddMark();
+	ErrorLog::AddMarker();
 	Symbol s = Symbol::FindNearestInNamespace(templateSymbol.scope, list, file);
-	ErrorLog::RevertToMark();
-	ErrorLog::RemoveMark();
+	ErrorLog::RevertToMarker();
+	ErrorLog::RemoveMarker();
 
 	if (s.type == SymbolType::Template) {
 		for (UInt i = 0; i < templateSymbol.templateArgs.Size(); i++) {
@@ -1019,14 +1019,26 @@ Symbol Symbol::FindOperator(const Scope& op, const ScopeList& type1, const Scope
 }
 
 Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types, const FileInfo& file) {
+	return FindFunction(func, types, file, 0, SymbolType::Function);
+}
+
+Symbol Symbol::FindMethod(const ScopeList& func, const List<ScopeList>& types, const FileInfo& file) {
+	return FindFunction(func, types, file, 1, SymbolType::Method);
+}
+
+Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types, const FileInfo& file, const UInt offset, const SymbolType type) {
 	Symbol s = Find(func, file);
 
+	Optional<Symbol> implicitFunc = nullptr;
+	bool multipleImplicit = false;
+
 	for (UInt i = 0; i < s.variants.Size(); i++) {
-		if (s.variants[i].type == SymbolType::Function && s.variants[i].arguments.Size() == types.Size()) {
+		if (s.variants[i].type == type && s.variants[i].arguments.Size() == types.Size() + offset) {
+			// Find exact match
 			bool match = true;
 
 			for (UInt a = 0; a < types.Size(); a++) {
-				if (types[a] != FindNearestType(func.Pop(), s.variants[i].arguments[a], file).scope) {
+				if (types[a] != FindNearestType(func.Pop(), s.variants[i].arguments[a + offset], file).scope) {
 					match = false;
 					break;
 				}
@@ -1041,7 +1053,38 @@ Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types,
 				sym.scope = list;
 				return sym;
 			}
+
+			// Find implict match
+			match = true;
+
+			for (UInt a = 0; a < types.Size(); a++) {
+				if (!HasImplicitConversion(types[a], FindNearestType(func.Pop(), s.variants[i].arguments[a + offset], file).scope)) {
+					match = false;
+					break;
+				}
+			}
+
+			if (match) {
+				if (implicitFunc) multipleImplicit = true;
+
+				Symbol sym = s.variants[i];
+
+				ScopeList list = func;
+				list[list.Size() - 1].variant = i;
+
+				sym.scope = list;
+				implicitFunc = sym;
+			}
 		}
+	}
+
+	if (multipleImplicit) {
+		ErrorLog::Error(SymbolError("ambig error", file)); // TODO: Update error message
+		return Symbol();
+	}
+
+	if (implicitFunc) {
+		return implicitFunc.Get();
 	}
 
 	List<String> args;
@@ -1055,40 +1098,11 @@ Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types,
 	return Symbol();
 }
 
-Symbol Symbol::FindMethod(const ScopeList& func, const List<ScopeList>& types, const FileInfo& file) {
-	Symbol s = Find(func, file);
-
-	for (UInt i = 0; i < s.variants.Size(); i++) {
-		if (s.variants[i].type == SymbolType::Method && s.variants[i].arguments.Size() == types.Size() + 1) {
-			bool match = true;
-
-			for (UInt a = 0; a < types.Size(); a++) {
-				if (types[a] != FindNearest(func, s.variants[i].arguments[a + 1], file).scope) {
-					match = false;
-					break;
-				}
-			}
-
-			if (match) {
-				Symbol sym = s.variants[i];
-
-				ScopeList list = func;
-				list[list.Size() - 1].variant = i;
-
-				sym.scope = list;
-				return sym;
-			}
-		}
-	}
-
-	return Symbol();
-}
-
 Symbol Symbol::FindImplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file) {
 	Symbol convert = FindExplicitConversion(from, to, file);
 
 	if (convert.isExplicit) {
-		ErrorLog::Error(SymbolError("implicit convert error", file));
+		ErrorLog::Error(SymbolError("implicit convert error", file)); // TODO: Update error message
 		return Symbol();
 	}
 
@@ -1136,8 +1150,28 @@ Symbol Symbol::FindExplicitConversion(const ScopeList& from, const ScopeList& to
 		}
 	}
 	
-	ErrorLog::Error(SymbolError("explicit convert error", file));
+	ErrorLog::Error(SymbolError("explicit convert error", file)); // TODO: Update error message
 	return Symbol();
+}
+
+bool Symbol::HasImplicitConversion(const ScopeList& from, const ScopeList& to) {
+	if (from == to) return true;
+
+	ErrorLog::AddMarker();
+	Symbol s = FindImplicitConversion(from, to, FileInfo());
+	ErrorLog::Revert();
+
+	return s.type == SymbolType::Function || s.type == SymbolType::Method;
+}
+
+bool Symbol::HasExplicitConversion(const ScopeList& from, const ScopeList& to) {
+	if (from == to) return true;
+
+	ErrorLog::AddMarker();
+	Symbol s = FindExplicitConversion(from, to, FileInfo());
+	ErrorLog::Revert();
+
+	return s.type == SymbolType::Function || s.type == SymbolType::Method;
 }
 
 Mango Symbol::ToMango(const bool ignoreBasic) {

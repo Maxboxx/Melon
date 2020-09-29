@@ -118,12 +118,9 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			args.Add(values[i].key);
 
 			if (!refAssign) {
-				Symbol s = Symbol::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file);
-
 				info.important = true;
-				CompiledNode c1 = s.symbolNode->Compile(nodes, info);
+				c.AddInstructions(CompileAssignment(vars[i], values[i].value, info, vars[i]->file).instructions);
 				info.important = false;
-				c.AddInstructions(c1.instructions);
 
 				if (i + 1 >= values.Size()) {
 					UInt size = info.stack.top + Symbol::Find(values[i].key, values[i].value->file).size;

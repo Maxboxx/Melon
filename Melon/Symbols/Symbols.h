@@ -344,11 +344,16 @@ namespace Melon {
 
 			///T Find function
 			/// Finds the overload for the specified function that accepts the specified argument types
-			static Symbol FindFunction(const ScopeList& scopes, const Boxx::List<ScopeList>& argTypes, const FileInfo& file);
+			static Symbol FindFunction(const ScopeList& func, const Boxx::List<ScopeList>& argTypes, const FileInfo& file);
 
 			///T Find method
 			/// Finds the overload for the specified method that accepts the specified argument types
-			static Symbol FindMethod(const ScopeList& scopes, const Boxx::List<ScopeList>& argTypes, const FileInfo& file);
+			static Symbol FindMethod(const ScopeList& func, const Boxx::List<ScopeList>& argTypes, const FileInfo& file);
+
+		private:
+			static Symbol FindFunction(const ScopeList& func, const Boxx::List<ScopeList>& argTypes, const FileInfo& file, const Boxx::UInt offset, const SymbolType type);
+
+		public:
 
 			///T Find Implicit Conversion
 			/// Finds the implicit conversion operator for a specific type
@@ -357,6 +362,14 @@ namespace Melon {
 			///T Find Explicit Conversion
 			/// Finds the implicit or explicit conversion operator for a specific type
 			static Symbol FindExplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file);
+
+			///T Has Implicit Conversion
+			/// Checks if an implicit conversion operator for a specific type exists
+			static bool HasImplicitConversion(const ScopeList& from, const ScopeList& to);
+
+			///T Has Explicit Conversion
+			/// Checks if an implicit or explicit conversion operator for a specific type exists
+			static bool HasExplicitConversion(const ScopeList& from, const ScopeList& to);
 
 			///T To mango
 			/// Convert the symbol table to mango

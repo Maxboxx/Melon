@@ -1,16 +1,7 @@
 
-struct A
-	byte, short, int, long: a, b, c, d
+function f(int: i)
 	
-	function init()
-		self.a = 9
-		self.b = 9
-		self.c = 9
-		self.d = 9
-	end
 end
 
-A?: a = nil
-
-int: c = a?.c ?? 5 as int
+f(5)
 

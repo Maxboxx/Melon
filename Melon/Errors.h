@@ -37,14 +37,17 @@ namespace Melon {
 		///T Fatal
 		static void Fatal(const class CompileError& error);
 
-		///T Add Mark
-		static void AddMark();
+		///T Add Marker
+		static void AddMarker();
 
-		///T Remove Mark
-		static void RemoveMark();
+		///T Remove Marker
+		static void RemoveMarker();
 
-		///T Revert To Mark
-		static void RevertToMark();
+		///T Revert To Marker
+		static void RevertToMarker();
+
+		///T Revert and Remove mark
+		static void Revert();
 
 		///T Log Errors
 		static void LogErrors();

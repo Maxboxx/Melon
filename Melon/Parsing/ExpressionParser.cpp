@@ -106,7 +106,7 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 			return nodes[0];
 		}
 
-		return valueNode;
+		return nodes[0];
 	}
 
 	info.index = startIndex;
@@ -253,11 +253,11 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 	}
 
 	if (statement) {
-		ErrorLog::AddMark();
+		ErrorLog::AddMarker();
 
 		try {
 			if (NodePtr node = IfExpressionParser::Parse(info, true)) {
-				ErrorLog::RemoveMark();
+				ErrorLog::RemoveMarker();
 				return node;
 			}
 		}
@@ -267,7 +267,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 
 		try {
 			if (NodePtr node = SwitchExpressionParser::Parse(info, true)) {
-				ErrorLog::RemoveMark();
+				ErrorLog::RemoveMarker();
 				return node;
 			}
 		}
@@ -275,8 +275,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 			info.index = startIndex;
 		}
 
-		ErrorLog::RevertToMark();
-		ErrorLog::RemoveMark();
+		ErrorLog::Revert();
 	}
 	else {
 		if (NodePtr node = IfExpressionParser::Parse(info)) {

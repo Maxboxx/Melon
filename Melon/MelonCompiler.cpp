@@ -152,10 +152,10 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			throw CompileError("", FileInfo());
 		}
 
-		ErrorLog::AddMark();
+		ErrorLog::AddMarker();
 		info.root.IncludeScan(info);
-		ErrorLog::RevertToMark();
-		ErrorLog::RemoveMark();
+		ErrorLog::RevertToMarker();
+		ErrorLog::RemoveMarker();
 
 		info.root.Scan();
 

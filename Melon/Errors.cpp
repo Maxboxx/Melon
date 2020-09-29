@@ -44,18 +44,23 @@ void ErrorLog::Fatal(const CompileError& error) {
 	throw FatalLoggerError();
 }
 
-void ErrorLog::AddMark() {
+void ErrorLog::AddMarker() {
 	markers.Add(errors.Size());
 }
 
-void ErrorLog::RemoveMark() {
+void ErrorLog::RemoveMarker() {
 	markers.RemoveAt(markers.Size() - 1);
 }
 
-void ErrorLog::RevertToMark() {
+void ErrorLog::RevertToMarker() {
 	if (markers.Last() < errors.Size()) {
 		errors.RemoveAt(markers.Last(), errors.Size() - markers.Last());
 	}
+}
+
+void ErrorLog::Revert() {
+	RevertToMarker();
+	RemoveMarker();
 }
 
 void ErrorLog::LogErrors() {

@@ -1,5 +1,7 @@
 #include "Node.h"
 
+#include "ConvertNode.h"
+
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
@@ -75,7 +77,12 @@ CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& in
 	if (assign.type != SymbolType::None) {
 		List<NodePtr> nodes;
 		nodes.Add(var);
-		nodes.Add(value);
+
+		Pointer<ConvertNode> cn = new ConvertNode(value->scope, value->file);
+		cn->isExplicit = false;
+		cn->node = value;
+		cn->type = assign.arguments[0];
+		nodes.Add(cn);
 
 		return assign.symbolNode->Compile(nodes, info);
 	}
