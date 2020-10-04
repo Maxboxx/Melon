@@ -37,7 +37,11 @@ bool GuardNode::IsScope() const {
 }
 
 CompiledNode GuardNode::Compile(CompileInfo& info) {
+	const UInt frame = info.stack.frame;
+
 	CompiledNode compiled = cond->Compile(info);
+
+	info.stack.PopExpr(frame, compiled);
 
 	Instruction ne = Instruction(InstructionType::Ne, 1);
 	ne.arguments.Add(compiled.argument);

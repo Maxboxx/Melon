@@ -149,7 +149,10 @@ void LoopNode::CompileIfSegment(CompiledNode& compiled, CompileInfo& info, Segme
 
 	LoopSegment segment = segments[segmentInfo.index];
 
+	const UInt frame = info.stack.frame;
 	CompiledNode cond = segment.condition->Compile(info);
+	info.stack.PopExpr(frame, cond);
+	
 	compiled.AddInstructions(cond.instructions);
 
 	Instruction eq = Instruction(InstructionType::Eq, 1);
@@ -223,7 +226,9 @@ void LoopNode::CompileWhileStart(CompiledNode& compiled, CompileInfo& info, Segm
 	loopInfo.loopLbl = info.label++;
 	compiled.instructions.Add(lbl);
 
+	const UInt frame = info.stack.frame;
 	CompiledNode cond = segments[segmentInfo.index].condition->Compile(info);
+	info.stack.PopExpr(frame, cond);
 	compiled.AddInstructions(cond.instructions);
 
 	Instruction eq = Instruction(InstructionType::Eq, 1);
@@ -306,6 +311,8 @@ void LoopNode::CompileForSegment(CompiledNode& compiled, CompileInfo& info, Segm
 void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
 	bool isLast = IsSegmentLast(segmentInfo.index);
 
+	const UInt frame = info.stack.frame;
+
 	Pointer<ForConditionNode> cond = segments[segmentInfo.index].condition.Cast<ForConditionNode>();
 	compiled.AddInstructions(cond->loopInit->Compile(info).instructions);
 
@@ -363,6 +370,7 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 		}
 	}
 
+	info.stack.PopExpr(frame, compiledCond);
 	compiled.AddInstructions(compiledCond.instructions);
 
 	Instruction eq = Instruction(InstructionType::Eq, 1);

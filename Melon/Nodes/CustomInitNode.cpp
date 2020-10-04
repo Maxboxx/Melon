@@ -34,7 +34,7 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 
 	UInt offset = s.size;
 
-	info.stack.Push(s.size);
+	info.stack.PushExpr(s.size, c);
 
 	UInt index = info.index;
 
@@ -55,7 +55,6 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 
 	c.argument = Argument(MemoryLocation(info.stack.Offset()));
 	info.stack.Pop(s.size);
-
 	return c;
 }
 

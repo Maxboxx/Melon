@@ -86,7 +86,9 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 		}
 	}
 
+	const UInt frame = info.stack.frame;
 	CompiledNode cond = condition->Compile(info);
+	info.stack.PopExpr(frame, cond);
 	compiled.AddInstructions(cond.instructions);
 
 	Instruction comp = Instruction(InstructionType::Eq, 1);

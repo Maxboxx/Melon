@@ -36,7 +36,7 @@ ScopeList SafeUnwrapEndNode::Type() const  {
 CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 	CompiledNode cn = node->Compile(info);
 
-	info.stack.Push(cn.size + 1);
+	info.stack.PushExpr(cn.size + 1, cn);
 	Argument arg = Argument(MemoryLocation(info.stack.Offset()));
 
 	Instruction mov1 = Instruction(InstructionType::Mov, 1);

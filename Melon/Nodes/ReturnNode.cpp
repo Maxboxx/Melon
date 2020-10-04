@@ -3,11 +3,14 @@
 #include "StackNode.h"
 #include "TypeNode.h"
 
+#include "Kiwi/Kiwi.h"
+
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
+using namespace Kiwi;
 
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
@@ -74,6 +77,9 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 		c.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
 		info.important = false;
 	}
+
+	info.stack.PopExpr(0, c);
+	c.instructions.Add(Instruction(InstructionType::Ret));
 
 	return c;
 }

@@ -28,6 +28,26 @@ namespace Melon {
 		///T NodePtr
 		typedef Boxx::Pointer<class Node> NodePtr;
 
+		///B CompiledNode
+		/// Contains info about a compiled node
+		struct CompiledNode {
+			///T Instructions
+			/// All instructions for the node
+			Boxx::List<Optimizing::OptimizerInstruction> instructions;
+
+			///T Argument
+			/// The argument to use if the node returns something
+			Kiwi::Argument argument;
+
+			///T Size
+			/// The size in bytes of the returned value;
+			Boxx::UByte size;
+
+			///T Add instruction
+			/// Adds a list of instructions to the instruction list
+			void AddInstructions(const Boxx::List<Optimizing::OptimizerInstruction>& instructions);
+		};
+
 		///B StackPtr
 		/// Contains information about the stack pointer
 		struct StackPtr {
@@ -68,6 +88,27 @@ namespace Melon {
 				frame -= bytes;
 			}
 
+			///T Push Expression
+			/// Pushes the top of the stack and also pushes the frame if it runs out of space
+			void PushExpr(const Boxx::UInt bytes, CompiledNode& cn) {
+				top += bytes;
+
+				if (top > frame) {
+					cn.instructions.Add(Kiwi::Instruction(Kiwi::InstructionType::Push, top - frame));
+					frame = top;
+				}
+			}
+
+			///T Pop Expression
+			/// Pops the frame back to a previous position
+			void PopExpr(const Boxx::UInt frame, CompiledNode& cn) {
+				if (this->frame > frame) {
+					cn.instructions.Add(Kiwi::Instruction(Kiwi::InstructionType::Pop, this->frame - frame));
+				}
+
+				this->frame = frame;
+			}
+
 			///T Offset
 			/// Gets the offset between the top and frame
 			Boxx::Long Offset() const {
@@ -95,26 +136,6 @@ namespace Melon {
 
 			///T Important stack values
 			bool important = false;
-		};
-
-		///B CompiledNode
-		/// Contains info about a compiled node
-		struct CompiledNode {
-			///T Instructions
-			/// All instructions for the node
-			Boxx::List<Optimizing::OptimizerInstruction> instructions;
-
-			///T Argument
-			/// The argument to use if the node returns something
-			Kiwi::Argument argument;
-
-			///T Size
-			/// The size in bytes of the returned value;
-			Boxx::UByte size;
-
-			///T Add instruction
-			/// Adds a list of instructions to the instruction list
-			void AddInstructions(const Boxx::List<Optimizing::OptimizerInstruction>& instructions);
 		};
 
 		///B ScanType

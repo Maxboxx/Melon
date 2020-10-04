@@ -62,19 +62,15 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	if (this->expr) 
 		cn.size = Symbol::Find(Type(), file).size;
 
-	info.stack.Push(Symbol::Find(this->match->Type(), this->match->file).size);
+	info.stack.PushExpr(Symbol::Find(this->match->Type(), this->match->file).size, cn);
 	Pointer<StackNode> matchStack = new StackNode(info.stack.Offset());
 	matchStack->type = this->match->Type();
 
 	List<ScopeList> args;
 	args.Add(this->match->Type());
 
-	List<NodePtr> nodeArgs;
-	nodeArgs.Add(matchStack);
-	nodeArgs.Add(this->match);
-	CompiledNode match = Symbol::FindFunction(this->match->Type().Add(Scope::Assign), args, this->match->file).symbolNode->Compile(nodeArgs, info);
-
-	cn.AddInstructions(match.instructions);
+	const UInt frame = info.stack.frame;
+	cn.AddInstructions(CompileAssignment(matchStack, this->match, info, this->match->file).instructions);
 
 	List<UInt> endJumps;
 	List<List<UInt>> exprJumps;
@@ -103,6 +99,10 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 		exprJumps.Add(jumps);
 	}
 
+	if (!this->expr) {
+		info.stack.PopExpr(frame, cn);
+	}
+
 	info.stack.Pop(Symbol::Find(this->match->Type(), this->match->file).size);
 
 	Instruction defJmp = Instruction(InstructionType::Jmp, 0);
@@ -110,7 +110,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(defJmp);
 
 	if (expr)
-		info.stack.Push(Symbol::Find(Type(), file).size);
+		info.stack.PushExpr(Symbol::Find(Type(), file).size, cn);
 
 	Argument result = Argument(MemoryLocation(info.stack.Offset()));
 

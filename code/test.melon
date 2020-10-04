@@ -1,5 +1,26 @@
 
-int?: a = nil
+struct A
+	int: x, y, z
+	long: a, b
 
-int:  b = a ?? 5
+	function init()
+		self.x, self.y, self.z = 1, 2, 3
+		self.a, self.b = 4, 5
+	end
+	
+	static function operator A: +(A: a1, A: a2)
+		return A {
+			x = a1.x + a2.x,
+			y = a1.y + a2.y,
+			z = a1.z + a2.z,
+			
+			a = a1.a + a2.a,
+			b = a1.b + a2.b
+		}
+	end
+end
+
+A: a, b = A(), A()
+
+A: c = a + b
 

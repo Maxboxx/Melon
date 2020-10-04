@@ -20,8 +20,10 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	info.important = false;
 
 	CompiledNode c1 = nodes[0]->Compile(info);
+	const UInt frame = info.stack.frame;
 	CompiledNode c2 = nodes[1]->Compile(info);
 	c1.AddInstructions(c2.instructions);
+	c1.argument = OffsetArgument(c1.argument, frame, info);
 
 	const ScopeList type1 = nodes[0]->Type();
 	const ScopeList type2 = nodes[1]->Type();

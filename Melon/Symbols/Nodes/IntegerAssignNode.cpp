@@ -24,6 +24,7 @@ CompiledNode IntegerAssignNode::Compile(const List<NodePtr>& nodes, CompileInfo&
 	info.important = false;
 
 	CompiledNode c1 = nodes[0]->Compile(info);
+	const UInt frame = info.stack.frame;
 	CompiledNode c2 = nodes[1]->Compile(info);
 
 	OptimizerInstruction mov = Instruction(InstructionType::Mov);
@@ -32,7 +33,7 @@ CompiledNode IntegerAssignNode::Compile(const List<NodePtr>& nodes, CompileInfo&
 	mov.instruction.signs[0] = Symbol::Find(nodes[0]->Type(), nodes[0]->file).isSigned;
 	mov.instruction.signs[1] = Symbol::Find(nodes[1]->Type(), nodes[1]->file).isSigned;
 	mov.important = important;
-	mov.instruction.arguments.Add(c1.argument);
+	mov.instruction.arguments.Add(OffsetArgument(c1.argument, frame, info));
 	mov.instruction.arguments.Add(c2.argument);
 
 	c1.AddInstructions(c2.instructions);

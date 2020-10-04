@@ -16,8 +16,8 @@ using namespace Kiwi;
 
 using namespace Melon;
 
-// TODO: Assign compile/scan function
-// TODO: Swap struct values
+// TODO: Struct member self type check
+// TODO: Remove integer assignment to different types
 
 int main() {
 	try {

@@ -16,11 +16,12 @@ CompiledNode BooleanAssignNode::Compile(const List<NodePtr>& nodes, CompileInfo&
 	info.important = false;
 
 	CompiledNode c1 = nodes[0]->Compile(info);
+	const UInt frame = info.stack.frame;
 	CompiledNode c2 = nodes[1]->Compile(info);
 
 	OptimizerInstruction mov = Instruction(InstructionType::Mov, 1);
 	mov.important = important;
-	mov.instruction.arguments.Add(c1.argument);
+	mov.instruction.arguments.Add(OffsetArgument(c1.argument, frame, info));
 	mov.instruction.arguments.Add(c2.argument);
 
 	c1.AddInstructions(c2.instructions);

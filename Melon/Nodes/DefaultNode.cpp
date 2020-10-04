@@ -35,7 +35,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 
 	List<UInt> jumps;
 
-	info.stack.Push(Symbol::Find(Type(), file).size);
+	info.stack.PushExpr(Symbol::Find(Type(), file).size, cn);
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	CompiledNode c1 = node1->Compile(info);

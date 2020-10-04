@@ -161,6 +161,8 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 
 	info.stack.Push(retSize);
 	info.stack.PushFrame(pushSize);
+	
+	const UInt frame = info.stack.frame;
 
 	UInt stackIndex = info.stack.Offset();
 
@@ -252,20 +254,24 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		c.size = info.stack.ptrSize;
 	}
 
+	info.stack.PopExpr(frame, c);
+
 	Instruction inst = Instruction(InstructionType::Call);
 	inst.arguments.Add(Argument(ArgumentType::Function, s.size));
 	c.instructions.Add(inst);
 
-	if (pushSize > 0) {
+	// TODO: Uncomment for call statements
+	/*if (pushSize > 0) {
 		c.instructions.Add(Instruction(InstructionType::Pop, pushSize));
 	}
 
-	info.stack.PopFrame(pushSize);
+	info.stack.PopFrame(pushSize);*/
+
 	info.stack.Pop(argSize);
 
 	c.argument = Argument(MemoryLocation(info.stack.Offset()));
 
-	info.stack = stack;
+	info.stack.top = stack.top;
 	return c;
 }
 

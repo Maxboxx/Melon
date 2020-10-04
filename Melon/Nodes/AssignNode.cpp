@@ -75,12 +75,11 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 				varSize += Symbol::Find(newVars->GetType(i), file).size;
 			}
 		}
-
-		//info.stack.Pop(varSize);
 	}
 
 	List<Pair<ScopeList, NodePtr>> values = Values();
 	List<UInt> returnSizes;
+	const UInt frame = info.stack.frame;
 
 	for (UInt i = 0; i < vars.Size(); i++) {
 		const UInt regIndex = info.index; 
@@ -142,10 +141,8 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 		}
 
 		info.index = regIndex;
-	}
 
-	if (newVars) {
-		//info.stack.Push(varSize);
+		info.stack.PopExpr(frame, c);
 	}
 
 	return c;
