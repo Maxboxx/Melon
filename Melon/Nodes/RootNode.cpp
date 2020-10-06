@@ -194,9 +194,15 @@ Mango RootNode::ToMango() const {
 StringBuilder RootNode::ToMelon(const UInt indent) const {
 	StringBuilder sb;
 
+	bool prevSpace = false;
+
 	for (const NodePtr& node : nodes) {
+		bool hasSpace = StatementsNode::HasSpaceAround(node);
+		if (hasSpace && !prevSpace) sb += "\n";
 		sb += node->ToMelon(indent);
+		if (hasSpace) sb += "\n";
 		sb += "\n";
+		prevSpace = hasSpace;
 	}
 
 	return sb;

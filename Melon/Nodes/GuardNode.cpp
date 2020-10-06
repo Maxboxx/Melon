@@ -208,13 +208,14 @@ StringBuilder GuardNode::ToMelon(const UInt indent) const {
 		sb += else_->ToMelon(indent + 1);
 		sb += "\n";
 		sb += String('\t').Repeat(indent);
-		sb += "end\n";
-	}
-	else {
-		sb += "\n";
+		sb += "end";
 	}
 
-	sb += String('\t').Repeat(indent);
-	sb += continue_->ToMelon(indent);
+	if (!continue_.Cast<StatementsNode>()->statements.IsEmpty()) {
+		sb += "\n\n";
+		sb += String('\t').Repeat(indent);
+		sb += continue_->ToMelon(indent);
+	}
+
 	return sb;
 }

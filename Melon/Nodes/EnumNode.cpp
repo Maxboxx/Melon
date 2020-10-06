@@ -32,6 +32,8 @@ StringBuilder EnumNode::ToMelon(const UInt indent) const {
 	for (UInt i = 0; i < values.Size(); i++) {
 		sb += tabs;
 		sb += values[i].ToString();
+		sb += " = ";
+		sb += String::ToString(symbol.Get(values[i], file).value);
 		sb += i != values.Size() - 1 ? ",\n" : "\n";
 	}
 

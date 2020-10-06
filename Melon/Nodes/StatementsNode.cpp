@@ -1,5 +1,14 @@
 #include "StatementsNode.h"
 
+#include "LoopNode.h";
+#include "SwitchNode.h";
+#include "RepeatNode.h";
+#include "GuardNode.h";
+#include "FunctionNode.h";
+#include "StructNode.h";
+#include "EnumNode.h";
+#include "DoNode.h";
+
 #include "Melon/Parsing/Parser.h"
 
 using namespace Boxx;
@@ -78,14 +87,36 @@ StringBuilder StatementsNode::ToMelon(const UInt indent) const {
 	StringBuilder sb;
 	String tabs = String('\t').Repeat(indent);
 
+	bool prevSpace = false;
+
 	for (UInt i = 0; i < statements.Size(); i++) {
+		bool hasSpace = StatementsNode::HasSpaceAround(statements[i]);
+
 		if (i > 0) {
+			if (hasSpace || prevSpace) sb += "\n";
 			sb += "\n";
 			sb += tabs;
 		}
 
 		sb += statements[i]->ToMelon(indent);
+		prevSpace = hasSpace;
 	}
 
 	return sb;
+}
+
+bool StatementsNode::HasSpaceAround(const NodePtr& node) {
+	if (node.Is<LoopNode>()) return true;
+	if (node.Is<SwitchNode>()) return true;
+	if (node.Is<DoNode>()) return true;
+	if (node.Is<RepeatNode>()) return true;
+	if (node.Is<FunctionNode>()) return true;
+	if (node.Is<StructNode>()) return true;
+	if (node.Is<EnumNode>()) return true;
+
+	if (Pointer<GuardNode> guardNode = node.Cast<GuardNode>()) {
+		return guardNode->else_ != nullptr;
+	}
+
+	return false;
 }

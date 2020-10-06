@@ -47,6 +47,8 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 	for (const Scope& var : vars) {
 		sb += "\n";
 		sb += tabs;
+		sb += symbol.Get(var, file).varType.ToString();
+		sb += ": ";
 		sb += var.ToString();
 	}
 

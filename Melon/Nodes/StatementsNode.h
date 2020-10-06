@@ -22,6 +22,8 @@ namespace Melon {
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
 			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
+
+			static bool HasSpaceAround(const NodePtr& node);
 		};
 	}
 }

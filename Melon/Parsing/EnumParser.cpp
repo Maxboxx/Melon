@@ -119,6 +119,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	enumSymbol.Add(Scope::NotEqual, ne, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	Symbol::Add(info.scopes, enumSymbol, FileInfo(info.filename, enumLine, info.statementNumber), true);
+	en->symbol = Symbol::Find(enumSymbol.scope, FileInfo(info.filename, enumLine, info.statementNumber));
 
 	info.index++;
 

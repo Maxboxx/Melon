@@ -153,11 +153,23 @@ Mango FunctionNode::ToMango() const {
 
 StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "function ";
-	sb += func.Last().ToString();
+
+	for (UInt i = 0; i < s.returnValues.Size(); i++) {
+		if (i > 0) sb += ", ";
+		sb += s.returnValues[0].ToString();
+	}
+
+	if (!s.returnValues.IsEmpty()) {
+		sb += ": ";
+	}
+
+	sb += func.Pop().Last().ToString();
 	sb += "(";
 
 	for (UInt i = 0; i < argNames.Size(); i++) {
 		if (i > 0) sb += ", ";
+		sb += s.Get(argNames[i], file).varType.ToString();
+		sb += ": ";
 		sb += argNames[i].ToString();
 	}
 

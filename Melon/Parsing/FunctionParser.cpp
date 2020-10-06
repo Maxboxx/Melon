@@ -165,9 +165,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 
 		info.statementNumber++;
 
-		Pointer<EmptyNode> en = new EmptyNode();
-		en->node = func;
-		return en;
+		return func;
 	}
 
 	info.index = startIndex;
