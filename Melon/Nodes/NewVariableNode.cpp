@@ -138,3 +138,21 @@ Mango NewVariableNode::ToMango() const {
 
 	return mango;
 }
+
+StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
+	StringBuilder sb;
+
+	for (UInt i = 0; i < types.Size(); i++) {
+		if (i > 0) sb += ", ";
+		sb += types[i].ToString();
+	}
+
+	sb += ": ";
+
+	for (UInt i = 0; i < names.Size(); i++) {
+		if (i > 0) sb += ", ";
+		sb += names[i].ToString();
+	}
+
+	return sb;
+}

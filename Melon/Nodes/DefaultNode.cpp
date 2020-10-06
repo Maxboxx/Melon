@@ -118,3 +118,10 @@ Mango DefaultNode::ToMango() const {
 	mango.Add(node2->ToMango());
 	return mango;
 }
+
+StringBuilder DefaultNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = node1->ToMelon(indent);
+	sb += " ?? ";
+	sb += node2->ToMelon(indent);
+	return sb;
+}

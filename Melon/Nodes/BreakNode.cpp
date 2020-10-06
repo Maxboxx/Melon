@@ -71,3 +71,16 @@ Mango BreakNode::ToMango() const {
 
 	return m;
 }
+
+StringBuilder BreakNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = String(scopeWise ? "break!" : (isBreak ? "break" : "abort"));
+	sb += " ";
+	sb += String::ToString(scopeWise ? (Int)loops - 1 : (Int)loops);
+
+	if (isBreak && !scopeWise) {
+		sb += ", ";
+		sb += String::ToString((bool)breakBool);
+	}
+
+	return sb;
+}

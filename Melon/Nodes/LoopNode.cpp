@@ -719,3 +719,42 @@ Mango LoopNode::ToMango() const {
 
 	return mango;
 }
+
+StringBuilder LoopNode::ToMelon(const UInt indent) const {
+	StringBuilder sb;
+	String tabs1 = String('\t').Repeat(indent);
+	String tabs2 = String('\t').Repeat(indent + 1);
+
+	for (UInt i = 0; i < segments.Size(); i++) {
+		if (i > 0) {
+			sb += segments[i].also ? "also" : "else";
+		}
+
+		switch (segments[i].type) {
+			case LoopType::If:    sb += "if ";    break;
+			case LoopType::While: sb += "while "; break;
+			case LoopType::For:   sb += "for ";   break;
+		}
+
+		if (segments[i].type != LoopType::None) {
+			sb += segments[i].condition->ToMelon(indent);
+			
+			if (segments[i].type == LoopType::If) {
+				sb += " then";
+			}
+			else {
+				sb += " do";
+			}
+		}
+
+		sb += "\n";
+		sb += tabs2;
+		sb += segments[i].statements->ToMelon(indent + 1);
+		sb += "\n";
+		sb += tabs1;
+	}
+
+	sb += "end";
+
+	return sb;
+}

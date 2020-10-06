@@ -48,6 +48,10 @@ Set<ScanType> RefNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
 }
 
-Boxx::Mango RefNode::ToMango() const {
+Mango RefNode::ToMango() const {
 	return node->ToMango();
+}
+
+StringBuilder RefNode::ToMelon(const UInt indent) const {
+	return node->ToMelon(indent);
 }

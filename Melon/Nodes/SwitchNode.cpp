@@ -402,3 +402,45 @@ Mango SwitchNode::ToMango() const {
 
 	return mango;
 }
+
+StringBuilder SwitchNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = "switch ";
+	sb += match->ToMelon(indent);
+	
+	String tabs1 = String('\t').Repeat(indent + 1);
+	String tabs2 = String('\t').Repeat(indent + 2);
+
+	for (UInt i = 0; i < nodes.Size(); i++) {
+		sb += "\n";
+		sb += tabs1;
+		sb += "case ";
+
+		for (UInt u = 0; u < cases[i].Size(); u++) {
+			if (u > 0) sb += ", ";
+			sb += cases[i][u]->ToMelon(indent + 1);
+		}
+
+		sb += " then\n";
+		sb += tabs2;
+		sb += nodes[i]->ToMelon(indent + 2);
+		sb += "\n";
+		sb += tabs1;
+		sb += "end\n";
+	}
+
+	if (def) {
+		sb += "\n";
+		sb += tabs1;
+		sb += "default\n";
+		sb += tabs2;
+		sb += def->ToMelon(indent + 2);
+		sb += "\n";
+		sb += tabs1;
+		sb += "end\n";
+	}
+
+	sb += String('\t').Repeat(indent);
+	sb += "end";
+
+	return sb;
+}

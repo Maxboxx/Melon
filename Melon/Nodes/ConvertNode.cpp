@@ -79,3 +79,14 @@ Mango ConvertNode::ToMango() const {
 	mango.Add("explicit", isExplicit);
 	return mango;
 }
+
+StringBuilder ConvertNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = node->ToMelon(indent);
+
+	if (isExplicit) {
+		sb += " as ";
+		sb += Type().ToString();
+	}
+
+	return sb;
+}

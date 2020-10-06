@@ -78,6 +78,10 @@ CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 			options.outputSymbols = outputOptions["symbols"];
 		}
 
+		if (outputOptions.Contains("melon")) {
+			options.outputMelon = outputOptions["melon"];
+		}
+
 		if (outputOptions.Contains("kiwi")) {
 			options.outputKiwi = outputOptions["kiwi"];
 		}
@@ -181,6 +185,12 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			FileWriter ast = FileWriter(compOptions.outputDirectory + compOptions.outputName + "_ast.mango");
 			ast.Write(info.root.ToString());
 			ast.Close();
+		}
+
+		if (compOptions.outputMelon) {
+			FileWriter melon = FileWriter(compOptions.outputDirectory + compOptions.outputName + "_optimized.melon");
+			melon.Write(info.root.ToMelon(0).ToString());
+			melon.Close();
 		}
 
 		// ------------- Kiwi ---------------

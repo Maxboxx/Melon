@@ -23,8 +23,6 @@ namespace Melon {
 			AssignNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~AssignNode();
 
-			static bool IsAssignable(const NodePtr& node);
-
 			Boxx::List<Boxx::Pair<Symbols::ScopeList, NodePtr>> Values() const;
 
 			virtual Boxx::UInt GetSize() const override;
@@ -32,6 +30,7 @@ namespace Melon {
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
 			virtual Boxx::Mango ToMango() const override;
+			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}
 }

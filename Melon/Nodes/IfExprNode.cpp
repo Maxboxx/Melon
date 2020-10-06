@@ -145,3 +145,40 @@ Mango IfExprNode::ToMango() const {
 
 	return mango;
 }
+
+StringBuilder IfExprNode::ToMelon(const UInt indent) const {
+	StringBuilder sb;
+	String tabs1 = String('\t').Repeat(indent);
+	String tabs2 = String('\t').Repeat(indent + 1);
+
+	for (UInt i = 0; i < nodes.Size(); i++) {
+		if (i == 0) {
+			sb += "if ";
+		}
+		else if (i < conditions.Size()) {
+			sb += tabs1;
+			sb += "elseif ";
+		}
+		else {
+			sb += tabs1;
+			sb += "else";
+		}
+
+		if (i < conditions.Size()) {
+			sb += conditions[i]->ToMelon(indent);
+			sb += " then\n";
+		}
+		else {
+			sb += "\n";
+		}
+
+		sb += tabs2;
+		sb += nodes[i]->ToMelon(indent + 1);
+		sb += "\n";
+	}
+
+	sb += tabs1;
+	sb += "end";
+
+	return sb;
+}

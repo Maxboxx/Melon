@@ -73,3 +73,19 @@ Mango StatementsNode::ToMango() const {
 
 	return m;
 }
+
+StringBuilder StatementsNode::ToMelon(const UInt indent) const {
+	StringBuilder sb;
+	String tabs = String('\t').Repeat(indent);
+
+	for (UInt i = 0; i < statements.Size(); i++) {
+		if (i > 0) {
+			sb += "\n";
+			sb += tabs;
+		}
+
+		sb += statements[i]->ToMelon(indent);
+	}
+
+	return sb;
+}

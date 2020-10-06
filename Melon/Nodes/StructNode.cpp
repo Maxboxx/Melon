@@ -37,3 +37,22 @@ Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
 Mango StructNode::ToMango() const {
 	return Mango();
 }
+
+StringBuilder StructNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = "struct ";
+	sb += name.ToString();
+
+	String tabs = String('\t').Repeat(indent + 1);
+
+	for (const Scope& var : vars) {
+		sb += "\n";
+		sb += tabs;
+		sb += var.ToString();
+	}
+
+	sb += "\n";
+	sb += String('\t').Repeat(indent);
+	sb += "end";
+
+	return sb;
+}

@@ -45,6 +45,7 @@ namespace Melon {
 		///T Output files
 		/// Boolean values for choosing which files the compiler should output
 		///M
+		bool outputMelon      = false;
 		bool outputKiwi       = false;
 		bool outputAssembly   = false;
 		bool outputAST        = false;

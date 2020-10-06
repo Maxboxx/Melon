@@ -249,3 +249,24 @@ Mango AssignNode::ToMango() const {
 
 	return assign;
 }
+
+StringBuilder AssignNode::ToMelon(const UInt indent) const {
+	StringBuilder sb;
+	
+	if (newVars) {
+		sb = newVars->ToMelon(indent);
+	}
+	else for (UInt i = 0; i < vars.Size(); i++) {
+		if (i > 0) sb += ", ";
+		sb += vars[i]->ToMelon(indent);
+	}
+
+	sb += " = ";
+
+	for (UInt i = 0; i < values.Size(); i++) {
+		if (i > 0) sb += ", ";
+		sb += values[i]->ToMelon(indent);
+	}
+
+	return sb;
+}

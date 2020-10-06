@@ -12,6 +12,7 @@
 		
 		ast:        true
 		symbols:    true
+		melon:      true
 		kiwi:       true
 		assembly:   true
 		executable: false

@@ -8,6 +8,8 @@
 #include "Boxx/Tuple.h"
 #include "Boxx/Math.h"
 #include "Boxx/Error.h"
+#include "Boxx/String.h"
+#include "Boxx/StringBuilder.h";
 
 #include "Kiwi/Kiwi.h"
 
@@ -223,6 +225,10 @@ namespace Melon {
 			///T To Mango
 			/// Converts the node to mango
 			virtual Boxx::Mango ToMango() const = 0;
+
+			///T To Melon
+			/// Converts the node to melon
+			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const = 0;
 
 			///T Include Scan
 			/// Scans the node for potential extra includes

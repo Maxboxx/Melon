@@ -203,3 +203,12 @@ Mango LogicNode::ToMango() const {
 	mango.Add(node2->ToMango());
 	return mango;
 }
+
+StringBuilder LogicNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = node1->ToMelon(indent);
+	sb += " ";
+	sb += GetOperator().ToString();
+	sb += " ";
+	sb += node2->ToMelon(indent);
+	return sb;
+}

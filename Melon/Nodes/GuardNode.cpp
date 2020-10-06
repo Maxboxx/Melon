@@ -29,7 +29,7 @@ GuardNode::~GuardNode() {
 }
 
 UInt GuardNode::GetSize() const {
-	return Math::Max(cond->GetSize() + continue_->GetSize(), else_->GetSize());
+	return Math::Max(cond->GetSize() + continue_->GetSize(), else_ ? else_->GetSize() : 0);
 }
 
 bool GuardNode::IsScope() const {
@@ -197,4 +197,24 @@ Mango GuardNode::ToMango() const {
 	if (else_) mango.Add("else", else_->ToMango());
 	mango.Add("continue", continue_->ToMango());
 	return mango;
+}
+
+StringBuilder GuardNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = "guard ";
+	sb += cond->ToMelon(indent);
+
+	if (else_) {
+		sb += " else\n";
+		sb += else_->ToMelon(indent + 1);
+		sb += "\n";
+		sb += String('\t').Repeat(indent);
+		sb += "end\n";
+	}
+	else {
+		sb += "\n";
+	}
+
+	sb += String('\t').Repeat(indent);
+	sb += continue_->ToMelon(indent);
+	return sb;
 }

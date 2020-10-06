@@ -26,3 +26,7 @@ ScopeList TypeNode::Type() const {
 Mango TypeNode::ToMango() const {
 	return Mango();
 }
+
+StringBuilder TypeNode::ToMelon(const UInt indent) const {
+	return StringBuilder();
+}

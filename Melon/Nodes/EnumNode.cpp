@@ -21,3 +21,21 @@ CompiledNode EnumNode::Compile(CompileInfo& info) {
 Mango EnumNode::ToMango() const {
 	return Mango();
 }
+
+StringBuilder EnumNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = "enum ";
+	sb += name.ToString();
+	sb += "\n";
+
+	String tabs = String('\t').Repeat(indent + 1);
+
+	for (UInt i = 0; i < values.Size(); i++) {
+		sb += tabs;
+		sb += values[i].ToString();
+		sb += i != values.Size() - 1 ? ",\n" : "\n";
+	}
+
+	sb += String('\t').Repeat(indent);
+	sb += "end";
+	return sb;
+}

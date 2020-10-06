@@ -101,6 +101,10 @@ namespace Boxx {
 		///A const String& replace: The string to replace the substring with
 		String Replace(const String& search, const String& replace) const;
 
+		///T Repeat
+		/// Repeats a string <code>rep</code> times
+		String Repeat(const UInt rep) const;
+
 		///H Operators
 
 		void operator=(const String& str);
@@ -503,6 +507,19 @@ namespace Boxx {
 		}
 
 		return String(chars.list->list, chars.Size());
+	}
+
+	inline String String::Repeat(const UInt rep) const {
+		const UInt len = Size();
+		char* str = new char[len * rep + 1];
+
+		for (UInt i = 0; i < rep; i++) {
+			std::memcpy(str + i * len, this->str, sizeof(char) * len);
+		}
+
+		str[len * rep] = '\0';
+
+		return String(str, len * rep, true);
 	}
 
 	inline void String::operator=(const String& str) {

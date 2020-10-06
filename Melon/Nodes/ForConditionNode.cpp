@@ -103,3 +103,12 @@ Mango ForConditionNode::ToMango() const {
 	mango.Add("step", loopStep->ToMango());
 	return mango;
 }
+
+StringBuilder ForConditionNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = loopInit->ToMelon(indent);
+	sb += ", ";
+	sb += loopCondition->ToMelon(indent);
+	sb += ", ";
+	sb += loopStep->ToMelon(indent);
+	return sb;
+}

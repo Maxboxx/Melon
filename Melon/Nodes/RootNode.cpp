@@ -191,6 +191,17 @@ Mango RootNode::ToMango() const {
 	return mango;
 }
 
+StringBuilder RootNode::ToMelon(const UInt indent) const {
+	StringBuilder sb;
+
+	for (const NodePtr& node : nodes) {
+		sb += node->ToMelon(indent);
+		sb += "\n";
+	}
+
+	return sb;
+}
+
 String RootNode::ToString() const {
 	return Mango::Encode(ToMango(), true);
 }

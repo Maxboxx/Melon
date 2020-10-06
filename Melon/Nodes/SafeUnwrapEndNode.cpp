@@ -110,3 +110,7 @@ Mango SafeUnwrapEndNode::ToMango() const  {
 	mango.Add(node->ToMango());
 	return mango;
 }
+
+StringBuilder SafeUnwrapEndNode::ToMelon(const UInt indent) const  {
+	return StringBuilder();
+}

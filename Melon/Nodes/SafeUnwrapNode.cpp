@@ -55,3 +55,9 @@ Mango SafeUnwrapNode::ToMango() const  {
 	mango.Add(node->ToMango());
 	return mango;
 }
+
+StringBuilder SafeUnwrapNode::ToMelon(const UInt indent) const  {
+	StringBuilder sb = node->ToMelon(indent);
+	sb += "?";
+	return sb;
+}

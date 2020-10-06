@@ -32,3 +32,7 @@ CompiledNode NilNode::Compile(CompileInfo& info) {
 Mango NilNode::ToMango() const {
 	return Mango();
 }
+
+StringBuilder NilNode::ToMelon(const UInt indent) const {
+	return "nil";
+}

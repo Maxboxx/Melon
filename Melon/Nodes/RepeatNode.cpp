@@ -147,3 +147,14 @@ Mango RepeatNode::ToMango() const {
 	mango.Add("content", content->ToMango());
 	return mango;
 }
+
+StringBuilder RepeatNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = "repeat\n";
+	sb += String('\t').Repeat(indent + 1);
+	sb += content->ToMelon(indent + 1);
+	sb += "\n";
+	sb += String('\t').Repeat(indent);
+	sb += "until ";
+	sb += condition->ToMelon(indent);
+	return sb;
+}

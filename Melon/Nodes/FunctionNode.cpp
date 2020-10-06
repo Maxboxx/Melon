@@ -150,3 +150,23 @@ Mango FunctionNode::ToMango() const {
 	m.SetLabel(func.ToString());
 	return m;
 }
+
+StringBuilder FunctionNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = "function ";
+	sb += func.Last().ToString();
+	sb += "(";
+
+	for (UInt i = 0; i < argNames.Size(); i++) {
+		if (i > 0) sb += ", ";
+		sb += argNames[i].ToString();
+	}
+
+	sb += ")\n";
+	sb += String('\t').Repeat(indent + 1);
+	sb += node->ToMelon(indent + 1);
+	sb += "\n";
+	sb += String('\t').Repeat(indent);
+	sb += "end";
+
+	return sb;
+}

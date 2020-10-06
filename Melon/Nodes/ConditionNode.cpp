@@ -62,3 +62,7 @@ Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 Mango ConditionNode::ToMango() const {
 	return cond->ToMango();
 }
+
+StringBuilder ConditionNode::ToMelon(const UInt indent) const {
+	return cond->ToMelon(indent);
+}

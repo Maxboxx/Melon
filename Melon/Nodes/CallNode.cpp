@@ -341,3 +341,17 @@ Mango CallNode::ToMango() const {
 
 	return call;
 }
+
+StringBuilder CallNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = node->ToMelon(indent);
+	sb += "(";
+
+	for (UInt i = 0; i < args.Size(); i++) {
+		if (i > 0) sb += ", ";
+		sb += args[i]->ToMelon(indent);
+	}
+
+	sb += ")";
+
+	return sb;
+}

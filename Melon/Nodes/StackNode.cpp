@@ -47,3 +47,7 @@ CompiledNode StackNode::Compile(CompileInfo& info) {
 Mango StackNode::ToMango() const {
 	return Mango();
 }
+
+StringBuilder StackNode::ToMelon(const UInt indent) const {
+	return StringBuilder();
+}

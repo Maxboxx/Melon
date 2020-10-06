@@ -32,3 +32,7 @@ CompiledNode IntegerNode::Compile(CompileInfo& info) {
 Mango IntegerNode::ToMango() const {
 	return Mango("long", number);
 }
+
+StringBuilder IntegerNode::ToMelon(const UInt indent) const {
+	return String::ToString(number);
+}

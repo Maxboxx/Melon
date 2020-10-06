@@ -101,3 +101,7 @@ Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
 Mango NameNode::ToMango() const {
 	return Mango(Type().ToString(), GetSymbol().scope.ToString());
 }
+
+StringBuilder NameNode::ToMelon(const UInt indent) const {
+	return name.ToString();
+}

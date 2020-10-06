@@ -98,3 +98,16 @@ Mango UnaryOperatorNode::ToMango() const {
 	mango.Add(node->ToMango());
 	return mango;
 }
+
+StringBuilder UnaryOperatorNode::ToMelon(const UInt indent) const {
+	if (op == Scope::Unwrap) {
+		StringBuilder sb = node->ToMelon(indent);
+		sb += op.ToString();
+		return sb;
+	}
+	else {
+		StringBuilder sb = op.ToString();
+		sb += node->ToMelon(indent);
+		return sb;
+	}
+}

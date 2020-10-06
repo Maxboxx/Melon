@@ -39,3 +39,9 @@ Set<ScanType> ContinueNode::Scan(ScanInfoStack& info) {
 Mango ContinueNode::ToMango() const {
 	return Mango("continue", (Int)loops);
 }
+
+StringBuilder ContinueNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = String("continue ");
+	sb += String::ToString((Int)loops);
+	return sb;
+}

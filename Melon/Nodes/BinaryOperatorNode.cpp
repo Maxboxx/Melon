@@ -98,3 +98,12 @@ Mango BinaryOperatorNode::ToMango() const {
 	mango.Add(node2->ToMango());
 	return mango;
 }
+
+StringBuilder BinaryOperatorNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = node1->ToMelon(indent);
+	sb += " ";
+	sb += op.ToString();
+	sb += " ";
+	sb += node2->ToMelon(indent);
+	return sb;
+}

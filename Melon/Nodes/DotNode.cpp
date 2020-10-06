@@ -159,3 +159,10 @@ Mango DotNode::ToMango() const {
 	m.Add(node->ToMango());
 	return m;
 }
+
+StringBuilder DotNode::ToMelon(const UInt indent) const {
+	StringBuilder sb = node->ToMelon(indent);
+	sb += ".";
+	sb += name.ToString();
+	return sb;
+}
