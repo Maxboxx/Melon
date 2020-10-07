@@ -22,6 +22,24 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 		Pointer<DoNode> node = new DoNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 
 		info.scopeCount++;
+
+		if (info.Current().type == TokenType::Arrow) {
+			info.index++;
+
+			if (NodePtr statement = StatementParser::Parse(info)) {
+				node->nodes = statement;
+				info.scopeCount--;
+				info.scopes = info.scopes.Pop();
+				info.statementNumber++;
+				return node;
+			}
+			else {
+				info.scopeCount--;
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				return nullptr;
+			}
+		}
+
 		node->nodes = StatementParser::ParseMultiple(info);
 		info.scopeCount--;
 

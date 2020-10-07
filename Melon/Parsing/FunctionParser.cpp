@@ -144,15 +144,30 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		UInt scopeCount = info.scopeCount;
 		info.loops = 0;
 		info.scopeCount = 0;
-		func->node = StatementParser::ParseMultiple(info);
+		bool single = info.Current().type == TokenType::Arrow;
+
+		if (single) {
+			info.index++;
+
+			if (NodePtr statement = StatementParser::Parse(info)) {
+				func->node = statement;
+			}
+			else {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+		}
+		else {
+			func->node = StatementParser::ParseMultiple(info);
+		}
+
 		info.loops = loops;
 		info.scopeCount = scopeCount;
 
-		if (info.Current().type != TokenType::End) {
+		if (!single && info.Current().type != TokenType::End) {
 			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("function", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		}
 
-		info.index++;
+		if (!single) info.index++;
 
 		if (!funcHead.isOperator) {
 			info.scopes = info.scopes.Pop().Pop();

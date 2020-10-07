@@ -50,6 +50,19 @@ NodePtr GuardParser::Parse(ParsingInfo& info) {
 
 			info.index++;
 		}
+		else if (info.Current().type == TokenType::Arrow) {
+			info.index++;
+			info.scopeCount++;
+
+			if (NodePtr statement = StatementParser::Parse(info)) {
+				gn->else_ = statement;
+			}
+			else {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+
+			info.scopeCount--;
+		}
 
 		info.scopes = info.scopes.Pop();
 		info.statementNumber++;

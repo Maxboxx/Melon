@@ -24,6 +24,7 @@
 #include "Melon/Nodes/SafeUnwrapNode.h"
 #include "Melon/Nodes/SafeUnwrapEndNode.h"
 #include "Melon/Nodes/ConvertNode.h"
+#include "Melon/Nodes/IfExprNode.h"
 
 using namespace Boxx;
 
@@ -102,8 +103,35 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 
 				highestPrecedence--;
 			}
+		}
 
-			return nodes[0];
+		if (!info.EndOfFile() && info.Current().type == TokenType::Then) {
+			info.index++;
+			Pointer<IfExprNode> ifexpr = new IfExprNode(nodes[0]->scope, nodes[0]->file);
+
+			if (NodePtr expr = ExpressionParser::Parse(info)) {
+				ifexpr->conditions.Add(nodes[0]);
+				ifexpr->nodes.Add(expr);
+			}
+			else {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'then'", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+
+			if (info.Current().type != TokenType::Else) {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'else'", "expression", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+			else {
+				info.index++;
+			}
+
+			if (NodePtr expr = ExpressionParser::Parse(info)) {
+				ifexpr->nodes.Add(expr);
+			}
+			else {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'else'", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+
+			nodes[0] = ifexpr;
 		}
 
 		return nodes[0];
@@ -231,27 +259,6 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 	const UInt startIndex = info.index;
 	const UInt startLine  = info.Current().line;
 
-	if (info.Current().type == TokenType::ParenOpen) {
-		info.index++;
-		NodePtr node = Parse(info);
-
-		if (info.Current().type == TokenType::ParenClose) {
-			info.index++;
-			return node;
-		}
-	}
-	else if (NodePtr node = IntegerParser::Parse(info)) {
-		return node;
-	}
-	else if (NodePtr node = BooleanParser::Parse(info)) {
-		return node;
-	}
-	else if (info.Current().type == TokenType::Nil) {
-		Pointer<NilNode> node = new NilNode(FileInfo(info.filename, info.Current().line, info.statementNumber));
-		info.index++;
-		return node;
-	}
-
 	if (statement) {
 		ErrorLog::AddMarker();
 
@@ -284,6 +291,27 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		else if (NodePtr node = SwitchExpressionParser::Parse(info)) {
 			return node;
 		}
+	}
+
+	if (info.Current().type == TokenType::ParenOpen) {
+		info.index++;
+		NodePtr node = Parse(info);
+
+		if (info.Current().type == TokenType::ParenClose) {
+			info.index++;
+			return node;
+		}
+	}
+	else if (NodePtr node = IntegerParser::Parse(info)) {
+		return node;
+	}
+	else if (NodePtr node = BooleanParser::Parse(info)) {
+		return node;
+	}
+	else if (info.Current().type == TokenType::Nil) {
+		Pointer<NilNode> node = new NilNode(FileInfo(info.filename, info.Current().line, info.statementNumber));
+		info.index++;
+		return node;
 	}
 
 	if (info.Current().type == TokenType::Global) {

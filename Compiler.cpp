@@ -21,6 +21,7 @@ using namespace Melon;
 // TODO: < operator not working
 // TODO: bool.== not exist
 // TODO: not operator
+// TODO: for step assignment
 
 int main() {
 	try {

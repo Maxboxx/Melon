@@ -11,10 +11,10 @@ namespace Melon {
 			static Nodes::NodePtr Parse(ParsingInfo& info);
 
 		private:
-			static void ParseIf(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
-			static void ParseWhile(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
-			static void ParseFor(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
-			static void ParseNone(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+			static bool ParseIf(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const Boxx::UInt index);
+			static bool ParseWhile(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const Boxx::UInt index);
+			static bool ParseFor(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const Boxx::UInt index);
+			static void ParseNone(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const Boxx::UInt index);
 
 			static bool IsLoop(const TokenType t);
 			static bool IsLoopStart(const TokenType t);

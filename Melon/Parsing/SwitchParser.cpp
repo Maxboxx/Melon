@@ -75,6 +75,12 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			info.index++;
 			hasThen = true;
 		}
+		else if (info.Current().type == TokenType::Arrow) {
+			info.index++;
+		}
+		else {
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'then'", "case expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		}
 
 		NodePtr node;
 

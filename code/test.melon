@@ -1,49 +1,27 @@
 
-function long: f(short: a, short: b)
-	return a + b
+function int: f(int: i) -> return i * 2
+
+int: x = 4
+
+if x == 5 -> int: i = 1
+
+do
+	guard x > 7 -> int: i = 2
 end
 
-int: i = 1 + 4
+while true -> break
 
-while i > 5 do
-	guard i == 4
-	
-	if true then
-		break
-	elseif false nor false then
-		continue
-	else
-		break!
-	end
-else
-	f(i as short, 5)
+for int: i = 0, i ~= 10 -> x = i
+
+do -> int: i = 3
+
+switch x
+	case 0  -> int: i = 0
+	case 1  -> int: i = 1
+	case 2  -> int: i = 2
+	case 3  -> int: i = 3
+	default -> int: i = 4 
 end
 
-struct A
-	int: p
-end
+int: i = f(3) == 6 then 5 else 7
 
-A: a = A {p = 4}
-
-enum E
-	a, b, c, d, e, f
-end
-
-switch E.a
-	case E.a, E.b int: i = 4
-	
-	case E.c then
-		int: i = 6
-	end
-	
-	case E.d, E.e int: i = 87
-	
-	default then
-		int: i = 5
-	end
-end
-
-E?: e = nil
-
-E: e2 = e!
-E: e3 = e ?? E.a

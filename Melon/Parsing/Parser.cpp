@@ -137,6 +137,7 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Greater, "%>", true));
 
 	patterns.Add(TokenPattern(TokenType::BNot, "%~", true));
+	patterns.Add(TokenPattern(TokenType::Arrow, "%-%>", true));
 
 	// Math
 	patterns.Add(TokenPattern(TokenType::Plus, "%+", true));

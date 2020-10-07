@@ -67,6 +67,13 @@ NodePtr SwitchExpressionParser::Parse(ParsingInfo& info, const bool returnOnErro
 			info.index++;
 			hasThen = true;
 		}
+		else if (info.Current().type == TokenType::Arrow) {
+			info.index++;
+		}
+		else {
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'then'", "case expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			error = true;
+		}
 
 		if (NodePtr node = ExpressionParser::Parse(info)) {
 			if (isDefault) {

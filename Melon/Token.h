@@ -65,6 +65,7 @@ namespace Melon {
 		Exclamation,
 		Question,
 		DoubleQuestion,
+		Arrow,
 
 		// Keywords
 		If,

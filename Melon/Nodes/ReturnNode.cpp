@@ -119,6 +119,7 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 	}
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
+		if (i >= types.Size()) break;
 		ScanAssignment(new TypeNode(types[i].scope), nodes[i], info, nodes[i]->file);
 	}
 

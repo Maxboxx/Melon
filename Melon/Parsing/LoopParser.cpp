@@ -22,8 +22,9 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 
 	const UInt startLine = info.Current().line;
 	const String start = info.Current().value;
+	bool single = false;
 
-	while (IsLoop(info.Current().type)) {
+	while (!single && IsLoop(info.Current().type)) {
 		LoopNode::LoopSegment ls;
 		TokenType type = info.Current().type;
 		String value = info.Current().value;
@@ -50,16 +51,16 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 		info.index++;
 
 		if (ls.type == LoopNode::LoopType::If) {
-			ParseIf(ls, value, info);
+			single = ParseIf(ls, value, info, loop->segments.Size());
 		}
 		else if (ls.type == LoopNode::LoopType::While) {
-			ParseWhile(ls, value, info);
+			single = ParseWhile(ls, value, info, loop->segments.Size());
 		}
 		else if (ls.type == LoopNode::LoopType::For) {
-			ParseFor(ls, value, info);
+			single = ParseFor(ls, value, info, loop->segments.Size());
 		}
 		else {
-			ParseNone(ls, value, info);
+			ParseNone(ls, value, info, loop->segments.Size());
 		}
 
 		loop->segments.Add(ls);
@@ -67,61 +68,104 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 		info.scopes = info.scopes.Pop();
 	}
 
-	if (info.Current().type != TokenType::End)
-		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected(start, startLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+	if (!single) {
+		if (info.Current().type != TokenType::End)
+			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected(start, startLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
-	info.index++;
+		info.index++;
+	}
+
 	info.statementNumber++;
 	return loop;
 }
 
-void LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+bool LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
 	info.scopes = info.scopes.AddNext("if");
 	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	if (NodePtr cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
 
-		if (info.Current().type != TokenType::Then)
+		if (info.Current().type == TokenType::Then) {
+			info.index++;
+
+			ls.condition = cond;
+			info.scopeCount++;
+			ls.statements = StatementParser::ParseMultiple(info);
+			info.scopeCount--;
+			return false;
+		}
+		else if (index == 0 && info.Current().type == TokenType::Arrow) {
+			info.index++;
+
+			ls.condition = cond;
+			info.scopeCount++;
+			ls.statements = StatementParser::Parse(info);
+
+			if (!ls.statements) {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+
+			info.scopeCount--;
+			return true;
+		}
+		else {
 			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "condition", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-
-		info.index++;
-
-		ls.condition = cond;
-		info.scopeCount++;
-		ls.statements = StatementParser::ParseMultiple(info);
-		info.scopeCount--;
+		}
 	}
 	else {
 		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
+
+	return false;
 }
 
-void LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+bool LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
 	info.scopes = info.scopes.AddNext("while");
 	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	if (NodePtr cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
 
-		if (info.Current().type != TokenType::Do)
+		if (info.Current().type == TokenType::Do) {
+			info.index++;
+
+			ls.condition = cond;
+			info.loops++;
+			info.scopeCount++;
+			ls.statements = StatementParser::ParseMultiple(info);
+			info.loops--;
+			info.scopeCount--;
+			return false;
+		}
+		else if (index == 0 && info.Current().type == TokenType::Arrow) {
+			info.index++;
+
+			ls.condition = cond;
+			info.loops++;
+			info.scopeCount++;
+			ls.statements = StatementParser::Parse(info);
+
+			if (!ls.statements) {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+
+			info.loops--;
+			info.scopeCount--;
+			return true;
+		}
+		else {
 			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-
-		info.index++;
-
-		ls.condition = cond;
-		info.loops++;
-		info.scopeCount++;
-		ls.statements = StatementParser::ParseMultiple(info);
-		info.loops--;
-		info.scopeCount--;
+		}
 	}
 	else {
 		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
+
+	return true;
 }
 
-void LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
 	info.scopes = info.scopes.AddNext("for");
 	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
@@ -155,32 +199,53 @@ void LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 					fcn->loopStep = num;
 				}
 
-				if (info.Current().type != TokenType::Do)
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				if (info.Current().type == TokenType::Do) {
+					info.index++;
 
-				info.index++;
+					ls.condition = fcn;
+					info.loops++;
+					info.scopeCount++;
+					ls.statements = StatementParser::ParseMultiple(info);
+					info.loops--;
+					info.scopeCount--;
+					return false;
+				}
+				else if (index == 0 && info.Current().type == TokenType::Arrow) {
+					info.index++;
 
-				ls.condition = fcn;
-				info.loops++;
-				info.scopeCount++;
-				ls.statements = StatementParser::ParseMultiple(info);
-				info.loops--;
-				info.scopeCount--;
+					ls.condition = fcn;
+					info.loops++;
+					info.scopeCount++;
+					ls.statements = StatementParser::Parse(info);
+
+					if (!ls.statements) {
+						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+					}
+
+					info.loops--;
+					info.scopeCount--;
+					return true;
+				}
+				else {
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				}
 			}
 			else {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("','", "'" + info.Current(-1).value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("','", "'" + info.Current(-1).value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		}
 	}
 	else {
 		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("assignment", "'" + value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
+
+	return false;
 }
 
-void LoopParser::ParseNone(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+void LoopParser::ParseNone(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
 	info.scopes = info.scopes.AddNext(ls.also ? "also" : "else");
 	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 

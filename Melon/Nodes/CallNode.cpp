@@ -111,6 +111,10 @@ List<ScopeList> CallNode::Types() const {
 		}
 	}
 
+	if (types.IsEmpty()) {
+		types.Add(ScopeList::undefined);
+	}
+
 	return types;
 }
 

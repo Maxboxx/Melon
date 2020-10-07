@@ -15,9 +15,7 @@ using namespace Melon::Parsing;
 NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 	const UInt startIndex = info.index;
 
-	if (info.Current().type != TokenType::If) {
-		return nullptr;
-	}
+	if (info.Current().type != TokenType::If) return nullptr;
 
 	const UInt ifLine = info.Current().line;
 	info.index++;

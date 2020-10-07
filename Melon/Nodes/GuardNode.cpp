@@ -205,6 +205,7 @@ StringBuilder GuardNode::ToMelon(const UInt indent) const {
 
 	if (else_) {
 		sb += " else\n";
+		sb += String('\t').Repeat(indent + 1);
 		sb += else_->ToMelon(indent + 1);
 		sb += "\n";
 		sb += String('\t').Repeat(indent);

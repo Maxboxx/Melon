@@ -94,7 +94,9 @@ Mango DoNode::ToMango() const {
 
 StringBuilder DoNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "do\n";
+	sb += String('\t').Repeat(indent + 1);
 	sb += nodes->ToMelon(indent + 1);
+	sb += "\n";
 	sb += String('\t').Repeat(indent);
 	sb += "end";
 	return sb;
