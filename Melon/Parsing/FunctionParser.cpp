@@ -82,7 +82,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 
 				if (type && info.Current().type == TokenType::Colon) {
 					info.index++;
-					Set<SymbolAttribute> attributes = VariableAttributeParser::Parse(info);
+					Set<SymbolAttribute> attributes = VariableAttributeParser::Parse(info, true);
 
 					if (info.Current().type != TokenType::Name) {
 						ErrorLog::Error(SyntaxError(SyntaxError::ArgNameExpected, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
@@ -180,7 +180,9 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 
 		info.statementNumber++;
 
-		return func;
+		Pointer<EmptyNode> en = new EmptyNode();
+		en->node = func;
+		return en;
 	}
 
 	info.index = startIndex;

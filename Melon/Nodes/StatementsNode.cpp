@@ -8,6 +8,7 @@
 #include "StructNode.h";
 #include "EnumNode.h";
 #include "DoNode.h";
+#include "EmptyNode.h";
 
 #include "Melon/Parsing/Parser.h"
 
@@ -116,6 +117,10 @@ bool StatementsNode::HasSpaceAround(const NodePtr& node) {
 
 	if (Pointer<GuardNode> guardNode = node.Cast<GuardNode>()) {
 		return guardNode->else_ != nullptr;
+	}
+
+	if (Pointer<EmptyNode> empty = node.Cast<EmptyNode>()) {
+		return HasSpaceAround(empty->node);
 	}
 
 	return false;

@@ -206,6 +206,10 @@ namespace Melon {
 			///T Get Type
 			Symbol GetType(const FileInfo& file) const;
 
+			///T Is of Type
+			/// Checks if the symbol is of the specified type
+			bool IsOfType(const ScopeList& type) const;
+
 			///T Get Return Type
 			Symbol GetReturnType(const Boxx::UInt index) const;
 
@@ -333,6 +337,10 @@ namespace Melon {
 			static Symbol FindNearestTypeInNamespace(const ScopeList& scopes, const Scope& name, const FileInfo& file);
 			static Symbol FindNearestTypeInNamespace(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
 			///M
+
+			///T Is of Type
+			/// Checks if the specified scope is of the specified type
+			static bool IsOfType(const ScopeList& scope, const ScopeList& type, const FileInfo& file);
 
 			///T Find current function
 			/// Find the function the current scope is in

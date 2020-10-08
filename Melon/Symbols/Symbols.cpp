@@ -284,6 +284,33 @@ Symbol Symbol::GetType(const FileInfo& file) const {
 	return FindNearestInNamespace(scope.Pop(), varType, file1);
 }
 
+bool Symbol::IsOfType(const ScopeList& type) const {
+	if (
+		this->type == SymbolType::Class ||
+		this->type == SymbolType::Enum ||
+		this->type == SymbolType::Interface ||
+		this->type == SymbolType::Struct ||
+		this->type == SymbolType::Type
+	) {
+		return type == scope;
+	}
+	else {
+		return type == varType;
+	}
+
+	/*
+	FileInfo file;
+	file.currentNamespace = symbolNamespace;
+	file.includedNamespaces = includedNamespaces;
+
+	ErrorLog::AddMarker();
+	Symbol s = FindNearestInNamespace(scope.Pop(), varType, file);
+	ErrorLog::Revert();
+
+	return s.IsOfType(type);
+	*/
+}
+
 Symbol Symbol::GetReturnType(const UInt index) const {
 	FileInfo file;
 	file.currentNamespace = symbolNamespace;
@@ -955,6 +982,10 @@ Symbol Symbol::FindNearestTypeInNamespace(const ScopeList& scopes, const ScopeLi
 	}
 
 	return FindInNamespace(scope, file);
+}
+
+bool Symbol::IsOfType(const ScopeList& scope, const ScopeList& type, const FileInfo& file) {
+	return Find(scope, file).IsOfType(type);
 }
 
 Symbol Symbol::FindCurrentFunction(const ScopeList& scopes, const FileInfo& file) {

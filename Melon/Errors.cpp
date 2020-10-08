@@ -226,6 +226,7 @@ const char* const SyntaxError::EnumName             = "name expected for enum";
 const char* const SyntaxError::DotName              = "name expected after '.'";
 const char* const SyntaxError::CustomInitName       = "name expected in custom init";
 const char* const SyntaxError::InvalidInclude       = "invalid name to include";
+const char* const SyntaxError::InvalidRef           = "'ref' can only be used for function arguments";
 
 String SymbolError::Function(const Boxx::String& func, const Boxx::List<Boxx::String>& args) {
 	if (args.IsEmpty()) {
@@ -271,6 +272,10 @@ String TypeError::Dot(const String& var, const String& type) {
 const char* const TypeError::IfExprType     = "if expression type error";
 const char* const TypeError::SwitchExprType = "switch expression type error";
 const char* const TypeError::DefaultType    = "default expression type error";
+
+String WarningError::NoRefArg(const String& func, const UInt argIndex) {
+	return "argument number " + String::ToString(argIndex + 1) + " to '" + func + "' will not be directly referenced";
+}
 
 String InfoError::UpperName(const String& type, const String& name) {
 	return type + " name: '" + name + "' does not start with an upper case character";

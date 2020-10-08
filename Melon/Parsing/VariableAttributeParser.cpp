@@ -7,7 +7,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-Set<SymbolAttribute> VariableAttributeParser::Parse(ParsingInfo& info) {
+Set<SymbolAttribute> VariableAttributeParser::Parse(ParsingInfo& info, const bool includeRef) {
 	Set<SymbolAttribute> attributes;
 
 	while (true) {
@@ -22,7 +22,10 @@ Set<SymbolAttribute> VariableAttributeParser::Parse(ParsingInfo& info) {
 			info.index++;
 		} 
 		else if (info.Current().type == TokenType::Ref) {
-			for (const SymbolAttribute a : attributes) {
+			if (!includeRef) {
+				ErrorLog::Error(SyntaxError(SyntaxError::InvalidRef, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+			}
+			else for (const SymbolAttribute a : attributes) {
 				if (a == SymbolAttribute::Copy) {
 					ErrorLog::Error(SyntaxError(SyntaxError::AttributeIncompatible("ref", "copy"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
 				}

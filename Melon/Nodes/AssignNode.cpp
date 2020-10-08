@@ -86,48 +86,22 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 		if (i < values.Size()) {
 			List<NodePtr> nodes;
-
-			bool refAssign = false;
-
-			if (newVars && vars[i]->GetSymbol().attributes.Contains(SymbolAttribute::Ref)) {
-				Pointer<RefNode> r = new RefNode(values[i].value);
-
-				refAssign = true;
-
-				CompiledNode n1 = vars[i]->Compile(info);
-				CompiledNode n2 = r->Compile(info);
-
-				c.AddInstructions(n1.instructions);
-				c.AddInstructions(n2.instructions);
-
-				OptimizerInstruction in = Instruction(InstructionType::Mov, info.stack.ptrSize);
-				in.important = true;
-				in.instruction.arguments.Add(n1.argument);
-				in.instruction.arguments.Add(n2.argument);
-
-				c.instructions.Add(in);
-				c.size = info.stack.ptrSize;
-			}
-			else {
-				nodes.Add(vars[i]);
-				nodes.Add(values[i].value);
-			}
+			nodes.Add(vars[i]);
+			nodes.Add(values[i].value);
 
 			List<ScopeList> args;
 			args.Add(values[i].key);
 
-			if (!refAssign) {
-				info.important = true;
-				c.AddInstructions(CompileAssignment(vars[i], values[i].value, info, vars[i]->file).instructions);
-				info.important = false;
+			info.important = true;
+			c.AddInstructions(CompileAssignment(vars[i], values[i].value, info, vars[i]->file).instructions);
+			info.important = false;
 
-				if (i + 1 >= values.Size()) {
-					UInt size = info.stack.top + Symbol::Find(values[i].key, values[i].value->file).size;
+			if (i + 1 >= values.Size()) {
+				UInt size = info.stack.top + Symbol::Find(values[i].key, values[i].value->file).size;
 
-					for (UInt u = i + 1; u < values.Size(); u++) {
-						size += Symbol::Find(values[u].key, values[i].value->file).size;
-						returnSizes.Add(size);
-					}
+				for (UInt u = i + 1; u < values.Size(); u++) {
+					size += Symbol::Find(values[u].key, values[i].value->file).size;
+					returnSizes.Add(size);
 				}
 			}
 		}
@@ -199,7 +173,6 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 		}
 
 		if (!errors) {
-			// TODO: check for valid ref
 			ScanAssignment(node, new TypeNode(values[i].key), info, node->file);
 		}
 	}

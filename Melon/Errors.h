@@ -183,6 +183,7 @@ namespace Melon {
 			Syntax,
 			Symbol,
 			Type,
+			Warning,
 			Info,
 			Plain
 		};
@@ -259,6 +260,7 @@ namespace Melon {
 		static const char* const DotName;
 		static const char* const CustomInitName;
 		static const char* const InvalidInclude;
+		static const char* const InvalidRef;
 		///M
 	};
 
@@ -317,6 +319,20 @@ namespace Melon {
 		static const char* const SwitchExprType;
 		static const char* const DefaultType;
 		///M
+	};
+
+	///B WarningError
+	class WarningError : public CompileError {
+	public:
+		WarningError(const char* const msg, const FileInfo& file) : CompileError(msg, file) {
+			type = ErrorType::Warning;
+		}
+
+		virtual Boxx::String Name() const override {
+			return "WarningError";
+		}
+
+		static Boxx::String NoRefArg(const Boxx::String& func, const Boxx::UInt argIndex);
 	};
 
 	///B InfoError

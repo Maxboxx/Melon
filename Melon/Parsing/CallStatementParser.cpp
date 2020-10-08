@@ -13,9 +13,10 @@ NodePtr CallStatementParser::Parse(ParsingInfo& info) {
 	const UInt startIndex = info.index;
 
 	if (NodePtr node = ExpressionParser::Parse(info, true)) {
-		if (node.Cast<CallNode>()) {
+		if (Pointer<CallNode> call = node.Cast<CallNode>()) {
+			call->isStatement = true;
 			info.statementNumber++;
-			return node;
+			return call;
 		}
 	}
 

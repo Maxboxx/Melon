@@ -145,25 +145,58 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		}
 	}
 
+	// Calculate temp size
+	UInt tempSize = 0;
+	List<UInt> memoryOffsets;
+	List<bool> assignFirst;
+	CompileInfo infoCpy = info;
+
+	for (UInt i = 0; i < args.Size(); i++) {
+		memoryOffsets.Add(0);
+		assignFirst.Add(false);
+
+		if (Symbol::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+			UInt top = infoCpy.stack.top;
+			CompiledNode n = args[i]->Compile(infoCpy);
+
+			if (
+				n.argument.type != ArgumentType::Memory || 
+				(n.argument.mem.reg == RegisterType::Stack && n.argument.mem.offset > top) ||
+				!Symbol::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file)
+			) {
+				if (!args[i]->IsImmediate()) {
+					ErrorLog::Warning(WarningError(WarningError::NoRefArg(s.scope.ToString(), i), args[i]->file));
+				}
+
+				assignFirst[assignFirst.Size() - 1] = true;
+
+				tempSize += Symbol::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).GetType(node->file).size;
+				memoryOffsets[memoryOffsets.Size() - 1] = tempSize;
+			}
+		}
+	}
+
 	UInt pushSize = 0;
 
-	if (info.stack.top + retSize + argSize <= info.stack.frame) {
+	if (info.stack.top + tempSize + retSize + argSize <= info.stack.frame) {
 		pushSize = 0;
-		info.stack.top = (Long)info.stack.frame - retSize - argSize;
+		info.stack.top = (Long)info.stack.frame - tempSize - retSize - argSize;
 	}
 	else {
-		Long diff = ((Long)retSize + argSize) - info.stack.Offset();
+		Long diff = ((Long)tempSize + retSize + argSize) - info.stack.Offset();
 
 		if (diff >= 0) {
 			pushSize = diff;
 		}
 		else {
 			info.stack.top = info.stack.frame;
-			pushSize = retSize + argSize;
+			pushSize = tempSize + retSize + argSize;
 		}
 	}
 
-	info.stack.Push(retSize);
+	const UInt tempStack = info.stack.top;
+
+	info.stack.Push(tempSize + retSize);
 	info.stack.PushFrame(pushSize);
 	
 	const UInt frame = info.stack.frame;
@@ -179,7 +212,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		Symbol type = Symbol::FindNearestInNamespace(scope, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
 
 		if (Symbol::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
-			Pointer<RefNode> r = nullptr;
+			NodePtr r = nullptr;
 			Int i = IsInit() ? u - 1 : u;
 			bool isCompiled = false;
 
@@ -193,11 +226,35 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 					r = new RefNode(node);
 				}
 				else {
-					r = new RefNode(args[i - 1]);
+					if (assignFirst[i - 1]) {
+						Pointer<StackNode> sn = new StackNode(info.stack.Offset((Long)tempStack + memoryOffsets[i - 1]));
+						sn->type = type.scope;
+
+						UInt top = info.stack.top;
+						c.AddInstructions(CompileAssignment(sn, args[i - 1], info, args[i - 1]->file).instructions);
+						info.stack.top = top;
+
+						r = new RefNode(sn);
+					}
+					else {
+						r = new RefNode(args[i - 1]);
+					}
 				}
 			}
 			else {
-				r = new RefNode(args[i]);
+				if (assignFirst[i]) {
+					Pointer<StackNode> sn = new StackNode(info.stack.Offset((Long)tempStack + memoryOffsets[i]));
+					sn->type = type.scope;
+
+					UInt top = info.stack.top;
+					c.AddInstructions(CompileAssignment(sn, args[i], info, args[i]->file).instructions);
+					info.stack.top = top;
+
+					r = new RefNode(sn);
+				}
+				else {
+					r = new RefNode(args[i]);
+				}
 			}
 
 			UInt regIndex = info.index;
@@ -264,19 +321,24 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	inst.arguments.Add(Argument(ArgumentType::Function, s.size));
 	c.instructions.Add(inst);
 
-	// TODO: Uncomment for call statements
-	/*if (pushSize > 0) {
-		c.instructions.Add(Instruction(InstructionType::Pop, pushSize));
+	if (isStatement) {
+		UInt popSize = info.stack.frame - stack.frame;
+
+		if (popSize > 0) {
+			c.instructions.Add(Instruction(InstructionType::Pop, popSize));
+		}
+
+		info.stack = stack;
+		return c;
 	}
+	else {
+		info.stack.Pop(argSize);
 
-	info.stack.PopFrame(pushSize);*/
+		c.argument = Argument(MemoryLocation(info.stack.Offset()));
 
-	info.stack.Pop(argSize);
-
-	c.argument = Argument(MemoryLocation(info.stack.Offset()));
-
-	info.stack.top = stack.top;
-	return c;
+		info.stack.top = stack.top;
+		return c;
+	}
 }
 
 void CallNode::IncludeScan(ParsingInfo& info) {
@@ -296,12 +358,18 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 
 	Symbol s = GetFunc();
 
-	for (const NodePtr& node : args) {
-		for (const ScanType type : node->Scan(info)) {
+	for (UInt i = 0; i < args.Size(); i++) {
+		/*if (Symbol::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+			if (!Symbol::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file)) {
+				ErrorLog::Error(CompileError("ref error", args[i]->file)); // TODO: Error message
+			}
+		}*/
+
+		for (const ScanType type : args[i]->Scan(info)) {
 			scanSet.Add(type);
 
 			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
+				ErrorLog::Error(CompileError(CompileError::SelfInit, args[i]->file));
 			}
 		}
 	}

@@ -27,6 +27,9 @@ namespace Melon {
 			///T Operator
 			bool op = false;
 
+			///T Statement
+			bool isStatement = false;
+
 			CallNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~CallNode();
 
