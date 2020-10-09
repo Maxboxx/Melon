@@ -97,6 +97,7 @@ namespace Melon {
 		Enum,
 		Const,
 		Ref,
+		NoRef,
 		Copy,
 		Init,
 		Operator,

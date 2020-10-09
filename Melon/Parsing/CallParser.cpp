@@ -29,6 +29,14 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 				info.index++;
 			}
 
+			if (info.Current().type == TokenType::NoRef) {
+				info.index++;
+				call->noRefs.Add(true);
+			}
+			else {
+				call->noRefs.Add(false);
+			}
+
 			if (NodePtr node = ExpressionParser::Parse(info)) {
 				call->args.Add(node);
 			}

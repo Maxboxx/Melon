@@ -3,6 +3,7 @@
 #include "RefNode.h"
 #include "StackNode.h"
 #include "TypeNode.h"
+#include "CustomInitNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -161,11 +162,20 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 
 			if (
 				n.argument.type != ArgumentType::Memory || 
-				(n.argument.mem.reg == RegisterType::Stack && n.argument.mem.offset > top) ||
-				!Symbol::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file)
+				(n.argument.mem.reg == RegisterType::Stack && n.argument.mem.offset >= top) ||
+				!Symbol::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file) ||
+				noRefs[i]
 			) {
-				if (!args[i]->IsImmediate()) {
-					ErrorLog::Warning(WarningError(WarningError::NoRefArg(s.scope.ToString(), i), args[i]->file));
+				if (!noRefs[i] && !args[i]->IsImmediate() && !args[i].Is<CustomInitNode>()) {
+					bool error = true;
+
+					if (Pointer<CallNode> call = args[i].Cast<CallNode>()) {
+						error = !call->IsInit();
+					}
+
+					if (error) {
+						ErrorLog::Warning(WarningError(WarningError::NoRefArg(s.scope.ToString(), i), args[i]->file));
+					}
 				}
 
 				assignFirst[assignFirst.Size() - 1] = true;
@@ -359,11 +369,11 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 	Symbol s = GetFunc();
 
 	for (UInt i = 0; i < args.Size(); i++) {
-		/*if (Symbol::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
-			if (!Symbol::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file)) {
-				ErrorLog::Error(CompileError("ref error", args[i]->file)); // TODO: Error message
+		if (!Symbol::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+			if (noRefs[i]) {
+				ErrorLog::Error(CompileError(CompileError::InvalidNoRef, args[i]->file));
 			}
-		}*/
+		}
 
 		for (const ScanType type : args[i]->Scan(info)) {
 			scanSet.Add(type);

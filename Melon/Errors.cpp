@@ -168,6 +168,7 @@ const char* const CompileError::MultipleInitStart     = "member variable '";
 const char* const CompileError::MultipleInitEnd       = "' is initialized more than once";
 const char* const CompileError::SelfVarUseStart       = "member variable '";
 const char* const CompileError::SelfVarUseEnd         = "' used before being initialized";
+const char* const CompileError::InvalidNoRef          = "invalid use of 'noref'";
 
 const char* const TokenError::UndefinedStart = "undefined token '";
 const char* const TokenError::UndefinedEnd   = "'";

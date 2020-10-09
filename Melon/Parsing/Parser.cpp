@@ -202,6 +202,7 @@ void Parser::SetupTokens() {
 
 	patterns.Add(TokenPattern(TokenType::Const, "const"));
 	patterns.Add(TokenPattern(TokenType::Ref, "ref"));
+	patterns.Add(TokenPattern(TokenType::NoRef, "noref"));
 	patterns.Add(TokenPattern(TokenType::Copy, "copy"));
 
 	patterns.Add(TokenPattern(TokenType::Nil, "nil"));

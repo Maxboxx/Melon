@@ -7,5 +7,4 @@ end
 int: i = 3
 long: n = 4
 
-f(i, n)
-
+f(noref i, noref n)

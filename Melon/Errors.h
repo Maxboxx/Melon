@@ -175,6 +175,7 @@ namespace Melon {
 		static const char* const MultipleInitEnd;
 		static const char* const SelfVarUseStart;
 		static const char* const SelfVarUseEnd;
+		static const char* const InvalidNoRef;
 		///M
 
 		enum class ErrorType : Boxx::UByte {

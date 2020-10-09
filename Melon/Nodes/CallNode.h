@@ -18,6 +18,9 @@ namespace Melon {
 			///T Arguments
 			Boxx::List<NodePtr> args;
 
+			///T No Ref Args
+			Boxx::List<bool> noRefs;
+
 			///T Is Method
 			bool isMethod = false;
 
