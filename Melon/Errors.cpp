@@ -65,11 +65,15 @@ void ErrorLog::Revert() {
 
 void ErrorLog::LogErrors() {
 	Map<String, List<Tuple<LogLevel, CompileError>>> sortedErrors;
+	List<Tuple<LogLevel, CompileError>> noFileErrors;
 
 	for (const Tuple<LogLevel, CompileError>& error : errors) {
 		List<Tuple<LogLevel, CompileError>> errorList;
 
-		if (sortedErrors.Contains(error.value2.file.filename, errorList)) {
+		if (error.value2.file.line == 0) {
+			noFileErrors.Add(error);
+		}
+		else if (sortedErrors.Contains(error.value2.file.filename, errorList)) {
 			bool inserted = false;
 
 			for (UInt i = 0; i < errorList.Size(); i++) {
@@ -98,20 +102,33 @@ void ErrorLog::LogErrors() {
 
 	for (const Pair<String, List<Tuple<LogLevel, CompileError>>>& errorList : sortedErrors) {
 		for (const Tuple<LogLevel, CompileError>& error : errorList.value) {
-			//if (errorList.key.Size() > 1) {
-				switch (error.value1) {
-					case LogLevel::Log:     logger.Log(error.value2.Message()); break;
-					case LogLevel::Info:    logger.Info(error.value2.Message()); break;
-					case LogLevel::Success: logger.Success(error.value2.Message()); break;
-					case LogLevel::Warning: logger.Warning(error.value2.Message()); break;
-					case LogLevel::Error:   logger.Error(error.value2.Message()); break;
-					case LogLevel::Fatal:   {
-						logger.Write("fatal: " + error.value2.Message());
-						Console::Print("fatal: " + error.value2.Message());
-						break;
-					}
+			switch (error.value1) {
+				case LogLevel::Log:     logger.Log(error.value2.Message()); break;
+				case LogLevel::Info:    logger.Info(error.value2.Message()); break;
+				case LogLevel::Success: logger.Success(error.value2.Message()); break;
+				case LogLevel::Warning: logger.Warning(error.value2.Message()); break;
+				case LogLevel::Error:   logger.Error(error.value2.Message()); break;
+				case LogLevel::Fatal:   {
+					logger.Write("fatal: " + error.value2.Message());
+					Console::Print("fatal: " + error.value2.Message());
+					break;
 				}
-			//}
+			}
+		}
+	}
+
+	for (const Tuple<LogLevel, CompileError>& error : noFileErrors) {
+		switch (error.value1) {
+			case LogLevel::Log:     logger.Log(error.value2.Message()); break;
+			case LogLevel::Info:    logger.Info(error.value2.Message()); break;
+			case LogLevel::Success: logger.Success(error.value2.Message()); break;
+			case LogLevel::Warning: logger.Warning(error.value2.Message()); break;
+			case LogLevel::Error:   logger.Error(error.value2.Message()); break;
+			case LogLevel::Fatal:   {
+				logger.Write("fatal: " + error.value2.Message());
+				Console::Print("fatal: " + error.value2.Message());
+				break;
+			}
 		}
 	}
 }

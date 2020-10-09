@@ -151,6 +151,16 @@ StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (i > 0) sb += ", ";
+
+		Symbol var = Symbol::FindInNamespace(scope.Add(names[i]), file);
+
+		for (const SymbolAttribute attr : var.attributes) {
+			switch (attr) {
+				case SymbolAttribute::Const: sb += "const "; break;
+				case SymbolAttribute::Copy:  sb += "copy "; break;
+			}
+		}
+
 		sb += names[i].ToString();
 	}
 

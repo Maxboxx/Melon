@@ -170,6 +170,15 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 		if (i > 0) sb += ", ";
 		sb += s.Get(argNames[i], file).varType.ToString();
 		sb += ": ";
+
+		for (const SymbolAttribute attr : s.Get(argNames[i], file).attributes) {
+			switch (attr) {
+				case SymbolAttribute::Const: sb += "const "; break;
+				case SymbolAttribute::Copy:  sb += "copy "; break;
+				case SymbolAttribute::Ref:   sb += "ref "; break;
+			}
+		}
+
 		sb += argNames[i].ToString();
 	}
 

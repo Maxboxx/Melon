@@ -4,7 +4,7 @@ function f(int: ref a, int: ref b)
 	b = b + 1
 end
 
-int: i = 3
+int: const i = 3
 long: n = 4
 
 f(noref i, noref n)

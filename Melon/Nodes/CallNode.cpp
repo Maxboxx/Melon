@@ -369,7 +369,7 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 	Symbol s = GetFunc();
 
 	for (UInt i = 0; i < args.Size(); i++) {
-		if (!Symbol::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (s.names.Size() > i && !Symbol::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
 			if (noRefs[i]) {
 				ErrorLog::Error(CompileError(CompileError::InvalidNoRef, args[i]->file));
 			}
@@ -430,6 +430,7 @@ StringBuilder CallNode::ToMelon(const UInt indent) const {
 
 	for (UInt i = 0; i < args.Size(); i++) {
 		if (i > 0) sb += ", ";
+		if (noRefs[i]) sb += "noref ";
 		sb += args[i]->ToMelon(indent);
 	}
 
