@@ -17,13 +17,11 @@ using namespace Kiwi;
 using namespace Melon;
 
 // TODO: Struct member self type check
-// TODO: Remove integer assignment to different types
-// TODO: < operator not working
 // TODO: bool.== not exist
 // TODO: not operator
 // TODO: for step assignment
 // TODO: Combined assignment operators
-// TODO: Errors appear in wrong order
+// TODO: Combined comarison operator
 
 int main() {
 	try {

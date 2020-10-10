@@ -1397,13 +1397,13 @@ void Symbol::Setup() {
 
 		intSym.Add(Scope::BitNot, bnot, FileInfo());
 
+		Symbol intAssign = Symbol(SymbolType::Function);
+		intAssign.arguments.Add(ScopeList().Add(Scope(integer.key)));
+		intAssign.symbolNode = new IntegerAssignNode(integer.value);
+		intSym.Add(Scope::Assign, intAssign, FileInfo());
+
 		// Binary operators
 		for (const Pair<Scope, Byte> integer2 : integers) {
-			Symbol intAssign = Symbol(SymbolType::Function);
-			intAssign.arguments.Add(ScopeList().Add(Scope(integer2.key)));
-			intAssign.symbolNode = new IntegerAssignNode(integer.value);
-			intSym.Add(Scope::Assign, intAssign, FileInfo());
-
 			Symbol intConvert = Symbol(SymbolType::Function);
 			intConvert.arguments.Add(ScopeList().Add(Scope(integer.key)));
 			intConvert.returnValues.Add(ScopeList().Add(Scope(integer2.key)));

@@ -39,7 +39,7 @@ Optional<List<ScopeList>> TemplateParser::Parse(ParsingInfo& info) {
 	}
 
 	if (info.Current().type != TokenType::Greater) {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'>'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		//ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'>'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		info.index = startIndex;
 		return nullptr;
 	}
@@ -74,7 +74,7 @@ Optional<List<Scope>> TemplateParser::ParseDefine(ParsingInfo& info) {
 	}
 
 	if (info.Current().type != TokenType::Greater) {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'>'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		//ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'>'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		info.index = startIndex;
 		return nullptr;
 	}

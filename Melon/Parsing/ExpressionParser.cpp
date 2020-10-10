@@ -105,35 +105,6 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 			}
 		}
 
-		if (!info.EndOfFile() && info.Current().type == TokenType::Then) {
-			info.index++;
-			Pointer<IfExprNode> ifexpr = new IfExprNode(nodes[0]->scope, nodes[0]->file);
-
-			if (NodePtr expr = ExpressionParser::Parse(info)) {
-				ifexpr->conditions.Add(nodes[0]);
-				ifexpr->nodes.Add(expr);
-			}
-			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'then'", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-			}
-
-			if (info.Current().type != TokenType::Else) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'else'", "expression", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-			}
-			else {
-				info.index++;
-			}
-
-			if (NodePtr expr = ExpressionParser::Parse(info)) {
-				ifexpr->nodes.Add(expr);
-			}
-			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'else'", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-			}
-
-			nodes[0] = ifexpr;
-		}
-
 		return nodes[0];
 	}
 

@@ -1,10 +1,8 @@
 
-function f(int: ref a, int: ref b)
-	a = a + b
-	b = b + 1
+int: i = if true -> 4 else 5
+
+if i < 4 then
+
 end
 
-int: const i = 3
-long: n = 4
 
-f(noref i, noref n)

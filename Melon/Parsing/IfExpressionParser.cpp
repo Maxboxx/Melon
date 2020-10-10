@@ -29,7 +29,9 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 		error = true;
 	}
 
-	if (info.Current().type != TokenType::Then) {
+	bool single = info.Current().type == TokenType::Arrow;
+
+	if (!single && info.Current().type != TokenType::Then) {
 		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "condition", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		error = true;
 	}
@@ -41,7 +43,7 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 		ifexpr->nodes.Add(expr);
 		ifexpr->conditions.Add(cond);
 
-		while (info.Current().type == TokenType::ElseIf) {
+		if (!single) while (info.Current().type == TokenType::ElseIf) {
 			info.index++;
 
 			NodePtr cond = ConditionParser::Parse(info);
@@ -72,8 +74,8 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 			info.index++;
 
 			if (NodePtr expr = ExpressionParser::Parse(info)) {
-				if (info.Current().type == TokenType::End) {
-					info.index++;
+				if (single || info.Current().type == TokenType::End) {
+					if (!single) info.index++;
 					ifexpr->nodes.Add(expr);
 
 					if (error && returnOnError) return nullptr;
