@@ -1,7 +1,7 @@
 
-int: i = if true -> 4 else 5
+int: i = if true == true -> 4 else 5
 
-if i < 4 then
+if false ~= true then
 
 end
 

@@ -13,6 +13,7 @@
 #include "Nodes/BooleanBinaryOperatorNode.h"
 #include "Nodes/BooleanUnaryOperatorNode.h"
 #include "Nodes/BooleanToBooleanNode.h"
+#include "Nodes/BooleanCompareNode.h"
 #include "Nodes/OptionalAssignNode.h"
 #include "Nodes/OptionalAssignValueNode.h"
 #include "Nodes/OptionalUnwrapNode.h"
@@ -1460,6 +1461,20 @@ void Symbol::Setup() {
 	boolAssign.arguments.Add(ScopeList().Add(Scope::Bool));
 	boolAssign.symbolNode = new BooleanAssignNode();
 	boolSym.Add(Scope::Assign, boolAssign, FileInfo());
+
+	Symbol boolEq = Symbol(SymbolType::Function);
+	boolEq.arguments.Add(ScopeList().Add(Scope::Bool));
+	boolEq.arguments.Add(ScopeList().Add(Scope::Bool));
+	boolEq.returnValues.Add(ScopeList().Add(Scope::Bool));
+	boolEq.symbolNode = new BooleanCompareNode(InstructionType::Eq);
+	boolSym.Add(Scope::Equal, boolEq, FileInfo());
+
+	Symbol boolNe = Symbol(SymbolType::Function);
+	boolNe.arguments.Add(ScopeList().Add(Scope::Bool));
+	boolNe.arguments.Add(ScopeList().Add(Scope::Bool));
+	boolNe.returnValues.Add(ScopeList().Add(Scope::Bool));
+	boolNe.symbolNode = new BooleanCompareNode(InstructionType::Ne);
+	boolSym.Add(Scope::NotEqual, boolNe, FileInfo());
 
 	Symbol boolToBool = Symbol(SymbolType::Function);
 	boolToBool.arguments.Add(ScopeList().Add(Scope::Bool));
