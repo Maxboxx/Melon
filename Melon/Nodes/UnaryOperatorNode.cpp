@@ -94,7 +94,13 @@ Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
 }
 
 Mango UnaryOperatorNode::ToMango() const {
-	Mango mango = Mango(Symbol::FindMethod(node->Type().Add(op), List<ScopeList>(), file).scope.ToString(), MangoType::List);
+	List<ScopeList> args;
+	args.Add(node->Type());
+
+	const ScopeList type = node->Type();
+	const Symbol s = Symbol::FindFunction(type.Add(op), args, file);
+
+	Mango mango = Mango(s.scope.ToString(), MangoType::List);
 	mango.Add(node->ToMango());
 	return mango;
 }
@@ -107,6 +113,9 @@ StringBuilder UnaryOperatorNode::ToMelon(const UInt indent) const {
 	}
 	else {
 		StringBuilder sb = op.ToString();
+
+		if (op == Scope::Not) sb += " ";
+
 		sb += node->ToMelon(indent);
 		return sb;
 	}

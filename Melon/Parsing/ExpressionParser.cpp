@@ -211,7 +211,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 	if (NodePtr node = ParseSingleValue(info, statement)) {
 		return node;
 	}
-	else if (token.type == TokenType::Minus || token.type == TokenType::BXor) {
+	else if (token.type == TokenType::Minus || token.type == TokenType::BNot || token.type == TokenType::Not) {
 		info.index++;
 
 		if (NodePtr node = ParseValue(info)) {

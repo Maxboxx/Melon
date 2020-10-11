@@ -1,8 +1,7 @@
 
-int: i = if true == true -> 4 else 5
+int?: i = 3
 
-if false ~= true then
+if not i then
 
 end
-
 

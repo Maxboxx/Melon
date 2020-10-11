@@ -9,16 +9,23 @@
 #include "Nodes/IntegerAssignNode.h"
 #include "Nodes/IntegerUnaryOperatorNode.h"
 #include "Nodes/IntegerBinaryOperatorNode.h"
+#include "Nodes/IntegerConvertNode.h"
+#include "Nodes/IntegerToBoolNode.h"
+#include "Nodes/IntegerNotNode.h"
+
 #include "Nodes/BooleanAssignNode.h"
 #include "Nodes/BooleanBinaryOperatorNode.h"
 #include "Nodes/BooleanUnaryOperatorNode.h"
 #include "Nodes/BooleanToBooleanNode.h"
 #include "Nodes/BooleanCompareNode.h"
+#include "Nodes/BooleanNotNode.h"
+#include "Nodes/BooleanConstantNode.h"
+
 #include "Nodes/OptionalAssignNode.h"
 #include "Nodes/OptionalAssignValueNode.h"
 #include "Nodes/OptionalUnwrapNode.h"
 #include "Nodes/OptionalToBooleanNode.h"
-#include "Nodes/IntegerConvertNode.h"
+#include "Nodes/OptionalNotNode.h"
 
 #include "ScopeList.h"
 
@@ -1383,7 +1390,7 @@ void Symbol::Setup() {
 
 		intSym.Add(Scope::Neg, neg, FileInfo());
 
-		// Not
+		// Bit Not
 		Symbol bnot = Symbol(SymbolType::Function);
 		bnot.symbolNode = new IntegerUnaryOperatorNode(abs(integer.value), InstructionType::Not);
 
@@ -1398,6 +1405,22 @@ void Symbol::Setup() {
 
 		intSym.Add(Scope::BitNot, bnot, FileInfo());
 
+		// To Bool
+		Symbol intToBool = Symbol(SymbolType::Function);
+		intToBool.arguments.Add(ScopeList().Add(integer.key));
+		intToBool.returnValues.Add(ScopeList().Add(Scope::Bool));
+		intToBool.symbolNode = new IntegerToBoolNode();
+		intToBool.isExplicit = true;
+		intSym.Add(Scope::As, intToBool, FileInfo());
+
+		// Not
+		Symbol intNot = Symbol(SymbolType::Function);
+		intNot.arguments.Add(ScopeList().Add(integer.key));
+		intNot.returnValues.Add(ScopeList().Add(Scope::Bool));
+		intNot.symbolNode = new IntegerNotNode();
+		intSym.Add(Scope::Not, intNot, FileInfo());
+
+		// Assign
 		Symbol intAssign = Symbol(SymbolType::Function);
 		intAssign.arguments.Add(ScopeList().Add(Scope(integer.key)));
 		intAssign.symbolNode = new IntegerAssignNode(integer.value);
@@ -1476,6 +1499,12 @@ void Symbol::Setup() {
 	boolNe.symbolNode = new BooleanCompareNode(InstructionType::Ne);
 	boolSym.Add(Scope::NotEqual, boolNe, FileInfo());
 
+	Symbol boolNot = Symbol(SymbolType::Function);
+	boolNot.arguments.Add(ScopeList().Add(Scope::Bool));
+	boolNot.returnValues.Add(ScopeList().Add(Scope::Bool));
+	boolNot.symbolNode = new BooleanNotNode();
+	boolSym.Add(Scope::Not, boolNot, FileInfo());
+
 	Symbol boolToBool = Symbol(SymbolType::Function);
 	boolToBool.arguments.Add(ScopeList().Add(Scope::Bool));
 	boolToBool.returnValues.Add(ScopeList().Add(Scope::Bool));
@@ -1491,6 +1520,20 @@ void Symbol::Setup() {
 	nilSym.scope  = ScopeList().Add(Scope::Nil);
 	nilSym.size   = 0;
 	nilSym.basic  = true;
+
+	Symbol nilNot = Symbol(SymbolType::Function);
+	nilNot.arguments.Add(ScopeList().Add(Scope::Nil));
+	nilNot.returnValues.Add(ScopeList().Add(Scope::Bool));
+	nilNot.symbolNode = new BooleanConstantNode(true);
+	nilSym.Add(Scope::Not, nilNot, FileInfo());
+
+	Symbol nilToBool = Symbol(SymbolType::Function);
+	nilToBool.arguments.Add(ScopeList().Add(Scope::Nil));
+	nilToBool.returnValues.Add(ScopeList().Add(Scope::Bool));
+	nilToBool.isExplicit = true;
+	nilToBool.symbolNode = new BooleanConstantNode(false);
+	nilSym.Add(Scope::As, nilToBool, FileInfo());
+
 	symbols.Add(Scope::Nil, nilSym, FileInfo());
 
 	// ----------------- Optional ---------------------
@@ -1555,6 +1598,12 @@ void Symbol::Setup() {
 			toBool.isExplicit = true;
 			toBool.symbolNode = new OptionalToBooleanNode();
 			optionalSym.Add(Scope::As, toBool, FileInfo());
+
+			Symbol optionalNot = Symbol(SymbolType::Function);
+			optionalNot.arguments.Add(optionalSym.scope);
+			optionalNot.returnValues.Add(ScopeList().Add(Scope::Bool));
+			optionalNot.symbolNode = new OptionalNotNode();
+			optionalSym.Add(Scope::Not, optionalNot, FileInfo());
 		}
 
 		optionalScope.templateVariants.Add(optionalSym);
