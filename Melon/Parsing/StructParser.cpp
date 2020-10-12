@@ -65,7 +65,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 				sn->symbol.Add(nn->names[i], v, FileInfo(info.filename, info.Current().line, info.statementNumber));
 				sn->vars.Add(nn->names[i]);
-				sn->symbol.arguments.Add(ScopeList().Add(nn->names[i]));
+				sn->symbol.names.Add(nn->names[i]);
 			}
 
 			found = true;

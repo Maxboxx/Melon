@@ -133,15 +133,15 @@ namespace Melon {
 			Boxx::List<ScopeList> returnValues;
 
 			///T Argument values
-			/// The relative types for the arguments if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
-			/// The list of variables if <code>type</code> is <code>SymbolType::Struct</code> or <code>SymbolType::Class</code>
+			/// The relative types of function arguments
 			Boxx::List<ScopeList> arguments;
 
 			///T Template arguments
 			Boxx::List<ScopeList> templateArgs;
 
 			///T Names
-			/// Names of function arguments
+			/// The names of arguments if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
+			/// The list of non static members if <code>type</code> is <code>SymbolType::Struct</code> or <code>SymbolType::Class</code>
 			Boxx::List<Scope> names;
 
 			///T Variants

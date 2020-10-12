@@ -21,6 +21,19 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
+bool StructNode::IsRecursive(const Symbol& symbol) const {
+	if (symbol.type != SymbolType::Struct) return false;
+	if (symbol.scope == this->symbol.scope) return true;
+
+	for (const Scope& name : symbol.names) {
+		if (IsRecursive(symbol.Get(name, file).GetType(file))) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
 	Symbol& s = Symbol::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
 	s.size = 0;
@@ -29,6 +42,11 @@ Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
 		Symbol& v = Symbol::Find(symbol.scope, file).Get(var, file);
 		v.offset = s.size;
 		s.size += s.Get(var, file).GetType(file).size;
+
+		// TODO: error line
+		if (IsRecursive(v.GetType(file))) {
+			ErrorLog::Error(SymbolError(SymbolError::RecursiveStruct(this->name.ToString()), file));
+		}
 	}
 
 	return Set<ScanType>();

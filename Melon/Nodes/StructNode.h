@@ -24,6 +24,10 @@ namespace Melon {
 			StructNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~StructNode();
 
+			///T Is Recursive
+			/// Checks if the struct is recursive in the specified symbol
+			bool IsRecursive(const Symbols::Symbol& symbol) const;
+
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
 			virtual Boxx::Mango ToMango() const override;

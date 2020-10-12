@@ -16,7 +16,6 @@ using namespace Kiwi;
 
 using namespace Melon;
 
-// TODO: Struct member self type check
 // TODO: for step assignment
 // TODO: Combined assignment operators
 // TODO: Combined comarison operator

@@ -140,8 +140,8 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 				sn->name = s.scope.Last();
 				sn->symbol = s;
 				
-				for (const ScopeList& var : s.arguments) {
-					sn->vars.Add(var.Last());
+				for (const Scope& var : s.names) {
+					sn->vars.Add(var);
 				}
 
 				nodes.Add(sn);

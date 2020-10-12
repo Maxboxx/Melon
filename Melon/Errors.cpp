@@ -261,6 +261,10 @@ String SymbolError::Function(const Boxx::String& func, const Boxx::List<Boxx::St
 	}
 }
 
+String SymbolError::RecursiveStruct(const Boxx::String& structName) {
+	return "struct '" + structName + "' is recursive";
+}
+
 const char* const SymbolError::ConstAssign       = "assignment to const value";
 const char* const SymbolError::RedefinitionStart = "redefinition of symbol '";
 const char* const SymbolError::RedefinitionEnd   = "'";

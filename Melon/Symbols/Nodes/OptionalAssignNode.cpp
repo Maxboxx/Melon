@@ -41,7 +41,7 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	mov1.arguments.Add(Argument(1));
 	c1.instructions.Add(mov1);
 
-	Symbol argSym = s.Get(s.arguments[1], nodes[0]->file);
+	Symbol argSym = s.Get(s.names[1], nodes[0]->file);
 	Symbol argType = argSym.GetType(nodes[0]->file);
 
 	const ScopeList typeName = argType.scope;

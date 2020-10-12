@@ -266,7 +266,7 @@ namespace Melon {
 	};
 
 	///B SymbolError
-	/// Thrown if a symbol can't be found or is redefined
+	/// Thrown for errors with symbols
 	class SymbolError : public CompileError {
 	public:
 		///T Constructor
@@ -279,6 +279,8 @@ namespace Melon {
 		}
 
 		static Boxx::String Function(const Boxx::String& func, const Boxx::List<Boxx::String>& args);
+
+		static Boxx::String RecursiveStruct(const Boxx::String& structName);
 
 		///T Errors
 		/// All syntax error messages

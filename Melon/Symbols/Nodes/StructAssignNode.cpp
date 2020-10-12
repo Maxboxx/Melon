@@ -28,8 +28,8 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 
 	Symbol s = Symbol::Find(type, nodes[0]->file);
 
-	for (UInt i = 0; i < s.arguments.Size(); i++) {
-		Symbol argSym = s.Get(s.arguments[i], nodes[0]->file);
+	for (UInt i = 0; i < s.names.Size(); i++) {
+		Symbol argSym = s.Get(s.names[i], nodes[0]->file);
 		Symbol argType = argSym.GetType(nodes[0]->file);
 
 		const ScopeList typeName = argType.scope;

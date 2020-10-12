@@ -74,7 +74,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 
 		enumSymbol.Add(value.name, v, FileInfo(info.filename, info.Current().line, info.statementNumber));
 		en->values.Add(value.name);
-		enumSymbol.arguments.Add(ScopeList().Add(value.name));
+		enumSymbol.names.Add(value.name);
 	}
 
 	while (true) {

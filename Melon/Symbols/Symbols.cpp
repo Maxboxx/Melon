@@ -1550,8 +1550,8 @@ void Symbol::Setup() {
 		optionalSym.scope  = optionalScope.scope.Pop().Add(last);
 		optionalSym.varType = optionalSym.scope;
 
-		optionalSym.arguments.Add(ScopeList().Add(Scope::HasValue));
-		optionalSym.arguments.Add(ScopeList().Add(Scope::Value));
+		optionalSym.names.Add(Scope::HasValue);
+		optionalSym.names.Add(Scope::Value);
 
 		optionalSym.templateArgs.Add(ScopeList().Add(Scope("T")));
 
