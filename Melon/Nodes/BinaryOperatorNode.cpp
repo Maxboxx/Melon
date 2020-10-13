@@ -49,6 +49,8 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 	nodes.Add(node2);
 	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
+	if (s.type == SymbolType::None) return CompiledNode();
+
 	if (s.symbolNode) {
 		return s.symbolNode->Compile(nodes, info);
 	}

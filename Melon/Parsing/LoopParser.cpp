@@ -175,18 +175,50 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 		if (info.Current().type == TokenType::Comma) {
 			info.index++;
 
-			if (NodePtr cond = ConditionParser::Parse(info)) {
+			Optional<Scope> op;
+			NodePtr node = nullptr;
+			
+			if (ExpressionParser::IsBinaryOperator(info.Current().type)) {
+				op = Scope(info.Current().value);
+				info.index++;
+
+				node = ExpressionParser::Parse(info);
+
+				if (!node) {
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'" + info.Current(-1).value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				}
+			}
+			else if (NodePtr cond = ConditionParser::Parse(info)) {
+				node = cond;
+			}
+			else {
+				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+
+			if (node) {
 				Pointer<ForConditionNode> fcn = new ForConditionNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 				fcn->loopInit = init;
-				fcn->loopCondition = cond;
+				fcn->conditionOperator = op;
+				fcn->loopCondition = node;
 
 				if (info.Current().type == TokenType::Comma) {
 					info.index++;
 
-					if (NodePtr step = ExpressionParser::Parse(info)) {
-						fcn->loopStep = step;
+					if (ExpressionParser::IsBinaryOperator(info.Current().type)) {
+						fcn->stepOperator = Scope(info.Current().value);
+						info.index++;
+
+						if (NodePtr step = ExpressionParser::Parse(info)) {
+							fcn->loopStep = step;
+						}
+						else {
+							ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'" + info.Current(-1).value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+						}
 					}
 					else if (NodePtr step = AssignmentParser::Parse(info, true)) {
+						fcn->loopStep = step;
+					}
+					else if (NodePtr step = ExpressionParser::Parse(info)) {
 						fcn->loopStep = step;
 					}
 					else {
@@ -197,6 +229,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 					Pointer<IntegerNode> num = new IntegerNode(FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 					num->number = 1;
 					fcn->loopStep = num;
+					fcn->stepOperator = Scope::Add;
 				}
 
 				if (info.Current().type == TokenType::Do) {
@@ -229,9 +262,6 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 				else {
 					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				}
-			}
-			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 		}
 		else {

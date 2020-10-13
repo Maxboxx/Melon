@@ -1,21 +1,5 @@
 
-struct A
-	B: b
+for int: i = 0, < 10 do
 	
-	function init()
-		self.b = B {
-			a = 1,
-			b = 2,
-			c = 3,
-			p = A()
-		}
-	end
 end
-
-struct B
-	int: a, b, c
-	A: p
-end
-
-A: a = A()
 

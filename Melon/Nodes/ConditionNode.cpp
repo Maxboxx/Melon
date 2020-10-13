@@ -21,7 +21,7 @@ ConditionNode::~ConditionNode() {
 }
 
 ScopeList ConditionNode::Type() const {
-	return ScopeList().Add(Scope::Bool);
+	return cond->Type();//ScopeList().Add(Scope::Bool);
 }
 
 UInt ConditionNode::GetSize() const {

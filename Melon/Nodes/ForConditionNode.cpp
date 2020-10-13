@@ -107,8 +107,20 @@ Mango ForConditionNode::ToMango() const {
 StringBuilder ForConditionNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = loopInit->ToMelon(indent);
 	sb += ", ";
+
+	if (conditionOperator) {
+		sb += conditionOperator.Get().ToString();
+		sb += " ";
+	}
+
 	sb += loopCondition->ToMelon(indent);
 	sb += ", ";
+
+	if (stepOperator) {
+		sb += stepOperator.Get().ToString();
+		sb += " ";
+	}
+
 	sb += loopStep->ToMelon(indent);
 	return sb;
 }

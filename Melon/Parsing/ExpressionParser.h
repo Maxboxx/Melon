@@ -8,10 +8,11 @@ namespace Melon {
 		public:
 			static Nodes::NodePtr Parse(ParsingInfo& info, const bool statement = false);
 
-		private:
 			static Boxx::UByte Precedence(const TokenType op);
 			static bool IsBinaryOperator(const TokenType op);
 			static bool IsLogic(const TokenType type);
+
+		private:
 
 			static Nodes::NodePtr ParseValue(ParsingInfo& info, const bool statement = false);
 			static Nodes::NodePtr ParseRawValue(ParsingInfo& info, const bool statement = false);

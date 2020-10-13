@@ -10,7 +10,11 @@ namespace Melon {
 		class ForConditionNode : public Node {
 		public:
 			NodePtr loopInit;
+
+			Boxx::Optional<Symbols::Scope> conditionOperator;
 			NodePtr loopCondition;
+
+			Boxx::Optional<Symbols::Scope> stepOperator;
 			NodePtr loopStep;
 
 			ForConditionNode(const Symbols::ScopeList& scope, const FileInfo& file);
