@@ -16,7 +16,6 @@ using namespace Kiwi;
 
 using namespace Melon;
 
-// TODO: for step assignment
 // TODO: Combined assignment operators
 // TODO: Combined comarison operator
 // TODO: Add specific error for single assignment

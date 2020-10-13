@@ -279,8 +279,11 @@ namespace Melon {
 		}
 
 		static Boxx::String Function(const Boxx::String& func, const Boxx::List<Boxx::String>& args);
-
 		static Boxx::String RecursiveStruct(const Boxx::String& structName);
+		static Boxx::String Ambiguous(const Boxx::String& symbol);
+		static Boxx::String AmbiguousCall(const Boxx::String& func, const Boxx::List<Boxx::String>& args);
+		static Boxx::String ImplicitConvert(const Boxx::String& from, const Boxx::String& to);
+		static Boxx::String ExplicitConvert(const Boxx::String& from, const Boxx::String& to);
 
 		///T Errors
 		/// All syntax error messages
@@ -292,8 +295,6 @@ namespace Melon {
 		static const char* const FuncNotFoundStart;
 		static const char* const NotFoundEnd;
 		static const char* const NotFoundArgs;
-		static const char* const AmbiguousStart;
-		static const char* const AmbiguousEnd;
 		///M
 	};
 

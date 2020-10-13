@@ -848,7 +848,7 @@ Symbol Symbol::FindInNamespace(const ScopeList& scopes, const FileInfo& file) {
 
 				if (s.symbolNamespace == includeScopes) {
 					if (foundSymbol && foundSymbol.Get().scope != s.scope) {
-						ErrorLog::Error(SymbolError(SymbolError::AmbiguousStart + scopes.ToString() + SymbolError::AmbiguousEnd, file));
+						ErrorLog::Error(SymbolError(SymbolError::Ambiguous(scopes.ToString()), file));
 					}
 
 					foundSymbol = s;
@@ -1118,7 +1118,13 @@ Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types,
 	}
 
 	if (multipleImplicit) {
-		ErrorLog::Error(SymbolError("ambig error", file)); // TODO: Update error message
+		List<String> args;
+
+		for (const ScopeList& type : types) {
+			args.Add(type.ToString());
+		}
+
+		ErrorLog::Error(SymbolError(SymbolError::AmbiguousCall(func.ToString(), args), file));
 		return Symbol();
 	}
 
@@ -1141,7 +1147,7 @@ Symbol Symbol::FindImplicitConversion(const ScopeList& from, const ScopeList& to
 	Symbol convert = FindExplicitConversion(from, to, file);
 
 	if (convert.isExplicit) {
-		ErrorLog::Error(SymbolError("implicit convert error", file)); // TODO: Update error message
+		ErrorLog::Error(SymbolError(SymbolError::ImplicitConvert(from.ToString(), to.ToString()), file));
 		return Symbol();
 	}
 
@@ -1189,7 +1195,7 @@ Symbol Symbol::FindExplicitConversion(const ScopeList& from, const ScopeList& to
 		}
 	}
 	
-	ErrorLog::Error(SymbolError("explicit convert error", file)); // TODO: Update error message
+	ErrorLog::Error(SymbolError(SymbolError::ExplicitConvert(from.ToString(), to.ToString()), file));
 	return Symbol();
 }
 

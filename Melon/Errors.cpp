@@ -246,7 +246,7 @@ const char* const SyntaxError::CustomInitName       = "name expected in custom i
 const char* const SyntaxError::InvalidInclude       = "invalid name to include";
 const char* const SyntaxError::InvalidRef           = "'ref' can only be used for function arguments";
 
-String SymbolError::Function(const Boxx::String& func, const Boxx::List<Boxx::String>& args) {
+String SymbolError::Function(const String& func, const List<String>& args) {
 	if (args.IsEmpty()) {
 		return SymbolError::FuncNotFoundStart + func + SymbolError::NotFoundEnd;
 	}
@@ -261,8 +261,35 @@ String SymbolError::Function(const Boxx::String& func, const Boxx::List<Boxx::St
 	}
 }
 
-String SymbolError::RecursiveStruct(const Boxx::String& structName) {
+String SymbolError::RecursiveStruct(const String& structName) {
 	return "struct '" + structName + "' is recursive";
+}
+
+String SymbolError::Ambiguous(const String& symbol) {
+	return "'" + symbol + "' is ambiguous";
+}
+
+String SymbolError::AmbiguousCall(const String& func, const List<String>& args) {
+	if (args.IsEmpty()) {
+		return "call to '" + func + "' is ambiguous";
+	}
+	else {
+		String argStr = args[0];
+
+		for (UInt i = 1; i < args.Size(); i++) {
+			argStr += ", " + args[i];
+		}
+
+		return "call to '" + func + "' is ambiguous for arguments: " + argStr;
+	}
+}
+
+String SymbolError::ImplicitConvert(const String& from, const String& to) {
+	return "implicit conversion from '" + from + "' to '" + to + "' not found";
+}
+
+String SymbolError::ExplicitConvert(const String& from, const String& to) {
+	return "conversion from '" + from + "' to '" + to + "' not found";
 }
 
 const char* const SymbolError::ConstAssign       = "assignment to const value";
@@ -272,8 +299,6 @@ const char* const SymbolError::NotFoundStart     = "symbol '";
 const char* const SymbolError::FuncNotFoundStart = "function '";
 const char* const SymbolError::NotFoundEnd       = "' not found";
 const char* const SymbolError::NotFoundArgs      = "' not found for arguments: ";
-const char* const SymbolError::AmbiguousStart     = "'";
-const char* const SymbolError::AmbiguousEnd       = "' is ambiguous";
 
 String TypeError::Operator(const String& op, const String& type) {
 	return "operator '" + op + "' for '" + type + "' not found";

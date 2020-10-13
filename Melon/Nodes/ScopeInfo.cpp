@@ -71,28 +71,8 @@ void ScopeInfo::ExitScope() {
 
 ScopeInfo ScopeInfo::CopyBranch() {
 	ScopeInfo scopeInfo = *this;
-
-	scopeInfo.unassigned = Set<Scope>();
-
-	for (const Scope& var : unassigned) {
-		scopeInfo.unassigned.Add(var);
-	}
-
-	// TODO: Replace with Stack::Copy()
-	Stack<ScopeType> tempTypes;
-
-	while (!types.IsEmpty()) {
-		tempTypes.Push(types.Pop());
-	}
-
-	scopeInfo.types = Stack<ScopeType>();
-	
-	while (!tempTypes.IsEmpty()) {
-		ScopeType type = tempTypes.Pop();
-		types.Push(type);
-		scopeInfo.types.Push(type);
-	}
-
+	scopeInfo.unassigned = unassigned.Copy();
+	scopeInfo.types = types.Copy();
 	return scopeInfo;
 }
 
