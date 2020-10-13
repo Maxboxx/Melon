@@ -490,7 +490,8 @@ namespace Kiwi {
 			name == InstructionType::Function ||
 			name == InstructionType::Jmp ||
 			name == InstructionType::Call ||
-			name == InstructionType::Ret;
+			name == InstructionType::Ret ||
+			name == InstructionType::Exit;
 	}
 
 	///B Converter
@@ -575,6 +576,8 @@ namespace Kiwi {
 				bool eq = true;
 
 				for (Boxx::UInt i = 1; i < instruction.arguments.Size(); i++) {
+					if (instruction.arguments[i].type == ArgumentType::Label) break;
+
 					if (instruction.sizes[i] != size) {
 						eq = false;
 						break;
@@ -591,6 +594,7 @@ namespace Kiwi {
 				}
 				else {
 					for (Boxx::UInt i = 0; i < instruction.arguments.Size(); i++) {
+						if (instruction.arguments[i].type == ArgumentType::Label) break;
 						if (i > 0) inst += ",";
 						inst += " " + Boxx::String::ToString((Boxx::UInt)instruction.sizes[i]) + (instruction.signs[i] ? "" : "U");
 					}
@@ -737,16 +741,6 @@ namespace Kiwi {
 			return false;
 		}
 
-		///T Validate Size
-		/// Validates the size of an instruction
-		static void ValidateSize(const Instruction& inst, Boxx::Logger& logger, const ErrorInfo& errInfo) {
-			for (Boxx::UInt i = 0; i < inst.arguments.Size(); i++) {
-				if (inst.arguments[i].type != ArgumentType::Label && !IsValidSize(inst.sizes[i])) {
-					logger.Error(errInfo.CreateMessage("invalid size: " + Boxx::String::ToString(inst.sizes[i])));
-				}
-			}
-		}
-
 		///T Validate instruction
 		/// Validates a kiwi instruction
 		static bool Validate(const Instruction& instruction, Boxx::Logger& logger, const ErrorInfo& errInfo = ErrorInfo()) {
@@ -842,8 +836,6 @@ namespace Kiwi {
 
 	private:
 		static bool ValidateMov(const Instruction& instruction, Boxx::Logger& logger, const ErrorInfo& errInfo) {
-			ValidateSize(instruction, logger, errInfo);
-
 			if (instruction.arguments.Size() < 2) {
 				logger.Error(errInfo.FewArgs());
 				return false;
@@ -879,8 +871,6 @@ namespace Kiwi {
 		}
 
 		static bool ValidateBinOp(const Instruction& instruction, Boxx::Logger& logger, const ErrorInfo& errInfo) {
-			ValidateSize(instruction, logger, errInfo);
-
 			if (instruction.arguments.Size() == 2) {
 				if (
 					instruction.arguments[0].type != ArgumentType::Memory &&
@@ -941,8 +931,6 @@ namespace Kiwi {
 		}
 
 		static bool ValidateUnaryOp(const Instruction& instruction, Boxx::Logger& logger, const ErrorInfo& errInfo) {
-			ValidateSize(instruction, logger, errInfo);
-
 			if (instruction.arguments.Size() == 1) {
 				if (
 					instruction.arguments[0].type != ArgumentType::Memory &&
@@ -1035,8 +1023,6 @@ namespace Kiwi {
 		}
 
 		static bool ValidateNumArg(const Instruction& instruction, Boxx::Logger& logger, const ErrorInfo& errInfo) {
-			ValidateSize(instruction, logger, errInfo);
-
 			if (instruction.arguments.Size() < 1) {
 				logger.Error(errInfo.FewArgs());
 				return false;
@@ -1068,8 +1054,6 @@ namespace Kiwi {
 		}
 
 		static bool ValidateComp(const Instruction& instruction, Boxx::Logger& logger, const ErrorInfo& errInfo) {
-			ValidateSize(instruction, logger, errInfo);
-
 			if (instruction.arguments.Size() == 2) {
 				if (
 					instruction.arguments[0].type != ArgumentType::Memory &&

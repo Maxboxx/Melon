@@ -3,6 +3,7 @@
 #include "OptimizerInstruction.h"
 
 #include "Boxx/Math.h"
+#include "Boxx/Set.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -18,6 +19,8 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 			RemoveDuplicates(segment.value);
 			CombineMov(segment.value);
 			CombinePushPop(segment.value);
+			RearrangeJumps(segment.value);
+			UpdateLabels(segment.value);
 		}
 	}
 
@@ -45,7 +48,7 @@ List<Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>> KiwiOptimizer
 		bool start = false;
 		OptimizerInstruction inst = instructions[i];
 
-		if (inst.instruction.type == InstructionType::Function || inst.instruction.type == InstructionType::Call || inst.instruction.type == InstructionType::Label) {
+		if (inst.instruction.type == InstructionType::Function || inst.instruction.type == InstructionType::Call) {
 			start = true;
 		}
 		else if (inst.instruction.type == InstructionType::Sub && inst.instruction.arguments[0].type == ArgumentType::Register && inst.instruction.arguments[0].reg.type == RegisterType::Stack) {
@@ -399,6 +402,7 @@ void KiwiOptimizer::CombinePushPop(Boxx::List<OptimizerInstruction>& instruction
 						instructions[i].instruction.type = InstructionType::Push;
 						instructions[i].instruction.sizes[0] = combinedNum;
 						instructions.RemoveAt(u);
+						i--;
 					}
 					else if (combinedNum < 0) {
 						OffsetStackPointer(instructions, i + 1, u - 1, -num);
@@ -410,6 +414,55 @@ void KiwiOptimizer::CombinePushPop(Boxx::List<OptimizerInstruction>& instruction
 
 					break;
 				}
+			}
+		}
+	}
+}
+
+void KiwiOptimizer::RearrangeJumps(Boxx::List<OptimizerInstruction>& instructions) {
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		if (!instructions[i].CanJump()) continue;
+
+		if (Instruction::IsComp(instructions[i].instruction.type)) {
+			if (i + 2 < instructions.Size()) {
+				if (instructions[i + 1].instruction.type == InstructionType::Jmp) {
+					if (instructions[i + 2].instruction.type == InstructionType::Label) {
+						if (instructions[i + 2].instruction.instructionName == instructions[i].GetJump()) {
+							instructions[i].instruction.type = OppositeComp(instructions[i].instruction.type);
+							instructions[i].instruction.arguments[2].label = instructions[i + 1].instruction.arguments[0].label;
+							instructions.RemoveAt(i + 1);
+						}
+					}
+				}
+			}
+		}
+		
+		for (UInt u = i + 1; u < instructions.Size(); u++) {
+			if (instructions[u].instruction.type != InstructionType::Label) break;
+				
+			if (instructions[u].instruction.instructionName == instructions[i].GetJump()) {
+				instructions.RemoveAt(i);
+				i--;
+				break;
+			}
+		}
+	}
+}
+
+void KiwiOptimizer::UpdateLabels(Boxx::List<OptimizerInstruction>& instructions) {
+	Set<String> usedLabels;
+
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		if (instructions[i].CanJump()) {
+			usedLabels.Add(instructions[i].GetJump());
+		}
+	}
+
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		if (instructions[i].instruction.type == InstructionType::Label) {
+			if (!usedLabels.Contains(instructions[i].instruction.instructionName)) {
+				instructions.RemoveAt(i);
+				i--;
 			}
 		}
 	}
