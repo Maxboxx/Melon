@@ -344,7 +344,8 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	else {
 		info.stack.Pop(argSize);
 
-		c.argument = Argument(MemoryLocation(info.stack.Offset()));
+		retSize -= Symbol::FindNearestInNamespace(s.scope.Pop(), s.returnValues[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+		c.argument = Argument(MemoryLocation(info.stack.Offset() + retSize));
 
 		info.stack.top = stack.top;
 		return c;

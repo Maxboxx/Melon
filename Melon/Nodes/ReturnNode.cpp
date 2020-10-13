@@ -139,8 +139,8 @@ StringBuilder ReturnNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "return";
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
-		sb += " ";
-		if (i > 0) sb += ",";
+		if (i > 0) sb += ", ";
+		else sb += " ";
 		sb += nodes[i]->ToMelon(indent);
 	}
 

@@ -78,35 +78,31 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 	}
 
 	List<Pair<ScopeList, NodePtr>> values = Values();
-	List<UInt> returnSizes;
+	List<UInt> returnOffsets;
 	const UInt frame = info.stack.frame;
 
 	for (UInt i = 0; i < vars.Size(); i++) {
 		const UInt regIndex = info.index; 
 
-		if (i < values.Size()) {
-			List<NodePtr> nodes;
-			nodes.Add(vars[i]);
-			nodes.Add(values[i].value);
-
-			List<ScopeList> args;
-			args.Add(values[i].key);
-
+		if (i < this->values.Size()) {
 			info.important = true;
 			c.AddInstructions(CompileAssignment(vars[i], values[i].value, info, vars[i]->file).instructions);
 			info.important = false;
 
-			if (i + 1 >= values.Size()) {
+			if (i + 1 >= this->values.Size()) {
 				UInt size = info.stack.top + Symbol::Find(values[i].key, values[i].value->file).size;
 
 				for (UInt u = i + 1; u < values.Size(); u++) {
 					size += Symbol::Find(values[u].key, values[i].value->file).size;
-					returnSizes.Add(size);
+					returnOffsets.Add(size);
 				}
+			}
+			else {
+				info.stack.PopExpr(frame, c);
 			}
 		}
 		else {
-			Pointer<StackNode> sn = new StackNode(info.stack.Offset(returnSizes[i - values.Size()]));
+			Pointer<StackNode> sn = new StackNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
 			sn->type = values[i].key;
 
 			info.important = true;
@@ -115,9 +111,9 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 		}
 
 		info.index = regIndex;
-
-		info.stack.PopExpr(frame, c);
 	}
+
+	info.stack.PopExpr(frame, c);
 
 	return c;
 }

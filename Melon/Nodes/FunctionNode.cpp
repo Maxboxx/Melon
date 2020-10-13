@@ -156,7 +156,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 
 	for (UInt i = 0; i < s.returnValues.Size(); i++) {
 		if (i > 0) sb += ", ";
-		sb += s.returnValues[0].ToString();
+		sb += s.returnValues[i].ToString();
 	}
 
 	if (!s.returnValues.IsEmpty()) {
