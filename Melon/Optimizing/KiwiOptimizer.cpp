@@ -15,6 +15,7 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 	for (UInt i = 0; i < loops; i++) {
 		for (Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>& segment : segments) {
 			CombineComp(segment.value);
+			RemoveComps(segment.value);
 			ReduceMov(segment.value);
 			RemoveDuplicates(segment.value);
 			CombineMov(segment.value);
@@ -342,7 +343,7 @@ void KiwiOptimizer::RemoveDuplicates(List<OptimizerInstruction>& instructions) {
 	}
 }
 
-void KiwiOptimizer::CombineComp(Boxx::List<OptimizerInstruction>& instructions) {
+void KiwiOptimizer::CombineComp(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
 		const OptimizerInstruction inst = instructions[i];
 
@@ -373,7 +374,46 @@ void KiwiOptimizer::CombineComp(Boxx::List<OptimizerInstruction>& instructions) 
 	}
 }
 
-void KiwiOptimizer::CombinePushPop(Boxx::List<OptimizerInstruction>& instructions) {
+void KiwiOptimizer::RemoveComps(List<OptimizerInstruction>& instructions) {
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		const OptimizerInstruction inst = instructions[i];
+
+		if (Instruction::IsComp(inst.instruction.type) && !inst.important && inst.instruction.arguments.Size() == 3) {
+			if (inst.instruction.arguments[0].type == ArgumentType::Number && inst.instruction.arguments[1].type == ArgumentType::Number) {
+				bool output = false;
+
+				switch (inst.instruction.type) {
+					case InstructionType::Eq: output = inst.instruction.arguments[0].number == inst.instruction.arguments[1].number; break;
+					case InstructionType::Ne: output = inst.instruction.arguments[0].number != inst.instruction.arguments[1].number; break;
+					case InstructionType::Lt: output = inst.instruction.arguments[0].number  < inst.instruction.arguments[1].number; break;
+					case InstructionType::Gt: output = inst.instruction.arguments[0].number  > inst.instruction.arguments[1].number; break;
+					case InstructionType::Le: output = inst.instruction.arguments[0].number <= inst.instruction.arguments[1].number; break;
+					case InstructionType::Ge: output = inst.instruction.arguments[0].number >= inst.instruction.arguments[1].number; break;
+				}
+
+				if (inst.instruction.arguments[2].type == ArgumentType::Label) {
+					if (output) {
+						Instruction jmp = Instruction(InstructionType::Jmp);
+						jmp.arguments.Add(inst.instruction.arguments[2]);
+						instructions[i].instruction = jmp;
+					}
+					else {
+						instructions.RemoveAt(i);
+						i--;
+					}
+				}
+				else {
+					Instruction mov = Instruction(InstructionType::Mov, inst.instruction.sizes[2]);
+					mov.arguments.Add(inst.instruction.arguments[2]);
+					mov.arguments.Add(Argument(output ? 1 : 0));
+					instructions[i].instruction = mov;
+				}
+			}
+		}
+	}
+}
+
+void KiwiOptimizer::CombinePushPop(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
 		const OptimizerInstruction inst = instructions[i];
 
@@ -419,7 +459,7 @@ void KiwiOptimizer::CombinePushPop(Boxx::List<OptimizerInstruction>& instruction
 	}
 }
 
-void KiwiOptimizer::RearrangeJumps(Boxx::List<OptimizerInstruction>& instructions) {
+void KiwiOptimizer::RearrangeJumps(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
 		if (!instructions[i].CanJump()) continue;
 
@@ -436,6 +476,14 @@ void KiwiOptimizer::RearrangeJumps(Boxx::List<OptimizerInstruction>& instruction
 				}
 			}
 		}
+		else if (instructions[i].instruction.type == InstructionType::Jmp) {
+			UInt u = i + 1;
+
+			while (u < instructions.Size()) {
+				if (instructions[u].instruction.type == InstructionType::Label) break;
+				instructions.RemoveAt(u);
+			}
+		}
 		
 		for (UInt u = i + 1; u < instructions.Size(); u++) {
 			if (instructions[u].instruction.type != InstructionType::Label) break;
@@ -449,7 +497,7 @@ void KiwiOptimizer::RearrangeJumps(Boxx::List<OptimizerInstruction>& instruction
 	}
 }
 
-void KiwiOptimizer::UpdateLabels(Boxx::List<OptimizerInstruction>& instructions) {
+void KiwiOptimizer::UpdateLabels(List<OptimizerInstruction>& instructions) {
 	Set<String> usedLabels;
 
 	for (UInt i = 0; i < instructions.Size(); i++) {
