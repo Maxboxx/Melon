@@ -14,12 +14,12 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 
 	for (UInt i = 0; i < loops; i++) {
 		for (Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>& segment : segments) {
+			CombinePushPop(segment.value);
 			CombineComp(segment.value);
 			RemoveComps(segment.value);
 			ReduceMov(segment.value);
 			RemoveDuplicates(segment.value);
 			CombineMov(segment.value);
-			CombinePushPop(segment.value);
 			RearrangeJumps(segment.value);
 			UpdateLabels(segment.value);
 		}

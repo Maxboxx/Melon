@@ -1,6 +1,11 @@
 
-int: i = 0
-
-while true == false do
-	i = i + 1
+function f(int: ref a, int: ref b)
+	a = a + b
+	b = b + 1
 end
+
+int: i = 3
+long: n = 4
+
+f(i, noref n)
+

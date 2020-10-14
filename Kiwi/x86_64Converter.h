@@ -257,9 +257,10 @@ namespace Kiwi {
 					case 1: return "cl";
 				}
 			}
-			
-			logger.Error("undefined reserved register");
-			return "undefined reserved register";
+			else {
+				logger.Error("undefined reserved register");
+				return "undefined reserved register";
+			}
 		}
 
 		Boxx::String GetRegisterName(const Register& reg, const Boxx::UByte size) {
@@ -490,7 +491,7 @@ namespace Kiwi {
 
 		///T Convert Mov instruction
 		/// Converts a move instruction with sign or zero extension if operands are different sizes
-		///W The upper half of an 8 byte register has to be full of zeros before calling this function in order to zero extend from a 4 byte reserved register to the 8 byte version or an 8 byte stack value
+		///W The upper half of an 8 byte reserved register has to be full of zeros before calling this function in order to zero extend from a 4 byte reserved register to the 8 byte version or an 8 byte memory location
 		void ConvertMov(Boxx::List<Instruction>& instructions, const Instruction& inst, const Register& tempReg = GetARegister()) {
 			Instruction instruction = inst.Copy();
 
@@ -571,8 +572,22 @@ namespace Kiwi {
 		}
 
 		Boxx::List<Instruction> Extend4To8Unsigned(const Instruction& inst, const Register& reg) {
-			Instruction mov = inst;
 			Boxx::List<Instruction> insts;
+
+			if (inst.arguments[0].type == ArgumentType::Register && inst.arguments[1].type == ArgumentType::Register && inst.arguments[0] == inst.arguments[1]) {
+				return insts;
+			}
+			else if (inst.arguments[0].type == ArgumentType::Register) {
+				Instruction mov = inst.Copy();
+				mov.type = InstructionType::Custom;
+				mov.instructionName = GetSizeName("mov", 4);
+				mov.sizes[0] = 4;
+
+				insts.Add(mov);
+				return insts;
+			}
+
+			Instruction mov = inst;
 
 			Instruction mov2 = mov.Copy();
 			mov.sizes[0] = 4;
@@ -627,20 +642,7 @@ namespace Kiwi {
 			mov.type = InstructionType::Custom;
 			mov.sizes[1] = mov.sizes[0];
 
-			if (mov.arguments[1].type == ArgumentType::Number && mov.sizes[1] == 8) {
-				Instruction mov2 = mov.Copy();
-
-				mov.arguments[0] = reg;
-				insts.Add(mov);
-
-				mov2.arguments[0] = inst.arguments[0];
-				mov2.arguments[1] = reg;
-				insts.Add(mov2);
-			}
-			else {
-				insts.Add(mov);
-			}
-
+			insts.Add(mov);
 			return insts;
 		}
 
@@ -731,7 +733,7 @@ namespace Kiwi {
 			if (instruction.arguments[2].type != ArgumentType::Register) {
 				bool sign = signedResult;
 
-				if (size < instruction.sizes[2] && instruction.arguments[2].type == ArgumentType::Memory) {
+				if (size < instruction.sizes[2] && instruction.arguments[2].type == ArgumentType::Memory && !(size == 4 && instruction.sizes[2] == 8)) {
 					Instruction mov2 = Instruction(InstructionType::Mov);
 					mov2.arguments.Add(arg);
 					mov2.arguments.Add(arg);
@@ -754,7 +756,7 @@ namespace Kiwi {
 				mov3.signs[1] = sign;
 				ConvertMov(instructions, mov3);
 			}
-			else if (firstA) {
+			else if (firstA || instruction.sizes[2] > size) {
 				Instruction mov = Instruction(InstructionType::Mov);
 				mov.arguments.Add(instruction.arguments[2]);
 				mov.arguments.Add(arg);
@@ -767,14 +769,14 @@ namespace Kiwi {
 		}
 
 		void MoveBinaryThreeOperands(Boxx::List<Instruction>& instructions, const Instruction& instruction, const Argument arg, Argument& arg2, const Boxx::UByte size, Boxx::UByte& arg2Size, const bool firstA) {
-			if (size == 8 && instruction.sizes[1] == 4 && instruction.signs[1]) {
+			if (size == 8 && ((instruction.sizes[1] == 4 && instruction.signs[1]) || arg2.type == ArgumentType::Number)) {
 				Instruction mov = Instruction(InstructionType::Mov);
 				mov.arguments.Add(firstA ? GetCRegister() : GetARegister());
 				mov.arguments.Add(arg2);
 				mov.sizes[0] = 8;
-				mov.sizes[1] = 4;
-				mov.signs[0] = true;
-				mov.signs[1] = true;
+				mov.sizes[1] = arg2.type == ArgumentType::Number ? 8 : instruction.sizes[1];
+				mov.signs[0] = instruction.signs[1];
+				mov.signs[1] = instruction.signs[1];
 				ConvertMov(instructions, mov);
 
 				arg2 = firstA ? GetCRegister() : GetARegister();
@@ -792,17 +794,23 @@ namespace Kiwi {
 		}
 
 		void ConvertBinaryThree(Boxx::List<Instruction>& instructions, const Instruction& instruction, const BinaryInfo& info) {
-			bool firstA = instruction.type == InstructionType::Mul || instruction.type == InstructionType::Div || instruction.type == InstructionType::Mod;
+			bool minSize2 = instruction.type == InstructionType::Mul ||
+				instruction.type == InstructionType::Div ||
+				instruction.type == InstructionType::Mod;
 
 			Argument arg = GetARegister();
 			Boxx::UByte size = Boxx::Math::Max(instruction.sizes[0], instruction.sizes[1]);
 			bool signedResult = instruction.signs[0] || instruction.signs[1];
 
-			if (firstA && size < 2) size = 2;
+			bool firstA = minSize2 || (size < instruction.GetLargestSize() && (signedResult || size != 4)) || (
+				instruction.arguments[1].type == ArgumentType::Number && 
+				instruction.arguments[2].type != ArgumentType::Register
+			);
+
+			if (minSize2 && size < 2) size = 2;
 
 			if (!firstA && instruction.arguments[2].type == ArgumentType::Register) {
 				arg = instruction.arguments[2];
-				size = instruction.GetLargestSize();
 			}
 
 			Argument arg2 = instruction.arguments[1];
