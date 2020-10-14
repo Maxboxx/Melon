@@ -1,7 +1,7 @@
 
 function f(int: ref a, int: ref b)
 	a = a + b
-	b = b + 1
+	b = b + 1 as long
 end
 
 int: i = 3

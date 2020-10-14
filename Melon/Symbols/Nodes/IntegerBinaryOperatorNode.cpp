@@ -4,6 +4,8 @@
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
+#include "Boxx/Math.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -61,7 +63,7 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 
 	if (arg1.type == ArgumentType::Memory) {
 		arg1 = Argument(Register(info.index++));
-		inst.sizes[2] = Instruction::IsComp(op) ? 1 : size;
+		inst.sizes[2] = Instruction::IsComp(op) ? 1 : Math::Max(inst.sizes[0], inst.sizes[1]);
 		inst.signs[2] = sign;
 		inst.arguments.Add(arg1);
 	}
@@ -77,7 +79,7 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 		}
 	}
 
-	c1.size = size;
+	c1.size = inst.arguments.Size() == 2 ? inst.sizes[0] : inst.sizes[2];
 	c1.argument = arg1;
 	c1.instructions.Add(inst);
 
