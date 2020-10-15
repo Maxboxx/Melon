@@ -642,7 +642,20 @@ namespace Kiwi {
 			mov.type = InstructionType::Custom;
 			mov.sizes[1] = mov.sizes[0];
 
-			insts.Add(mov);
+			if (mov.arguments[0].type != ArgumentType::Register && mov.arguments[1].type == ArgumentType::Number && mov.sizes[1] == 8) {
+				Instruction mov2 = mov.Copy();
+
+				mov.arguments[0] = reg;
+				insts.Add(mov);
+
+				mov2.arguments[0] = inst.arguments[0];
+				mov2.arguments[1] = reg;
+				insts.Add(mov2);
+			}
+			else {
+				insts.Add(mov);
+			}
+
 			return insts;
 		}
 
@@ -924,6 +937,18 @@ namespace Kiwi {
 			in.instructionName = GetSizeName(info.instName, inst.sizes[0]);
 			in.arguments[0] = arg1;
 			in.sizes[1] = inst.sizes[0];
+
+			if (inst.arguments[1].type == ArgumentType::Number && inst.sizes[1] == 8) {
+				Instruction mov1 = Instruction(InstructionType::Mov);
+				mov1.arguments.Add(GetARegister());
+				mov1.arguments.Add(inst.arguments[1]);
+				mov1.sizes[0] = 8;
+				mov1.sizes[1] = 8;
+				ConvertMov(instructions, mov1);
+
+				in.arguments[1] = GetARegister();
+			}
+
 			instructions.Add(in);
 
 			if (info.addBitNot) {

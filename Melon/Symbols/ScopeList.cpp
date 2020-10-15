@@ -22,6 +22,7 @@ const Scope Scope::Int    = Scope("int");
 const Scope Scope::UInt   = Scope("uint");
 const Scope Scope::Long   = Scope("long");
 const Scope Scope::ULong  = Scope("ulong");
+const Scope Scope::Huge  = Scope("huge");
 const Scope Scope::Nil    = Scope("nil");
 
 const Scope Scope::Add  = Scope("+");

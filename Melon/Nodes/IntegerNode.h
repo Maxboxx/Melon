@@ -13,6 +13,9 @@ namespace Melon {
 			///T Number
 			Boxx::Long number;
 
+			///T is unsigned
+			bool isUnsigned = true;
+
 			///T Constructor
 			IntegerNode(const FileInfo& file);
 			~IntegerNode();

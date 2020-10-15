@@ -247,8 +247,8 @@ namespace Kiwi {
 		///T Constructors
 		///M
 		Argument();
-		Argument(const Boxx::Int number);
-		Argument(const ArgumentType type, const Boxx::Int number);
+		Argument(const Boxx::Long number);
+		Argument(const ArgumentType type, const Boxx::Long number);
 		Argument(const ArgumentType type, const Boxx::String& label);
 		Argument(const Register r);
 		Argument(const MemoryLocation s);
@@ -269,14 +269,14 @@ namespace Kiwi {
 	
 	}
 
-	inline Argument::Argument(const Boxx::Int number) {
+	inline Argument::Argument(const Boxx::Long number) {
 		this->type = ArgumentType::Number;
 		this->number = number;
 	}
 
-	inline Argument::Argument(const ArgumentType type, const Boxx::Int number) {
+	inline Argument::Argument(const ArgumentType type, const Boxx::Long number) {
 		this->type = type;
-		this->label = (type == ArgumentType::Label ? Boxx::String("L") : Boxx::String("F")) + number;
+		this->label = (type == ArgumentType::Label ? Boxx::String("L") : Boxx::String("F")) + (Boxx::UInt)number;
 	}
 
 	inline Argument::Argument(const ArgumentType type, const Boxx::String& label) {

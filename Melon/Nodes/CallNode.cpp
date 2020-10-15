@@ -157,12 +157,12 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		assignFirst.Add(false);
 
 		if (Symbol::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
-			UInt top = infoCpy.stack.top;
+			StackPtr stack = infoCpy.stack;
 			CompiledNode n = args[i]->Compile(infoCpy);
 
 			if (
 				n.argument.type != ArgumentType::Memory || 
-				(n.argument.mem.reg == RegisterType::Stack && n.argument.mem.offset >= top) ||
+				(n.argument.mem.reg.type == RegisterType::Stack && stack.Offset(n.argument.mem.offset) >= stack.top) ||
 				!Symbol::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file) ||
 				noRefs[i]
 			) {

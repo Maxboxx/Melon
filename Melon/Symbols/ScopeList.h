@@ -92,6 +92,7 @@ namespace Melon {
 			static const Scope UInt;
 			static const Scope Long;
 			static const Scope ULong;
+			static const Scope Huge;
 			static const Scope Nil;
 			///M
 
