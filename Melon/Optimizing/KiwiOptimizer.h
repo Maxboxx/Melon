@@ -18,9 +18,13 @@ namespace Melon {
 			static void ReduceMov(Boxx::List<OptimizerInstruction>& instructions);
 			static void CombineMov(Boxx::List<OptimizerInstruction>& instructions);
 			static void RemoveDuplicates(Boxx::List<OptimizerInstruction>& instructions);
+			static void RemoveUnused(Boxx::List<OptimizerInstruction>& instructions);
+
 			static void CombineComp(Boxx::List<OptimizerInstruction>& instructions);
 			static void RemoveComps(Boxx::List<OptimizerInstruction>& instructions);
+
 			static void CombinePushPop(Boxx::List<OptimizerInstruction>& instructions);
+
 			static void RearrangeJumps(Boxx::List<OptimizerInstruction>& instructions);
 			static void UpdateLabels(Boxx::List<OptimizerInstruction>& instructions);
 

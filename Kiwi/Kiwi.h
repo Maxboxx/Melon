@@ -210,7 +210,7 @@ namespace Kiwi {
 	}
 
 	inline bool MemoryLocation::operator==(const MemoryLocation& stack) const {
-		return offset == stack.offset;
+		return reg == stack.reg && offset == stack.offset;
 	}
 
 	inline bool MemoryLocation::operator!=(const MemoryLocation& stack) const {
@@ -301,8 +301,11 @@ namespace Kiwi {
 	inline bool Argument::operator==(const Argument& arg) const {
 		if (type != arg.type) return false;
 
-		if (type == ArgumentType::Number || type == ArgumentType::Label || type == ArgumentType::Function) {
+		if (type == ArgumentType::Number) {
 			return number == arg.number;
+		}
+		else if (type == ArgumentType::Label || type == ArgumentType::Function) {
+			return label == arg.label;
 		}
 		else if (type == ArgumentType::Register) {
 			return reg == arg.reg;

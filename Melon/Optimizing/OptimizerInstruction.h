@@ -40,6 +40,18 @@ namespace Melon {
 
 				return instruction.arguments[0].label;
 			}
+
+			bool IsLabel() const {
+				return instruction.type == Kiwi::InstructionType::Label;
+			}
+
+			bool IsCall() const {
+				return instruction.type == Kiwi::InstructionType::Call;
+			}
+
+			bool IsLabelOrCall() const {
+				return IsLabel() || IsCall();
+			}
 		};
 	}
 }
