@@ -36,7 +36,6 @@ namespace Kiwi {
 		///M
 		Register,
 		Stack,
-		Frame,
 		Name
 		///M
 	};
@@ -126,6 +125,8 @@ namespace Kiwi {
 		bool operator==(const Register& reg) const;
 		bool operator!=(const Register& reg) const;
 		///M
+
+		bool operator<(const Register& reg) const;
 	};
 
 	inline Register::Register() {
@@ -160,7 +161,7 @@ namespace Kiwi {
 		else if (type == RegisterType::Name) {
 			return name == reg.name;
 		}
-		else if (type == RegisterType::Stack || type == RegisterType::Frame) {
+		else if (type == RegisterType::Stack) {
 			return true;
 		}
 
@@ -169,6 +170,28 @@ namespace Kiwi {
 
 	inline bool Register::operator!=(const Register& reg) const {
 		return !operator==(reg);
+	}
+
+	inline bool Register::operator<(const Register& reg) const {
+		if (type != reg.type) {
+			return type < reg.type;
+		}
+
+		switch (type) {
+			case RegisterType::Stack: {
+				return false;
+			}
+
+			case RegisterType::Register: {
+				return index < reg.index;
+			}
+
+			case RegisterType::Name: {
+				return name < reg.name;
+			}
+		}
+
+		return false;
 	}
 
 	///B MemoryLocation
@@ -195,6 +218,8 @@ namespace Kiwi {
 		bool operator==(const MemoryLocation& stack) const;
 		bool operator!=(const MemoryLocation& stack) const;
 		///M
+
+		bool operator<(const MemoryLocation& stack) const;
 	};
 
 	inline MemoryLocation::MemoryLocation() {
@@ -215,6 +240,11 @@ namespace Kiwi {
 
 	inline bool MemoryLocation::operator!=(const MemoryLocation& stack) const {
 		return !operator==(stack);
+	}
+
+	inline bool MemoryLocation::operator<(const MemoryLocation& stack) const {
+		if (reg != stack.reg) return reg < stack.reg;
+		return offset < stack.offset;
 	}
 
 	///B Argument
@@ -263,6 +293,8 @@ namespace Kiwi {
 		bool operator==(const Argument& arg) const;
 		bool operator!=(const Argument& arg) const;
 		///M
+
+		bool operator<(const Argument& arg) const;
 	};
 
 	inline Argument::Argument() {
@@ -301,11 +333,8 @@ namespace Kiwi {
 	inline bool Argument::operator==(const Argument& arg) const {
 		if (type != arg.type) return false;
 
-		if (type == ArgumentType::Number) {
+		if (type == ArgumentType::Number || type == ArgumentType::Label || type == ArgumentType::Function) {
 			return number == arg.number;
-		}
-		else if (type == ArgumentType::Label || type == ArgumentType::Function) {
-			return label == arg.label;
 		}
 		else if (type == ArgumentType::Register) {
 			return reg == arg.reg;
@@ -319,6 +348,22 @@ namespace Kiwi {
 
 	inline bool Argument::operator!=(const Argument& arg) const {
 		return !operator==(arg);
+	}
+
+	inline bool Argument::operator<(const Argument& arg) const {
+		if (type != arg.type) return type < arg.type;
+
+		if (type == ArgumentType::Number || type == ArgumentType::Label || type == ArgumentType::Function) {
+			return number < arg.number;
+		}
+		else if (type == ArgumentType::Register) {
+			return reg < arg.reg;
+		}
+		else if (type == ArgumentType::Memory) {
+			return mem < arg.mem;
+		}
+
+		return false;
 	}
 
 	///B Instruction
@@ -637,7 +682,6 @@ namespace Kiwi {
 		virtual Boxx::String ConvertRegister(const Register& reg, const Boxx::UByte size) {
 			switch (reg.type) {
 				case RegisterType::Stack: return "SP";
-				case RegisterType::Frame: return "BP";
 				case RegisterType::Register: return "R" + Boxx::String::ToString((int)reg.index);
 				default: logger.Error("undefined register"); return "undefined register";
 			}

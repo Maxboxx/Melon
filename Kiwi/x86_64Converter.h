@@ -137,14 +137,15 @@ namespace Kiwi {
 				case 0:  return "rbx";
 				case 1:  return "rsi";
 				case 2:  return "rdi";
-				case 3:  return "r8";
-				case 4:  return "r9";
-				case 5:  return "r10";
-				case 6:  return "r11";
-				case 7:  return "r12";
-				case 8:  return "r13";
-				case 9:  return "r14";
-				case 10: return "r15";
+				case 3:  return "rbp";
+				case 4:  return "r8";
+				case 5:  return "r9";
+				case 6:  return "r10";
+				case 7:  return "r11";
+				case 8:  return "r12";
+				case 9:  return "r13";
+				case 10: return "r14";
+				case 11: return "r15";
 			}
 
 			logger.Error("undefined qword register");
@@ -156,14 +157,15 @@ namespace Kiwi {
 				case 0:  return "ebx";
 				case 1:  return "esi";
 				case 2:  return "edi";
-				case 3:  return "r8d";
-				case 4:  return "r9d";
-				case 5:  return "r10d";
-				case 6:  return "r11d";
-				case 7:  return "r12d";
-				case 8:  return "r13d";
-				case 9:  return "r14d";
-				case 10: return "r15d";
+				case 3:  return "ebp";
+				case 4:  return "r8d";
+				case 5:  return "r9d";
+				case 6:  return "r10d";
+				case 7:  return "r11d";
+				case 8:  return "r12d";
+				case 9:  return "r13d";
+				case 10: return "r14d";
+				case 11: return "r15d";
 			}
 
 			logger.Error("undefined dword register");
@@ -175,14 +177,15 @@ namespace Kiwi {
 				case 0:  return "bx";
 				case 1:  return "si";
 				case 2:  return "di";
-				case 3:  return "r8w";
-				case 4:  return "r9w";
-				case 5:  return "r10w";
-				case 6:  return "r11w";
-				case 7:  return "r12w";
-				case 8:  return "r13w";
-				case 9:  return "r14w";
-				case 10: return "r15w";
+				case 3:  return "bp";
+				case 4:  return "r8w";
+				case 5:  return "r9w";
+				case 6:  return "r10w";
+				case 7:  return "r11w";
+				case 8:  return "r12w";
+				case 9:  return "r13w";
+				case 10: return "r14w";
+				case 11: return "r15w";
 			}
 
 			logger.Error("undefined word register");
@@ -194,14 +197,15 @@ namespace Kiwi {
 				case 0:  return "bl";
 				case 1:  return "sil";
 				case 2:  return "dil";
-				case 3:  return "r8b";
-				case 4:  return "r9b";
-				case 5:  return "r10b";
-				case 6:  return "r11b";
-				case 7:  return "r12b";
-				case 8:  return "r13b";
-				case 9:  return "r14b";
-				case 10: return "r15b";
+				case 3:  return "bpl";
+				case 4:  return "r8b";
+				case 5:  return "r9b";
+				case 6:  return "r10b";
+				case 7:  return "r11b";
+				case 8:  return "r12b";
+				case 9:  return "r13b";
+				case 10: return "r14b";
+				case 11: return "r15b";
 			}
 
 			logger.Error("undefined byte register");
@@ -218,18 +222,6 @@ namespace Kiwi {
 
 			logger.Error("undefined stack register");
 			return "undefined stack register";
-		}
-
-		Boxx::String GetFrameRegisterName(const Boxx::UByte size) {
-			switch (size) {
-				case 8: return "rbp";
-				case 4: return "ebp";
-				case 2: return "bp";
-				case 1: return "bpl";
-			}
-
-			logger.Error("undefined frame register");
-			return "undefined frame register";
 		}
 
 		Boxx::String GetReservedRegisterName(const Register& reg, const Boxx::UByte size) {
@@ -274,9 +266,6 @@ namespace Kiwi {
 			}
 			else if (reg.type == RegisterType::Stack) {
 				return GetStackRegisterName(size);
-			}
-			else if (reg.type == RegisterType::Frame) {
-				return GetFrameRegisterName(size);
 			}
 			else if (reg.type == RegisterType::Name) {
 				return GetReservedRegisterName(reg, size);

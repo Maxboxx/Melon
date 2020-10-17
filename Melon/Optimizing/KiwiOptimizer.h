@@ -18,7 +18,10 @@ namespace Melon {
 			static void ReduceMov(Boxx::List<OptimizerInstruction>& instructions);
 			static void CombineMov(Boxx::List<OptimizerInstruction>& instructions);
 			static void RemoveDuplicates(Boxx::List<OptimizerInstruction>& instructions);
+			static void CombineDuplicates(Boxx::List<OptimizerInstruction>& instructions);
 			static void RemoveUnused(Boxx::List<OptimizerInstruction>& instructions);
+
+			static bool IsRegister(const Kiwi::Argument& arg);
 
 			static void CombineComp(Boxx::List<OptimizerInstruction>& instructions);
 			static void RemoveComps(Boxx::List<OptimizerInstruction>& instructions);
@@ -35,6 +38,8 @@ namespace Melon {
 			static Boxx::UInt NextGet(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const Kiwi::Argument& arg);
 			static Boxx::UInt NextUse(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const Kiwi::Argument& arg);
 			static Boxx::UInt UseCount(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt start, Boxx::UInt end, const Kiwi::Argument& arg);
+
+			static Boxx::UInt NextRegisterGet(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const Kiwi::Register& reg);
 		};
 	}
 }

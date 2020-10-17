@@ -4,6 +4,7 @@
 
 #include "Boxx/Math.h"
 #include "Boxx/Set.h"
+#include "Boxx/Map.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -19,9 +20,10 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 			CombineComp(segment.value);
 			RemoveComps(segment.value);
 
-			ReduceMov(segment.value);
 			RemoveDuplicates(segment.value);
 			CombineMov(segment.value);
+			CombineDuplicates(segment.value);
+			ReduceMov(segment.value);
 
 			RearrangeJumps(segment.value);
 			UpdateLabels(segment.value);
@@ -362,6 +364,137 @@ void KiwiOptimizer::RemoveDuplicates(List<OptimizerInstruction>& instructions) {
 	}
 }
 
+void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) {
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		if (instructions[i].IsLabelOrCall()) continue;
+
+		const OptimizerInstruction inst = instructions[i];
+
+		if (inst.instruction.type == InstructionType::Mov && IsRegister(inst.instruction.arguments[0])) {
+			Argument arg1 = inst.instruction.arguments[0];
+			Argument arg2 = inst.instruction.arguments[1];
+
+			UInt nextAssign1 = NextAssign(instructions, i, arg1);
+			UInt nextAssign2 = NextAssign(instructions, i, arg2);
+
+			Map<Register, Register> replacement;
+
+			for (UInt u = i + 1; u < nextAssign1; u++) {
+				if (instructions[u].IsLabelOrCall()) break;
+
+				Optional<Tuple<Register, Register>> nextReplacement = nullptr;
+
+				if (u < nextAssign2 && instructions[u].instruction.type == InstructionType::Mov && IsRegister(instructions[u].instruction.arguments[0]) && instructions[u].instruction.arguments[1] == arg2) {
+					const Argument arg = instructions[u].instruction.arguments[0];
+					const UInt assign = NextAssign(instructions, u, arg);
+
+					if (nextAssign1 < assign && NextRegisterGet(instructions, i, arg.reg) > assign) {
+						nextAssign1 = assign;
+
+						for (UInt p = i + 1; p < u; p++) {
+							for (Argument& argument : instructions[p].instruction.arguments) {
+								if (argument == arg1) {
+									argument = arg;
+								}
+								else if (argument.type == ArgumentType::Memory && argument.mem.reg == arg1.reg) {
+									argument.mem.reg = arg.reg;
+								}
+							}
+						}
+
+						replacement.Add(arg1.reg, arg.reg);
+						arg1 = arg;
+						instructions[i].instruction.arguments[0] = arg;
+						instructions.RemoveAt(u);
+						u--;
+					}
+					else {
+						nextReplacement = Tuple<Register, Register>(arg.reg, arg1.reg);
+						instructions.RemoveAt(u);
+						u--;
+					}
+				}
+
+				if (instructions[u].instruction.arguments.Size() == 2 && instructions[u].instruction.type != InstructionType::Adr) {
+					Register arg;
+
+					if (instructions[u].instruction.arguments[0].type == ArgumentType::Memory) {
+						if (replacement.Contains(instructions[u].instruction.arguments[0].mem.reg, arg)) {
+							instructions[u].instruction.arguments[0].mem.reg = arg;
+						}
+					}
+
+					if (instructions[u].instruction.arguments[1].type == ArgumentType::Register) {
+						if (replacement.Contains(instructions[u].instruction.arguments[1].reg, arg)) {
+							instructions[u].instruction.arguments[1].reg = arg;
+						}
+					}
+					else if (instructions[u].instruction.arguments[1].type == ArgumentType::Memory) {
+						if (replacement.Contains(instructions[u].instruction.arguments[1].mem.reg, arg)) {
+							instructions[u].instruction.arguments[1].mem.reg = arg;
+						}
+					}
+				}
+				else if (instructions[u].instruction.arguments.Size() == 3) {
+					Register arg;
+
+					if (instructions[u].instruction.arguments[0].type == ArgumentType::Register) {
+						if (replacement.Contains(instructions[u].instruction.arguments[0].reg, arg)) {
+							instructions[u].instruction.arguments[0].reg = arg;
+						}
+					}
+					else if (instructions[u].instruction.arguments[0].type == ArgumentType::Memory) {
+						if (replacement.Contains(instructions[u].instruction.arguments[0].mem.reg, arg)) {
+							instructions[u].instruction.arguments[0].mem.reg = arg;
+						}
+					}
+
+					if (instructions[u].instruction.arguments[1].type == ArgumentType::Register) {
+						if (replacement.Contains(instructions[u].instruction.arguments[1].reg, arg)) {
+							instructions[u].instruction.arguments[1].reg = arg;
+						}
+					}
+					else if (instructions[u].instruction.arguments[1].type == ArgumentType::Memory) {
+						if (replacement.Contains(instructions[u].instruction.arguments[1].mem.reg, arg)) {
+							instructions[u].instruction.arguments[1].mem.reg = arg;
+						}
+					}
+
+					if (instructions[u].instruction.arguments[2].type == ArgumentType::Memory) {
+						if (replacement.Contains(instructions[u].instruction.arguments[2].mem.reg, arg)) {
+							instructions[u].instruction.arguments[2].mem.reg = arg;
+						}
+					}
+				}
+
+				if (instructions[u].instruction.type == InstructionType::Mov || instructions[u].instruction.type == InstructionType::Adr) {
+					if (instructions[u].instruction.arguments[0].type == ArgumentType::Register) {
+						if (replacement.Contains(instructions[u].instruction.arguments[0].reg)) {
+							replacement.Remove(instructions[u].instruction.arguments[0].reg);
+						}
+					}
+				}
+
+				if (nextReplacement) {
+					replacement.Add(nextReplacement.Get().value1, nextReplacement.Get().value2);
+				}
+			}
+		}
+	}
+}
+
+void KiwiOptimizer::RemoveUnused(List<OptimizerInstruction>& instructions) {
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		if (instructions[i].IsLabelOrCall()) continue;
+
+		const OptimizerInstruction inst = instructions[i];
+	}
+}
+
+bool KiwiOptimizer::IsRegister(const Argument& arg) {
+	return arg.type == ArgumentType::Register && arg.reg.type == RegisterType::Register;
+}
+
 void KiwiOptimizer::CombineComp(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
 		if (instructions[i].IsLabelOrCall()) continue;
@@ -601,15 +734,11 @@ UInt KiwiOptimizer::NextAssign(List<OptimizerInstruction>& instructions, UInt in
 		}
 	}
 
-	return Math::UIntMax();
+	return instructions.Size();
 }
 
 UInt KiwiOptimizer::NextGet(List<OptimizerInstruction>& instructions, UInt index, const Argument& arg) {
 	UInt nextAssign = NextAssign(instructions, index, arg);
-
-	if (nextAssign < instructions.Size()) {
-		nextAssign = instructions.Size();
-	}
 
 	for (index++; index < nextAssign; index++) {
 		if (instructions[index].IsLabelOrCall()) break;
@@ -622,7 +751,7 @@ UInt KiwiOptimizer::NextGet(List<OptimizerInstruction>& instructions, UInt index
 		}
 	}
 
-	return Math::UIntMax();
+	return instructions.Size();
 }
 
 UInt KiwiOptimizer::NextUse(List<OptimizerInstruction>& instructions, UInt index, const Argument& arg) {
@@ -637,7 +766,7 @@ UInt KiwiOptimizer::NextUse(List<OptimizerInstruction>& instructions, UInt index
 		}
 	}
 
-	return Math::UIntMax();
+	return instructions.Size();
 }
 
 UInt KiwiOptimizer::UseCount(List<OptimizerInstruction>& instructions, UInt start, UInt end, const Argument& arg) {
@@ -655,4 +784,28 @@ UInt KiwiOptimizer::UseCount(List<OptimizerInstruction>& instructions, UInt star
 	}
 
 	return count;
+}
+
+UInt KiwiOptimizer::NextRegisterGet(List<OptimizerInstruction>& instructions, UInt index, const Register& arg) {
+	UInt nextAssign = NextAssign(instructions, index, arg);
+
+	for (index++; index < nextAssign; index++) {
+		if (instructions[index].IsLabelOrCall()) break;
+		const OptimizerInstruction inst = instructions[index];
+
+		for (const Argument& a : inst.instruction.arguments) {
+			if (a.type == ArgumentType::Register) {
+				if (a.reg == arg) {
+					return index;
+				}
+			}
+			else if (a.type == ArgumentType::Memory) {
+				if (a.mem.reg == arg) {
+					return index;
+				}
+			}
+		}
+	}
+
+	return instructions.Size();
 }
