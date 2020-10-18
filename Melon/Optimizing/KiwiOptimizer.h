@@ -31,6 +31,8 @@ namespace Melon {
 			static void RearrangeJumps(Boxx::List<OptimizerInstruction>& instructions);
 			static void UpdateLabels(Boxx::List<OptimizerInstruction>& instructions);
 
+			static void RenameRegisters(Boxx::List<OptimizerInstruction>& instructions);
+
 			static void OffsetStackPointer(Boxx::List<OptimizerInstruction>& instructions, const Boxx::UInt start, const Boxx::UInt end, const Boxx::UInt offset);
 			static Kiwi::InstructionType OppositeComp(const Kiwi::InstructionType type);
 

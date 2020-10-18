@@ -5,6 +5,7 @@
 #include "Boxx/Math.h"
 #include "Boxx/Set.h"
 #include "Boxx/Map.h"
+#include "Boxx/ReplacementMap.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -27,6 +28,8 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 
 			RearrangeJumps(segment.value);
 			UpdateLabels(segment.value);
+
+			RenameRegisters(segment.value);
 		}
 	}
 
@@ -126,6 +129,9 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 			if (inst.instruction.type == InstructionType::Mov && inst.instruction.arguments[0] == inst.instruction.arguments[1]) {
 				instructions.RemoveAt(i);
 				i--;
+				continue;
+			}
+			else if (!inst.IsAssignment()) {
 				continue;
 			}
 
@@ -377,18 +383,22 @@ void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) 
 			UInt nextAssign1 = NextAssign(instructions, i, arg1);
 			UInt nextAssign2 = NextAssign(instructions, i, arg2);
 
-			Map<Register, Register> replacement;
+			ReplacementMap<Register> replacement;
 
 			for (UInt u = i + 1; u < nextAssign1; u++) {
 				if (instructions[u].IsLabelOrCall()) break;
 
 				Optional<Tuple<Register, Register>> nextReplacement = nullptr;
+				Optional<Register> remove = nullptr;
 
-				if (u < nextAssign2 && instructions[u].instruction.type == InstructionType::Mov && IsRegister(instructions[u].instruction.arguments[0]) && instructions[u].instruction.arguments[1] == arg2) {
+				bool isRegAndArg = IsRegister(instructions[u].instruction.arguments[0]) && instructions[u].instruction.arguments[1] == arg2;
+				bool isMov       = instructions[u].instruction.type == InstructionType::Mov;
+
+				if (!inst.important && u < nextAssign2 && isMov && isRegAndArg) {
 					const Argument arg = instructions[u].instruction.arguments[0];
 					const UInt assign = NextAssign(instructions, u, arg);
 
-					if (nextAssign1 < assign && NextRegisterGet(instructions, i, arg.reg) > assign) {
+					if (nextAssign1 < assign && NextRegisterGet(instructions, i, arg.reg) >= assign) {
 						nextAssign1 = assign;
 
 						for (UInt p = i + 1; p < u; p++) {
@@ -403,8 +413,8 @@ void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) 
 						}
 
 						replacement.Add(arg1.reg, arg.reg);
-						arg1 = arg;
-						instructions[i].instruction.arguments[0] = arg;
+						arg1 = replacement.GetChain(arg1.reg);
+						instructions[i].instruction.arguments[0] = arg1;
 						instructions.RemoveAt(u);
 						u--;
 					}
@@ -414,65 +424,53 @@ void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) 
 						u--;
 					}
 				}
+				else if (instructions[u].IsAssignment()) {
+					if (instructions[u].instruction.arguments.Size() == 3) {
+						if (IsRegister(instructions[u].instruction.arguments[2])) {
+							remove = instructions[u].instruction.arguments[2].reg;
+						}
+					}
+					else if (instructions[u].instruction.arguments.Size() == 2) {
+						if (IsRegister(instructions[u].instruction.arguments[0])) {
+							remove = instructions[u].instruction.arguments[0].reg;
+						}
+					}
+				}
 
 				if (instructions[u].instruction.arguments.Size() == 2 && instructions[u].instruction.type != InstructionType::Adr) {
-					Register arg;
-
 					if (instructions[u].instruction.arguments[0].type == ArgumentType::Memory) {
-						if (replacement.Contains(instructions[u].instruction.arguments[0].mem.reg, arg)) {
-							instructions[u].instruction.arguments[0].mem.reg = arg;
-						}
+						instructions[u].instruction.arguments[0].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[0].mem.reg);
 					}
 
 					if (instructions[u].instruction.arguments[1].type == ArgumentType::Register) {
-						if (replacement.Contains(instructions[u].instruction.arguments[1].reg, arg)) {
-							instructions[u].instruction.arguments[1].reg = arg;
-						}
+						instructions[u].instruction.arguments[1].reg = replacement.GetChain(instructions[u].instruction.arguments[1].reg);
 					}
 					else if (instructions[u].instruction.arguments[1].type == ArgumentType::Memory) {
-						if (replacement.Contains(instructions[u].instruction.arguments[1].mem.reg, arg)) {
-							instructions[u].instruction.arguments[1].mem.reg = arg;
-						}
+						instructions[u].instruction.arguments[1].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[1].mem.reg);
 					}
 				}
 				else if (instructions[u].instruction.arguments.Size() == 3) {
-					Register arg;
-
 					if (instructions[u].instruction.arguments[0].type == ArgumentType::Register) {
-						if (replacement.Contains(instructions[u].instruction.arguments[0].reg, arg)) {
-							instructions[u].instruction.arguments[0].reg = arg;
-						}
+						instructions[u].instruction.arguments[0].reg = replacement.GetChain(instructions[u].instruction.arguments[0].reg);
 					}
 					else if (instructions[u].instruction.arguments[0].type == ArgumentType::Memory) {
-						if (replacement.Contains(instructions[u].instruction.arguments[0].mem.reg, arg)) {
-							instructions[u].instruction.arguments[0].mem.reg = arg;
-						}
+						instructions[u].instruction.arguments[0].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[0].mem.reg);
 					}
 
 					if (instructions[u].instruction.arguments[1].type == ArgumentType::Register) {
-						if (replacement.Contains(instructions[u].instruction.arguments[1].reg, arg)) {
-							instructions[u].instruction.arguments[1].reg = arg;
-						}
+						instructions[u].instruction.arguments[1].reg = replacement.GetChain(instructions[u].instruction.arguments[1].reg);
 					}
 					else if (instructions[u].instruction.arguments[1].type == ArgumentType::Memory) {
-						if (replacement.Contains(instructions[u].instruction.arguments[1].mem.reg, arg)) {
-							instructions[u].instruction.arguments[1].mem.reg = arg;
-						}
+						instructions[u].instruction.arguments[1].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[1].mem.reg);
 					}
 
 					if (instructions[u].instruction.arguments[2].type == ArgumentType::Memory) {
-						if (replacement.Contains(instructions[u].instruction.arguments[2].mem.reg, arg)) {
-							instructions[u].instruction.arguments[2].mem.reg = arg;
-						}
+						instructions[u].instruction.arguments[2].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[2].mem.reg);
 					}
 				}
 
-				if (instructions[u].instruction.type == InstructionType::Mov || instructions[u].instruction.type == InstructionType::Adr) {
-					if (instructions[u].instruction.arguments[0].type == ArgumentType::Register) {
-						if (replacement.Contains(instructions[u].instruction.arguments[0].reg)) {
-							replacement.Remove(instructions[u].instruction.arguments[0].reg);
-						}
-					}
+				if (remove) {
+					replacement.Remove(remove.Get());
 				}
 
 				if (nextReplacement) {
@@ -672,6 +670,80 @@ void KiwiOptimizer::UpdateLabels(List<OptimizerInstruction>& instructions) {
 			if (!usedLabels.Contains(instructions[i].instruction.instructionName)) {
 				instructions.RemoveAt(i);
 				i--;
+			}
+		}
+	}
+}
+
+void KiwiOptimizer::RenameRegisters(List<OptimizerInstruction>& instructions) {
+	Set<Register> usedRegisters;
+	ReplacementMap<Register> replacement;
+
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		if (instructions[i].IsLabelOrCall()) {
+			usedRegisters = Set<Register>();
+			replacement = ReplacementMap<Register>();
+			continue;
+		}
+
+		for (Argument& arg : instructions[i].instruction.arguments) {
+			if (arg.type == ArgumentType::Register) {
+				arg.reg = replacement.GetValue(arg.reg);
+			}
+			else if (arg.type == ArgumentType::Memory) {
+				arg.mem.reg = replacement.GetValue(arg.mem.reg);
+			}
+		}
+
+		if (instructions[i].instruction.arguments.Size() == 3) {
+			if (instructions[i].IsRegister(0)) {
+				usedRegisters.Add(instructions[i].GetRegister(0));
+			}
+
+			if (instructions[i].IsRegister(1)) {
+				usedRegisters.Add(instructions[i].GetRegister(1));
+			}
+
+			if (instructions[i].IsRegister(2)) {
+				Register reg = instructions[i].GetRegister(2);
+				UInt regIndex = 0;
+
+				while (usedRegisters.Contains(Register(regIndex))) {
+					regIndex++;
+				}
+
+				instructions[i].instruction.arguments[2] = Register(regIndex);
+				usedRegisters.Add(Register(regIndex));
+				replacement.Add(reg, Register(regIndex));
+			}
+		}
+		else if (instructions[i].instruction.arguments.Size() == 2) {
+			if (instructions[i].IsRegister(1)) {
+				usedRegisters.Add(instructions[i].GetRegister(1));
+			}
+
+			if (instructions[i].IsRegister(0)) {
+				if (instructions[i].IsAssignmentRegister()) {
+					UInt argIndex = instructions[i].instruction.arguments.Size() == 3 ? 2 : 0;
+					Register reg = instructions[i].GetRegister(argIndex);
+					UInt regIndex = 0;
+
+					while (usedRegisters.Contains(Register(regIndex))) {
+						regIndex++;
+					}
+
+					instructions[i].instruction.arguments[argIndex] = Register(regIndex);
+					usedRegisters.Add(Register(regIndex));
+					replacement.Add(reg, Register(regIndex));
+				}
+				else {
+					usedRegisters.Add(instructions[i].GetRegister(0));
+				}
+			}
+		}
+		else if (instructions[i].instruction.arguments.Size() == 1) {
+			if (instructions[i].IsRegister(0)) {
+				usedRegisters.Add(instructions[i].GetRegister(0));
 			}
 		}
 	}

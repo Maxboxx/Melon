@@ -1,6 +1,6 @@
 
 function f(int: ref a, int: ref b)
-	a = a + b
+	a = a + b * a // b + b - a
 	b = b + 1
 end
 

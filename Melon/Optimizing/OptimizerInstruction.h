@@ -52,6 +52,48 @@ namespace Melon {
 			bool IsLabelOrCall() const {
 				return IsLabel() || IsCall();
 			}
+
+			bool IsRegister(const Boxx::UInt index) const {
+				if (instruction.arguments[index].type == Kiwi::ArgumentType::Register) {
+					return instruction.arguments[index].reg.type == Kiwi::RegisterType::Register;
+				}
+				else if (instruction.arguments[index].type == Kiwi::ArgumentType::Memory) {
+					return instruction.arguments[index].mem.reg.type == Kiwi::RegisterType::Register;
+				}
+
+				return false;
+			}
+
+			Kiwi::Register GetRegister(const Boxx::UInt index) const {
+				if (instruction.arguments[index].type == Kiwi::ArgumentType::Register) {
+					return instruction.arguments[index].reg;
+				}
+				else if (instruction.arguments[index].type == Kiwi::ArgumentType::Memory) {
+					return instruction.arguments[index].mem.reg;
+				}
+
+				return Kiwi::Register();
+			}
+
+			bool IsAssignment() const {
+				if (instruction.arguments.Size() == 2) {
+					return instruction.type == Kiwi::InstructionType::Mov || instruction.type == Kiwi::InstructionType::Adr;
+				}
+				else {
+					return instruction.arguments.Size() == 3;
+				}
+			}
+
+			bool IsAssignmentRegister() const {
+				if (!IsAssignment()) return false;
+
+				if (instruction.arguments.Size() == 2) {
+					return instruction.arguments[0].type == Kiwi::ArgumentType::Register;
+				}
+				else {
+					return instruction.arguments[2].type == Kiwi::ArgumentType::Register;
+				}
+			}
 		};
 	}
 }

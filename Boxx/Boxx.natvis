@@ -183,4 +183,19 @@
 			</CustomListItems>
 		</Expand>
 	</Type>
+
+	<Type Name="Boxx::ReplacementMap&lt;*&gt;">
+		<DisplayString>{map}</DisplayString>
+		<Expand>
+			<CustomListItems>
+				<Variable Name="index" InitialValue="0"/>
+
+				<Loop>
+					<Break Condition="index >= map.values.list->size"/>
+					<Item Name="[{map.values.list->list[index].key}]">map.values.list->list[index].value</Item>
+					<Exec>index++</Exec>
+				</Loop>
+			</CustomListItems>
+		</Expand>
+	</Type>
 </AutoVisualizer>
