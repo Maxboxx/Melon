@@ -22,6 +22,10 @@ bool NilNode::IsImmediate() const {
 	return true;
 }
 
+Long NilNode::GetImmediate() const {
+	return 0;
+}
+
 CompiledNode NilNode::Compile(CompileInfo& info) {
 	CompiledNode node;
 	node.argument = Argument(0);

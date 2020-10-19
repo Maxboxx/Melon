@@ -1,11 +1,42 @@
 
-function f(int: ref a, int: ref b)
-	a = a + b * a // b + b - a
-	b = b + 1
+if not false then
+	int: i = 1
+	
+	guard false else
+		int: i = 2
+	end
+	
+	int: u = 1
 end
 
-int: i = 3
-long: n = 4
 
-f(i, noref n)
+int: i = if false == true then
+	3
+elseif true then
+	4
+else
+	5
+end
+
+
+repeat
+	int: i = 6
+until true
+
+
+while true do
+	int: i = 7
+alsoif false then
+	int: i = 8
+alsoif true then
+	int: i = 9
+also
+	int: i = 10
+elseif false then
+	int: i = 11
+elseif false then
+	int: i = 12
+else
+	int: i = 13
+end
 

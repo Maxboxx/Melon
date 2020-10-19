@@ -111,6 +111,16 @@ Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr CustomInitNode::Optimize() {
+	if (NodePtr n = node->Optimize()) node = n;
+
+	for (NodePtr expr : expressions) {
+		if (NodePtr node = expr->Optimize()) expr = node;
+	}
+
+	return nullptr;
+}
+
 Mango CustomInitNode::ToMango() const {
 	Mango m = Mango("init", MangoType::List);
 

@@ -72,6 +72,12 @@ Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
 }
 
+NodePtr ConvertNode::Optimize() {
+	if (NodePtr n = node->Optimize()) node = n;
+
+	return nullptr;
+}
+
 Mango ConvertNode::ToMango() const {
 	Mango mango = Mango("as", MangoType::Map);
 	mango.Add("from", node->ToMango());

@@ -50,6 +50,12 @@ Set<ScanType> SafeUnwrapNode::Scan(ScanInfoStack& info)  {
 	return node->Scan(info);
 }
 
+NodePtr SafeUnwrapNode::Optimize() {
+	if (NodePtr n = node->Optimize()) node = n;
+
+	return nullptr;
+}
+
 Mango SafeUnwrapNode::ToMango() const  {
 	Mango mango = Mango("?", MangoType::List);
 	mango.Add(node->ToMango());

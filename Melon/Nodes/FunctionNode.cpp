@@ -145,6 +145,12 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr FunctionNode::Optimize() {
+	if (NodePtr n = node->Optimize()) node = n;
+
+	return nullptr;
+}
+
 Mango FunctionNode::ToMango() const {
 	Mango m = node->ToMango();
 	m.SetLabel(func.ToString());

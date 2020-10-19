@@ -126,6 +126,14 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr ReturnNode::Optimize() {
+	for (NodePtr& node : nodes) {
+		if (NodePtr n = node->Optimize()) n = node;
+	}
+
+	return nullptr;
+}
+
 Mango ReturnNode::ToMango() const {
 	Mango m = Mango("return", MangoType::List);
 

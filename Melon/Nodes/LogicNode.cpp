@@ -195,6 +195,13 @@ Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr LogicNode::Optimize() {
+	if (NodePtr node = node1->Optimize()) node1 = node;
+	if (NodePtr node = node2->Optimize()) node2 = node;
+
+	return nullptr;
+}
+
 Mango LogicNode::ToMango() const {
 	const Scope op = GetOperator();
 

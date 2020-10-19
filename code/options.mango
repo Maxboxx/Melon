@@ -19,8 +19,8 @@
 	}
 	
 	optimizing: {
-		ast:  0
-		kiwi: 1
+		ast:  1
+		kiwi: 3
 	}
 }
 

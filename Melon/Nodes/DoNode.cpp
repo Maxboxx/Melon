@@ -36,6 +36,8 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 
 	List<UInt> jumps;
 
+	UInt top = info.stack.top;
+
 	for (const OptimizerInstruction& in : nodes->Compile(info).instructions) {
 		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
@@ -72,6 +74,7 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 		info.label++;
 	}
 
+	info.stack.top = top;
 	return compiled;
 }
 
@@ -84,6 +87,12 @@ Set<ScanType> DoNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = nodes->Scan(info);
 	info.Get().scopeInfo.ExitScope();
 	return scanSet;
+}
+
+NodePtr DoNode::Optimize() {
+	if (NodePtr node = nodes->Optimize()) nodes = node;
+
+	return nullptr;
 }
 
 Mango DoNode::ToMango() const {

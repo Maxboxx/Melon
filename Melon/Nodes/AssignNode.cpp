@@ -188,6 +188,18 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr AssignNode::Optimize() {
+	for (NodePtr& var : vars) {
+		if (NodePtr node = var->Optimize()) var = node;
+	}
+
+	for (NodePtr& value : values) {
+		if (NodePtr node = value->Optimize()) value = node;
+	}
+
+	return nullptr;
+}
+
 Mango AssignNode::ToMango() const {
 	Mango assign = Mango("assign", MangoType::List);
 

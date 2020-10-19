@@ -96,6 +96,14 @@ Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr ForConditionNode::Optimize() {
+	if (NodePtr node = loopInit->Optimize()) loopInit = node;
+	if (NodePtr node = loopCondition->Optimize()) loopCondition = node;
+	if (NodePtr node = loopStep->Optimize()) loopStep = node;
+
+	return nullptr;
+}
+
 Mango ForConditionNode::ToMango() const {
 	Mango mango = Mango(MangoType::Map);
 	mango.Add("init", loopInit->ToMango());

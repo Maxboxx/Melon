@@ -9,6 +9,8 @@
 #include "AssignNode.h"
 #include "CallNode.h"
 #include "BinaryOperatorNode.h"
+#include "EmptyNode.h"
+#include "DoNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -36,6 +38,11 @@ UInt LoopNode::GetSize() const {
 
 		if (segment.type != LoopType::None) {
 			segSize += segment.condition->GetSize();
+
+			// TODO: Remove if not used
+			if (segment.type == LoopType::While) {
+				segSize++;
+			}
 		}
 
 		if (size < segSize) {
@@ -214,6 +221,7 @@ void LoopNode::CompileWhileStart(CompiledNode& compiled, CompileInfo& info, Segm
 	bool isLast = IsSegmentLast(segmentInfo.index);
 
 	if (!isLast) {
+		// TODO: Remove if not used
 		info.stack.Push(1);
 		loopInfo.stack = info.stack.top;
 
@@ -259,9 +267,10 @@ void LoopNode::CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, Segmen
 	jmp.arguments.Add(Argument(ArgumentType::Label, loopInfo.loopLbl));
 	compiled.instructions.Add(jmp);
 
-	info.stack.Pop(1);
-
 	if (!IsSegmentLast(segmentInfo.index)) {
+		// TODO: Remove if not used
+		info.stack.Pop(1);
+
 		Instruction lbl = Instruction::Label(info.label);
 		loopInfo.loopEndLbl = info.label++;
 		compiled.instructions[loopInfo.loopEndJmp].instruction.arguments.Add(Argument(ArgumentType::Label, loopInfo.loopEndLbl));
@@ -669,6 +678,84 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 	info.Get().scopeInfo.ExitScope();
 
 	return scanSet;
+}
+
+NodePtr LoopNode::Optimize() {
+	for (LoopSegment& segment : segments) {
+		if (segment.condition) {
+			if (NodePtr node = segment.condition->Optimize()) segment.condition = node;
+		}
+
+		if (NodePtr node = segment.statements->Optimize()) segment.statements = node;
+	}
+
+	// Removes also or else path
+	if ((segments[0].type == LoopType::If || segments[0].type == LoopType::While) && segments[0].condition->IsImmediate()) {
+		if (segments[0].condition->GetImmediate() == 0) {
+			for (UInt i = 1; i < segments.Size(); i++) {
+				if (!segments[i].also) {
+					segments.RemoveAt(0, i);
+					break;
+				}
+			}
+		}
+		else if (segments[0].type == LoopType::If) {
+			for (UInt i = 1; i < segments.Size(); i++) {
+				if (!segments[i].also) {
+					segments.RemoveAt(i, segments.Size() - i);
+					break;
+				}
+			}
+
+			for (UInt i = 1; i < segments.Size(); i++) {
+				segments[i].also = false;
+			}
+		}
+	}
+
+	// TODO: check for breaks
+
+	// Remove unnecessary segments
+	for (UInt i = 0; i < segments.Size(); i++) {
+		if ((segments[i].type == LoopType::If || segments[i].type == LoopType::While) && segments[i].condition->IsImmediate()) {
+			if (segments[i].condition->GetImmediate() == 0) {
+				segments.RemoveAt(i);
+				i--;
+			}
+			else if (segments[i].type == LoopType::If) {
+				segments[i].type = LoopType::None;
+
+				if (!segments[i].also) {
+					segments.RemoveAt(i + 1, segments.Size() - i - 1);
+					break;
+				}
+				else {
+					UInt u = i + 1;
+
+					for (; u < segments.Size(); u++) {
+						if (!segments[u].also) {
+							break;
+						}
+					}
+
+					segments.RemoveAt(i + 1, u - i - 1);
+				}
+			}
+		}
+	}
+
+	if (segments.Size() == 0) {
+		return new EmptyNode();
+	}
+	else if (segments.Size() == 1 && (!segments[0].condition || segments[0].condition->IsImmediate())) {
+		if (segments[0].type == LoopType::If || segments[0].type == LoopType::None) {
+			Pointer<DoNode> dn = new DoNode(segments[0].statements->scope, segments[0].statements->file);
+			dn->nodes = segments[0].statements;
+			return dn;
+		}
+	}
+
+	return nullptr;
 }
 
 Mango LoopNode::ToMango() const {

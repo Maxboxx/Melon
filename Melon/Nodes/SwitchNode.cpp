@@ -373,6 +373,26 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr SwitchNode::Optimize() {
+	if (NodePtr node = match->Optimize()) match = node;
+
+	for (NodePtr& node : nodes) {
+		if (NodePtr n = node->Optimize()) node = n;
+	}
+
+	for (List<NodePtr>& caseList : cases) {
+		for (NodePtr& node : caseList) {
+			if (NodePtr n = node->Optimize()) node = n;
+		}
+	}
+
+	if (def) {
+		if (NodePtr node = def->Optimize()) def = node;
+	}
+
+	return nullptr;
+}
+
 Mango SwitchNode::ToMango() const {
 	Mango mango = Mango(expr ? "switchexpr" : "switch", MangoType::Map);
 

@@ -238,10 +238,19 @@ namespace Melon {
 			/// Scans the node for potential errors
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info);
 
+			///T Optimize
+			/// Optimizes the node
+			///R NodePtr node: The optimized node. If the node was not optimized, this will be <code>nullptr</code>
+			virtual NodePtr Optimize();
+
 			///T Is Immediate
 			/// <code>true</code> if the compiled node is an immediate value
 			/// Defaults to <code>false</code>
 			virtual bool IsImmediate() const;
+
+			///T Get Immediate
+			/// Gets the immediate value of the node
+			virtual Boxx::Long GetImmediate() const;
 
 			///H Static functions
 

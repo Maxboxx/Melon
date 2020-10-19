@@ -154,6 +154,12 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr DotNode::Optimize() {
+	if (NodePtr n = node->Optimize()) node = n;
+
+	return nullptr;
+}
+
 Mango DotNode::ToMango() const {
 	Mango m = Mango(node->Type().Add(name).ToString(), MangoType::List);
 	m.Add(node->ToMango());

@@ -2,6 +2,7 @@
 
 #include "ConvertNode.h"
 #include "AssignNode.h"
+#include "BooleanNode.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -47,7 +48,7 @@ void ConditionNode::IncludeScan(ParsingInfo& info) {
 
 Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 	if (cond.Cast<AssignNode>()) {
-		ErrorLog::Error(SyntaxError("assignment condition not supported yet", file));
+		ErrorLog::Error(SyntaxError("assignment condition not supported yet", file)); // TODO: implement
 		return Set<ScanType>();
 	}
 	else {
@@ -57,6 +58,18 @@ Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 		convert->type = ScopeList().Add(Scope::Bool);
 		return convert->Scan(info);
 	}
+}
+
+NodePtr ConditionNode::Optimize() {
+	if (NodePtr node = cond->Optimize()) cond = node;
+
+	if (cond->IsImmediate()) {
+		Pointer<BooleanNode> bn = new BooleanNode(cond->file);
+		bn->boolean = cond->GetImmediate() != 0;
+		return bn;
+	}
+
+	return nullptr;
 }
 
 Mango ConditionNode::ToMango() const {

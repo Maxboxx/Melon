@@ -181,6 +181,18 @@ void RootNode::Scan() {
 	Scan(info);
 }
 
+NodePtr RootNode::Optimize() {
+	for (NodePtr& node : nodes) {
+		if (NodePtr n = node->Optimize()) node = n;
+	}
+
+	for (NodePtr& node : funcs) {
+		if (NodePtr n = node->Optimize()) node = n;
+	}
+
+	return nullptr;
+}
+
 Mango RootNode::ToMango() const {
 	Mango mango = Mango("ast", MangoType::List);
 

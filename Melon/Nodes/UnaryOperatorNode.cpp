@@ -2,6 +2,7 @@
 
 #include "CallNode.h"
 #include "TypeNode.h"
+#include "BooleanNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -91,6 +92,21 @@ Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	Symbol::FindFunction(type.Add(op), args, file);
 
 	return scanSet;
+}
+
+NodePtr UnaryOperatorNode::Optimize() {
+	if (NodePtr n = node->Optimize()) node = n;
+
+	// TODO: Add more operators
+	if (node->IsImmediate()) {
+		if (op == Scope::Not) {
+			Pointer<BooleanNode> bn = new BooleanNode(node->file);
+			bn->boolean = node->GetImmediate() == 0;
+			return bn;
+		}
+	}
+
+	return nullptr;
 }
 
 Mango UnaryOperatorNode::ToMango() const {

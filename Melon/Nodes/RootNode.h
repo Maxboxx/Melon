@@ -42,6 +42,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
+			virtual NodePtr Optimize() override;
 
 			///T Scan
 			/// Used for scanning for errors

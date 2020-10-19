@@ -411,6 +411,16 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr CallNode::Optimize() {
+	if (NodePtr n = node->Optimize()) node = n;
+
+	for (NodePtr& arg : args) {
+		if (NodePtr node = arg->Optimize()) arg = node;
+	}
+
+	return nullptr;
+}
+
 Mango CallNode::ToMango() const {
 	Mango call = Mango(GetFunc().scope.ToString(), MangoType::Map);
 	call.Add("value", node->ToMango());

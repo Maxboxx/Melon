@@ -4,6 +4,7 @@
 #include "ContinueNode.h"
 #include "ReturnNode.h"
 #include "StatementsNode.h"
+#include "DoNode.h"
 
 #include "Boxx/Math.h"
 
@@ -143,6 +144,25 @@ Set<ScanType> GuardNode::Scan(ScanInfoStack& info) {
 	info.Get().scopeInfo = ScopeInfo::BranchIntersection(elseScope, info.Get().scopeInfo);
 
 	return scanSet;
+}
+
+NodePtr GuardNode::Optimize() {
+	if (NodePtr node = cond->Optimize()) cond = node;
+	if (NodePtr node = else_->Optimize()) else_ = node;
+	if (NodePtr node = continue_->Optimize()) continue_ = node;
+
+	if (cond->IsImmediate()) {
+		if (cond->GetImmediate() == 0) {
+			Pointer<DoNode> dn = new DoNode(else_->scope, else_->file);
+			dn->nodes = else_;
+			return dn;
+		}
+		else {
+			return continue_;
+		}
+	}
+
+	return nullptr;
 }
 
 void GuardNode::AddScopeBreak(ScanInfoStack& info) {

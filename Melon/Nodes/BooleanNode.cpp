@@ -22,6 +22,10 @@ bool BooleanNode::IsImmediate() const {
 	return true;
 }
 
+Long BooleanNode::GetImmediate() const {
+	return boolean ? 1 : 0;
+}
+
 CompiledNode BooleanNode::Compile(CompileInfo& info) {
 	CompiledNode node;
 	node.argument = Argument(boolean ? 1 : 0);

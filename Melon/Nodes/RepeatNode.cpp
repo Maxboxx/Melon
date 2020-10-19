@@ -2,6 +2,7 @@
 
 #include "BreakNode.h"
 #include "ContinueNode.h"
+#include "DoNode.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -139,6 +140,20 @@ Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 	info.Get().scopeInfo.ExitScope();
 	info.Get().scopeInfo = ScopeInfo::WeakBranchUnion(scopeInfo, info.Get().scopeInfo);
 	return scanSet;
+}
+
+NodePtr RepeatNode::Optimize() {
+	if (NodePtr node = content->Optimize()) content = node;
+	if (NodePtr node = condition->Optimize()) condition = node;
+
+	// TODO: Remove break, continue, abort and similar
+	if (condition->IsImmediate() && condition->GetImmediate() != 0) {
+		Pointer<DoNode> dn = new DoNode(content->scope, content->file);
+		dn->nodes = content;
+		return dn;
+	}
+
+	return nullptr;
 }
 
 Mango RepeatNode::ToMango() const {

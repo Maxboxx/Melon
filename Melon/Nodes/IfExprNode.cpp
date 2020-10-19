@@ -2,6 +2,7 @@
 
 #include "StackNode.h"
 #include "TypeNode.h"
+#include "ConvertNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -122,6 +123,47 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 
 	info.Get().scopeInfo = scopeInfo;
 	return scanSet;
+}
+
+NodePtr IfExprNode::Optimize() {
+	for (NodePtr& node : nodes) {
+		if (NodePtr n = node->Optimize()) node = n;
+	}
+
+	for (NodePtr& cond : conditions) {
+		if (NodePtr n = cond->Optimize()) cond = n;
+	}
+
+	// TODO: save type before this
+	for (UInt i = 0; i < conditions.Size(); i++) {
+		if (conditions[i]->IsImmediate()) {
+			if (conditions[i]->GetImmediate() == 0) {
+				conditions.RemoveAt(i);
+				nodes.RemoveAt(i);
+				i--;
+			}
+			else {
+				nodes.RemoveAt(i + 1, nodes.Size() - i - 1);
+				conditions.RemoveAt(i, conditions.Size() - i);
+				break;
+			}
+		}
+	}
+
+	if (nodes.Size() == 1) {
+		if (nodes[0]->Type() != Type()) {
+			Pointer<ConvertNode> cn = new ConvertNode(nodes[0]->scope, nodes[0]->file);
+			cn->isExplicit = true;
+			cn->node = nodes[0];
+			cn->type = Type();
+			return cn;
+		}
+		else {
+			return nodes[0];
+		}
+	}
+
+	return nullptr;
 }
 
 Mango IfExprNode::ToMango() const {

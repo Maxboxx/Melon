@@ -42,6 +42,10 @@ Set<ScanType> Node::Scan(ScanInfoStack& info) {
 	return Set<ScanType>();
 }
 
+NodePtr Node::Optimize() {
+	return nullptr;
+}
+
 void Node::IncludeScan(ParsingInfo& info) {
 	
 }
@@ -60,6 +64,10 @@ bool Node::IsScope() const {
 
 bool Node::IsImmediate() const {
 	return false;
+}
+
+Long Node::GetImmediate() const {
+	return 0;
 }
 
 void Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {

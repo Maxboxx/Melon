@@ -112,6 +112,13 @@ Set<ScanType> DefaultNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+NodePtr DefaultNode::Optimize() {
+	if (NodePtr node = node1->Optimize()) node1 = node;
+	if (NodePtr node = node2->Optimize()) node2 = node;
+
+	return nullptr;
+}
+
 Mango DefaultNode::ToMango() const {
 	Mango mango = Mango("??", MangoType::List);
 	mango.Add(node1->ToMango());

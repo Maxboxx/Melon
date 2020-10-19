@@ -10,6 +10,7 @@ using namespace Boxx;
 using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
+using namespace Melon::Symbols;
 
 NodePtr RepeatParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Repeat) return nullptr;
@@ -19,6 +20,9 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 	info.index++;
 
 	Pointer<RepeatNode> repeatNode = new RepeatNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+
+	info.scopes = info.scopes.AddNext("repeat");
+	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, repeatLine, info.statementNumber));
 
 	info.scopeCount++;
 	info.loops++;
@@ -32,6 +36,7 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 		if (NodePtr cond = ConditionParser::Parse(info)) {
 			repeatNode->condition = cond;
 			info.statementNumber++;
+			info.scopes = info.scopes.Pop();
 			return repeatNode;
 		}
 		else {
@@ -42,6 +47,7 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAtEnd("'until'", "'repeat'", repeatLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
+	info.scopes = info.scopes.Pop();
 	info.index = startIndex;
 	return nullptr;
 }

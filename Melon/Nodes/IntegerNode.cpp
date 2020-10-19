@@ -57,6 +57,10 @@ bool IntegerNode::IsImmediate() const {
 	return true;
 }
 
+Long IntegerNode::GetImmediate() const {
+	return number;
+}
+
 CompiledNode IntegerNode::Compile(CompileInfo& info) {
 	CompiledNode node;
 	node.argument = Argument(number);
