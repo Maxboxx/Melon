@@ -373,21 +373,21 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr SwitchNode::Optimize() {
-	if (NodePtr node = match->Optimize()) match = node;
+NodePtr SwitchNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr node = match->Optimize(info)) match = node;
 
 	for (NodePtr& node : nodes) {
-		if (NodePtr n = node->Optimize()) node = n;
+		if (NodePtr n = node->Optimize(info)) node = n;
 	}
 
 	for (List<NodePtr>& caseList : cases) {
 		for (NodePtr& node : caseList) {
-			if (NodePtr n = node->Optimize()) node = n;
+			if (NodePtr n = node->Optimize(info)) node = n;
 		}
 	}
 
 	if (def) {
-		if (NodePtr node = def->Optimize()) def = node;
+		if (NodePtr node = def->Optimize(info)) def = node;
 	}
 
 	return nullptr;

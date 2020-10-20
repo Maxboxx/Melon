@@ -75,9 +75,9 @@ Set<ScanType> StatementsNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr StatementsNode::Optimize() {
+NodePtr StatementsNode::Optimize(OptimizeInfo& info) {
 	for (NodePtr& statement : statements) {
-		if (NodePtr node = statement->Optimize()) statement = node;
+		if (NodePtr node = statement->Optimize(info)) statement = node;
 	}
 
 	return nullptr;

@@ -89,11 +89,14 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
+	Symbol s = GetSymbol();
+
 	if (name == Scope::Self) {
 		scanSet.Add(ScanType::Self);
 	}
-
-	GetSymbol();
+	else if (s.type == SymbolType::Variable) {
+		info.usedVariables.Add(s.scope);
+	}
 
 	return scanSet;
 }

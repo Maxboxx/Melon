@@ -175,19 +175,20 @@ Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-void RootNode::Scan() {
+ScanInfoStack RootNode::Scan() {
 	ScanInfoStack info;
 	info.Get().scopeInfo.type = ScopeInfo::ScopeType::Main;
 	Scan(info);
+	return info;
 }
 
-NodePtr RootNode::Optimize() {
+NodePtr RootNode::Optimize(OptimizeInfo& info) {
 	for (NodePtr& node : nodes) {
-		if (NodePtr n = node->Optimize()) node = n;
+		if (NodePtr n = node->Optimize(info)) node = n;
 	}
 
 	for (NodePtr& node : funcs) {
-		if (NodePtr n = node->Optimize()) node = n;
+		if (NodePtr n = node->Optimize(info)) node = n;
 	}
 
 	return nullptr;

@@ -145,8 +145,8 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr FunctionNode::Optimize() {
-	if (NodePtr n = node->Optimize()) node = n;
+NodePtr FunctionNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr n = node->Optimize(info)) node = n;
 
 	return nullptr;
 }

@@ -111,11 +111,11 @@ Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr CustomInitNode::Optimize() {
-	if (NodePtr n = node->Optimize()) node = n;
+NodePtr CustomInitNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr n = node->Optimize(info)) node = n;
 
 	for (NodePtr expr : expressions) {
-		if (NodePtr node = expr->Optimize()) expr = node;
+		if (NodePtr node = expr->Optimize(info)) expr = node;
 	}
 
 	return nullptr;

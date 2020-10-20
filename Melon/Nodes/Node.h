@@ -171,8 +171,15 @@ namespace Melon {
 			ScanInfo& Get() {return stack.Peek();}
 			void Set(const ScanInfo& info) {stack.Set(info);}
 
+			Boxx::Set<Symbols::ScopeList> usedVariables;
+
 		private:
 			Boxx::Stack<ScanInfo> stack;
+		};
+
+		///B OptimizeInfo
+		struct OptimizeInfo {
+			Boxx::Set<Symbols::ScopeList> usedVariables;
 		};
 
 		///B Node
@@ -212,6 +219,7 @@ namespace Melon {
 
 			///T Get Size
 			/// Gets the byte size of the node
+			/// This is only used by the compile step
 			virtual Boxx::UInt GetSize() const;
 
 			///T Is Scope
@@ -241,7 +249,7 @@ namespace Melon {
 			///T Optimize
 			/// Optimizes the node
 			///R NodePtr node: The optimized node. If the node was not optimized, this will be <code>nullptr</code>
-			virtual NodePtr Optimize();
+			virtual NodePtr Optimize(OptimizeInfo& info);
 
 			///T Is Immediate
 			/// <code>true</code> if the compiled node is an immediate value

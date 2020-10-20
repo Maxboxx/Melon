@@ -72,8 +72,8 @@ Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
 }
 
-NodePtr ConvertNode::Optimize() {
-	if (NodePtr n = node->Optimize()) node = n;
+NodePtr ConvertNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr n = node->Optimize(info)) node = n;
 
 	return nullptr;
 }

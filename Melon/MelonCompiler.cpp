@@ -161,16 +161,21 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		ErrorLog::RevertToMarker();
 		ErrorLog::RemoveMarker();
 
+		ScanInfoStack scanInfo;
+
 		for (UInt i = 0; i < compOptions.astOptimizationPasses + 1; i++) {
 			if (i > 0) {
-				info.root.Optimize();
+				OptimizeInfo opInfo;
+				opInfo.usedVariables = scanInfo.usedVariables;
+				info.root.Optimize(opInfo);
+				scanInfo = ScanInfoStack();
 
 				if (ErrorLog::HasError()) {
 					throw CompileError("", FileInfo());
 				}
 			}
 
-			info.root.Scan();
+			scanInfo = info.root.Scan();
 
 			if (ErrorLog::HasError()) {
 				throw CompileError("", FileInfo());

@@ -96,10 +96,10 @@ Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr ForConditionNode::Optimize() {
-	if (NodePtr node = loopInit->Optimize()) loopInit = node;
-	if (NodePtr node = loopCondition->Optimize()) loopCondition = node;
-	if (NodePtr node = loopStep->Optimize()) loopStep = node;
+NodePtr ForConditionNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr node = loopInit->Optimize(info)) loopInit = node;
+	if (NodePtr node = loopCondition->Optimize(info)) loopCondition = node;
+	if (NodePtr node = loopStep->Optimize(info)) loopStep = node;
 
 	return nullptr;
 }

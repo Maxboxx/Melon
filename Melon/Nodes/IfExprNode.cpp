@@ -125,13 +125,13 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr IfExprNode::Optimize() {
+NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 	for (NodePtr& node : nodes) {
-		if (NodePtr n = node->Optimize()) node = n;
+		if (NodePtr n = node->Optimize(info)) node = n;
 	}
 
 	for (NodePtr& cond : conditions) {
-		if (NodePtr n = cond->Optimize()) cond = n;
+		if (NodePtr n = cond->Optimize(info)) cond = n;
 	}
 
 	// TODO: save type before this

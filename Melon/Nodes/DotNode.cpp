@@ -154,8 +154,8 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr DotNode::Optimize() {
-	if (NodePtr n = node->Optimize()) node = n;
+NodePtr DotNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr n = node->Optimize(info)) node = n;
 
 	return nullptr;
 }

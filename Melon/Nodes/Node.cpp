@@ -42,7 +42,7 @@ Set<ScanType> Node::Scan(ScanInfoStack& info) {
 	return Set<ScanType>();
 }
 
-NodePtr Node::Optimize() {
+NodePtr Node::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 

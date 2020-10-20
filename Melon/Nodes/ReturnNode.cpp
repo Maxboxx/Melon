@@ -126,9 +126,9 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr ReturnNode::Optimize() {
+NodePtr ReturnNode::Optimize(OptimizeInfo& info) {
 	for (NodePtr& node : nodes) {
-		if (NodePtr n = node->Optimize()) n = node;
+		if (NodePtr n = node->Optimize(info)) n = node;
 	}
 
 	return nullptr;

@@ -195,9 +195,9 @@ Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr LogicNode::Optimize() {
-	if (NodePtr node = node1->Optimize()) node1 = node;
-	if (NodePtr node = node2->Optimize()) node2 = node;
+NodePtr LogicNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr node = node1->Optimize(info)) node1 = node;
+	if (NodePtr node = node2->Optimize(info)) node2 = node;
 
 	return nullptr;
 }

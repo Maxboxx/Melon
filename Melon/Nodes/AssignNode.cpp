@@ -5,6 +5,7 @@
 #include "StackNode.h"
 #include "NameNode.h"
 #include "TypeNode.h"
+#include "EmptyNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -152,18 +153,21 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 			ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
 		}
 
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
+		if (!newVars && !node.Is<NameNode>()) {
+			for (const ScanType type : node->Scan(info)) {
+				scanSet.Add(type);
 
-			if (info.Get().init) {
-				if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
-					if (nn->name == Scope::Self) {
-						Symbol::Find(nn->Type(), file).AssignAll();
-						scanSet.Remove(ScanType::Self);
-					}
-				}
-				else if (type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
+				if (type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 					ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
+				}
+			}
+		}
+
+		if (info.Get().init) {
+			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
+				if (nn->name == Scope::Self) {
+					Symbol::Find(nn->Type(), file).AssignAll();
+					scanSet.Remove(ScanType::Self);
 				}
 			}
 		}
@@ -188,13 +192,32 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr AssignNode::Optimize() {
+NodePtr AssignNode::Optimize(OptimizeInfo& info) {
+	// TODO: Check for side effects
+	for (UInt i = 0; i < vars.Size(); i++) {
+		if (!info.usedVariables.Contains(vars[i]->GetSymbol().scope)) {
+			if (values.Size() > i || (i >= values.Size() && i == vars.Size() - 1)) {
+				vars.RemoveAt(i);
+
+				if (i <= values.Size() - 1) {
+					values.RemoveAt(i);
+				}
+
+				i--;
+			}
+		}
+	}
+
+	if (vars.IsEmpty()) {
+		return new EmptyNode();
+	}
+
 	for (NodePtr& var : vars) {
-		if (NodePtr node = var->Optimize()) var = node;
+		if (NodePtr node = var->Optimize(info)) var = node;
 	}
 
 	for (NodePtr& value : values) {
-		if (NodePtr node = value->Optimize()) value = node;
+		if (NodePtr node = value->Optimize(info)) value = node;
 	}
 
 	return nullptr;

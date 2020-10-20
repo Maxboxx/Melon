@@ -411,11 +411,11 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr CallNode::Optimize() {
-	if (NodePtr n = node->Optimize()) node = n;
+NodePtr CallNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr n = node->Optimize(info)) node = n;
 
 	for (NodePtr& arg : args) {
-		if (NodePtr node = arg->Optimize()) arg = node;
+		if (NodePtr node = arg->Optimize(info)) arg = node;
 	}
 
 	return nullptr;

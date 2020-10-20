@@ -142,9 +142,9 @@ Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr RepeatNode::Optimize() {
-	if (NodePtr node = content->Optimize()) content = node;
-	if (NodePtr node = condition->Optimize()) condition = node;
+NodePtr RepeatNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr node = content->Optimize(info)) content = node;
+	if (NodePtr node = condition->Optimize(info)) condition = node;
 
 	// TODO: Remove break, continue, abort and similar
 	if (condition->IsImmediate() && condition->GetImmediate() != 0) {

@@ -105,8 +105,8 @@ Set<ScanType> SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {
 	return node->Scan(info);
 }
 
-NodePtr SafeUnwrapEndNode::Optimize() {
-	if (NodePtr n = node->Optimize()) node = n;
+NodePtr SafeUnwrapEndNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr n = node->Optimize(info)) node = n;
 
 	return nullptr;
 }

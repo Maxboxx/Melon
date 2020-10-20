@@ -60,8 +60,8 @@ Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 	}
 }
 
-NodePtr ConditionNode::Optimize() {
-	if (NodePtr node = cond->Optimize()) cond = node;
+NodePtr ConditionNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr node = cond->Optimize(info)) cond = node;
 
 	if (cond->IsImmediate()) {
 		Pointer<BooleanNode> bn = new BooleanNode(cond->file);

@@ -93,9 +93,9 @@ Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr BinaryOperatorNode::Optimize() {
-	if (NodePtr node = node1->Optimize()) node1 = node;
-	if (NodePtr node = node2->Optimize()) node2 = node;
+NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr node = node1->Optimize(info)) node1 = node;
+	if (NodePtr node = node2->Optimize(info)) node2 = node;
 
 	// TODO: Add more operators
 	if (node1->IsImmediate() && node2->IsImmediate()) {

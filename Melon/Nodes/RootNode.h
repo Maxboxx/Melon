@@ -42,11 +42,11 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
-			virtual NodePtr Optimize() override;
+			virtual NodePtr Optimize(OptimizeInfo& info) override;
 
 			///T Scan
 			/// Used for scanning for errors
-			void Scan();
+			ScanInfoStack Scan();
 
 			///T ToString
 			/// Converts the result from <code>ToMango()</code> to a string

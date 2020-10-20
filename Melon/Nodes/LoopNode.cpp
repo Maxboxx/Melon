@@ -33,15 +33,16 @@ LoopNode::~LoopNode() {
 UInt LoopNode::GetSize() const {
 	UInt size = 0;
 	
-	for (const LoopSegment& segment : segments) {
-		UInt segSize = segment.statements->GetSize();
+	for (UInt i = 0; i < segments.Size(); i++) {
+		UInt segSize = segments[i].statements->GetSize();
 
-		if (segment.type != LoopType::None) {
-			segSize += segment.condition->GetSize();
+		if (segments[i].type != LoopType::None) {
+			segSize += segments[i].condition->GetSize();
 
-			// TODO: Remove if not used
-			if (segment.type == LoopType::While) {
-				segSize++;
+			if (segments[i].type == LoopType::While) {
+				if (!IsSegmentLast(i)) {
+					segSize++;
+				}
 			}
 		}
 
@@ -120,17 +121,8 @@ void LoopNode::GetNextSegments(const UInt segment, UInt& nextTrue, UInt& nextFal
 }
 
 bool LoopNode::IsSegmentLast(const UInt segment) const {
-	if (segments.Size() == 1 && segment == 0) return true;
 	if (segment == segments.Size() - 1) return true;
-
-	for (UInt i = 1; i < segments.Size(); i++) {
-		if (segments[i - 1].also && !segments[i].also) {
-			if (segment == i - 1) return true;
-			break;
-		} 
-	}
-
-	return false;
+	return segment != 0 && segments[segment].also != segments[segment + 1].also;
 }
 
 void LoopNode::AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
@@ -221,7 +213,6 @@ void LoopNode::CompileWhileStart(CompiledNode& compiled, CompileInfo& info, Segm
 	bool isLast = IsSegmentLast(segmentInfo.index);
 
 	if (!isLast) {
-		// TODO: Remove if not used
 		info.stack.Push(1);
 		loopInfo.stack = info.stack.top;
 
@@ -268,7 +259,6 @@ void LoopNode::CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, Segmen
 	compiled.instructions.Add(jmp);
 
 	if (!IsSegmentLast(segmentInfo.index)) {
-		// TODO: Remove if not used
 		info.stack.Pop(1);
 
 		Instruction lbl = Instruction::Label(info.label);
@@ -680,13 +670,13 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr LoopNode::Optimize() {
+NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 	for (LoopSegment& segment : segments) {
 		if (segment.condition) {
-			if (NodePtr node = segment.condition->Optimize()) segment.condition = node;
+			if (NodePtr node = segment.condition->Optimize(info)) segment.condition = node;
 		}
 
-		if (NodePtr node = segment.statements->Optimize()) segment.statements = node;
+		if (NodePtr node = segment.statements->Optimize(info)) segment.statements = node;
 	}
 
 	// Removes also or else path

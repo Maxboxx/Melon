@@ -89,8 +89,8 @@ Set<ScanType> DoNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr DoNode::Optimize() {
-	if (NodePtr node = nodes->Optimize()) nodes = node;
+NodePtr DoNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr node = nodes->Optimize(info)) nodes = node;
 
 	return nullptr;
 }

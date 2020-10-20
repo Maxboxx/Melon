@@ -94,8 +94,8 @@ Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-NodePtr UnaryOperatorNode::Optimize() {
-	if (NodePtr n = node->Optimize()) node = n;
+NodePtr UnaryOperatorNode::Optimize(OptimizeInfo& info) {
+	if (NodePtr n = node->Optimize(info)) node = n;
 
 	// TODO: Add more operators
 	if (node->IsImmediate()) {
