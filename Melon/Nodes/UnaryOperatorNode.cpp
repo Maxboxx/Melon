@@ -102,6 +102,7 @@ NodePtr UnaryOperatorNode::Optimize(OptimizeInfo& info) {
 		if (op == Scope::Not) {
 			Pointer<BooleanNode> bn = new BooleanNode(node->file);
 			bn->boolean = node->GetImmediate() == 0;
+			info.optimized = true;
 			return bn;
 		}
 	}

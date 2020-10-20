@@ -3,6 +3,7 @@
 #include "BreakNode.h"
 #include "ContinueNode.h"
 #include "DoNode.h"
+#include "EmptyNode.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -148,8 +149,14 @@ NodePtr RepeatNode::Optimize(OptimizeInfo& info) {
 
 	// TODO: Remove break, continue, abort and similar
 	if (condition->IsImmediate() && condition->GetImmediate() != 0) {
+		if (IsEmpty(content)) {
+			info.optimized = true;
+			return new EmptyNode();
+		}
+
 		Pointer<DoNode> dn = new DoNode(content->scope, content->file);
 		dn->nodes = content;
+		info.optimized = true;
 		return dn;
 	}
 

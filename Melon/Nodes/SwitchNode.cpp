@@ -390,6 +390,25 @@ NodePtr SwitchNode::Optimize(OptimizeInfo& info) {
 		if (NodePtr node = def->Optimize(info)) def = node;
 	}
 
+	// TODO: Check for side effects in cases
+
+	// Remove empty cases
+	if (!expr) {
+		for (UInt i = 0; i < nodes.Size(); i++) {
+			if (IsEmpty(nodes[i])) {
+				cases.RemoveAt(i);
+				nodes.RemoveAt(i);
+				i--;
+				info.optimized = true;
+			}
+		}
+
+		if (def && IsEmpty(def)) {
+			def = nullptr;
+			info.optimized = true;
+		}
+	}
+
 	return nullptr;
 }
 

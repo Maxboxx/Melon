@@ -679,17 +679,22 @@ NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 		if (NodePtr node = segment.statements->Optimize(info)) segment.statements = node;
 	}
 
+	// TODO: Check conditions for side effects
+
 	// Removes also or else path
 	if ((segments[0].type == LoopType::If || segments[0].type == LoopType::While) && segments[0].condition->IsImmediate()) {
 		if (segments[0].condition->GetImmediate() == 0) {
 			for (UInt i = 1; i < segments.Size(); i++) {
 				if (!segments[i].also) {
 					segments.RemoveAt(0, i);
+					info.optimized = true;
 					break;
 				}
 			}
 		}
 		else if (segments[0].type == LoopType::If) {
+			info.optimized = true;
+
 			for (UInt i = 1; i < segments.Size(); i++) {
 				if (!segments[i].also) {
 					segments.RemoveAt(i, segments.Size() - i);
@@ -711,8 +716,10 @@ NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 			if (segments[i].condition->GetImmediate() == 0) {
 				segments.RemoveAt(i);
 				i--;
+				info.optimized = true;
 			}
 			else if (segments[i].type == LoopType::If) {
+				info.optimized = true;
 				segments[i].type = LoopType::None;
 
 				if (!segments[i].also) {
@@ -734,13 +741,25 @@ NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 		}
 	}
 
+	// Remove empty segments
+	for (UInt i = segments.Size(); i > 0;) {
+		i--;
+
+		if (!segments[i].IsLoop() && IsSegmentLast(i) && IsEmpty(segments[i].statements)) {
+			info.optimized = true;
+			segments.RemoveAt(i);
+		}
+	}
+
 	if (segments.Size() == 0) {
+		info.optimized = true;
 		return new EmptyNode();
 	}
 	else if (segments.Size() == 1 && (!segments[0].condition || segments[0].condition->IsImmediate())) {
-		if (segments[0].type == LoopType::If || segments[0].type == LoopType::None) {
+		if (!segments[0].IsLoop()) {
 			Pointer<DoNode> dn = new DoNode(segments[0].statements->scope, segments[0].statements->file);
 			dn->nodes = segments[0].statements;
+			info.optimized = true;
 			return dn;
 		}
 	}

@@ -179,6 +179,8 @@ namespace Melon {
 
 		///B OptimizeInfo
 		struct OptimizeInfo {
+			bool optimized = false;
+
 			Boxx::Set<Symbols::ScopeList> usedVariables;
 		};
 
@@ -269,6 +271,10 @@ namespace Melon {
 			///T Compile Assignment
 			/// Compiles an assignment
 			static CompiledNode CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file);
+
+			///T Is Empty
+			/// Checks if a node is an empty empty node
+			static bool IsEmpty(const NodePtr& node);
 		};
 
 		///B IncludeScanError

@@ -42,6 +42,7 @@ CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 
 	file.Close();
 
+	// TODO: Errors for incorrect format
 	CompilerOptions options;
 	Map<String, Mango> optionsMap = mango;
 
@@ -96,14 +97,38 @@ CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 	}
 
 	if (optionsMap.Contains("optimizing")) {
-		Map<String, Mango> opti = optionsMap["optimizing"];
+		Mango optimizing = optionsMap["optimizing"];
 
-		if (opti.Contains("ast")) {
-			options.astOptimizationPasses = (double)opti["ast"];
+		if (optimizing.Type() == MangoType::Map) {
+			Map<String, Mango> opti = optionsMap["optimizing"];
+
+			if (opti.Contains("ast")) {
+				if (opti["ast"].Type() == MangoType::Number) {
+					options.astOptimizationPasses = (double)opti["ast"];
+				}
+				else {
+					options.astOptimizationPasses = (bool)opti["ast"] ? Math::UIntMax() : 0;
+				}
+			}
+
+			if (opti.Contains("kiwi")) {
+				if (opti["kiwi"].Type() == MangoType::Number) {
+					options.kiwiOptimizationPasses = (double)opti["kiwi"];
+				}
+				else {
+					options.kiwiOptimizationPasses = (bool)opti["kiwi"] ? Math::UIntMax() : 0;
+				}
+			}
 		}
-
-		if (opti.Contains("kiwi")) {
-			options.kiwiOptimizationPasses = (double)opti["kiwi"];
+		else if (optimizing.Type() == MangoType::Number) {
+			double passes = optimizing;
+			options.astOptimizationPasses = passes;
+			options.kiwiOptimizationPasses = passes;
+		}
+		else if (optimizing.Type() == MangoType::Boolean) {
+			UInt passes = (bool)optimizing ? Math::UIntMax() : 0;
+			options.astOptimizationPasses = passes;
+			options.kiwiOptimizationPasses = passes;
 		}
 	}
 
@@ -163,7 +188,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		ScanInfoStack scanInfo;
 
-		for (UInt i = 0; i < compOptions.astOptimizationPasses + 1; i++) {
+		for (UInt i = 0; i < (ULong)compOptions.astOptimizationPasses + 1; i++) {
 			if (i > 0) {
 				OptimizeInfo opInfo;
 				opInfo.usedVariables = scanInfo.usedVariables;
@@ -173,6 +198,8 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 				if (ErrorLog::HasError()) {
 					throw CompileError("", FileInfo());
 				}
+
+				if (!opInfo.optimized) break;
 			}
 
 			scanInfo = info.root.Scan();

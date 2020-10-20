@@ -204,11 +204,13 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 				}
 
 				i--;
+				info.optimized = true;
 			}
 		}
 	}
 
 	if (vars.IsEmpty()) {
+		info.optimized = true;
 		return new EmptyNode();
 	}
 

@@ -199,6 +199,8 @@ NodePtr LogicNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = node1->Optimize(info)) node1 = node;
 	if (NodePtr node = node2->Optimize(info)) node2 = node;
 
+	// TODO: Optimize
+
 	return nullptr;
 }
 

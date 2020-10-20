@@ -5,6 +5,7 @@
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
 #include "BreakNode.h"
+#include "EmptyNode.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -91,6 +92,11 @@ Set<ScanType> DoNode::Scan(ScanInfoStack& info) {
 
 NodePtr DoNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = nodes->Optimize(info)) nodes = node;
+
+	if (IsEmpty(nodes)) {
+		info.optimized = true;
+		return new EmptyNode();
+	}
 
 	return nullptr;
 }

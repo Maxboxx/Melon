@@ -141,10 +141,12 @@ NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 				conditions.RemoveAt(i);
 				nodes.RemoveAt(i);
 				i--;
+				info.optimized = true;
 			}
 			else {
 				nodes.RemoveAt(i + 1, nodes.Size() - i - 1);
 				conditions.RemoveAt(i, conditions.Size() - i);
+				info.optimized = true;
 				break;
 			}
 		}
@@ -156,9 +158,11 @@ NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 			cn->isExplicit = true;
 			cn->node = nodes[0];
 			cn->type = Type();
+			info.optimized = true;
 			return cn;
 		}
 		else {
+			info.optimized = true;
 			return nodes[0];
 		}
 	}

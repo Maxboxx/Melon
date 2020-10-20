@@ -80,6 +80,19 @@ NodePtr StatementsNode::Optimize(OptimizeInfo& info) {
 		if (NodePtr node = statement->Optimize(info)) statement = node;
 	}
 
+	for (UInt i = 0; i < statements.Size(); i++) {
+		if (IsEmpty(statements[i])) {
+			statements.RemoveAt(i);
+			i--;
+			info.optimized = true;
+		}
+	}
+
+	if (statements.IsEmpty()) {
+		info.optimized = true;
+		return new EmptyNode();
+	}
+
 	return nullptr;
 }
 

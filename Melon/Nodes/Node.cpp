@@ -1,6 +1,7 @@
 #include "Node.h"
 
 #include "ConvertNode.h"
+#include "EmptyNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -97,5 +98,13 @@ CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& in
 	else {
 		return CompiledNode();
 	}
+}
+
+bool Node::IsEmpty(const NodePtr& node) {
+	if (Pointer<EmptyNode> empty = node.Cast<EmptyNode>()) {
+		return !empty->node;
+	}
+
+	return false;
 }
 

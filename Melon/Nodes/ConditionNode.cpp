@@ -66,6 +66,7 @@ NodePtr ConditionNode::Optimize(OptimizeInfo& info) {
 	if (cond->IsImmediate()) {
 		Pointer<BooleanNode> bn = new BooleanNode(cond->file);
 		bn->boolean = cond->GetImmediate() != 0;
+		info.optimized = true;
 		return bn;
 	}
 

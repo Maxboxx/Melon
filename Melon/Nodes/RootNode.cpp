@@ -183,12 +183,22 @@ ScanInfoStack RootNode::Scan() {
 }
 
 NodePtr RootNode::Optimize(OptimizeInfo& info) {
-	for (NodePtr& node : nodes) {
-		if (NodePtr n = node->Optimize(info)) node = n;
+	for (UInt i = 0; i < nodes.Size(); i++) {
+		if (NodePtr node = nodes[i]->Optimize(info)) nodes[i] = node;
+
+		if (IsEmpty(nodes[i])) {
+			nodes.RemoveAt(i);
+			i--;
+		}
 	}
 
-	for (NodePtr& node : funcs) {
-		if (NodePtr n = node->Optimize(info)) node = n;
+	for (UInt i = 0; i < funcs.Size(); i++) {
+		if (NodePtr node = funcs[i]->Optimize(info)) funcs[i] = node;
+
+		if (IsEmpty(funcs[i])) {
+			funcs.RemoveAt(i);
+			i--;
+		}
 	}
 
 	return nullptr;

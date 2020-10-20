@@ -105,11 +105,13 @@ NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 			if (op == Scope::Equal) {
 				Pointer<BooleanNode> bn = new BooleanNode(node1->file);
 				bn->boolean = node1->GetImmediate() == node2->GetImmediate();
+				info.optimized = true;
 				return bn;
 			}
 			else if (op == Scope::NotEqual) {
 				Pointer<BooleanNode> bn = new BooleanNode(node1->file);
 				bn->boolean = node1->GetImmediate() != node2->GetImmediate();
+				info.optimized = true;
 				return bn;
 			}
 		}

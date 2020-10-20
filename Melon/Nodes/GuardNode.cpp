@@ -5,6 +5,7 @@
 #include "ReturnNode.h"
 #include "StatementsNode.h"
 #include "DoNode.h"
+#include "EmptyNode.h"
 
 #include "Boxx/Math.h"
 
@@ -153,12 +154,25 @@ NodePtr GuardNode::Optimize(OptimizeInfo& info) {
 
 	if (cond->IsImmediate()) {
 		if (cond->GetImmediate() == 0) {
+			if (IsEmpty(else_)) {
+				info.optimized = true;
+				return new EmptyNode();
+			}
+
 			Pointer<DoNode> dn = new DoNode(else_->scope, else_->file);
 			dn->nodes = else_;
+			info.optimized = true;
 			return dn;
 		}
 		else {
-			return continue_;
+			info.optimized = true;
+
+			if (IsEmpty(continue_)) {
+				return new EmptyNode();
+			}
+			else {
+				return continue_;
+			}
 		}
 	}
 
