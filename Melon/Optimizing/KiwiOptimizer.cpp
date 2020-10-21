@@ -139,6 +139,8 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 							instructions[i].instruction.arguments[2] = instructions[u].instruction.arguments[0];
 							instructions[i].instruction.sizes[2] = instructions[u].instruction.sizes[0];
 							instructions[i].instruction.signs[2] = instructions[u].instruction.signs[0];
+							instructions[i].important = instructions[u].important;
+
 							instructions.RemoveAt(u);
 							i--;
 							j--;
@@ -179,6 +181,9 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 							instructions[i].instruction.arguments[0] = instructions[u].instruction.arguments[0];
 							instructions[i].instruction.sizes[0] = instructions[u].instruction.sizes[0];
 							instructions[i].instruction.signs[0] = instructions[u].instruction.signs[0];
+							instructions[i].instruction.signs[0] = instructions[u].instruction.signs[0];
+							instructions[i].important = instructions[u].important;
+
 							instructions.RemoveAt(u);
 							j--;
 							break;

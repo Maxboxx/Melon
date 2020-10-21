@@ -4,9 +4,9 @@ int?: n = 3
 if int: n = n then
 	int?: m = n + 2
 
-	guard n = m
+	guard int: a = m
 	
-	n = n + 1
+	a = a + 1
 end
 
 while int: i = n do
