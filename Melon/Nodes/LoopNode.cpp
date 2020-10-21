@@ -317,7 +317,7 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 	compiled.AddInstructions(cond->loopInit->Compile(info).instructions);
 
 	Instruction jmp = Instruction(InstructionType::Jmp);
-	jmp.arguments.Add(Argument(ArgumentType::Label, info.label + 1));
+	jmp.arguments.Add(Argument(ArgumentType::Label, (Long)info.label + 1));
 	compiled.instructions.Add(jmp);
 
 	Instruction lbl1 = Instruction::Label(info.label);

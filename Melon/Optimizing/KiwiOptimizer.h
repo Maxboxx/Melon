@@ -42,6 +42,8 @@ namespace Melon {
 			static Boxx::UInt UseCount(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt start, Boxx::UInt end, const Kiwi::Argument& arg);
 
 			static Boxx::UInt NextRegisterGet(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const Kiwi::Register& reg);
+
+			static Kiwi::Argument LastLabelInChain(const Boxx::List<OptimizerInstruction>& instructions, const Kiwi::Argument& label);
 		};
 	}
 }

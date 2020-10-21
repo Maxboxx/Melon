@@ -40,6 +40,7 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	mov1.arguments.Add(c1.argument);
 	mov1.arguments.Add(Argument(1));
 	c1.instructions.Add(mov1);
+	c1.instructions.Last().important = important;
 
 	Symbol argSym = s.Get(s.names[1], nodes[0]->file);
 	Symbol argType = argSym.GetType(nodes[0]->file);
@@ -91,6 +92,7 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	mov2.arguments.Add(c1.argument);
 	mov2.arguments.Add(Argument(0));
 	c1.instructions.Add(mov2);
+	c1.instructions.Last().important = important;
 
 	c1.instructions.Add(Instruction::Label(info.label));
 	c1.instructions[jumpIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));

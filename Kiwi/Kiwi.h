@@ -414,6 +414,9 @@ namespace Kiwi {
 		/// Get the size of largest argument
 		Boxx::UByte GetLargestSize() const;
 
+		bool operator==(const Instruction& inst) const;
+		bool operator!=(const Instruction& inst) const;
+
 		///H Static functions
 
 		///T Is comparison
@@ -504,6 +507,26 @@ namespace Kiwi {
 		}
 
 		return best;
+	}
+
+	inline bool Instruction::operator==(const Instruction& inst) const {
+		if (type != inst.type) return false;
+		if (arguments.Size() != inst.arguments.Size()) return false;
+
+		for (Boxx::UInt i = 0; i < arguments.Size(); i++) {
+			if (arguments[i] != inst.arguments[i]) return false;
+		}
+
+		for (Boxx::UInt i = 0; i < sizes.Size(); i++) {
+			if (sizes[i] != inst.sizes[i]) return false;
+			if (signs[i] != inst.signs[i]) return false;
+		}
+
+		return true;
+	}
+
+	inline bool Instruction::operator!=(const Instruction& inst) const {
+		return !operator==(inst);
 	}
 
 	inline bool Instruction::IsComp(const InstructionType name) {

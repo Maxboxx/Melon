@@ -312,6 +312,10 @@ String TypeError::Assignment(const String& type1, const String& type2) {
 	return "assigning '" + type1 + "' to '" + type2 + "'";
 }
 
+String TypeError::ConditionAssignment(const String& type) {
+	return "optional value for conditional assignment expected, got '" + type + "'";
+}
+
 String TypeError::Dot(const String& var, const String& type) {
 	return "'" + var + "' not found in '" + type + "'";
 }

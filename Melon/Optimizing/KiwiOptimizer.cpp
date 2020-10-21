@@ -15,7 +15,15 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 	List<Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>> segments = Split(instructionList);
 
 	for (UInt i = 0; i < loops; i++) {
+		bool optimized = false;
+
 		for (Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>& segment : segments) {
+			List<Instruction> copy{segment.value.Size()};
+
+			for (const OptimizerInstruction& inst : segment.value) {
+				copy.Add(inst.instruction.Copy());
+			}
+
 			CombinePushPop(segment.value);
 
 			CombineComp(segment.value);
@@ -30,6 +38,20 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 			UpdateLabels(segment.value);
 
 			RenameRegisters(segment.value);
+
+			if (copy.Size() != segment.value.Size()) {
+				optimized = true;
+			}
+			else for (UInt i = 0; i < copy.Size(); i++) {
+				if (copy[i] != segment.value[i].instruction) {
+					optimized = true;
+					break;
+				}
+			}
+		}
+
+		if (!optimized) {
+			break;
 		}
 	}
 
@@ -97,6 +119,7 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 				i--;
 			}
 			else for (UInt j = i; j < instructions.Size(); j++) {
+				if (instructions[j].IsLabelOrCall()) break;
 				if (inst.important) break;
 				UInt nextAssign = NextAssign(instructions, i, inst.instruction.arguments[2]);
 
@@ -136,6 +159,7 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 			}
 
 			for (UInt j = i; j < instructions.Size(); j++) {
+				if (instructions[j].IsLabelOrCall()) break;
 				if (instructions[i].important) break;
 				UInt nextAssign = NextAssign(instructions, i, instructions[i].instruction.arguments[0]);
 
@@ -623,6 +647,8 @@ void KiwiOptimizer::RearrangeJumps(List<OptimizerInstruction>& instructions) {
 		if (!instructions[i].CanJump()) continue;
 
 		if (Instruction::IsComp(instructions[i].instruction.type)) {
+			instructions[i].instruction.arguments[2] = LastLabelInChain(instructions, instructions[i].instruction.arguments[2]);
+
 			if (i + 2 < instructions.Size()) {
 				if (instructions[i + 1].instruction.type == InstructionType::Jmp) {
 					if (instructions[i + 2].instruction.type == InstructionType::Label) {
@@ -636,6 +662,8 @@ void KiwiOptimizer::RearrangeJumps(List<OptimizerInstruction>& instructions) {
 			}
 		}
 		else if (instructions[i].instruction.type == InstructionType::Jmp) {
+			instructions[i].instruction.arguments[0] = LastLabelInChain(instructions, instructions[i].instruction.arguments[0]);
+
 			UInt u = i + 1;
 
 			while (u < instructions.Size()) {
@@ -670,6 +698,24 @@ void KiwiOptimizer::UpdateLabels(List<OptimizerInstruction>& instructions) {
 			if (!usedLabels.Contains(instructions[i].instruction.instructionName)) {
 				instructions.RemoveAt(i);
 				i--;
+			}
+		}
+	}
+
+	ReplacementMap<String> labelReplacement;
+	UInt index = 0;
+
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		if (instructions[i].instruction.type == InstructionType::Label) {
+			labelReplacement.Add(instructions[i].instruction.instructionName, Argument(ArgumentType::Label, index++).label);
+			instructions[i].instruction.instructionName = labelReplacement.GetValue(instructions[i].instruction.instructionName);
+		}
+	}
+
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		for (Argument& arg : instructions[i].instruction.arguments) {
+			if (arg.type == ArgumentType::Label) {
+				arg.label = labelReplacement.GetValue(arg.label);
 			}
 		}
 	}
@@ -881,3 +927,30 @@ UInt KiwiOptimizer::NextRegisterGet(List<OptimizerInstruction>& instructions, UI
 
 	return instructions.Size();
 }
+
+Argument KiwiOptimizer::LastLabelInChain(const List<OptimizerInstruction>& instructions, const Argument& label) {
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		if (instructions[i].instruction.type == InstructionType::Label) {
+			if (instructions[i].instruction.instructionName == label.label) {
+				Argument arg = label;
+
+				for (UInt u = i + 1; u < instructions.Size(); u++) {
+					if (instructions[u].instruction.type == InstructionType::Jmp) {
+						return LastLabelInChain(instructions, instructions[u].instruction.arguments[0]);
+					}
+					else if (instructions[u].instruction.type == InstructionType::Label) {
+						arg.label = instructions[u].instruction.instructionName;
+					}
+					else {
+						return arg;
+					}
+				}
+
+				return arg;
+			}
+		}
+	}
+
+	return label;
+}
+

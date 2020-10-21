@@ -314,6 +314,7 @@ namespace Melon {
 		static Boxx::String Operator(const Boxx::String& op, const Boxx::String& type);
 		static Boxx::String Operator(const Boxx::String& op, const Boxx::String& type1, const Boxx::String& type2);
 		static Boxx::String Assignment(const Boxx::String& type1, const Boxx::String& type2);
+		static Boxx::String ConditionAssignment(const Boxx::String& type);
 		static Boxx::String Dot(const Boxx::String& var, const Boxx::String& type);
 
 		///T Errors

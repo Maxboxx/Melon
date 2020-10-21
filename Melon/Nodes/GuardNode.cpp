@@ -149,7 +149,11 @@ Set<ScanType> GuardNode::Scan(ScanInfoStack& info) {
 
 NodePtr GuardNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = cond->Optimize(info)) cond = node;
-	if (NodePtr node = else_->Optimize(info)) else_ = node;
+
+	if (else_) {
+		if (NodePtr node = else_->Optimize(info)) else_ = node;
+	}
+
 	if (NodePtr node = continue_->Optimize(info)) continue_ = node;
 
 	if (cond->IsImmediate()) {
