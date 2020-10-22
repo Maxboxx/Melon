@@ -44,7 +44,7 @@ Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) {
 		}
 	}
 	else {
-		if (loopCondition->Type() != ScopeList().Add(Scope::Bool)) {
+		if (loopCondition->Type() != ScopeList::Bool) {
 			Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(loopCondition->scope, Scope::Less, loopCondition->file);
 			comp->node1 = loopInit.Cast<AssignNode>()->vars[0];
 			comp->node2 = loopCondition;

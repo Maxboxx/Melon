@@ -41,6 +41,8 @@ CompiledNode ConvertNode::Compile(CompileInfo& info) {
 
 	Symbol convert = Symbol::FindExplicitConversion(node->Type(), convertType, file);
 
+	if (convert.type == SymbolType::None) return CompiledNode();
+
 	List<NodePtr> nodes;
 	nodes.Add(node);
 

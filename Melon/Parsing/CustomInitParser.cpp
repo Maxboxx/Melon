@@ -15,7 +15,7 @@ NodePtr CustomInitParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::CurlyOpen) return nullptr;
 	info.index++;
 
-	Pointer<CustomInitNode> cn = new CustomInitNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+	Pointer<CustomInitNode> cn = new CustomInitNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
 
 	while (info.Current().type != TokenType::CurlyClose) {
 		if (!cn->vars.IsEmpty()) {

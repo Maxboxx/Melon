@@ -20,7 +20,7 @@
 	
 	optimizing: {
 		ast:  0
-		kiwi: true
+		kiwi: 0
 	}
 }
 

@@ -15,7 +15,7 @@ NilNode::~NilNode() {
 }
 
 ScopeList NilNode::Type() const {
-	return ScopeList().Add(Scope::Nil);
+	return ScopeList::Nil;
 }
 
 bool NilNode::IsImmediate() const {

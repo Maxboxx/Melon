@@ -22,7 +22,7 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 	CompiledNode c1 = nodes[0]->Compile(info);
 
 	const ScopeList type = nodes[0]->Type();
-	const bool isNil = nodes[1]->Type() == ScopeList().Add(Scope::Nil);
+	const bool isNil = nodes[1]->Type() == ScopeList::Nil;
 
 	Symbol s = Symbol::Find(type, nodes[0]->file);
 	UInt offset = 0;

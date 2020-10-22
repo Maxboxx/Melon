@@ -31,7 +31,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 				}
 			}
 
-			const String fileDir = Regex::Match("^(./)~[%/\\]+$", info.filename).Get().match;
+			const String fileDir = Regex::Match("^(./)~[%/\\]+$", info.filename).Get().groups[0];
 			String includeDir = include[0].ToString();
 
 			for (UInt i = 1; i < include.Size(); i++) {
@@ -124,6 +124,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 
 	ScopeList scopes = info.scopes;
 	info.scopes = include;
+	info.scopes.absolute = true;
 
 	CreateIncludeSymbols(filename, include);
 

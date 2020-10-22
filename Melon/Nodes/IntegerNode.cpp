@@ -19,36 +19,36 @@ IntegerNode::~IntegerNode() {
 ScopeList IntegerNode::Type() const {
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {
-			return ScopeList().Add(Scope::UByte);
+			return ScopeList::UByte;
 		}
 		else if ((ULong)number <= Math::UShortMax()) {
-			return ScopeList().Add(Scope::UShort);
+			return ScopeList::UShort;
 		}
 		else if ((ULong)number <= Math::UIntMax()) {
-			return ScopeList().Add(Scope::UInt);
+			return ScopeList::UInt;
 		}
 		else if ((ULong)number <= Math::ULongMax()) {
-			return ScopeList().Add(Scope::ULong);
+			return ScopeList::ULong;
 		}
 		else {
-			return ScopeList().Add(Scope::Huge);
+			return ScopeList::Huge;
 		}
 	}
 	else {
 		if (number >= Math::ByteMin()) {
-			return ScopeList().Add(Scope::Byte);
+			return ScopeList::Byte;
 		}
 		else if (number >= Math::ShortMin()) {
-			return ScopeList().Add(Scope::Short);
+			return ScopeList::Short;
 		}
 		else if (number >= Math::IntMin()) {
-			return ScopeList().Add(Scope::Int);
+			return ScopeList::Int;
 		}
 		else if (number >= Math::LongMin()) {
-			return ScopeList().Add(Scope::Long);
+			return ScopeList::Long;
 		}
 		else {
-			return ScopeList().Add(Scope::Huge);
+			return ScopeList::Huge;
 		}
 	}
 }

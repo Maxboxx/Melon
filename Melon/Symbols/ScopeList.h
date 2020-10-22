@@ -80,22 +80,6 @@ namespace Melon {
 			static const Scope Global;
 			///M
 
-			///T Scope types
-			/// A collection of scopes for basic types
-			///M
-			static const Scope Bool;
-			static const Scope Byte;
-			static const Scope UByte;
-			static const Scope Short;
-			static const Scope UShort;
-			static const Scope Int;
-			static const Scope UInt;
-			static const Scope Long;
-			static const Scope ULong;
-			static const Scope Huge;
-			static const Scope Nil;
-			///M
-
 			///T Scope operators
 			/// A collection of scopes for operators
 			///M
@@ -161,6 +145,9 @@ namespace Melon {
 			///T Empty ScopeList
 			ScopeList();
 
+			///T Absolute
+			ScopeList(const bool absolute);
+
 			///T Copy ScopeList
 			ScopeList(const ScopeList& scopeList);
 
@@ -221,7 +208,23 @@ namespace Melon {
 
 			void operator=(const ScopeList& scopeList);
 
-			static ScopeList undefined;
+			bool absolute = false;
+
+			///T Types
+			///M
+			static const ScopeList Bool;
+			static const ScopeList Byte;
+			static const ScopeList UByte;
+			static const ScopeList Short;
+			static const ScopeList UShort;
+			static const ScopeList Int;
+			static const ScopeList UInt;
+			static const ScopeList Long;
+			static const ScopeList ULong;
+			static const ScopeList Huge;
+			static const ScopeList Nil;
+			static const ScopeList undefined;
+			///M
 		private:
 			Boxx::List<Scope> scopes;
 			Scope baseScope;

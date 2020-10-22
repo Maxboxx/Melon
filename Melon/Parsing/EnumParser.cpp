@@ -104,7 +104,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	eq.includedNamespaces = info.includedNamespaces;
 	eq.arguments.Add(info.scopes);
 	eq.arguments.Add(info.scopes);
-	eq.returnValues.Add(ScopeList().Add(Scope::Bool));
+	eq.returnValues.Add(ScopeList::Bool);
 	eq.symbolNode = new IntegerBinaryOperatorNode(enumSymbol.size, enumSymbol.isSigned, InstructionType::Eq);
 	enumSymbol.Add(Scope::Equal, eq, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
@@ -114,7 +114,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	ne.includedNamespaces = info.includedNamespaces;
 	ne.arguments.Add(info.scopes);
 	ne.arguments.Add(info.scopes);
-	ne.returnValues.Add(ScopeList().Add(Scope::Bool));
+	ne.returnValues.Add(ScopeList::Bool);
 	ne.symbolNode = new IntegerBinaryOperatorNode(enumSymbol.size, enumSymbol.isSigned, InstructionType::Ne);
 	enumSymbol.Add(Scope::NotEqual, ne, FileInfo(info.filename, info.Current().line, info.statementNumber));
 

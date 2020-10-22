@@ -15,7 +15,7 @@ BooleanNode::~BooleanNode() {
 }
 
 ScopeList BooleanNode::Type() const {
-	return ScopeList().Add(Scope::Bool);
+	return ScopeList::Bool;
 }
 
 bool BooleanNode::IsImmediate() const {

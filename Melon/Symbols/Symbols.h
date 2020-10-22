@@ -283,9 +283,11 @@ namespace Melon {
 
 			///T Replace Templates
 			/// Replaces template arguments with real types
+			///M
 			static ScopeList ReplaceTemplates(const ScopeList& type, const Symbol& templateSymbol, const Boxx::List<ScopeList>& types);
 			static ScopeList ReplaceTemplates(const ScopeList& type, const FileInfo& file);
 			static ScopeList ReplaceNearestTemplates(const ScopeList& scope, const ScopeList& type, const FileInfo& file);
+			///M
 
 			///T Set Template Values
 			/// Sets the values of templates

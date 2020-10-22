@@ -23,7 +23,7 @@ LogicNode::~LogicNode() {
 }
 
 ScopeList LogicNode::Type() const {
-	return ScopeList().Add(Scope::Bool);
+	return ScopeList::Bool;
 }
 
 Scope LogicNode::GetOperator() const {
@@ -42,7 +42,7 @@ Scope LogicNode::GetOperator() const {
 CompiledNode LogicNode::CompileToBool(const NodePtr& node, CompileInfo& info) {
 	Pointer<ConvertNode> convert = new ConvertNode(node->scope, node->file);
 	convert->node = node;
-	convert->type = ScopeList().Add(Scope::Bool);
+	convert->type = ScopeList::Bool;
 	convert->isExplicit = true;
 	return convert->Compile(info);
 }
@@ -176,7 +176,7 @@ Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
 
 	Pointer<ConvertNode> convert1 = new ConvertNode(node1->scope, node1->file);
 	convert1->node = node1;
-	convert1->type = ScopeList().Add(Scope::Bool);
+	convert1->type = ScopeList::Bool;
 	convert1->isExplicit = true;
 
 	for (const ScanType type : convert1->Scan(info)) {
@@ -185,7 +185,7 @@ Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
 
 	Pointer<ConvertNode> convert2 = new ConvertNode(node2->scope, node2->file);
 	convert2->node = node2;
-	convert2->type = ScopeList().Add(Scope::Bool);
+	convert2->type = ScopeList::Bool;
 	convert2->isExplicit = true;
 
 	for (const ScanType type : convert2->Scan(info)) {

@@ -44,6 +44,14 @@ ScopeList UnaryOperatorNode::Type() const {
 	return ScopeList::undefined;
 }
 
+Symbol UnaryOperatorNode::GetSymbol() const {
+	if (op == Scope::Unwrap) {
+		return Symbol::Find(node->Type(), file).Get(Scope::Value, file);
+	}
+
+	return Symbol();
+}
+
 Scope UnaryOperatorNode::GetOperator() const {
 	return op;
 }

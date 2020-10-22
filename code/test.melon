@@ -1,20 +1,22 @@
 
-int?: n = 3
+include Math.Vector
 
-if int: n = n then
-	int?: m = n + 2
+Vector?: v = Vector(1, 2, 3)
+
+if Vector: v = v then
+	int?: m = v.y + 2
 
 	guard int: a = m
 	
 	a = a + 1
 end
 
-while int: i = n do
-	i = i - 1
+while Vector: i = v do
+	i.z = i.z - 1
 	
-	if i > 0 then
-		n = i 
+	if i.z > 0 then
+		v!.z = i.z -- warning
 	else
-		n = nil
+		v = nil
 	end
 end

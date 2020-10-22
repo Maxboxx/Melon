@@ -65,6 +65,7 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 				Symbol f;
 				f.type = SymbolType::Function;
 				f.scope = this->scope.Add(scope);
+				f.scope.absolute = true;
 				scopes.Add(scope.name, f);
 			}
 			else if (scopes[scope.name].variants.Size() == 1) {
@@ -105,12 +106,14 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 				Scope symScope = scope;
 				symScope.variant = scopes[scope.name].variants.Size();
 				sym.scope = this->scope.Add(symScope);
+				sym.scope.absolute = true;
 				scopes[scope.name].variants.Add(sym);
 			}
 			else {
 				Symbol sym = symbol;
 				Scope symScope = scope;
 				sym.scope = this->scope.Add(scope);
+				sym.scope.absolute = true;
 				scopes[scope.name].variants[(UInt)scope.variant] = sym;
 			}
 		}
@@ -120,12 +123,14 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 			if (!scopes.Contains(scope.name, parent)) {
 				parent = Symbol(SymbolType::Scope);
 				parent.scope = this->scope.Add(Scope(scope.name));
+				parent.scope.absolute = true;
 				scopes.Add(scope.name, parent);
 			}
 
 			if (redefine) {
 				Symbol sym = symbol;
 				sym.scope = sym.scope.Pop().Add(scope);
+				sym.scope.absolute = true;
 				parent.templateVariants[(UInt)scope.variant] = sym;
 			}
 			else {
@@ -134,6 +139,7 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 
 				Symbol sym = symbol;
 				sym.scope = sym.scope.Pop().Add(newScope);
+				sym.scope.absolute = true;
 				parent.templateVariants.Add(sym);
 			}
 		}
@@ -144,6 +150,7 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 
 			Symbol sym = symbol;
 			sym.scope = this->scope.Add(scope);
+			sym.scope.absolute = true;
 			scopes.Add(scope.name, sym);
 		}
 	}
@@ -520,6 +527,7 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 
 	if (isNotTemplateVariant) {
 		symbol.scope = ReplaceTemplates(symbol.scope.Pop(), templateSymbol, types).Add(symbol.scope.Last());
+		symbol.scope.absolute = true;
 	}
 	else {
 		Scope last = symbol.scope.Last();
@@ -531,6 +539,7 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 			last.types   = List<ScopeList>();
 			symbol.scope = symbol.scope.Pop().Add(last);
 			symbol.scope = ReplaceTemplates(symbol.scope, templateSymbol, types);
+			symbol.scope.absolute = true;
 
 			if ((UInt)symbol.scope.Last().variant == (UInt)last.variant) {
 				SetTemplateValues(symbol.scope, FileInfo());
@@ -538,6 +547,7 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 		}
 		else {
 			symbol.scope = ReplaceTemplates(symbol.scope, templateSymbol, types);
+			symbol.scope.absolute = true;
 		}
 	}
 
@@ -574,6 +584,7 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 			Symbol t  = scope.value;
 			t.varType = t.scope;
 			t.scope   = symbol.scope.Add(Scope(scope.key));
+			t.scope.absolute = true;
 
 			symbol.scopes.Add(scope.key, t);
 		}
@@ -688,6 +699,7 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& template
 
 ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const FileInfo& file) {
 	ScopeList list;
+	list.absolute = type.absolute;
 
 	for (UInt i = 0; i < type.Size(); i++) {
 		Scope scope = type[i].Copy();
@@ -797,7 +809,7 @@ Symbol Symbol::FindInNamespace(const ScopeList& scopes, const FileInfo& file) {
 	if (scopes.Size() == 0) return symbols;
 	if (scopes[0].name.Size() == 0) return symbols;
 
-	if (scopes[0] == Scope::Global) {
+	if (scopes.absolute || scopes[0] == Scope::Global) {
 		return Symbol::Find(scopes, file);
 	}
 
@@ -876,6 +888,10 @@ Symbol Symbol::FindNearest(const ScopeList& scopes, const Scope& scope, const Fi
 }
 
 Symbol Symbol::FindNearest(const ScopeList& scopes, const ScopeList& scope, const FileInfo& file) {
+	if (scope.absolute) {
+		return Find(scope, file);
+	}
+
 	if (scopes.Size() > 0) {
 		ScopeList list = scopes;
 		
@@ -887,6 +903,7 @@ Symbol Symbol::FindNearest(const ScopeList& scopes, const ScopeList& scope, cons
 
 				if (sym.statementNumber < file.statementNumber) {
 					sym.scope = list.Add(scope);
+					sym.scope.absolute = true;
 					return sym;
 				}
 			}
@@ -897,6 +914,7 @@ Symbol Symbol::FindNearest(const ScopeList& scopes, const ScopeList& scope, cons
 
 	Symbol s = symbols.Get(scope, file);
 	s.scope = scope;
+	s.scope.absolute = true;
 	return s;
 }
 
@@ -905,6 +923,10 @@ Symbol Symbol::FindNearestInNamespace(const ScopeList& scopes, const Scope& scop
 }
 
 Symbol Symbol::FindNearestInNamespace(const ScopeList& scopes, const ScopeList& scope, const FileInfo& file) {
+	if (scope.absolute) {
+		return Find(scope, file);
+	}
+
 	ScopeList scopeList = scope;
 
 	for (UInt i = 0; i < scopeList.Size(); i++) {
@@ -941,6 +963,10 @@ Symbol Symbol::FindNearestType(const ScopeList& scopes, const Scope& scope, cons
 }
 
 Symbol Symbol::FindNearestType(const ScopeList& scopes, const ScopeList& scope, const FileInfo& file) {
+	if (scope.absolute) {
+		Find(scope, file);
+	}
+
 	if (scopes.Size() > 0) {
 		ScopeList list = scopes;
 		
@@ -952,6 +978,7 @@ Symbol Symbol::FindNearestType(const ScopeList& scopes, const ScopeList& scope, 
 
 				if (sym.IsType()) {
 					sym.scope = list.Add(scope);
+					sym.scope.absolute = true;
 					return sym;
 				}
 			}
@@ -962,6 +989,7 @@ Symbol Symbol::FindNearestType(const ScopeList& scopes, const ScopeList& scope, 
 
 	Symbol s = symbols.Get(scope, file);
 	s.scope = scope;
+	s.scope.absolute = true;
 	return s;
 }
 
@@ -970,6 +998,10 @@ Symbol Symbol::FindNearestTypeInNamespace(const ScopeList& scopes, const Scope& 
 }
 
 Symbol Symbol::FindNearestTypeInNamespace(const ScopeList& scopes, const ScopeList& scope, const FileInfo& file) {
+	if (scope.absolute) {
+		return Find(scope, file);
+	}
+
 	if (scopes.Size() > 0) {
 		ScopeList list = scopes;
 
@@ -981,6 +1013,7 @@ Symbol Symbol::FindNearestTypeInNamespace(const ScopeList& scopes, const ScopeLi
 
 				if (sym.IsType()) {
 					sym.scope = list.Add(scope);
+					sym.scope.absolute = true;
 					return sym;
 				}
 			}
@@ -1005,6 +1038,7 @@ Symbol Symbol::FindCurrentFunction(const ScopeList& scopes, const FileInfo& file
 
 			if (s.type == SymbolType::Function || s.type == SymbolType::Method) {
 				s.scope = list;
+				s.scope.absolute = true;
 				return s;
 			}
 
@@ -1031,6 +1065,7 @@ Symbol Symbol::FindOperator(const Scope& op, const ScopeList& type1, const Scope
 			os.variant = i;
 
 			sym.scope = type1.Add(os);
+			sym.scope.absolute = true;
 			return sym;
 		}
 	}
@@ -1050,6 +1085,7 @@ Symbol Symbol::FindOperator(const Scope& op, const ScopeList& type1, const Scope
 			os.variant = i;
 
 			sym.scope = type2.Add(os);
+			sym.scope.absolute = true;
 			return sym;
 		}
 	}
@@ -1090,6 +1126,7 @@ Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types,
 				list[list.Size() - 1].variant = i;
 
 				sym.scope = list;
+				sym.scope.absolute = true;
 				return sym;
 			}
 
@@ -1112,6 +1149,7 @@ Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types,
 				list[list.Size() - 1].variant = i;
 
 				sym.scope = list;
+				sym.scope.absolute = true;
 				implicitFunc = sym;
 			}
 		}
@@ -1171,6 +1209,7 @@ Symbol Symbol::FindExplicitConversion(const ScopeList& from, const ScopeList& to
 			as.variant = i;
 
 			sym.scope = from.Add(as);
+			sym.scope.absolute = true;
 			return sym;
 		}
 	}
@@ -1191,6 +1230,7 @@ Symbol Symbol::FindExplicitConversion(const ScopeList& from, const ScopeList& to
 			as.variant = i;
 
 			sym.scope = to.Add(as);
+			sym.scope.absolute = true;
 			return sym;
 		}
 	}
@@ -1335,15 +1375,15 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) {
 
 void Symbol::Setup() {
 	// -------------- Integers --------------
-	Map<Scope, Byte> integers;
-	integers.Add(Scope::Byte, -1);
-	integers.Add(Scope::UByte, 1);
-	integers.Add(Scope::Short, -2);
-	integers.Add(Scope::UShort, 2);
-	integers.Add(Scope::Int, -4);
-	integers.Add(Scope::UInt, 4);
-	integers.Add(Scope::Long, -8);
-	integers.Add(Scope::ULong, 8);
+	Map<ScopeList, Byte> integers;
+	integers.Add(ScopeList::Byte, -1);
+	integers.Add(ScopeList::UByte, 1);
+	integers.Add(ScopeList::Short, -2);
+	integers.Add(ScopeList::UShort, 2);
+	integers.Add(ScopeList::Int, -4);
+	integers.Add(ScopeList::UInt, 4);
+	integers.Add(ScopeList::Long, -8);
+	integers.Add(ScopeList::ULong, 8);
 
 	Map<Scope, InstructionType> binOps;
 	binOps.Add(Scope::Add, InstructionType::Add);
@@ -1366,7 +1406,7 @@ void Symbol::Setup() {
 	binOps.Add(Scope::Less, InstructionType::Lt);
 	binOps.Add(Scope::Greater, InstructionType::Gt);
 
-	for (const Pair<Scope, Byte> integer : integers) {
+	for (const Pair<ScopeList, Byte> integer : integers) {
 		// Type
 		Symbol intSym = Symbol(SymbolType::Type);
 		intSym.basic = true;
@@ -1378,20 +1418,20 @@ void Symbol::Setup() {
 		Symbol min = Symbol(SymbolType::Variable);
 		min.attributes.Add(SymbolAttribute::Static);
 		min.attributes.Add(SymbolAttribute::Const);
-		min.varType = ScopeList().Add(integer.key);
+		min.varType = integer.key;
 		*/
 
 		// Neg
 		Symbol neg = Symbol(SymbolType::Function);
 		neg.symbolNode = new IntegerUnaryOperatorNode(abs(integer.value), InstructionType::Neg);
 
-		if (integer.key.name[0] == 'u') {
-			neg.arguments.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
-			neg.returnValues.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
+		if (integer.value > 0) {
+			neg.arguments.Add(ScopeList(true).Add(Scope(integer.key[0].name.Sub(1))));
+			neg.returnValues.Add(ScopeList(true).Add(Scope(integer.key[0].name.Sub(1))));
 		}
 		else {
-			neg.arguments.Add(ScopeList().Add(integer.key));
-			neg.returnValues.Add(ScopeList().Add(integer.key));
+			neg.arguments.Add(integer.key);
+			neg.returnValues.Add(integer.key);
 		}
 
 		intSym.Add(Scope::Neg, neg, FileInfo());
@@ -1399,44 +1439,37 @@ void Symbol::Setup() {
 		// Bit Not
 		Symbol bnot = Symbol(SymbolType::Function);
 		bnot.symbolNode = new IntegerUnaryOperatorNode(abs(integer.value), InstructionType::Not);
-
-		if (integer.key.name[0] == 'u') {
-			bnot.arguments.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
-			bnot.returnValues.Add(ScopeList().Add(Scope(integer.key.name.Sub(1))));
-		}
-		else {
-			bnot.arguments.Add(ScopeList().Add(integer.key));
-			bnot.returnValues.Add(ScopeList().Add(integer.key));
-		}
+		bnot.arguments.Add(integer.key);
+		bnot.returnValues.Add(integer.key);
 
 		intSym.Add(Scope::BitNot, bnot, FileInfo());
 
 		// To Bool
 		Symbol intToBool = Symbol(SymbolType::Function);
-		intToBool.arguments.Add(ScopeList().Add(integer.key));
-		intToBool.returnValues.Add(ScopeList().Add(Scope::Bool));
+		intToBool.arguments.Add(integer.key);
+		intToBool.returnValues.Add(ScopeList::Bool);
 		intToBool.symbolNode = new IntegerToBoolNode();
 		intToBool.isExplicit = true;
 		intSym.Add(Scope::As, intToBool, FileInfo());
 
 		// Not
 		Symbol intNot = Symbol(SymbolType::Function);
-		intNot.arguments.Add(ScopeList().Add(integer.key));
-		intNot.returnValues.Add(ScopeList().Add(Scope::Bool));
+		intNot.arguments.Add(integer.key);
+		intNot.returnValues.Add(ScopeList::Bool);
 		intNot.symbolNode = new IntegerNotNode();
 		intSym.Add(Scope::Not, intNot, FileInfo());
 
 		// Assign
 		Symbol intAssign = Symbol(SymbolType::Function);
-		intAssign.arguments.Add(ScopeList().Add(Scope(integer.key)));
+		intAssign.arguments.Add(integer.key);
 		intAssign.symbolNode = new IntegerAssignNode(integer.value);
 		intSym.Add(Scope::Assign, intAssign, FileInfo());
 
 		// Binary operators
-		for (const Pair<Scope, Byte> integer2 : integers) {
+		for (const Pair<ScopeList, Byte> integer2 : integers) {
 			Symbol intConvert = Symbol(SymbolType::Function);
-			intConvert.arguments.Add(ScopeList().Add(Scope(integer.key)));
-			intConvert.returnValues.Add(ScopeList().Add(Scope(integer2.key)));
+			intConvert.arguments.Add(integer.key);
+			intConvert.returnValues.Add(integer2.key);
 
 			Pointer<IntegerConvertNode> cn = new IntegerConvertNode();
 			cn->size = Math::Abs(integer.value);
@@ -1455,18 +1488,18 @@ void Symbol::Setup() {
 				bool sign = integer.value < 0 || integer2.value < 0;
 
 				if (Instruction::IsComp(op.value))
-					intOp.returnValues.Add(ScopeList().Add(Scope::Bool));
+					intOp.returnValues.Add(ScopeList::Bool);
 				else {
-					const Scope name = v1 > v2 ? integer.key : integer2.key;
+					const ScopeList name = v1 > v2 ? integer.key : integer2.key;
 
-					if (sign && name.name[0] == 'u')
-						intOp.returnValues.Add(ScopeList().Add(Scope(name.name.Sub(1))));
+					if (sign && name[0].name[0] == 'u')
+						intOp.returnValues.Add(ScopeList(true).Add(Scope(name[0].name.Sub(1))));
 					else
-						intOp.returnValues.Add(ScopeList().Add(name));
+						intOp.returnValues.Add(name);
 				}
 
-				intOp.arguments.Add(ScopeList().Add(integer.key));
-				intOp.arguments.Add(ScopeList().Add(integer2.key));
+				intOp.arguments.Add(integer.key);
+				intOp.arguments.Add(integer2.key);
 				intOp.symbolNode = new IntegerBinaryOperatorNode(
 					v1 > v2 ? v1 : v2,
 					sign,
@@ -1477,7 +1510,7 @@ void Symbol::Setup() {
 			}
 		}
 
-		symbols.Add(integer.key, intSym, FileInfo());
+		symbols.Add(integer.key[0], intSym, FileInfo());
 	}
 
 	// ----------------- Boolean ---------------------
@@ -1487,64 +1520,64 @@ void Symbol::Setup() {
 	boolSym.basic = true;
 
 	Symbol boolAssign = Symbol(SymbolType::Function);
-	boolAssign.arguments.Add(ScopeList().Add(Scope::Bool));
+	boolAssign.arguments.Add(ScopeList::Bool);
 	boolAssign.symbolNode = new BooleanAssignNode();
 	boolSym.Add(Scope::Assign, boolAssign, FileInfo());
 
 	Symbol boolEq = Symbol(SymbolType::Function);
-	boolEq.arguments.Add(ScopeList().Add(Scope::Bool));
-	boolEq.arguments.Add(ScopeList().Add(Scope::Bool));
-	boolEq.returnValues.Add(ScopeList().Add(Scope::Bool));
+	boolEq.arguments.Add(ScopeList::Bool);
+	boolEq.arguments.Add(ScopeList::Bool);
+	boolEq.returnValues.Add(ScopeList::Bool);
 	boolEq.symbolNode = new BooleanCompareNode(InstructionType::Eq);
 	boolSym.Add(Scope::Equal, boolEq, FileInfo());
 
 	Symbol boolNe = Symbol(SymbolType::Function);
-	boolNe.arguments.Add(ScopeList().Add(Scope::Bool));
-	boolNe.arguments.Add(ScopeList().Add(Scope::Bool));
-	boolNe.returnValues.Add(ScopeList().Add(Scope::Bool));
+	boolNe.arguments.Add(ScopeList::Bool);
+	boolNe.arguments.Add(ScopeList::Bool);
+	boolNe.returnValues.Add(ScopeList::Bool);
 	boolNe.symbolNode = new BooleanCompareNode(InstructionType::Ne);
 	boolSym.Add(Scope::NotEqual, boolNe, FileInfo());
 
 	Symbol boolNot = Symbol(SymbolType::Function);
-	boolNot.arguments.Add(ScopeList().Add(Scope::Bool));
-	boolNot.returnValues.Add(ScopeList().Add(Scope::Bool));
+	boolNot.arguments.Add(ScopeList::Bool);
+	boolNot.returnValues.Add(ScopeList::Bool);
 	boolNot.symbolNode = new BooleanNotNode();
 	boolSym.Add(Scope::Not, boolNot, FileInfo());
 
 	Symbol boolToBool = Symbol(SymbolType::Function);
-	boolToBool.arguments.Add(ScopeList().Add(Scope::Bool));
-	boolToBool.returnValues.Add(ScopeList().Add(Scope::Bool));
+	boolToBool.arguments.Add(ScopeList::Bool);
+	boolToBool.returnValues.Add(ScopeList::Bool);
 	boolToBool.isExplicit = false;
 	boolToBool.symbolNode = new BooleanToBooleanNode();
 	boolSym.Add(Scope::As, boolToBool, FileInfo());
 
-	symbols.Add(Scope::Bool, boolSym, FileInfo());
+	symbols.Add(ScopeList::Bool[0], boolSym, FileInfo());
 
 	// ----------------- Nil ---------------------
 
 	Symbol nilSym = Symbol(SymbolType::Type);
-	nilSym.scope  = ScopeList().Add(Scope::Nil);
+	nilSym.scope  = ScopeList::Nil;
 	nilSym.size   = 0;
 	nilSym.basic  = true;
 
 	Symbol nilNot = Symbol(SymbolType::Function);
-	nilNot.arguments.Add(ScopeList().Add(Scope::Nil));
-	nilNot.returnValues.Add(ScopeList().Add(Scope::Bool));
+	nilNot.arguments.Add(ScopeList::Nil);
+	nilNot.returnValues.Add(ScopeList::Bool);
 	nilNot.symbolNode = new BooleanConstantNode(true);
 	nilSym.Add(Scope::Not, nilNot, FileInfo());
 
 	Symbol nilToBool = Symbol(SymbolType::Function);
-	nilToBool.arguments.Add(ScopeList().Add(Scope::Nil));
-	nilToBool.returnValues.Add(ScopeList().Add(Scope::Bool));
+	nilToBool.arguments.Add(ScopeList::Nil);
+	nilToBool.returnValues.Add(ScopeList::Bool);
 	nilToBool.isExplicit = true;
 	nilToBool.symbolNode = new BooleanConstantNode(false);
 	nilSym.Add(Scope::As, nilToBool, FileInfo());
 
-	symbols.Add(Scope::Nil, nilSym, FileInfo());
+	symbols.Add(ScopeList::Nil[0], nilSym, FileInfo());
 
 	// ----------------- Optional ---------------------
 	Symbol optionalScope = Symbol(SymbolType::Scope);
-	optionalScope.scope  = ScopeList().Add(Scope::Optional);
+	optionalScope.scope  = ScopeList(true).Add(Scope::Optional);
 	optionalScope.basic  = true;
 
 	{
@@ -1568,7 +1601,7 @@ void Symbol::Setup() {
 			optionalSym.Add(templateArg.scope.Last(), templateArg, FileInfo());
 
 			Symbol hasSym  = Symbol(SymbolType::Variable);
-			hasSym.varType = ScopeList().Add(Scope::Bool);
+			hasSym.varType = ScopeList::Bool;
 			hasSym.scope   = optionalSym.scope.Add(Scope::HasValue);
 			optionalSym.Add(Scope::HasValue, hasSym, FileInfo());
 
@@ -1588,7 +1621,7 @@ void Symbol::Setup() {
 			optionalSym.Add(Scope::Assign, valueAssign, FileInfo());
 
 			Symbol nilAssign = Symbol(SymbolType::Function);
-			nilAssign.arguments.Add(ScopeList().Add(Scope::Nil));
+			nilAssign.arguments.Add(ScopeList::Nil);
 			nilAssign.symbolNode = new OptionalAssignValueNode();
 			optionalSym.Add(Scope::Assign, nilAssign, FileInfo());
 
@@ -1600,14 +1633,14 @@ void Symbol::Setup() {
 
 			Symbol toBool = Symbol(SymbolType::Function);
 			toBool.arguments.Add(optionalSym.scope);
-			toBool.returnValues.Add(ScopeList().Add(Scope::Bool));
+			toBool.returnValues.Add(ScopeList::Bool);
 			toBool.isExplicit = true;
 			toBool.symbolNode = new OptionalToBooleanNode();
 			optionalSym.Add(Scope::As, toBool, FileInfo());
 
 			Symbol optionalNot = Symbol(SymbolType::Function);
 			optionalNot.arguments.Add(optionalSym.scope);
-			optionalNot.returnValues.Add(ScopeList().Add(Scope::Bool));
+			optionalNot.returnValues.Add(ScopeList::Bool);
 			optionalNot.symbolNode = new OptionalNotNode();
 			optionalSym.Add(Scope::Not, optionalNot, FileInfo());
 		}

@@ -49,13 +49,21 @@
 	</Type>
 
 	<Type Name="Melon::Symbols::ScopeList">
-		<DisplayString Condition="scopes.list->size == 0">""</DisplayString>
-		<DisplayString Condition="scopes.list->size == 1">{scopes.list->list[0]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 2">{scopes.list->list[0]}.{scopes.list->list[1]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 3">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 4">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 5">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]}</DisplayString>
-		<DisplayString Condition="scopes.list->size > 5">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]} ...</DisplayString>
+		<DisplayString Condition="scopes.list->size == 0 &amp;&amp; !absolute">""</DisplayString>
+		<DisplayString Condition="scopes.list->size == 1 &amp;&amp; !absolute">{scopes.list->list[0]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 2 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 3 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 4 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 5 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]}</DisplayString>
+		<DisplayString Condition="scopes.list->size > 5 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]} ...</DisplayString>
+
+		<DisplayString Condition="scopes.list->size == 0 &amp;&amp; absolute">"global"</DisplayString>
+		<DisplayString Condition="scopes.list->size == 1 &amp;&amp; absolute">global {scopes.list->list[0]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 2 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 3 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 4 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}</DisplayString>
+		<DisplayString Condition="scopes.list->size == 5 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]}</DisplayString>
+		<DisplayString Condition="scopes.list->size > 5 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]} ...</DisplayString>
 	</Type>
 
 	<Type Name="Melon::Symbols::Symbol">

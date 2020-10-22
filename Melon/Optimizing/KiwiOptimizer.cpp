@@ -765,7 +765,13 @@ void KiwiOptimizer::RenameRegisters(List<OptimizerInstruction>& instructions) {
 
 				instructions[i].instruction.arguments[2] = Register(regIndex);
 				usedRegisters.Add(Register(regIndex));
-				replacement.Add(reg, Register(regIndex));
+
+				if (replacement.Contains(reg)) {
+					replacement[reg] = Register(regIndex);
+				}
+				else {
+					replacement.Add(reg, Register(regIndex));
+				}
 			}
 		}
 		else if (instructions[i].instruction.arguments.Size() == 2) {
@@ -785,7 +791,13 @@ void KiwiOptimizer::RenameRegisters(List<OptimizerInstruction>& instructions) {
 
 					instructions[i].instruction.arguments[argIndex] = Register(regIndex);
 					usedRegisters.Add(Register(regIndex));
-					replacement.Add(reg, Register(regIndex));
+
+					if (replacement.Contains(reg)) {
+						replacement[reg] = Register(regIndex);
+					}
+					else {
+						replacement.Add(reg, Register(regIndex));
+					}
 				}
 				else {
 					usedRegisters.Add(instructions[i].GetRegister(0));

@@ -99,9 +99,7 @@ NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 
 	// TODO: Add more operators
 	if (node1->IsImmediate() && node2->IsImmediate()) {
-		const ScopeList bool_ = ScopeList().Add(Scope::Bool);
-
-		if (node1->Type() == bool_ && node2->Type() == bool_) {
+		if (node1->Type() == ScopeList::Bool && node2->Type() == ScopeList::Bool) {
 			if (op == Scope::Equal) {
 				Pointer<BooleanNode> bn = new BooleanNode(node1->file);
 				bn->boolean = node1->GetImmediate() == node2->GetImmediate();

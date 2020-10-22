@@ -13,18 +13,6 @@ const Scope Scope::This   = Scope("this");
 const Scope Scope::Base   = Scope("base");
 const Scope Scope::Global = Scope("global");
 
-const Scope Scope::Bool   = Scope("bool");
-const Scope Scope::Byte   = Scope("byte");
-const Scope Scope::UByte  = Scope("ubyte");
-const Scope Scope::Short  = Scope("short");
-const Scope Scope::UShort = Scope("ushort");
-const Scope Scope::Int    = Scope("int");
-const Scope Scope::UInt   = Scope("uint");
-const Scope Scope::Long   = Scope("long");
-const Scope Scope::ULong  = Scope("ulong");
-const Scope Scope::Huge  = Scope("huge");
-const Scope Scope::Nil    = Scope("nil");
-
 const Scope Scope::Add  = Scope("+");
 const Scope Scope::Sub  = Scope("-");
 const Scope Scope::Neg  = Scope("-");
@@ -73,6 +61,18 @@ const Scope Scope::Unwrap         = Scope("!");
 const Scope Scope::Default        = Scope("??");
 const Scope Scope::HasValue       = Scope("<hasvalue>");
 const Scope Scope::Value          = Scope("<value>");
+
+const ScopeList ScopeList::Bool   = ScopeList(true).Add(Scope("bool"));
+const ScopeList ScopeList::Byte   = ScopeList(true).Add(Scope("byte"));
+const ScopeList ScopeList::UByte  = ScopeList(true).Add(Scope("ubyte"));
+const ScopeList ScopeList::Short  = ScopeList(true).Add(Scope("short"));
+const ScopeList ScopeList::UShort = ScopeList(true).Add(Scope("ushort"));
+const ScopeList ScopeList::Int    = ScopeList(true).Add(Scope("int"));
+const ScopeList ScopeList::UInt   = ScopeList(true).Add(Scope("uint"));
+const ScopeList ScopeList::Long   = ScopeList(true).Add(Scope("long"));
+const ScopeList ScopeList::ULong  = ScopeList(true).Add(Scope("ulong"));
+const ScopeList ScopeList::Huge   = ScopeList(true).Add(Scope("huge"));
+const ScopeList ScopeList::Nil    = ScopeList(true).Add(Scope("nil"));
 
 Scope::Scope() {
 	
@@ -164,8 +164,13 @@ ScopeList::ScopeList() {
 
 }
 
+ScopeList::ScopeList(const bool absolute) {
+	this->absolute = absolute;
+}
+
 ScopeList::ScopeList(const ScopeList& scopeList) {
 	baseScope = scopeList.baseScope;
+	absolute = scopeList.absolute;
 
 	for (const Scope& scope : scopeList.scopes) {
 		scopes.Add(scope.Copy());
@@ -185,7 +190,7 @@ ScopeList ScopeList::Add(const Scope& scope) const {
 ScopeList ScopeList::Add(const ScopeList& scopes) const {
 	ScopeList list = *this;
 
-	for (UInt i = 0; i < scopes.Size(); i++)
+	for (Boxx::UInt i = 0; i < scopes.Size(); i++)
 		list.scopes.Add(scopes[i].Copy());
 
 	return list;
@@ -201,7 +206,7 @@ ScopeList ScopeList::AddNext(const String& scope) const {
 	}
 	else {
 		list.scopes.Last().AddScope(scope);
-		Scope s = Scope("<" + scope + ":" + String::ToString((Int)list.scopes.Last().GetScope(scope)) + ">");
+		Scope s = Scope("<" + scope + ":" + String::ToString((Boxx::Int)list.scopes.Last().GetScope(scope)) + ">");
 		list.scopes.Add(s);
 	}
 
@@ -233,18 +238,18 @@ UInt ScopeList::Size() const {
 	 return scopes.Size();
 }
 
-Scope ScopeList::operator[](const UInt i) const {
+Scope ScopeList::operator[](const Boxx::UInt i) const {
 	return scopes[i];
 }
 
-Scope& ScopeList::operator[](const UInt i) {
+Scope& ScopeList::operator[](const Boxx::UInt i) {
 	return scopes[i];
 }
 
 bool ScopeList::operator==(const ScopeList& scopeList) const {
 	if (Size() != scopeList.Size()) return false;
 
-	for (UInt i = 0; i < Size(); i++) {
+	for (Boxx::UInt i = 0; i < Size(); i++) {
 		if (scopes[i] != scopeList.scopes[i]) return false;
 	}
 
@@ -256,9 +261,9 @@ bool ScopeList::operator!=(const ScopeList& scopeList) const {
 }
 
 bool ScopeList::operator<(const ScopeList& scopeList) const {
-	UInt maxIndex = Math::Min(Size(), scopeList.Size());
+	Boxx::UInt maxIndex = Math::Min(Size(), scopeList.Size());
 
-	for (UInt i = 0; i < maxIndex; i++) {
+	for (Boxx::UInt i = 0; i < maxIndex; i++) {
 		if ((*this)[i] < scopeList[i]) {
 			return true;
 		}
@@ -270,10 +275,11 @@ bool ScopeList::operator<(const ScopeList& scopeList) const {
 void ScopeList::operator=(const ScopeList& scopeList) {
 	scopes.Clear();
 	baseScope = scopeList.baseScope;
+	absolute = scopeList.absolute;
 
 	for (const Scope& scope : scopeList.scopes) {
 		scopes.Add(scope.Copy());
 	}
 }
 
-ScopeList ScopeList::undefined = ScopeList().Add(Scope("<undefined>"));
+const ScopeList ScopeList::undefined = ScopeList(true).Add(Scope("<undefined>"));

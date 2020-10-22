@@ -75,7 +75,7 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
 		convert->isExplicit = true;
 		convert->node = cond;
-		convert->type = ScopeList().Add(Scope::Bool);
+		convert->type = ScopeList::Bool;
 		return convert->Compile(info);
 	}
 }
@@ -107,7 +107,7 @@ Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
 		convert->isExplicit = true;
 		convert->node = cond;
-		convert->type = ScopeList().Add(Scope::Bool);
+		convert->type = ScopeList::Bool;
 		return convert->Scan(info);
 	}
 }

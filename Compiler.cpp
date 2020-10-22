@@ -24,6 +24,7 @@ using namespace Melon;
 // TODO: Add specific error for single assignment
 // TODO: Static variables
 // TODO: Improve error messages
+// TODO: Error for unwrap operator
 
 int main() {
 	try {

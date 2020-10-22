@@ -96,7 +96,7 @@ namespace Melon {
 		///T Included Namespaces
 		Boxx::Set<Symbols::ScopeList> includedNamespaces;
 
-		///T Sttement number
+		///T Statement number
 		/// The statement number of this file location
 		Boxx::UInt statementNumber;
 
