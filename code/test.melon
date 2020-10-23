@@ -15,8 +15,10 @@ while Vector: i = v do
 	i.z = i.z - 1
 	
 	if i.z > 0 then
-		v!.z = i.z -- warning
+		v!.z = i.z
 	else
 		v = nil
 	end
 end
+
+

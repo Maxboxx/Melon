@@ -89,6 +89,11 @@ void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node->Scan(info);
 
+	if (op == Scope::Unwrap) {
+		// TODO: fix
+		ErrorLog::Warning(WarningError("unwrap operator does not work properly for nil values", file));
+	}
+
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 	}

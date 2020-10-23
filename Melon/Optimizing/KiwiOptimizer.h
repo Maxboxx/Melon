@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Boxx/List.h"
+#include "Boxx/ReplacementMap.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -30,6 +31,7 @@ namespace Melon {
 
 			static void RearrangeJumps(Boxx::List<OptimizerInstruction>& instructions);
 			static void UpdateLabels(Boxx::List<OptimizerInstruction>& instructions);
+			static void RenameLabels(Boxx::List<OptimizerInstruction>& instructions, Boxx::ReplacementMap<Boxx::String>& labels, Boxx::UInt& labelIndex);
 
 			static void RenameRegisters(Boxx::List<OptimizerInstruction>& instructions);
 
