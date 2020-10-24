@@ -385,6 +385,16 @@ bool Symbol::IsType() const {
 		type == SymbolType::Interface;
 }
 
+bool Symbol::IsVariable() const {
+	if (type != SymbolType::Variable) return false;
+	if (scope.Size() <= 1) return type == SymbolType::Variable;
+	if (attributes.Contains(SymbolAttribute::Static)) return true;
+
+	Symbol s = Find(scope.Pop(), FileInfo());
+
+	return s.type != SymbolType::Struct && s.type != SymbolType::Class && s.type != SymbolType::Type;
+}
+
 void Symbol::ClearAssign() {
 	for (Pair<String, Symbol>& s : scopes) {
 		if (s.value.type == SymbolType::Variable) {

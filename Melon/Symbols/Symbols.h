@@ -233,6 +233,10 @@ namespace Melon {
 			/// Checks if the symbol can be used as a type
 			bool IsType() const;
 
+			///T Is Variable
+			/// Checks if the symbol is a plain or static variable
+			bool IsVariable() const;
+
 			///T Clear Assignment
 			/// Clears the assign info of the symbol
 			/// Used if <code>type</code> is <code>SymbolType::Variable</code>

@@ -261,15 +261,19 @@ bool ScopeList::operator!=(const ScopeList& scopeList) const {
 }
 
 bool ScopeList::operator<(const ScopeList& scopeList) const {
-	Boxx::UInt maxIndex = Math::Min(Size(), scopeList.Size());
+	if (Size() < scopeList.Size()) return true;
+	if (Size() > scopeList.Size()) return false;
 
-	for (Boxx::UInt i = 0; i < maxIndex; i++) {
+	for (Boxx::UInt i = 0; i < Size(); i++) {
 		if ((*this)[i] < scopeList[i]) {
 			return true;
 		}
+		else if ((*this)[i] != scopeList[i]) {
+			return false;
+		}
 	}
 
-	return Size() < scopeList.Size(); 
+	return false; 
 }
 
 void ScopeList::operator=(const ScopeList& scopeList) {

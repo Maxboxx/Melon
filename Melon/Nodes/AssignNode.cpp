@@ -195,7 +195,7 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 	// TODO: Check for side effects
 	for (UInt i = 0; i < vars.Size(); i++) {
-		if (!info.usedVariables.Contains(vars[i]->GetSymbol().scope)) {
+		if (vars[i]->GetSymbol().IsVariable() && !info.usedVariables.Contains(vars[i]->GetSymbol().scope)) {
 			if (values.Size() > i || (i >= values.Size() && i == vars.Size() - 1)) {
 				vars.RemoveAt(i);
 

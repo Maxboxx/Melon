@@ -134,7 +134,11 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 	}
 
 	for (const ScopeList& sl : s.arguments) {
-		Symbol::FindNearest(scope, sl, file);
+		Symbol s = Symbol::FindNearest(scope, sl, file);
+
+		if (s.type != SymbolType::None && s.attributes.Contains(SymbolAttribute::Ref)) {
+			info.usedVariables.Add(s.scope);
+		}
 	}
 
 	if (!info.Get().scopeInfo.hasReturned && !s.returnValues.IsEmpty()) {
