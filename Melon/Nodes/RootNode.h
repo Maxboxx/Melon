@@ -3,6 +3,8 @@
 #include "Node.h"
 
 namespace Melon {
+	struct CompilerOptions;
+
 	namespace Nodes {
 
 		///B RootNode
@@ -51,6 +53,10 @@ namespace Melon {
 			///T ToString
 			/// Converts the result from <code>ToMango()</code> to a string
 			Boxx::String ToString() const;
+
+			///T To Melon Files
+			/// Writes the optimized code to melon files
+			void ToMelonFiles(const CompilerOptions& options) const;
 		};
 	}
 }

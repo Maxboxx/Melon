@@ -137,7 +137,7 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 		info.statementNumber++;
 	}
 
-	Pointer<StructNode> sn = new StructNode(info.scopes, FileInfo(info.filename, structLine, info.statementNumber));
+	Pointer<StructNode> sn = new StructNode(info.scopes, FileInfo(info.filename, structLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
 	sn->name = structName;
 	structSymbol.node = sn;
 	sn->symbol = structSymbol;

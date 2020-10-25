@@ -5,9 +5,16 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/MelonCompiler.h"
+
+#include "Boxx/System.h"
+#include "Boxx/Regex.h"
+#include "Boxx/File.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
+using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
@@ -225,20 +232,70 @@ Mango RootNode::ToMango() const {
 }
 
 StringBuilder RootNode::ToMelon(const UInt indent) const {
+	return StringBuilder();
+}
+
+void RootNode::ToMelonFiles(const CompilerOptions& options) const {
+	const String dir = options.outputDirectory + "melon/";
+	System::CreateDirectory(options.outputDirectory + "melon");
+
+	ScopeList currentNamespace = ScopeList(true);
+	String fileDir = dir;
+
+	Regex filename = Regex("~[/\\]+%.melon$");
+
+	bool writeToFile = false;
 	StringBuilder sb;
 
-	bool prevSpace = false;
-
 	for (const NodePtr& node : nodes) {
-		bool hasSpace = StatementsNode::HasSpaceAround(node);
-		if (hasSpace && !prevSpace) sb += "\n";
-		sb += node->ToMelon(indent);
-		if (hasSpace) sb += "\n";
-		sb += "\n";
-		prevSpace = hasSpace;
+		if (node->file.currentNamespace != currentNamespace) {
+			if (writeToFile) {
+				FileWriter file = FileWriter(fileDir);
+				file.Write(sb.ToString());
+				file.Close();
+			}
+			else {
+				writeToFile = true;
+			}
+
+			currentNamespace = node->file.currentNamespace;
+
+			fileDir = dir;
+
+			for (UInt i = 0; i < currentNamespace.Size(); i++) {
+				if (i > 0) fileDir += "/";
+				fileDir += currentNamespace[i].ToString();
+
+				if (!System::DirectoryExists(fileDir)) {
+					System::CreateDirectory(fileDir);
+				}
+			}
+
+			if (fileDir.Size() != 0) fileDir += "/";
+
+			if (Optional<Match> match = filename.Match(node->file.filename)) {
+				fileDir += match.Get().match;
+			}
+
+			sb = StringBuilder();
+
+			for (const ScopeList& include : node->file.includedNamespaces) {
+				sb += "include ";
+				sb += include.ToString();
+				sb += "\n";
+			}
+
+			if (sb.Size() > 0) sb += "\n";
+		}
+
+		sb += node->ToMelon(0);
 	}
 
-	return sb;
+	if (writeToFile) {
+		FileWriter file = FileWriter(fileDir);
+		file.Write(sb.ToString());
+		file.Close();
+	}
 }
 
 String RootNode::ToString() const {

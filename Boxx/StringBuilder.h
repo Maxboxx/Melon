@@ -36,6 +36,10 @@ namespace Boxx {
 		/// Copies the <code>StringBuilder</code>
 		StringBuilder Copy() const;
 
+		///T Size
+		/// Gets the size of the string
+		UInt Size() const;
+
 		///H Operators
 
 		///T Append String
@@ -90,6 +94,10 @@ namespace Boxx {
 
 	inline String StringBuilder::ToString() const {
 		return String(string);
+	}
+
+	inline UInt StringBuilder::Size() const {
+		return string.Size();
 	}
 
 	inline StringBuilder StringBuilder::Copy() const {

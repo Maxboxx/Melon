@@ -23,6 +23,7 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 
 bool StructNode::IsRecursive(const Symbol& symbol) const {
 	if (symbol.type != SymbolType::Struct) return false;
+	if (symbol.isRecursive) return false;
 	if (symbol.scope == this->symbol.scope) return true;
 
 	for (const Scope& name : symbol.names) {
@@ -45,6 +46,7 @@ Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
 
 		// TODO: error line
 		if (IsRecursive(v.GetType(file))) {
+			s.isRecursive = true;
 			ErrorLog::Error(SymbolError(SymbolError::RecursiveStruct(this->name.ToString()), file));
 		}
 	}

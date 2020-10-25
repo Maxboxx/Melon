@@ -32,6 +32,16 @@ namespace Boxx {
 		///R bool success: <code>true</code> if the directory was created. <code>false</code> otherwise.
 		static bool CreateDirectory(const String& directory);
 
+		///T Delete Directory
+		/// Deletes a directory
+		///R bool success: <code>true</code> if the directory was deleted. <code>false</code> otherwise.
+		static bool DeleteDirectory(const String& directory);
+
+		///T Delete File
+		/// Deletes a file
+		///R bool success: <code>true</code> if the file was deleted. <code>false</code> otherwise.
+		static bool DeleteFile(const String& directory);
+
 		///T Get Files in Directory
 		/// Gets a list of all files in the specified directory
 		///E SystemNotSupportedError: Thrown if the operating system is not Windows
@@ -52,6 +62,22 @@ namespace Boxx {
 
 	inline bool System::CreateDirectory(const String& directory) {
 		return std::filesystem::create_directory((const char*)directory);
+	}
+
+	inline bool System::DeleteDirectory(const String& directory) {
+		if (std::filesystem::is_directory((const char*)directory)) {
+			return std::filesystem::remove_all((const char*)directory);
+		}
+
+		return false;
+	}
+
+	inline bool System::DeleteFile(const String& directory) {
+		if (!std::filesystem::is_directory((const char*)directory)) {
+			return std::filesystem::remove((const char*)directory);
+		}
+
+		return false;
 	}
 
 	inline List<String> System::GetFilesInDirectory(const String& directory) {

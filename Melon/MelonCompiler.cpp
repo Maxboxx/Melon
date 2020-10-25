@@ -166,8 +166,16 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		compOptions.outputDirectory += "/";
 	}
 
-	if (!System::DirectoryExists(compOptions.outputDirectory)) {
-		System::CreateDirectory(compOptions.outputDirectory);
+	{
+		const String dir = compOptions.outputDirectory.Sub(0, compOptions.outputDirectory.Size() - 2);
+
+		if (System::DirectoryExists(dir)) {
+			System::DeleteDirectory(dir);
+		}
+
+		if (!System::DirectoryExists(dir)) {
+			System::CreateDirectory(dir);
+		}
 	}
 
 	const String code = FileReader(filename).ReadAll();
@@ -230,9 +238,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		}
 
 		if (compOptions.outputMelon) {
-			FileWriter melon = FileWriter(compOptions.outputDirectory + compOptions.outputName + "_optimized.melon");
-			melon.Write(info.root.ToMelon(0).ToString());
-			melon.Close();
+			info.root.ToMelonFiles(compOptions);
 		}
 
 		// ------------- Kiwi ---------------

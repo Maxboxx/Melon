@@ -24,6 +24,8 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
 NodePtr StatementParser::Parse(ParsingInfo& info, const bool single) {
+	if (info.EndOfFile()) return nullptr;
+
 	if (NodePtr node = CallStatementParser::Parse(info)) {
 		return node;
 	}
@@ -68,7 +70,7 @@ NodePtr StatementParser::Parse(ParsingInfo& info, const bool single) {
 }
 
 NodePtr StatementParser::ParseMultiple(ParsingInfo& info) {
-	Pointer<StatementsNode> sn = new StatementsNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+	Pointer<StatementsNode> sn = new StatementsNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
 
 	while (NodePtr stat = StatementParser::Parse(info)) {
 		if (Pointer<GuardNode> gn = stat.Cast<GuardNode>()) {

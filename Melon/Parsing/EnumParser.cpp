@@ -54,7 +54,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	enumSymbol.scope = info.scopes.Add(enumName);
 	enumSymbol.size = 1;
 	enumSymbol.isSigned = false;
-	Pointer<EnumNode> en = new EnumNode(info.scopes, FileInfo(info.filename, enumLine, info.statementNumber));
+	Pointer<EnumNode> en = new EnumNode(info.scopes, FileInfo(info.filename, enumLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
 
 	en->name = enumName;
 

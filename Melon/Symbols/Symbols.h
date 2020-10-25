@@ -95,16 +95,18 @@ namespace Melon {
 			/// Whether or not the type is signed if <code>type</code> is <code>SymbolType::Type</code>
 			/// Whether or not the variable has been assigned if <code>type</code> is <code>SymbolType::Variable</code>
 			/// Whether or not the conversion operator is explicit if <code>type</code> is <code>SymbolType::Function</code> or <code>SymbolType::Method</code>
+			/// Whether or not the struct is recursive if <code>type</code> is <code>SymbolType::Struct</code>
 			///M
 			union {
 				bool isSigned = false;
 				bool isAssigned;
 				bool isExplicit;
+				bool isRecursive;
 			};
 			///M
 
 			///T Basic
-			/// Wheter or not the symbol is a basic symbol
+			/// Whether or not the symbol is a basic symbol
 			bool basic = false;
 
 			///T Stack

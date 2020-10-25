@@ -99,7 +99,7 @@ void Parser::ParseFile(const String& filename, ParsingInfo& info) {
 }
 
 NodePtr Parser::ParseNext(ParsingInfo& info) {
-	if (NodePtr node = StatementParser::Parse(info)) {
+	if (NodePtr node = StatementParser::ParseMultiple(info)) {
 		info.root.nodes.Add(node);
 		return node;
 	}
