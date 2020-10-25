@@ -136,8 +136,18 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			templateInfo.value1.SpecializeTemplate(s, templateInfo.value2, info);
 
 			if (s.type == SymbolType::Struct) {
-				Pointer<StructNode> sn = new StructNode(Symbol::templateSymbols[templateIndex].scope, Symbol::templateSymbols[templateIndex].file);
+				Pointer<StructNode> sn = new StructNode(ScopeList(true), Symbol::templateSymbols[templateIndex].file);
 				sn->name = s.scope.Last();
+
+				List<ScopeList> templateArgs;
+
+				for (const ScopeList& arg : s.templateArgs) {
+					templateArgs.Add(arg);
+				}
+
+				sn->name.types = templateArgs;
+				sn->name.variant = nullptr;
+
 				sn->symbol = s;
 				
 				for (const Scope& var : s.names) {

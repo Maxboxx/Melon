@@ -57,17 +57,42 @@ Mango StructNode::ToMango() const {
 }
 
 StringBuilder StructNode::ToMelon(const UInt indent) const {
+	if (name.name == Scope::Optional.name) return "";
+
 	StringBuilder sb = "struct ";
-	sb += name.ToString();
+
+	sb += name.ToSimpleString();
 
 	String tabs = String('\t').Repeat(indent + 1);
 
 	for (const Scope& var : vars) {
 		sb += "\n";
 		sb += tabs;
-		sb += symbol.Get(var, file).varType.ToString();
+		sb += symbol.Get(var, file).varType.ToSimpleString();
 		sb += ": ";
-		sb += var.ToString();
+		sb += var.ToSimpleString();
+	}
+
+	for (const Pair<String, Symbol>& syms : symbol.scopes) {
+		if (syms.value.type == SymbolType::Scope) {
+			if (syms.value.Contains(Scope::Call)) {
+				for (const Symbol& variant : syms.value.Get(Scope::Call, file).variants) {
+					if (variant.node) {
+						sb += "\n\n";
+						sb += tabs;
+						sb += variant.node->ToMelon(indent + 1);
+					}
+				}
+			}
+
+			for (const Symbol& variant : syms.value.variants) {
+				if (variant.node) {
+					sb += "\n\n";
+					sb += tabs;
+					sb += variant.node->ToMelon(indent + 1);
+				}
+			}
+		}
 	}
 
 	sb += "\n";

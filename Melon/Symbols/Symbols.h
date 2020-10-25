@@ -396,6 +396,8 @@ namespace Melon {
 			static Boxx::List<TemplateSymbol> templateSymbols;
 
 		private:
+			friend class ScopeList;
+
 			static Symbol symbols;
 			static Symbol empty;
 

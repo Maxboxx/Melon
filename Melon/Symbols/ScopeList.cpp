@@ -1,5 +1,7 @@
 #include "ScopeList.h"
 
+#include "Symbols.h"
+
 #include "Boxx/Math.h"
 
 using namespace Boxx;
@@ -100,6 +102,35 @@ UInt Scope::GetScope(const String& scope) const {
 }
 
 String Scope::ToString() const {
+	String scope = name;
+
+	if (types) {
+		scope += "<";
+
+		bool first = true;
+
+		for (const ScopeList& scopes : types.Get()) {
+			if (!first) {
+				scope += ",";
+			}
+
+			first = false;
+
+			scope += scopes.ToString();
+		}
+
+		scope += ">";
+	}
+
+	if (variant)
+		return scope + ":" + String::ToString((Boxx::Int)variant.Get());
+
+	return scope;
+}
+
+String Scope::ToSimpleString() const {
+	if (name == Scope::Optional.name && !types.Get().IsEmpty()) return types.Get()[0].ToSimpleString() + "?";
+
 	String scope = name;
 
 	if (types) {
@@ -229,6 +260,51 @@ String ScopeList::ToString() const {
 	for (const Scope& scope : scopes) {
 		if (str.Size() > 0) str += ".";
 		str += scope.ToString();
+	}
+
+	return str;
+}
+
+String ScopeList::ToSimpleString() const {
+	ScopeList list = *this;
+	Boxx::UInt start = 0;
+
+	if (absolute) {
+		Symbol s = Symbol::symbols;
+
+		for (Boxx::UInt i = 0; i < list.Size(); i++) {
+			s = s.Get(list[i], FileInfo());
+
+			switch (s.type) {
+				case SymbolType::Function:
+				case SymbolType::Method: {
+					start = i;
+					break;
+				}
+
+				case SymbolType::Struct: {
+					if (list[i].types) {
+						List<ScopeList> templateArgs;
+
+						for (const ScopeList& arg : s.templateArgs) {
+							templateArgs.Add(arg);
+						}
+
+						list[i].types = templateArgs;
+						list[i].variant = nullptr;
+					}
+					
+					break;
+				}
+			}
+		}
+	}
+
+	String str = "";
+
+	for (Boxx::UInt i = start; i < list.Size(); i++) {
+		if (i > start) str += ".";
+		str += list[i].ToSimpleString();
 	}
 
 	return str;

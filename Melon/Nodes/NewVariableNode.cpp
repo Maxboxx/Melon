@@ -144,7 +144,7 @@ StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 
 	for (UInt i = 0; i < types.Size(); i++) {
 		if (i > 0) sb += ", ";
-		sb += types[i].ToString();
+		sb += types[i].ToSimpleString();
 	}
 
 	sb += ": ";
@@ -161,7 +161,7 @@ StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 			}
 		}
 
-		sb += names[i].ToString();
+		sb += names[i].ToSimpleString();
 	}
 
 	return sb;

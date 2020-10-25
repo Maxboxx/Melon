@@ -51,6 +51,10 @@ namespace Melon {
 			/// Converts the scope to a string
 			Boxx::String ToString() const;
 
+			///T To Simple String
+			/// Converts the scope to a simple string
+			Boxx::String ToSimpleString() const;
+
 			///T Copy
 			Scope Copy() const;
 
@@ -184,6 +188,10 @@ namespace Melon {
 			///T To string
 			/// Converts the <type>ScopeList</type> to a string containing the scopes
 			Boxx::String ToString() const;
+
+			///T To Simple String
+			/// Converts the scope list to a simple string
+			Boxx::String ToSimpleString() const;
 
 			///T Size
 			///R Boxx::UInt: The size of the list

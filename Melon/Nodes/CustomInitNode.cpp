@@ -145,19 +145,25 @@ Mango CustomInitNode::ToMango() const {
 
 StringBuilder CustomInitNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = node->ToMelon(indent);
+
+	if (vars.IsEmpty()) {
+		sb += " {}";
+		return sb;
+	}
+
 	sb += " {\n";
 
 	String tabs = String('\t').Repeat(indent + 1);
 
 	for (UInt i = 0; i < vars.Size(); i++) {
-		if (i > 0) sb += ",";
+		if (i > 0) sb += ",\n";
 		sb += tabs;
 		sb += vars[i].ToString();
 		sb += " = ";
 		sb += expressions[i]->ToMelon(indent + 1);
-		sb += "\n";
 	}
 
+	sb += "\n";
 	sb += String('\t').Repeat(indent);
 	sb += "}";
 	return sb;

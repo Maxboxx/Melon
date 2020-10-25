@@ -162,23 +162,50 @@ Mango FunctionNode::ToMango() const {
 }
 
 StringBuilder FunctionNode::ToMelon(const UInt indent) const {
-	StringBuilder sb = "function ";
+	StringBuilder sb = "";
+
+	for (const SymbolAttribute attr : s.attributes) {
+		switch (attr) {
+			case SymbolAttribute::Debug:    sb += "debug "; break;
+			case SymbolAttribute::Override: sb += "override "; break;
+			case SymbolAttribute::Required: sb += "required "; break;
+			case SymbolAttribute::Static:   sb += "static "; break;
+		}
+	}
+	
+	sb += "function ";
+
+	const bool isOperator = s.scope.Last().name != Scope::Call.name;
+
+	if (isOperator) {
+		sb += "operator ";
+	}
 
 	for (UInt i = 0; i < s.returnValues.Size(); i++) {
 		if (i > 0) sb += ", ";
-		sb += s.returnValues[i].ToString();
+		sb += s.returnValues[i].ToSimpleString();
 	}
 
 	if (!s.returnValues.IsEmpty()) {
 		sb += ": ";
 	}
 
-	sb += func.Pop().Last().ToString();
+	if (isOperator) {
+		Scope scope = func.Last();
+		scope.variant = nullptr;
+		sb += scope.ToSimpleString();
+	}
+	else {
+		sb += func.Pop().Last().ToSimpleString();
+	}
+
 	sb += "(";
 
-	for (UInt i = 0; i < argNames.Size(); i++) {
-		if (i > 0) sb += ", ";
-		sb += s.Get(argNames[i], file).varType.ToString();
+	const UInt start = (s.type == SymbolType::Method || (!argNames.IsEmpty() && argNames[0] == Scope::Self)) ? 1 : 0;
+
+	for (UInt i = start; i < argNames.Size(); i++) {
+		if (i > start) sb += ", ";
+		sb += s.Get(argNames[i], file).varType.ToSimpleString();
 		sb += ": ";
 
 		for (const SymbolAttribute attr : s.Get(argNames[i], file).attributes) {
@@ -189,7 +216,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 			}
 		}
 
-		sb += argNames[i].ToString();
+		sb += argNames[i].ToSimpleString();
 	}
 
 	sb += ")\n";
