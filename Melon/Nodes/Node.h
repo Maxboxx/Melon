@@ -153,6 +153,7 @@ namespace Melon {
 		struct ScanInfo {
 			bool init = false;
 			bool assign = false;
+			bool useFunction = true;
 			Symbols::Symbol symbol;
 			FileInfo file;
 			
@@ -172,6 +173,10 @@ namespace Melon {
 			void Set(const ScanInfo& info) {stack.Set(info);}
 
 			Boxx::Set<Symbols::ScopeList> usedVariables;
+			Boxx::Set<Symbols::ScopeList> usedTypes;
+			Boxx::Set<Symbols::ScopeList> usedFunctions;
+
+			Boxx::Collection<NodePtr> functions;
 
 		private:
 			Boxx::Stack<ScanInfo> stack;
@@ -182,6 +187,8 @@ namespace Melon {
 			bool optimized = false;
 
 			Boxx::Set<Symbols::ScopeList> usedVariables;
+			Boxx::Set<Symbols::ScopeList> usedTypes;
+			Boxx::Set<Symbols::ScopeList> usedFunctions;
 		};
 
 		///B Node

@@ -1,5 +1,7 @@
 #include "StructNode.h"
 
+#include "FunctionNode.h"
+
 #include "Melon/Parsing/Parser.h"
 
 using namespace Boxx;
@@ -79,7 +81,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 		if (syms.value.type == SymbolType::Scope) {
 			if (syms.value.Contains(Scope::Call)) {
 				for (const Symbol& variant : syms.value.Get(Scope::Call, file).variants) {
-					if (variant.node) {
+					if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
 						sb += "\n\n";
 						sb += tabs;
 						sb += variant.node->ToMelon(indent + 1);
@@ -88,7 +90,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 			}
 
 			for (const Symbol& variant : syms.value.variants) {
-				if (variant.node) {
+				if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
 					sb += "\n\n";
 					sb += tabs;
 					sb += variant.node->ToMelon(indent + 1);

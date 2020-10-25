@@ -375,6 +375,13 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 
 	Symbol s = GetFunc();
 
+	if (info.Get().useFunction) {
+		if (!info.usedFunctions.Contains(s.scope)) {
+			info.usedFunctions.Add(s.scope);
+			info.functions.Add(s.node);
+		}
+	}
+
 	for (UInt i = 0; i < args.Size(); i++) {
 		if (s.names.Size() > i && !Symbol::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
 			if (noRefs[i]) {

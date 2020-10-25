@@ -200,6 +200,8 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			if (i > 0) {
 				OptimizeInfo opInfo;
 				opInfo.usedVariables = scanInfo.usedVariables;
+				opInfo.usedTypes     = scanInfo.usedTypes;
+				opInfo.usedFunctions = scanInfo.usedFunctions;
 				info.root.Optimize(opInfo);
 				scanInfo = ScanInfoStack();
 

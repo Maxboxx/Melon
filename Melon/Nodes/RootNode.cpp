@@ -2,6 +2,7 @@
 
 #include "StructNode.h"
 #include "StatementsNode.h"
+#include "FunctionNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -177,15 +178,36 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
+	info.Get().useFunction = true;
+
 	for (const NodePtr& node : nodes) {
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
 		}
 	}
 
+	while (!info.functions.IsEmpty()) {
+		Collection<NodePtr> functions = info.functions;
+		info.functions = Collection<NodePtr>();
+
+		for (const NodePtr& func : functions) {
+			func.Cast<FunctionNode>()->isUsed = true;
+
+			for (const ScanType type : func->Scan(info)) {
+				scanSet.Add(type);
+			}
+		}
+	}
+
+	info.Get().useFunction = false;
+
 	for (const NodePtr& node : funcs) {
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
+		if (!info.usedFunctions.Contains(node.Cast<FunctionNode>()->s.scope)) {
+			node.Cast<FunctionNode>()->isUsed = false;
+
+			for (const ScanType type : node->Scan(info)) {
+				scanSet.Add(type);
+			}
 		}
 	}
 
@@ -207,6 +229,19 @@ NodePtr RootNode::Optimize(OptimizeInfo& info) {
 			nodes.RemoveAt(i);
 			i--;
 		}
+	}
+
+	if (info.usedFunctions.Size() < funcs.Size()) {
+		List<NodePtr> functions = funcs;
+		funcs = List<NodePtr>(info.usedFunctions.Size());
+
+		for (const NodePtr& func : functions) {
+			if (info.usedFunctions.Contains(func.Cast<FunctionNode>()->s.scope)) {
+				funcs.Add(func);
+			}
+		}
+
+		info.optimized = true;
 	}
 
 	for (UInt i = 0; i < funcs.Size(); i++) {

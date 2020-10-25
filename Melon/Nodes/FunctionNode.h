@@ -25,6 +25,9 @@ namespace Melon {
 			///T Argument names
 			Boxx::List<Symbols::Scope> argNames;
 
+			///T Is used
+			bool isUsed = true;
+
 			FunctionNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~FunctionNode();
 
