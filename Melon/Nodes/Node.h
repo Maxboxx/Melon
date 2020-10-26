@@ -205,6 +205,9 @@ namespace Melon {
 			/// The file info of the node
 			FileInfo file;
 
+			///T Side Effect Scope
+			Boxx::Optional<Symbols::ScopeList> sideEffectScope;
+
 			///H Constructors
 
 			///T Constructor
@@ -255,6 +258,14 @@ namespace Melon {
 			/// Scans the node for potential errors
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info);
 
+			///T Has Side Effects
+			/// Checks if the node has side effects outside of the specified scope
+			bool HasSideEffects(const Symbols::ScopeList& scope);
+
+			///T Get Side Effect Scope
+			/// Gets the side effect scope 
+			Symbols::ScopeList GetSideEffectScope();
+
 			///T Optimize
 			/// Optimizes the node
 			///R NodePtr node: The optimized node. If the node was not optimized, this will be <code>nullptr</code>
@@ -282,6 +293,16 @@ namespace Melon {
 			///T Is Empty
 			/// Checks if a node is an empty empty node
 			static bool IsEmpty(const NodePtr& node);
+
+			///T Combine Side Effects
+			/// Combines two side effect scopes by returning the most global of the two
+			static Symbols::ScopeList CombineSideEffects(const Symbols::ScopeList& scope1, const Symbols::ScopeList& scope2);
+
+		protected:
+
+			///T Find Side Effect Scope
+			/// Finds the most global scope 
+			virtual Symbols::ScopeList FindSideEffectScope();
 		};
 
 		///B IncludeScanError

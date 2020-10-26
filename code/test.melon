@@ -20,5 +20,3 @@ while Vector: i = v do
 		v = nil
 	end
 end
-
-

@@ -6,6 +6,7 @@
 #include "NameNode.h"
 #include "TypeNode.h"
 #include "EmptyNode.h"
+#include "StatementsNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -69,6 +70,8 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 		}
 
 		for (UInt i = 1; i < newVars->names.Size(); i++) {
+			if (!vars[i]) continue;
+
 			if (newVars->attributes[i].Contains(SymbolAttribute::Ref)) {
 				varSize += info.stack.ptrSize;
 			}
@@ -86,9 +89,14 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 		const UInt regIndex = info.index; 
 
 		if (i < this->values.Size()) {
-			info.important = true;
-			c.AddInstructions(CompileAssignment(vars[i], values[i].value, info, vars[i]->file).instructions);
-			info.important = false;
+			if (vars[i]) {
+				info.important = true;
+				c.AddInstructions(CompileAssignment(vars[i], values[i].value, info, vars[i]->file).instructions);
+				info.important = false;
+			}
+			else {
+				c.AddInstructions(values[i].value->Compile(info).instructions);
+			}
 
 			if (i + 1 >= this->values.Size()) {
 				UInt size = info.stack.top + Symbol::Find(values[i].key, values[i].value->file).size;
@@ -102,7 +110,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 				info.stack.PopExpr(frame, c);
 			}
 		}
-		else {
+		else if (vars[i]) {
 			Pointer<StackNode> sn = new StackNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
 			sn->type = values[i].key;
 
@@ -123,7 +131,7 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 	if (newVars) newVars->IncludeScan(info);
 	
 	for (NodePtr var : vars) {
-		var->IncludeScan(info);
+		if (var) var->IncludeScan(info);
 	}
 
 	for (NodePtr value : values) {
@@ -147,6 +155,8 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 	bool errors = errorCount < ErrorLog::ErrorCount();
 
 	for (UInt i = 0; i < vars.Size(); i++) {
+		if (!vars[i]) continue;
+
 		NodePtr node = vars[i];
 
 		if (!newVars && node->GetSymbol().attributes.Contains(SymbolAttribute::Const)) {
@@ -192,34 +202,76 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList AssignNode::FindSideEffectScope() {
+	ScopeList list = vars[0] ? vars[0]->GetSideEffectScope() : scope;
+
+	for (UInt i = 1; i < vars.Size(); i++) {
+		if (vars[i]) {
+			list = CombineSideEffects(list, vars[i]->GetSideEffectScope());
+		}
+	}
+
+	for (UInt i = 0; i < values.Size(); i++) {
+		list = CombineSideEffects(list, values[i]->GetSideEffectScope());
+	}
+
+	return list;
+}
+
 NodePtr AssignNode::Optimize(OptimizeInfo& info) {
-	// TODO: Check for side effects
+	bool removed = false;
+
 	for (UInt i = 0; i < vars.Size(); i++) {
-		if (vars[i]->GetSymbol().IsVariable() && !info.usedVariables.Contains(vars[i]->GetSymbol().scope)) {
-			if (values.Size() > i || (i >= values.Size() && i == vars.Size() - 1)) {
-				vars.RemoveAt(i);
+		if (vars[i]->GetSymbol().IsVariable() && !vars[i]->HasSideEffects(scope) && !info.usedVariables.Contains(vars[i]->GetSymbol().scope)) {
+			vars[i] = nullptr;
+			info.optimized = true;
+			removed = true;
+		}
+	}
 
-				if (i <= values.Size() - 1) {
-					values.RemoveAt(i);
+	if (removed) for (UInt i = values.Size(); i > 0;) {
+		i--;
+
+		if (!vars[i] && !values[i]->HasSideEffects(scope)) {
+			bool isNull = true;
+
+			for (UInt u = i + 1; u < vars.Size(); u++) {
+				if (vars[u]) {
+					isNull = false;
+					break;
 				}
+			}
 
-				i--;
-				info.optimized = true;
+			if (!isNull) values[i] = nullptr;
+		}
+	}
+
+	if (removed) for (UInt i = vars.Size(); i > 0;) {
+		i--;
+
+		if (!vars[i]) {
+			if (i >= values.Size()) {
+				if (i == vars.Size() - 1 || !values.Last()) {
+					vars.RemoveAt(i);
+				}
+			}
+			else if (!values[i]) {
+				vars.RemoveAt(i);
+				values.RemoveAt(i);
 			}
 		}
 	}
 
-	if (vars.IsEmpty()) {
-		info.optimized = true;
+	if (removed && vars.IsEmpty()) {
 		return new EmptyNode();
 	}
 
 	for (NodePtr& var : vars) {
-		if (NodePtr node = var->Optimize(info)) var = node;
+		if (var) if (NodePtr node = var->Optimize(info)) var = node;
 	}
 
 	for (NodePtr& value : values) {
-		if (NodePtr node = value->Optimize(info)) value = node;
+		if (value) if (NodePtr node = value->Optimize(info)) value = node;
 	}
 
 	return nullptr;
@@ -241,16 +293,26 @@ Mango AssignNode::ToMango() const {
 			args.Add(values.Last()->Types()[i - values.Size() + 1]);
 		}
 
-		const ScopeList op = Symbol::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file).scope;
+		if (vars[i]) {
+			const ScopeList op = Symbol::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file).scope;
 
-		Mango mango = Mango(op.ToString(), MangoType::List);
-		mango.Add(vars[i]->ToMango());
+			Mango mango = Mango(op.ToString(), MangoType::List);
+			mango.Add(vars[i]->ToMango());
 
-		if (values.Size() > i) {
-			mango.Add(values[i]->ToMango());
+			if (values.Size() > i) {
+				mango.Add(values[i]->ToMango());
+			}
+
+			assign.Add(mango);
 		}
-
-		assign.Add(mango);
+		else {
+			if (values.Size() > i) {
+				assign.Add(values[i]->ToMango());
+			}
+			else {
+				assign.Add(Mango(MangoType::Nil));
+			}
+		}
 	}
 
 	return assign;
@@ -264,7 +326,8 @@ StringBuilder AssignNode::ToMelon(const UInt indent) const {
 	}
 	else for (UInt i = 0; i < vars.Size(); i++) {
 		if (i > 0) sb += ", ";
-		sb += vars[i]->ToMelon(indent);
+
+		if (vars[i]) sb += vars[i]->ToMelon(indent);
 	}
 
 	sb += " = ";

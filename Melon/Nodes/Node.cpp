@@ -7,6 +7,8 @@
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
+#include "Boxx/Math.h"
+
 using namespace Boxx;
 
 using namespace Melon::Nodes;
@@ -41,6 +43,49 @@ List<ScopeList> Node::Types() const {
 
 Set<ScanType> Node::Scan(ScanInfoStack& info) {
 	return Set<ScanType>();
+}
+
+bool Node::HasSideEffects(const ScopeList& scope) {
+	ScopeList list = GetSideEffectScope();
+
+	if (list.Size() == 1 && list[0] == Scope::Global) return true;
+
+	UInt len = Math::Min(list.Size(), scope.Size());
+
+	for (UInt i = 0; i < len; i++) {
+		if (list[i] != scope[i]) {
+			return true;
+		}
+	}
+
+	return list.Size() > scope.Size();
+}
+
+ScopeList Node::GetSideEffectScope() {
+	if (!sideEffectScope) {
+		sideEffectScope = FindSideEffectScope();
+	}
+
+	return sideEffectScope.Get();
+}
+
+ScopeList Node::FindSideEffectScope() {
+	return scope;
+}
+
+ScopeList Node::CombineSideEffects(const ScopeList& scope1, const ScopeList& scope2) {
+	if (scope1.Size() == 1 && scope1[0] == Scope::Global) return scope1;
+	if (scope2.Size() == 1 && scope2[0] == Scope::Global) return scope2;
+
+	UInt len = Math::Min(scope1.Size(), scope2.Size());
+
+	for (UInt i = 0; i < len; i++) {
+		if (scope1[i] != scope2[i]) {
+			return true;
+		}
+	}
+
+	return scope1.Size() > scope2.Size();
 }
 
 NodePtr Node::Optimize(OptimizeInfo& info) {
