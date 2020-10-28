@@ -45,8 +45,12 @@ Set<ScanType> Node::Scan(ScanInfoStack& info) {
 	return Set<ScanType>();
 }
 
+bool Node::HasSideEffects() {
+	return HasSideEffects(scope);
+}
+
 bool Node::HasSideEffects(const ScopeList& scope) {
-	ScopeList list = GetSideEffectScope();
+	ScopeList list = GetSideEffectScope(false);
 
 	if (list.Size() == 1 && list[0] == Scope::Global) return true;
 
@@ -58,18 +62,18 @@ bool Node::HasSideEffects(const ScopeList& scope) {
 		}
 	}
 
-	return list.Size() > scope.Size();
+	return list.Size() < scope.Size();
 }
 
-ScopeList Node::GetSideEffectScope() {
+ScopeList Node::GetSideEffectScope(const bool assign) {
 	if (!sideEffectScope) {
-		sideEffectScope = FindSideEffectScope();
+		sideEffectScope = FindSideEffectScope(assign);
 	}
 
 	return sideEffectScope.Get();
 }
 
-ScopeList Node::FindSideEffectScope() {
+ScopeList Node::FindSideEffectScope(const bool assign) {
 	return scope;
 }
 
@@ -85,7 +89,12 @@ ScopeList Node::CombineSideEffects(const ScopeList& scope1, const ScopeList& sco
 		}
 	}
 
-	return scope1.Size() > scope2.Size();
+	if (scope1.Size() < scope2.Size()) {
+		return scope1;
+	}
+	else {
+		return scope2;
+	}
 }
 
 NodePtr Node::Optimize(OptimizeInfo& info) {

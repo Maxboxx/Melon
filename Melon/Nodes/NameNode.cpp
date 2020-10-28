@@ -71,7 +71,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 	Symbol s = GetSymbol();
 
-	if (!ignoreRef && s.attributes.Contains(SymbolAttribute::Ref)){
+	if (!ignoreRef && s.attributes.Contains(SymbolAttribute::Ref)) {
 		Pointer<NameNode> name = new NameNode(scope, file);
 		name->name = this->name;
 		name->ignoreRef = true;
@@ -99,6 +99,22 @@ Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
 	}
 
 	return scanSet;
+}
+
+ScopeList NameNode::FindSideEffectScope(const bool assign) {
+	if (assign) {
+		Symbol s = GetSymbol();
+
+		if (s.IsArgument() && s.attributes.Contains(SymbolAttribute::Ref)) {
+			return s.scope.Pop().Pop();
+		}
+		else {
+			return s.scope.Pop();
+		}
+	}
+	else {
+		return scope;
+	}
 }
 
 Mango NameNode::ToMango() const {

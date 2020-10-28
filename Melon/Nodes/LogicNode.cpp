@@ -195,6 +195,10 @@ Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList LogicNode::FindSideEffectScope(const bool assign) {
+	return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
+}
+
 NodePtr LogicNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = node1->Optimize(info)) node1 = node;
 	if (NodePtr node = node2->Optimize(info)) node2 = node;

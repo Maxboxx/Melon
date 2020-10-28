@@ -126,6 +126,16 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList ReturnNode::FindSideEffectScope(const bool assign) {
+	ScopeList list = nodes.IsEmpty() ? scope : scope.Pop();
+
+	for (NodePtr& node : nodes) {
+		list = CombineSideEffects(list, node->GetSideEffectScope(assign));
+	}
+
+	return list;
+}
+
 NodePtr ReturnNode::Optimize(OptimizeInfo& info) {
 	for (NodePtr& node : nodes) {
 		if (NodePtr n = node->Optimize(info)) n = node;

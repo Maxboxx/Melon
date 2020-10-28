@@ -3,6 +3,7 @@
 #include "StructNode.h"
 #include "StatementsNode.h"
 #include "FunctionNode.h"
+#include "EmptyNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -223,12 +224,11 @@ ScanInfoStack RootNode::Scan() {
 
 NodePtr RootNode::Optimize(OptimizeInfo& info) {
 	for (UInt i = 0; i < nodes.Size(); i++) {
+		FileInfo file = nodes[i]->file;
+
 		if (NodePtr node = nodes[i]->Optimize(info)) nodes[i] = node;
 
-		if (IsEmpty(nodes[i])) {
-			nodes.RemoveAt(i);
-			i--;
-		}
+		nodes[i]->file = file;
 	}
 
 	if (info.usedFunctions.Size() < funcs.Size()) {
@@ -274,7 +274,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 	const String dir = options.outputDirectory + "melon/";
 	System::CreateDirectory(options.outputDirectory + "melon");
 
-	ScopeList currentNamespace = ScopeList(true);
+	ScopeList currentNamespace = ScopeList::undefined;
 	String fileDir = dir;
 
 	Regex filename = Regex("~[/\\]+%.melon$");

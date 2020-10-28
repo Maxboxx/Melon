@@ -96,6 +96,10 @@ Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList ForConditionNode::FindSideEffectScope(const bool assign) {
+	return CombineSideEffects(loopInit->GetSideEffectScope(assign), CombineSideEffects(loopCondition->GetSideEffectScope(assign), loopStep->GetSideEffectScope(assign)));
+}
+
 NodePtr ForConditionNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = loopInit->Optimize(info)) loopInit = node;
 	if (NodePtr node = loopCondition->Optimize(info)) loopCondition = node;

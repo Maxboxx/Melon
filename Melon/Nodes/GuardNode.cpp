@@ -147,6 +147,15 @@ Set<ScanType> GuardNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList GuardNode::FindSideEffectScope(const bool assign) {
+	if (else_) {
+		return CombineSideEffects(cond->GetSideEffectScope(assign), CombineSideEffects(else_->GetSideEffectScope(assign), continue_->GetSideEffectScope(assign)));
+	}
+	else {
+		return CombineSideEffects(cond->GetSideEffectScope(assign), continue_->GetSideEffectScope(assign));
+	}
+}
+
 NodePtr GuardNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = cond->Optimize(info)) cond = node;
 
@@ -158,20 +167,26 @@ NodePtr GuardNode::Optimize(OptimizeInfo& info) {
 
 	if (cond->IsImmediate()) {
 		if (cond->GetImmediate() == 0) {
-			if (IsEmpty(else_)) {
+			if (else_) {
+				if (IsEmpty(else_) || !else_->HasSideEffects()) {
+					info.optimized = true;
+					return new EmptyNode();
+				}
+
+				Pointer<DoNode> dn = new DoNode(else_->scope, else_->file);
+				dn->nodes = else_;
+				info.optimized = true;
+				return dn;
+			}
+			else {
 				info.optimized = true;
 				return new EmptyNode();
 			}
-
-			Pointer<DoNode> dn = new DoNode(else_->scope, else_->file);
-			dn->nodes = else_;
-			info.optimized = true;
-			return dn;
 		}
 		else {
 			info.optimized = true;
 
-			if (IsEmpty(continue_)) {
+			if (IsEmpty(continue_) || !continue_->HasSideEffects()) {
 				return new EmptyNode();
 			}
 			else {

@@ -75,7 +75,22 @@ Set<ScanType> StatementsNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList StatementsNode::FindSideEffectScope(const bool assign) {
+	ScopeList list = statements[0]->GetSideEffectScope(assign);
+
+	for (UInt i = 1; i < statements.Size(); i++) {
+		list = CombineSideEffects(list, statements[i]->GetSideEffectScope(assign));
+	}
+
+	return list;
+}
+
 NodePtr StatementsNode::Optimize(OptimizeInfo& info) {
+	if (!HasSideEffects()) {
+		info.optimized = true;
+		return new EmptyNode();
+	}
+
 	for (NodePtr& statement : statements) {
 		if (NodePtr node = statement->Optimize(info)) statement = node;
 	}

@@ -93,6 +93,18 @@ Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
+	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+
+	if (s.symbolNode) {
+		return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
+	}
+	else {
+		// TODO: Check operator function
+		return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
+	}
+}
+
 NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = node1->Optimize(info)) node1 = node;
 	if (NodePtr node = node2->Optimize(info)) node2 = node;

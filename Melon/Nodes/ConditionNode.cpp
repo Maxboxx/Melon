@@ -112,6 +112,10 @@ Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 	}
 }
 
+ScopeList ConditionNode::FindSideEffectScope(const bool assign) {
+	return cond->GetSideEffectScope(assign);
+}
+
 NodePtr ConditionNode::Optimize(OptimizeInfo& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		NodePtr value = assign->values[0];

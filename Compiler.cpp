@@ -26,6 +26,7 @@ using namespace Melon;
 // TODO: Static variables
 // TODO: Improve error messages
 // TODO: Error for unwrap operator
+// TODO: FindSideEffectScope for assignments
 
 int main() {
 	try {

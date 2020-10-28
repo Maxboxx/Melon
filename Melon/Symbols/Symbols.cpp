@@ -395,6 +395,15 @@ bool Symbol::IsVariable() const {
 	return s.type != SymbolType::Struct && s.type != SymbolType::Class && s.type != SymbolType::Type;
 }
 
+bool Symbol::IsArgument() const {
+	if (type != SymbolType::Variable) return false;
+	if (scope.Size() <= 1) return false;
+
+	Symbol s = Find(scope.Pop(), FileInfo());
+
+	return (s.type == SymbolType::Function || s.type == SymbolType::Method) && s.names.Contains(scope.Last());
+}
+
 void Symbol::ClearAssign() {
 	for (Pair<String, Symbol>& s : scopes) {
 		if (s.value.type == SymbolType::Variable) {

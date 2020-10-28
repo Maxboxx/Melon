@@ -670,6 +670,24 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList LoopNode::FindSideEffectScope(const bool assign) {
+	ScopeList list = segments[0].statements->GetSideEffectScope(assign);
+
+	for (LoopSegment& segment : segments) {
+		if (segment.IsLoop()) {
+			return ScopeList(true).Add(Scope::Global);
+		}
+
+		if (segment.condition) {
+			list = CombineSideEffects(list, segment.condition->GetSideEffectScope(assign));
+		}
+
+		list = CombineSideEffects(list, segment.statements->GetSideEffectScope(assign));
+	}
+
+	return list;
+}
+
 NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 	for (LoopSegment& segment : segments) {
 		if (segment.condition) {
@@ -678,8 +696,6 @@ NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 
 		if (NodePtr node = segment.statements->Optimize(info)) segment.statements = node;
 	}
-
-	// TODO: Check conditions for side effects
 
 	// Removes also or else path
 	if ((segments[0].type == LoopType::If || segments[0].type == LoopType::While) && segments[0].condition->IsImmediate()) {

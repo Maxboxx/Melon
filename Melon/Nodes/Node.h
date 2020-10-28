@@ -260,11 +260,14 @@ namespace Melon {
 
 			///T Has Side Effects
 			/// Checks if the node has side effects outside of the specified scope
+			///M
+			bool HasSideEffects();
 			bool HasSideEffects(const Symbols::ScopeList& scope);
+			///M
 
 			///T Get Side Effect Scope
 			/// Gets the side effect scope 
-			Symbols::ScopeList GetSideEffectScope();
+			Symbols::ScopeList GetSideEffectScope(const bool assign);
 
 			///T Optimize
 			/// Optimizes the node
@@ -302,7 +305,7 @@ namespace Melon {
 
 			///T Find Side Effect Scope
 			/// Finds the most global scope 
-			virtual Symbols::ScopeList FindSideEffectScope();
+			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
 		};
 
 		///B IncludeScanError

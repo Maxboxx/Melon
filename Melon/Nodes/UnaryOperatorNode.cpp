@@ -107,6 +107,11 @@ Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList UnaryOperatorNode::FindSideEffectScope(const bool assign) {
+	// TODO: Check operator function
+	return node->GetSideEffectScope(assign);
+}
+
 NodePtr UnaryOperatorNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 

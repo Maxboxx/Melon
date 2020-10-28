@@ -373,6 +373,26 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList SwitchNode::FindSideEffectScope(const bool assign) {
+	ScopeList list = match->GetSideEffectScope(assign);
+
+	for (NodePtr& node : nodes) {
+		list = CombineSideEffects(list, node->GetSideEffectScope(assign));
+	}
+
+	for (List<NodePtr>& caseList : cases) {
+		for (NodePtr& node : caseList) {
+			list = CombineSideEffects(list, node->GetSideEffectScope(assign));
+		}
+	}
+
+	if (def) {
+		list = CombineSideEffects(list, def->GetSideEffectScope(assign));
+	}
+
+	return list;
+}
+
 NodePtr SwitchNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = match->Optimize(info)) match = node;
 

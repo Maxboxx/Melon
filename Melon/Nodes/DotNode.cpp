@@ -154,6 +154,14 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList DotNode::FindSideEffectScope(const bool assign) {
+	if (assign) {
+		return node->GetSideEffectScope(assign);
+	}
+
+	return scope;
+}
+
 NodePtr DotNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 

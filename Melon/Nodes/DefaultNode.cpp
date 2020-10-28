@@ -112,6 +112,10 @@ Set<ScanType> DefaultNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList DefaultNode::FindSideEffectScope(const bool assign) {
+	return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
+}
+
 NodePtr DefaultNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = node1->Optimize(info)) node1 = node;
 	if (NodePtr node = node2->Optimize(info)) node2 = node;

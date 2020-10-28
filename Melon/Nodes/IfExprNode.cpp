@@ -125,6 +125,20 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList IfExprNode::FindSideEffectScope(const bool assign) {
+	ScopeList list = conditions[0]->GetSideEffectScope(assign);
+
+	for (UInt i = 1; i < conditions.Size(); i++) {
+		list = CombineSideEffects(list, conditions[i]->GetSideEffectScope(assign));
+	}
+
+	for (NodePtr& node : nodes) {
+		list = CombineSideEffects(list, node->GetSideEffectScope(assign));
+	}
+
+	return list;
+}
+
 NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 	for (NodePtr& node : nodes) {
 		if (NodePtr n = node->Optimize(info)) node = n;

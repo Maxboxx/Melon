@@ -111,6 +111,16 @@ Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList CustomInitNode::FindSideEffectScope(const bool assign) {
+	ScopeList list = node->GetSideEffectScope(assign);
+
+	for (NodePtr expr : expressions) {
+		list = CombineSideEffects(list, expr->GetSideEffectScope(assign));
+	}
+
+	return list;
+}
+
 NodePtr CustomInitNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 

@@ -74,6 +74,11 @@ Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
 }
 
+ScopeList ConvertNode::FindSideEffectScope(const bool assign) {
+	// TODO: Check operator function
+	return node->GetSideEffectScope(assign);
+}
+
 NodePtr ConvertNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 

@@ -25,6 +25,9 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 			static bool HasSpaceAround(const NodePtr& node);
+
+		protected:
+			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
 		};
 	}
 }

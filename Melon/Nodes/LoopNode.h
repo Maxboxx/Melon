@@ -100,6 +100,9 @@ namespace Melon {
 			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
+		protected:
+			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+
 		private:
 			///T Get Next Segments
 			/// Gets the index for the next true and false segment

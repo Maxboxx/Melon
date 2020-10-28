@@ -26,6 +26,9 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 			static Boxx::String jumpInstName;
+
+		protected:
+			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
 		};
 	}
 }

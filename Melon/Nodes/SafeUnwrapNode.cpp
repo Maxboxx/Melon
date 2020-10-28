@@ -50,6 +50,10 @@ Set<ScanType> SafeUnwrapNode::Scan(ScanInfoStack& info)  {
 	return node->Scan(info);
 }
 
+ScopeList SafeUnwrapNode::FindSideEffectScope(const bool assign) {
+	return node->GetSideEffectScope(assign);
+}
+
 NodePtr SafeUnwrapNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 

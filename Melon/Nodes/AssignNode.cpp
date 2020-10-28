@@ -202,17 +202,17 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-ScopeList AssignNode::FindSideEffectScope() {
-	ScopeList list = vars[0] ? vars[0]->GetSideEffectScope() : scope;
+ScopeList AssignNode::FindSideEffectScope(const bool assign) {
+	ScopeList list = vars[0] ? vars[0]->GetSideEffectScope(true) : scope;
 
 	for (UInt i = 1; i < vars.Size(); i++) {
 		if (vars[i]) {
-			list = CombineSideEffects(list, vars[i]->GetSideEffectScope());
+			list = CombineSideEffects(list, vars[i]->GetSideEffectScope(true));
 		}
 	}
 
 	for (UInt i = 0; i < values.Size(); i++) {
-		list = CombineSideEffects(list, values[i]->GetSideEffectScope());
+		list = CombineSideEffects(list, values[i]->GetSideEffectScope(assign));
 	}
 
 	return list;

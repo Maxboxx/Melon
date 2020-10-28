@@ -90,10 +90,14 @@ Set<ScanType> DoNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList DoNode::FindSideEffectScope(const bool assign) {
+	return nodes->GetSideEffectScope(assign);
+}
+
 NodePtr DoNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = nodes->Optimize(info)) nodes = node;
 
-	if (IsEmpty(nodes)) {
+	if (IsEmpty(nodes) || !nodes->HasSideEffects()) {
 		info.optimized = true;
 		return new EmptyNode();
 	}

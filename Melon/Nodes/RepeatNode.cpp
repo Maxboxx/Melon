@@ -143,6 +143,10 @@ Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
+ScopeList RepeatNode::FindSideEffectScope(const bool assign) {
+	return CombineSideEffects(content->GetSideEffectScope(assign), condition->GetSideEffectScope(assign));
+}
+
 NodePtr RepeatNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = content->Optimize(info)) content = node;
 	if (NodePtr node = condition->Optimize(info)) condition = node;
