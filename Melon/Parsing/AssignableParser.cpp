@@ -4,6 +4,7 @@
 
 #include "Melon/Nodes/NameNode.h"
 #include "Melon/Nodes/DotNode.h"
+#include "Melon/Nodes/DiscardNode.h"
 
 using namespace Boxx;
 
@@ -13,7 +14,11 @@ using namespace Melon::Parsing;
 NodePtr AssignableParser::Parse(ParsingInfo& info) {
 	const UInt startIndex = info.index;
 
-	if (NodePtr node = ExpressionParser::Parse(info, true)) {
+	if (info.Current().type == TokenType::Discard) {
+		info.index++;
+		return new DiscardNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+	}
+	else if (NodePtr node = ExpressionParser::Parse(info, true)) {
 		if (node.Cast<NameNode>()) return node;
 		if (node.Cast<DotNode>())  return node;
 

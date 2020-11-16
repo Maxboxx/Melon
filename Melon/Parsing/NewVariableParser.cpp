@@ -4,6 +4,7 @@
 #include "VariableAttributeParser.h"
 
 #include "Melon/Nodes/NewVariableNode.h"
+#include "Melon/Nodes/DiscardNode.h"
 
 using namespace Boxx;
 
@@ -20,7 +21,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 	Pointer<NewVariableNode> node = new NewVariableNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
 
-	while (const Optional<ScopeList> type = TypeParser::Parse(info)) {
+	while (const Optional<ScopeList> type = ParseType(info)) {
 		node->types.Add(type.Get());
 
 		if (single && node->types.Size() == 1) break;
@@ -40,7 +41,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 			info.index++;
 			node->attributes.Add(VariableAttributeParser::Parse(info));
 
-			if (info.Current().type != TokenType::Name) {
+			if (info.Current().type != TokenType::Name && info.Current().type != TokenType::Discard) {
 				if (!node->attributes.Last().IsEmpty()) {
 					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "attributes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				}
@@ -50,12 +51,14 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 			node->names.Add(Scope(info.Current().value));
 
-			if (upper.Match(info.Current().value)) {
-				ErrorLog::Info(InfoError(InfoError::LowerName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
-			}
+			if (info.Current().type == TokenType::Name) {
+				if (upper.Match(info.Current().value)) {
+					ErrorLog::Info(InfoError(InfoError::LowerName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+				}
 
-			if (underscore.Match(info.Current().value)) {
-				ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+				if (underscore.Match(info.Current().value)) {
+					ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+				}
 			}
 
 			if (info.Next().type != TokenType::Comma) break;
@@ -74,4 +77,13 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 	info.index = startIndex;
 	return nullptr;
+}
+
+Optional<ScopeList> NewVariableParser::ParseType(ParsingInfo& info) {
+	if (info.Current().type == TokenType::Discard) {
+		info.index++;
+		return ScopeList::Discard;
+	}
+
+	return TypeParser::Parse(info);
 }

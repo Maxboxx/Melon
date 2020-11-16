@@ -16,7 +16,6 @@ using namespace Kiwi;
 
 using namespace Melon;
 
-// TODO: Assign to nothing
 // TODO: Remove Set<ScanType>
 // TODO: Kiwi number constant smallest size
 // TODO: Kiwi number comparison update sign

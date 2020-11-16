@@ -11,14 +11,13 @@ namespace Melon {
 		/// Node for assignment
 		class AssignNode : public Node {
 		public:
-
-			///T New variables
-			/// List of new variables if there are any
-			Boxx::Pointer<NewVariableNode> newVars;
-
 			///T Variables and values
 			/// List of variables and values for each variable
 			Boxx::List<NodePtr> vars, values;
+
+			///T Types
+			/// List of all types
+			Boxx::List<Symbols::ScopeList> types;
 
 			AssignNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~AssignNode();

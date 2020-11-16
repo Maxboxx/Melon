@@ -37,6 +37,14 @@ bool StructNode::IsRecursive(const Symbol& symbol) const {
 	return false;
 }
 
+ScopeList StructNode::FindSideEffectScope(const bool assign) {
+	if (Symbol::Find(scope, file).type == SymbolType::Namespace) {
+		return ScopeList().Add(Scope::Global);
+	}
+
+	return scope;
+}
+
 Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
 	Symbol& s = Symbol::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
 	s.size = 0;

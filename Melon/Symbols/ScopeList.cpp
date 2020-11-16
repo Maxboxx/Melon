@@ -64,17 +64,18 @@ const Scope Scope::Default        = Scope("??");
 const Scope Scope::HasValue       = Scope("<hasvalue>");
 const Scope Scope::Value          = Scope("<value>");
 
-const ScopeList ScopeList::Bool   = ScopeList(true).Add(Scope("bool"));
-const ScopeList ScopeList::Byte   = ScopeList(true).Add(Scope("byte"));
-const ScopeList ScopeList::UByte  = ScopeList(true).Add(Scope("ubyte"));
-const ScopeList ScopeList::Short  = ScopeList(true).Add(Scope("short"));
-const ScopeList ScopeList::UShort = ScopeList(true).Add(Scope("ushort"));
-const ScopeList ScopeList::Int    = ScopeList(true).Add(Scope("int"));
-const ScopeList ScopeList::UInt   = ScopeList(true).Add(Scope("uint"));
-const ScopeList ScopeList::Long   = ScopeList(true).Add(Scope("long"));
-const ScopeList ScopeList::ULong  = ScopeList(true).Add(Scope("ulong"));
-const ScopeList ScopeList::Huge   = ScopeList(true).Add(Scope("huge"));
-const ScopeList ScopeList::Nil    = ScopeList(true).Add(Scope("nil"));
+const ScopeList ScopeList::Bool    = ScopeList(true).Add(Scope("bool"));
+const ScopeList ScopeList::Byte    = ScopeList(true).Add(Scope("byte"));
+const ScopeList ScopeList::UByte   = ScopeList(true).Add(Scope("ubyte"));
+const ScopeList ScopeList::Short   = ScopeList(true).Add(Scope("short"));
+const ScopeList ScopeList::UShort  = ScopeList(true).Add(Scope("ushort"));
+const ScopeList ScopeList::Int     = ScopeList(true).Add(Scope("int"));
+const ScopeList ScopeList::UInt    = ScopeList(true).Add(Scope("uint"));
+const ScopeList ScopeList::Long    = ScopeList(true).Add(Scope("long"));
+const ScopeList ScopeList::ULong   = ScopeList(true).Add(Scope("ulong"));
+const ScopeList ScopeList::Huge    = ScopeList(true).Add(Scope("huge"));
+const ScopeList ScopeList::Nil     = ScopeList(true).Add(Scope("nil"));
+const ScopeList ScopeList::Discard = ScopeList(true).Add(Scope("_"));
 
 Scope::Scope() {
 	
@@ -353,7 +354,7 @@ bool ScopeList::operator<(const ScopeList& scopeList) const {
 }
 
 void ScopeList::operator=(const ScopeList& scopeList) {
-	scopes.Clear();
+	scopes = List<Scope>(scopeList.scopes.Size());
 	baseScope = scopeList.baseScope;
 	absolute = scopeList.absolute;
 

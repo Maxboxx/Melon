@@ -21,7 +21,13 @@ NewVariableNode::~NewVariableNode() {
 ScopeList NewVariableNode::GetType(const UInt index) const {
 	ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
 
-	Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, types[types.Size() > 1 ? index : 0], file), file);
+	ScopeList type = types[types.Size() > 1 ? index : 0];
+
+	if (type == ScopeList::Discard) {
+		return ScopeList::Discard;
+	}
+
+	Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, type, file), file);
 
 	if (s.type == SymbolType::Template) {
 		return s.varType;
@@ -39,7 +45,12 @@ List<ScopeList> NewVariableNode::GetVariables() const {
 	List<ScopeList> vars{names.Size()};
 
 	for (const Scope& n : names) {
-		vars.Add(Symbol::FindInNamespace(scope.Add(n), file).scope);
+		if (n == ScopeList::Discard.Last()) {
+			vars.Add(ScopeList::Discard);
+		}
+		else {
+			vars.Add(Symbol::FindInNamespace(scope.Add(n), file).scope);
+		}
 	}
 
 	return vars;
@@ -49,6 +60,8 @@ UInt NewVariableNode::GetSize() const {
 	UInt size = 0;
 
 	for (UInt i = 0; i < names.Size(); i++) {
+		if (names[i] == ScopeList::Discard.Last()) continue;
+
 		if (attributes[i].Contains(SymbolAttribute::Ref)) {
 			size += StackPtr::ptrSize;
 		}
@@ -64,17 +77,22 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurat
 	CompiledNode cn;
 	cn.size = Symbol::Find(Type(), file).size;
 
-	if (attributes[0].Contains(SymbolAttribute::Ref)) {
-		info.stack.Push(info.stack.ptrSize);
-	}
-	else {
-		info.stack.Push(Symbol::Find(GetType(0), file).size);
+	if (GetType(0) != ScopeList::Discard) {
+		if (attributes[0].Contains(SymbolAttribute::Ref)) {
+			info.stack.Push(info.stack.ptrSize);
+		}
+		else {
+			info.stack.Push(Symbol::Find(GetType(0), file).size);
+		}
+
+		Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[0], file).stackIndex = info.stack.top;
 	}
 
-	Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[0], file).stackIndex = info.stack.top;
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	for (UInt i = 1; i < names.Size(); i++) {
+		if (GetType(i) == ScopeList::Discard) continue;
+
 		if (attributes[i].Contains(SymbolAttribute::Ref)) {
 			info.stack.Push(info.stack.ptrSize);
 		}
@@ -90,6 +108,8 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurat
 
 void NewVariableNode::IncludeScan(ParsingInfo& info) {
 	for (const ScopeList& type : types) {
+		if (type == ScopeList::Discard) continue;
+
 		while (true) {
 			ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
 
@@ -122,8 +142,10 @@ Set<ScanType> NewVariableNode::Scan(ScanInfoStack& info) {
 		GetType(i);
 	}
 
-	for (const Scope& n : names) {
-		Symbol::FindInNamespace(scope.Add(n), file);
+	for (UInt i = 0; i < names.Size(); i++) {
+		if (GetType(i) == ScopeList::Discard) continue;
+
+		Symbol::FindInNamespace(scope.Add(names[i]), file);
 	}
 
 	return Set<ScanType>();

@@ -69,7 +69,7 @@ void ConvertNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {
 	ScopeList convertType = Type();
 
-	if (node->Type() == convertType) return Set<ScanType>();
+	if (node->Type() == convertType) return node->Scan(info);
 	Symbol::FindExplicitConversion(node->Type(), convertType, file);
 	return node->Scan(info);
 }

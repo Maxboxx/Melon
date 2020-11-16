@@ -7,8 +7,10 @@
 #include "TypeNode.h"
 #include "EmptyNode.h"
 #include "StatementsNode.h"
+#include "DiscardNode.h"
 
 #include "Melon/Parsing/Parser.h"
+#include "Melon/Parsing/IncludeParser.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -51,7 +53,22 @@ List<Pair<ScopeList, NodePtr>> AssignNode::Values() const {
 }
 
 UInt AssignNode::GetSize() const {
-	return newVars ? newVars->GetSize() : 0;
+	UInt size = 0;
+
+	for (UInt i = 0; i < vars.Size(); i++) {
+		if (types[i] == ScopeList::Discard || vars[i].Is<DiscardNode>()) continue;
+
+		Symbol s = Symbol::Find(vars[i]->scope.Add(vars[i].Cast<NameNode>()->name), file);
+
+		if (s.attributes.Contains(SymbolAttribute::Ref)) {
+			size += StackPtr::ptrSize;
+		}
+		else {
+			size += s.GetType(file).size;
+		}
+	}
+
+	return size;
 }
 
 CompiledNode AssignNode::Compile(CompileInfo& info) {
@@ -59,26 +76,20 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 	UInt varSize = 0;
 
-	if (newVars) {
-		c.AddInstructions(newVars->Compile(info).instructions);
+	for (UInt i = 0; i < vars.Size(); i++) {
+		if (types[i] == ScopeList::Discard || vars[i].Is<DiscardNode>()) continue;
 
-		if (newVars->attributes[0].Contains(SymbolAttribute::Ref)) {
+		if (vars[i]->GetSymbol().attributes.Contains(SymbolAttribute::Ref)) {
 			varSize += info.stack.ptrSize;
+			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			varSize += Symbol::Find(newVars->GetType(0), file).size;
+			UInt size = Symbol::Find(vars[i]->Type(), file).size;
+			varSize += size;
+			info.stack.Push(size);
 		}
 
-		for (UInt i = 1; i < newVars->names.Size(); i++) {
-			if (!vars[i]) continue;
-
-			if (newVars->attributes[i].Contains(SymbolAttribute::Ref)) {
-				varSize += info.stack.ptrSize;
-			}
-			else {
-				varSize += Symbol::Find(newVars->GetType(i), file).size;
-			}
-		}
+		Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(vars[i].Cast<NameNode>()->name, file).stackIndex = info.stack.top;
 	}
 
 	List<Pair<ScopeList, NodePtr>> values = Values();
@@ -89,12 +100,13 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 		const UInt regIndex = info.index; 
 
 		if (i < this->values.Size()) {
-			if (vars[i]) {
+			if (!vars[i].Is<DiscardNode>()) {
 				info.important = true;
 				c.AddInstructions(CompileAssignment(vars[i], values[i].value, info, vars[i]->file).instructions);
 				info.important = false;
 			}
 			else {
+				// TODO: Cast to type
 				c.AddInstructions(values[i].value->Compile(info).instructions);
 			}
 
@@ -110,7 +122,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 				info.stack.PopExpr(frame, c);
 			}
 		}
-		else if (vars[i]) {
+		else if (!vars[i].Is<DiscardNode>()) {
 			Pointer<StackNode> sn = new StackNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
 			sn->type = values[i].key;
 
@@ -118,6 +130,8 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			c.AddInstructions(CompileAssignment(vars[i], sn, info, vars[i]->file).instructions);
 			info.important = false;
 		}
+
+		// TODO: compile values for discard vars
 
 		info.index = regIndex;
 	}
@@ -128,10 +142,35 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 }
 
 void AssignNode::IncludeScan(ParsingInfo& info) {
-	if (newVars) newVars->IncludeScan(info);
-	
+	for (const ScopeList& type : types) {
+		if (type == ScopeList::Discard) continue;
+
+		while (true) {
+			ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
+
+			Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, type, file), file);
+
+			bool done = true;
+
+			for (UInt i = 1; i < type.Size(); i++) {
+				if (s.type == SymbolType::Namespace) {
+					if (!s.Contains(type[i])) {
+						IncludeParser::ParseInclude(s.scope.Add(type[i]), info);
+						done = false;
+						break;
+					}
+					else {
+						s = s.Get(type[i], FileInfo());
+					}
+				}
+			}
+
+			if (done) break;
+		}
+	}
+
 	for (NodePtr var : vars) {
-		if (var) var->IncludeScan(info);
+		var->IncludeScan(info);
 	}
 
 	for (NodePtr value : values) {
@@ -144,26 +183,23 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 
 	UInt errorCount = ErrorLog::ErrorCount();
 
-	Set<ScanType> scanSet = newVars ? newVars->Scan(info) : Set<ScanType>();
-
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, newVars->file));
-	}
+	Set<ScanType> scanSet;
 
 	List<Pair<ScopeList, NodePtr>> values = Values();
 
 	bool errors = errorCount < ErrorLog::ErrorCount();
 
 	for (UInt i = 0; i < vars.Size(); i++) {
-		if (!vars[i]) continue;
+		if (vars[i].Is<DiscardNode>()) continue;
 
 		NodePtr node = vars[i];
+		node->Type();
 
-		if (!newVars && node->GetSymbol().attributes.Contains(SymbolAttribute::Const)) {
+		if (types[i] == ScopeList::Discard && node->GetSymbol().attributes.Contains(SymbolAttribute::Const)) {
 			ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
 		}
 
-		if (!newVars && !node.Is<NameNode>()) {
+		if (types[i] != ScopeList::Discard && !node.Is<NameNode>()) {
 			for (const ScanType type : node->Scan(info)) {
 				scanSet.Add(type);
 
@@ -222,8 +258,13 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 	bool removed = false;
 
 	for (UInt i = 0; i < vars.Size(); i++) {
+		if (vars[i].Is<DiscardNode>()) {
+			removed = true;
+			continue;
+		}
+
 		if (vars[i]->GetSymbol().IsVariable() && !vars[i]->HasSideEffects(scope) && !info.usedVariables.Contains(vars[i]->GetSymbol().scope)) {
-			vars[i] = nullptr;
+			vars[i] = new DiscardNode(vars[i]->scope, vars[i]->file);
 			info.optimized = true;
 			removed = true;
 		}
@@ -232,32 +273,39 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 	if (removed) for (UInt i = values.Size(); i > 0;) {
 		i--;
 
-		if (!vars[i] && !values[i]->HasSideEffects(scope)) {
-			bool isNull = true;
-
-			for (UInt u = i + 1; u < vars.Size(); u++) {
-				if (vars[u]) {
-					isNull = false;
-					break;
+		if (vars[i].Is<DiscardNode>() && !values[i]->HasSideEffects(scope)) {
+			if (i >= values.Size() - 1) {
+				bool isDiscard = true;
+			
+				for (UInt u = i + 1; u < vars.Size(); u++) {
+					if (!vars[u].Is<DiscardNode>()) {
+						isDiscard = false;
+						break;
+					}
 				}
-			}
 
-			if (!isNull) values[i] = nullptr;
+				if (isDiscard) values[i] = nullptr;
+			}
+			else {
+				values[i] = nullptr;
+			}
 		}
 	}
 
 	if (removed) for (UInt i = vars.Size(); i > 0;) {
 		i--;
 
-		if (!vars[i]) {
+		if (vars[i].Is<DiscardNode>()) {
 			if (i >= values.Size()) {
 				if (i == vars.Size() - 1 || !values.Last()) {
 					vars.RemoveAt(i);
+					types.RemoveAt(i);
 				}
 			}
 			else if (!values[i]) {
 				vars.RemoveAt(i);
 				values.RemoveAt(i);
+				types.RemoveAt(i);
 			}
 		}
 	}
@@ -267,11 +315,11 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 	}
 
 	for (NodePtr& var : vars) {
-		if (var) if (NodePtr node = var->Optimize(info)) var = node;
+		if (NodePtr node = var->Optimize(info)) var = node;
 	}
 
 	for (NodePtr& value : values) {
-		if (value) if (NodePtr node = value->Optimize(info)) value = node;
+		if (NodePtr node = value->Optimize(info)) value = node;
 	}
 
 	return nullptr;
@@ -279,9 +327,6 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 
 Mango AssignNode::ToMango() const {
 	Mango assign = Mango("assign", MangoType::List);
-
-	if (newVars)
-		assign.Add(newVars->ToMango());
 
 	for (UInt i = 0; i < vars.Size(); i++) {
 		List<ScopeList> args;
@@ -293,7 +338,7 @@ Mango AssignNode::ToMango() const {
 			args.Add(values.Last()->Types()[i - values.Size() + 1]);
 		}
 
-		if (vars[i]) {
+		if (!vars[i].Is<DiscardNode>()) {
 			const ScopeList op = Symbol::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file).scope;
 
 			Mango mango = Mango(op.ToString(), MangoType::List);
@@ -320,14 +365,33 @@ Mango AssignNode::ToMango() const {
 
 StringBuilder AssignNode::ToMelon(const UInt indent) const {
 	StringBuilder sb;
-	
-	if (newVars) {
-		sb = newVars->ToMelon(indent);
-	}
-	else for (UInt i = 0; i < vars.Size(); i++) {
-		if (i > 0) sb += ", ";
 
-		if (vars[i]) sb += vars[i]->ToMelon(indent);
+	Optional<ScopeList> type = types[0];
+
+	for (UInt i = 1; i < types.Size(); i++) {
+		if (types[0] != types[i]) {
+			type = nullptr;
+		}
+	}
+
+	if (type) {
+		if (type.Get() != ScopeList::Discard) {
+			sb += type.Get().ToSimpleString();
+			sb += ": ";
+		}
+	}
+	else {
+		for (UInt i = 0; i < types.Size(); i++) {
+			if (i > 0) sb += ", "; 
+			sb += types[i].ToSimpleString();
+		}
+
+		sb += ": ";
+	}
+	
+	for (UInt i = 0; i < vars.Size(); i++) {
+		if (i > 0) sb += ", ";
+		sb += vars[i]->ToMelon(indent);
 	}
 
 	sb += " = ";

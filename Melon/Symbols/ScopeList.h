@@ -231,6 +231,7 @@ namespace Melon {
 			static const ScopeList ULong;
 			static const ScopeList Huge;
 			static const ScopeList Nil;
+			static const ScopeList Discard;
 			static const ScopeList undefined;
 			///M
 		private:

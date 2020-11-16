@@ -120,22 +120,8 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 
 		info.statementNumber++;
 		s.node = func;
-
-		if (!funcHead.isOperator) {
-			info.scopes = info.scopes.Pop();
-
-			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
-			s.scope = info.scopes.Add(Scope::Call);
-			Symbol::Add(info.scopes.Add(Scope::Call), s, FileInfo(info.filename, info.Current().line, info.statementNumber));
-
-			Scope scope = Scope::Call;
-			scope.variant = fs.Get(Scope::Call, FileInfo(info.filename, info.Current().line, info.statementNumber)).variants.Size() - 1;
-			info.scopes = info.scopes.Add(scope);
-		}
-		else {
-			s.scope = info.scopes;
-			Symbol::Add(info.scopes, s, FileInfo(info.filename, info.Current().line, info.statementNumber));
-		}
+		s.scope = info.scopes;
+		Symbol::Add(info.scopes, s, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 		func->s = s;
 		func->func = info.scopes;

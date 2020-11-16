@@ -76,6 +76,8 @@ Set<ScanType> StatementsNode::Scan(ScanInfoStack& info) {
 }
 
 ScopeList StatementsNode::FindSideEffectScope(const bool assign) {
+	if (statements.IsEmpty()) return scope;
+
 	ScopeList list = statements[0]->GetSideEffectScope(assign);
 
 	for (UInt i = 1; i < statements.Size(); i++) {
