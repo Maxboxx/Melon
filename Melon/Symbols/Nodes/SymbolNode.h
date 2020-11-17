@@ -21,7 +21,7 @@ namespace Melon {
 				/// Offsets a kiwi argument
 				static Kiwi::Argument OffsetArgument(const Kiwi::Argument& arg, const Boxx::UInt frame, Melon::Nodes::CompileInfo& info) {
 					if (arg.type != Kiwi::ArgumentType::Memory) return arg;
-					if (arg.mem.reg.type != Kiwi::RegisterType::Stack) return arg;
+					if (arg.mem.memptr.IsRight() || arg.mem.memptr.GetLeft().type != Kiwi::RegisterType::Stack) return arg;
 
 					Kiwi::Argument a = arg;
 					a.mem.offset += info.stack.frame - frame;

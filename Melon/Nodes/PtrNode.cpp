@@ -36,7 +36,7 @@ CompiledNode PtrNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(mov);
 
 	MemoryLocation sv = MemoryLocation(0);
-	sv.reg = reg;
+	sv.memptr = reg;
 
 	cn.argument = Argument(sv);
 	return cn;

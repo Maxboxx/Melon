@@ -3,7 +3,7 @@
 #include "Melon/Symbols/ScopeList.h"
 #include "Melon/Symbols/Symbols.h"
 
-#include "Melon/Nodes/StackNode.h"
+#include "Melon/Nodes/MemoryNode.h"
 #include "Melon/Nodes/BooleanNode.h"
 
 #include "Kiwi/Kiwi.h"
@@ -53,29 +53,18 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 
 	List<NodePtr> args;
 
-	Pointer<StackNode> sn1 = new StackNode(c1.argument.mem.offset + 1);
-	
-	if (c1.argument.mem.reg.type == RegisterType::Register) {
-		sn1->regIndex = c1.argument.mem.reg.index;
-	}
-
+	Pointer<MemoryNode> sn1 = new MemoryNode(c1.argument.mem);
+	sn1->mem.offset++;
 	sn1->type = typeName;
-
-	if (c1.argument.mem.reg.type == RegisterType::Register) {
-		sn1->regIndex = c1.argument.mem.reg.index;
-	}
 
 	args.Add(sn1);
 
 	Symbol s2 = Symbol::Find(type2, nodes[1]->file);
 
-	Pointer<StackNode> sn2 = new StackNode(c2.argument.mem.offset + 1);
-
-	if (c2.argument.mem.reg.type == RegisterType::Register) {
-		sn2->regIndex = c2.argument.mem.reg.index;
-	}
-
+	Pointer<MemoryNode> sn2 = new MemoryNode(c2.argument.mem);
+	sn2->mem.offset++;
 	sn2->type = s2.templateArgs[0];
+
 	args.Add(sn2);
 
 	info.important = important;

@@ -2,7 +2,7 @@
 
 #include "NewVariableNode.h"
 #include "RefNode.h"
-#include "StackNode.h"
+#include "MemoryNode.h"
 #include "NameNode.h"
 #include "TypeNode.h"
 #include "EmptyNode.h"
@@ -123,7 +123,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			}
 		}
 		else if (!vars[i].Is<DiscardNode>()) {
-			Pointer<StackNode> sn = new StackNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
+			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
 			sn->type = values[i].key;
 
 			info.important = true;

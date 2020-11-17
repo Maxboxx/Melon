@@ -69,9 +69,14 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 	Symbol s = Symbol::Find(type, file);
 	CompiledNode c = node->Compile(info);
 
-	if (s.type == SymbolType::Struct) {
+	if (s.type == SymbolType::Struct || s.type == SymbolType::Type) {
 		Symbol var = s.Get(name, file);
 		Symbol varType = var.GetType(file);
+
+		if (var.attributes.Contains(SymbolAttribute::Static)) {
+			c.argument = MemoryLocation(0);
+			c.argument.mem.memptr = var.scope.ToString();
+		}
 
 		c.argument.mem.offset += var.offset;
 		c.size = varType.size;
@@ -107,7 +112,11 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 	}
 
 	const ScopeList type = node->Type();
-	Symbol::Find(type.Add(name), file);
+	Symbol var = Symbol::Find(type.Add(name), file);
+
+	if (var.type == SymbolType::Variable && var.attributes.Contains(SymbolAttribute::Static)) {
+		info.usedVariables.Add(var.scope);
+	}
 
 	info.Get().assign = assign;
 

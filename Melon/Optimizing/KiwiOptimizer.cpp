@@ -213,8 +213,8 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 		if (inst.instruction.type == InstructionType::Mov) {
 			if (inst.instruction.sizes[0] == inst.instruction.sizes[1] && inst.instruction.sizes[0] < KiwiLang::maxSize) {
 				if (inst.instruction.arguments[0].type == ArgumentType::Memory && inst.instruction.arguments[1].type == ArgumentType::Memory) {
-					const Register reg1 = inst.instruction.arguments[0].mem.reg;
-					const Register reg2 = inst.instruction.arguments[1].mem.reg;
+					const Either<Register, String> memptr1 = inst.instruction.arguments[0].mem.memptr;
+					const Either<Register, String> memptr2 = inst.instruction.arguments[1].mem.memptr;
 
 					Int startOffset1 = inst.instruction.arguments[0].mem.offset;
 					Int startOffset2 = inst.instruction.arguments[1].mem.offset;
@@ -249,7 +249,7 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 							break;
 						}
 
-						if (inst2.instruction.arguments[0].mem.reg != reg1 || inst2.instruction.arguments[1].mem.reg != reg2) {
+						if (inst2.instruction.arguments[0].mem.memptr != memptr1 || inst2.instruction.arguments[1].mem.memptr != memptr2) {
 							break;
 						}
 
@@ -314,7 +314,7 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 					}
 				}
 				else if (inst.instruction.arguments[0].type == ArgumentType::Memory && inst.instruction.arguments[1].type == ArgumentType::Number) {
-					const Register reg = inst.instruction.arguments[0].mem.reg;
+					const Either<Register, String> memptr = inst.instruction.arguments[0].mem.memptr;
 					Int startOffset = inst.instruction.arguments[0].mem.offset;
 					Int offset = startOffset;
 					Byte offsetDir = 0;
@@ -349,7 +349,7 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 							break;
 						}
 
-						if (inst2.instruction.arguments[0].mem.reg != reg) {
+						if (inst2.instruction.arguments[0].mem.memptr != memptr) {
 							break;
 						}
 
@@ -496,8 +496,8 @@ void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) 
 								if (argument == arg1) {
 									argument = arg;
 								}
-								else if (argument.type == ArgumentType::Memory && argument.mem.reg == arg1.reg) {
-									argument.mem.reg = arg.reg;
+								else if (argument.type == ArgumentType::Memory && argument.mem.memptr == arg1.reg) {
+									argument.mem.memptr = arg.reg;
 								}
 							}
 						}
@@ -529,14 +529,18 @@ void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) 
 
 				if (instructions[u].instruction.arguments.Size() == 2 && instructions[u].instruction.type != InstructionType::Adr) {
 					if (instructions[u].instruction.arguments[0].type == ArgumentType::Memory) {
-						instructions[u].instruction.arguments[0].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[0].mem.reg);
+						if (instructions[u].instruction.arguments[0].mem.memptr.IsLeft()) {
+							instructions[u].instruction.arguments[0].mem.memptr = replacement.GetChain(instructions[u].instruction.arguments[0].mem.memptr.GetLeft());
+						}
 					}
 
 					if (instructions[u].instruction.arguments[1].type == ArgumentType::Register) {
 						instructions[u].instruction.arguments[1].reg = replacement.GetChain(instructions[u].instruction.arguments[1].reg);
 					}
 					else if (instructions[u].instruction.arguments[1].type == ArgumentType::Memory) {
-						instructions[u].instruction.arguments[1].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[1].mem.reg);
+						if (instructions[u].instruction.arguments[1].mem.memptr.IsLeft()) {
+							instructions[u].instruction.arguments[1].mem.memptr = replacement.GetChain(instructions[u].instruction.arguments[1].mem.memptr.GetLeft());
+						}
 					}
 				}
 				else if (instructions[u].instruction.arguments.Size() == 3) {
@@ -544,18 +548,24 @@ void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) 
 						instructions[u].instruction.arguments[0].reg = replacement.GetChain(instructions[u].instruction.arguments[0].reg);
 					}
 					else if (instructions[u].instruction.arguments[0].type == ArgumentType::Memory) {
-						instructions[u].instruction.arguments[0].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[0].mem.reg);
+						if (instructions[u].instruction.arguments[0].mem.memptr.IsLeft()) {
+							instructions[u].instruction.arguments[0].mem.memptr = replacement.GetChain(instructions[u].instruction.arguments[0].mem.memptr.GetLeft());
+						}
 					}
 
 					if (instructions[u].instruction.arguments[1].type == ArgumentType::Register) {
 						instructions[u].instruction.arguments[1].reg = replacement.GetChain(instructions[u].instruction.arguments[1].reg);
 					}
 					else if (instructions[u].instruction.arguments[1].type == ArgumentType::Memory) {
-						instructions[u].instruction.arguments[1].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[1].mem.reg);
+						if (instructions[u].instruction.arguments[1].mem.memptr.IsLeft()) {
+							instructions[u].instruction.arguments[1].mem.memptr = replacement.GetChain(instructions[u].instruction.arguments[1].mem.memptr.GetLeft());
+						}
 					}
 
 					if (instructions[u].instruction.arguments[2].type == ArgumentType::Memory) {
-						instructions[u].instruction.arguments[2].mem.reg = replacement.GetChain(instructions[u].instruction.arguments[2].mem.reg);
+						if (instructions[u].instruction.arguments[2].mem.memptr.IsLeft()) {
+							instructions[u].instruction.arguments[2].mem.memptr = replacement.GetChain(instructions[u].instruction.arguments[2].mem.memptr.GetLeft());
+						}
 					}
 				}
 
@@ -834,7 +844,9 @@ void KiwiOptimizer::RenameRegisters(List<OptimizerInstruction>& instructions) {
 				instructions[i].instruction.arguments[u].reg = replacement.GetValue(instructions[i].instruction.arguments[u].reg);
 			}
 			else if (instructions[i].instruction.arguments[u].type == ArgumentType::Memory) {
-				instructions[i].instruction.arguments[u].mem.reg = replacement.GetValue(instructions[i].instruction.arguments[u].mem.reg);
+				if (instructions[i].instruction.arguments[u].mem.memptr.IsLeft()) {
+					instructions[i].instruction.arguments[u].mem.memptr = replacement.GetChain(instructions[i].instruction.arguments[u].mem.memptr.GetLeft());
+				}
 			}
 		}
 
@@ -913,7 +925,7 @@ void KiwiOptimizer::OffsetStackPointer(List<OptimizerInstruction>& instructions,
 	for (UInt i = start; i < end + 1; i++) {
 		if (!instructions[i].instruction.arguments.IsEmpty()) {
 			for (Argument& arg : instructions[i].instruction.arguments) {
-				if (arg.type == ArgumentType::Memory && arg.mem.reg == RegisterType::Stack) {
+				if (arg.type == ArgumentType::Memory && arg.mem.memptr.IsLeft() && arg.mem.memptr.GetLeft().type == RegisterType::Stack) {
 					arg.mem.offset += offset;
 				}
 			}
@@ -1032,7 +1044,7 @@ UInt KiwiOptimizer::NextRegisterGet(List<OptimizerInstruction>& instructions, UI
 				}
 			}
 			else if (a.type == ArgumentType::Memory) {
-				if (a.mem.reg == arg) {
+				if (a.mem.memptr == arg) {
 					return index;
 				}
 			}

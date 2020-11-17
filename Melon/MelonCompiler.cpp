@@ -219,7 +219,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			}
 		}
 
-		List<OptimizerInstruction> instructions = info.root.Compile();
+		List<OptimizerInstruction> instructions = info.root.Compile(scanInfo.usedVariables);
 
 		if (ErrorLog::HasError()) {
 			throw CompileError("", FileInfo());

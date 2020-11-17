@@ -32,6 +32,40 @@ namespace Kiwi {
 		virtual void ConvertToFile(Boxx::FileWriter& file, const Boxx::List<Instruction>& instructions) {
 			Boxx::List<Instruction> converted = ConvertInstructions(instructions);
 
+			file.Write(".data\n");
+
+			Boxx::UInt i = 0;
+
+			for (; i < converted.Size(); i++) {
+				if (converted[i].type == InstructionType::Static) {
+					file.Write(ConvertInstruction(converted[i]));
+				
+					for (i++; i < converted.Size(); i++) {
+						bool found = false;
+
+						switch (converted[i].type) {
+							case InstructionType::Byte:
+							case InstructionType::Short:
+							case InstructionType::Int:
+							case InstructionType::Long:
+							case InstructionType::Zero: {
+								found = true;
+								file.Write(ConvertInstruction(converted[i]));
+								break;
+							}
+						}
+
+						if (!found) {
+							i--;
+							break;
+						}
+					}
+				}
+				else {
+					break;
+				}
+			}
+
 			switch (syntax) {
 				case x86_64Syntax::Intel: {
 					file.Write(".code\nmain PROC\n");
@@ -39,13 +73,13 @@ namespace Kiwi {
 				}
 
 				case x86_64Syntax::ATnT: {
-					file.Write(".data\n.text\n.global main\nmain:\n");
+					file.Write(".text\n.global main\nmain:\n");
 					break;
 				}
 			}
 
-			for (const Instruction& inst : converted) {
-				file.Write(ConvertInstruction(inst));
+			for (; i < converted.Size(); i++) {
+				file.Write(ConvertInstruction(converted[i]));
 			}
 
 			switch (syntax) {
@@ -102,7 +136,7 @@ namespace Kiwi {
 		virtual Boxx::String ConvertInstruction(const Instruction& instruction) {
 			Boxx::String inst = instruction.instructionName;
 
-			if (instruction.type != InstructionType::Label && instruction.type != InstructionType::Function) {
+			if (instruction.type != InstructionType::Label && instruction.type != InstructionType::Function && instruction.type != InstructionType::Static) {
 				inst = "\t" + inst;
 			}
 			else {
@@ -296,19 +330,36 @@ namespace Kiwi {
 					case 1: sizeStr = "BYTE PTR "; break;
 				}
 
+				Boxx::String regName = stackValue.memptr.IsLeft() ? GetRegisterName(stackValue.memptr.GetLeft(), 8) : stackValue.memptr.GetRight();
+
 				if (stackValue.offset > 0) {
-					return sizeStr + "[" + GetRegisterName(stackValue.reg, 8) + " + " + (Boxx::Int)stackValue.offset + "]";
+					return sizeStr + "[" + regName + " + " + (Boxx::Int)stackValue.offset + "]";
 				}
 				else if (stackValue.offset < 0) {
-					return sizeStr + "[" + GetRegisterName(stackValue.reg, 8) + " - " + abs((Boxx::Int)stackValue.offset) + "]";
+					return sizeStr + "[" + regName + " - " + abs((Boxx::Int)stackValue.offset) + "]";
 				}
 				else {
-					return sizeStr + "[" + GetRegisterName(stackValue.reg, 8) + "]";
+					return sizeStr + "[" + regName + "]";
 				}
 			}
 			else if (syntax == x86_64Syntax::ATnT) {
-				if (stackValue.offset != 0) return Boxx::String::ToString((Boxx::Int)stackValue.offset) + "(%" + GetRegisterName(stackValue.reg, 8) + ")";
-				return "(%" + GetRegisterName(stackValue.reg, 8) + ")";
+				Boxx::String regName = stackValue.memptr.IsLeft() ? GetRegisterName(stackValue.memptr.GetLeft(), 8) : stackValue.memptr.GetRight();
+
+				if (stackValue.memptr.IsLeft()) {
+					if (stackValue.offset != 0) return Boxx::String::ToString((Boxx::Int)stackValue.offset) + "(%" + regName + ")";
+					return "(%" + regName + ")";
+				}
+				else {
+					if (stackValue.offset > 0) {
+						return stackValue.memptr.GetRight() + "+" + Boxx::String::ToString((Boxx::Int)stackValue.offset) + "(%" + regName + ")";
+					}
+					else if (stackValue.offset < 0) {
+						return stackValue.memptr.GetRight() + Boxx::String::ToString((Boxx::Int)stackValue.offset) + "(%" + regName + ")";
+					}
+					else {
+						return stackValue.memptr.GetRight() + "(%" + regName + ")";
+					}
+				}
 			}
 
 			logger.Error("undefined stack");
@@ -332,6 +383,10 @@ namespace Kiwi {
 
 			logger.Error("undefined syntax");
 			return "undefined syntax";
+		}
+
+		virtual Boxx::String ConvertName(const Boxx::String& label, const Boxx::UByte size) override {
+			return label;
 		}
 
 	private:
@@ -383,8 +438,22 @@ namespace Kiwi {
 					}
 
 					case InstructionType::Label:
-					case InstructionType::Function: {
+					case InstructionType::Function:
+					case InstructionType::Static: {
 						converted.Add(inst.Copy());
+						break;
+					}
+
+					case InstructionType::Code: {
+						break;
+					}
+
+					case InstructionType::Byte:
+					case InstructionType::Short:
+					case InstructionType::Int:
+					case InstructionType::Long:
+					case InstructionType::Zero: {
+						ConvertData(converted, inst);
 						break;
 					}
 
@@ -1474,6 +1543,33 @@ namespace Kiwi {
 			else {
 				ConvertCompSet(instructions, inst, signedIndex, sign, mismatch8, mismatchLabel);
 			}
+		}
+
+		void ConvertData(Boxx::List<Instruction>& instructions, const Instruction& instruction) {
+			Instruction inst = instruction.Copy();
+
+			switch (inst.type) {
+				case InstructionType::Byte: {
+					inst.instructionName = "byte";
+					inst.arguments[0].number &= Boxx::Math::UByteMax();
+				}
+
+				case InstructionType::Short: {
+					inst.instructionName = "word";
+					inst.arguments[0].number &= Boxx::Math::UShortMax();
+				}
+
+				case InstructionType::Int: {
+					inst.instructionName = "dword";
+					inst.arguments[0].number &= Boxx::Math::UIntMax();
+				}
+
+				case InstructionType::Long: {
+					inst.instructionName = "qword";
+				}
+			}
+
+			instructions.Add(inst);
 		}
 
 		void UpdateMismatchCompInfo(const Instruction& instruction, Boxx::UInt& signedIndex, Boxx::UByte& size, bool& mismatch8) {

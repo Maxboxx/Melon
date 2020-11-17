@@ -1,6 +1,6 @@
 #include "IfExprNode.h"
 
-#include "StackNode.h"
+#include "MemoryNode.h"
 #include "TypeNode.h"
 #include "ConvertNode.h"
 
@@ -41,7 +41,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	info.stack.Push(Symbol::Find(Type(), file).size);
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
-	Pointer<StackNode> sn = new StackNode(cn.argument.mem.offset);
+	Pointer<MemoryNode> sn = new MemoryNode(cn.argument.mem.offset);
 	sn->type = Type();
 
 	for (UInt i = 0; i < conditions.Size(); i++) {

@@ -16,9 +16,12 @@ using namespace Kiwi;
 
 using namespace Melon;
 
+// TODO: Cleanup code
+
 // TODO: Remove Set<ScanType>
 // TODO: Kiwi number constant smallest size
 // TODO: Kiwi number comparison update sign
+// TODO: Kiwi data/code reposition
 // TODO: Combined assignment operators
 // TODO: Combined comarison operator
 // TODO: Add specific error for single assignment

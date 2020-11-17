@@ -1,6 +1,6 @@
 #include "SafeUnwrapEndNode.h"
 
-#include "StackNode.h"
+#include "MemoryNode.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -44,10 +44,10 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 	mov1.arguments.Add(Argument(1));
 	cn.instructions.Add(mov1);
 
-	Pointer<StackNode> sn1 = new StackNode(arg.mem.offset + 1);
+	Pointer<MemoryNode> sn1 = new MemoryNode(arg.mem.offset + 1);
 	sn1->type = node->Type();
 
-	Pointer<StackNode> sn2 = new StackNode(cn.argument.mem);
+	Pointer<MemoryNode> sn2 = new MemoryNode(cn.argument.mem);
 	sn2->type = node->Type();
 
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);

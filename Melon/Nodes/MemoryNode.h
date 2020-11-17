@@ -5,25 +5,22 @@
 namespace Melon {
 	namespace Nodes {
 
-		///B StackNode
-		/// Node for a stack offset
-		class StackNode : public Node {
+		///B MemoryNode
+		/// Node for a memory location
+		class MemoryNode : public Node {
 		public:
 
-			///T Stack offset
-			Boxx::Int stack;
+			///T Memory Location
+			Kiwi::MemoryLocation mem;
 
 			///T Type
 			/// Absolute type name for the stack value
 			Symbols::ScopeList type;
 
-			Boxx::Optional<Boxx::UInt> regIndex;
-
 			///T Constructor
-			StackNode(const Boxx::Int stack);
-			StackNode(const Boxx::UInt regIndex, const Boxx::Int stack);
-			StackNode(const Kiwi::MemoryLocation& mem);
-			~StackNode();
+			MemoryNode(const Boxx::Int offset);
+			MemoryNode(const Kiwi::MemoryLocation& mem);
+			~MemoryNode();
 
 			virtual Symbols::ScopeList Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;

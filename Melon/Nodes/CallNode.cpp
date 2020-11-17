@@ -1,7 +1,7 @@
 #include "CallNode.h"
 
 #include "RefNode.h"
-#include "StackNode.h"
+#include "MemoryNode.h"
 #include "TypeNode.h"
 #include "CustomInitNode.h"
 
@@ -162,7 +162,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 
 			if (
 				n.argument.type != ArgumentType::Memory || 
-				(n.argument.mem.reg.type == RegisterType::Stack && stack.Offset(n.argument.mem.offset) >= stack.top) ||
+				(n.argument.mem.memptr.IsLeft() && n.argument.mem.memptr.GetLeft().type == RegisterType::Stack && stack.Offset(n.argument.mem.offset) >= stack.top) ||
 				!Symbol::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file) ||
 				noRefs[i]
 			) {
@@ -227,7 +227,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 			bool isCompiled = false;
 
 			if (i == -1) {
-				Pointer<StackNode> sn = new StackNode(stackIndex);
+				Pointer<MemoryNode> sn = new MemoryNode(stackIndex);
 				r = new RefNode(sn);
 			}
 			else if (IsSelfPassing()) {
@@ -237,7 +237,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 				}
 				else {
 					if (assignFirst[i - 1]) {
-						Pointer<StackNode> sn = new StackNode(info.stack.Offset((Long)tempStack + memoryOffsets[i - 1]));
+						Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)tempStack + memoryOffsets[i - 1]));
 						sn->type = type.scope;
 
 						UInt top = info.stack.top;
@@ -253,7 +253,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 			}
 			else {
 				if (assignFirst[i]) {
-					Pointer<StackNode> sn = new StackNode(info.stack.Offset((Long)tempStack + memoryOffsets[i]));
+					Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)tempStack + memoryOffsets[i]));
 					sn->type = type.scope;
 
 					UInt top = info.stack.top;
@@ -304,7 +304,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 
 			stackIndex -= type.size;
 
-			Pointer<StackNode> sn = new StackNode(stackIndex);
+			Pointer<MemoryNode> sn = new MemoryNode(stackIndex);
 			sn->type = type.scope;
 
 			info.stack.Push(type.size);
@@ -328,7 +328,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	info.stack.PopExpr(frame, c);
 
 	Instruction inst = Instruction(InstructionType::Call);
-	inst.arguments.Add(Argument(ArgumentType::Function, s.size));
+	inst.arguments.Add(Argument(ArgumentType::Name, s.scope.ToString()));
 	c.instructions.Add(inst);
 
 	if (isStatement) {

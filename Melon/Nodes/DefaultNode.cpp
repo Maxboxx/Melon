@@ -1,6 +1,6 @@
 #include "DefaultNode.h"
 
-#include "StackNode.h"
+#include "MemoryNode.h"
 #include "TypeNode.h"
 
 using namespace Boxx;
@@ -49,14 +49,11 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	eq.arguments.Add(Argument(0));
 	cn.instructions.Add(eq);
 
-	Pointer<StackNode> sn1 = new StackNode(cn.argument.mem.offset);
+	Pointer<MemoryNode> sn1 = new MemoryNode(cn.argument.mem);
 	sn1->type = Type();
 
-	Pointer<StackNode> sn2 = new StackNode(c1.argument.mem.offset + 1);
-
-	if (c1.argument.mem.reg.type == RegisterType::Register) {
-		sn2->regIndex = c1.argument.mem.reg.index;
-	}
+	Pointer<MemoryNode> sn2 = new MemoryNode(c1.argument.mem);
+	sn2->mem.offset++;
 
 	sn2->type = Symbol::Find(node1->Type(), file).Get(Scope::Value, file).varType;
 

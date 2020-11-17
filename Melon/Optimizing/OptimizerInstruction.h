@@ -58,7 +58,7 @@ namespace Melon {
 					return instruction.arguments[index].reg.type == Kiwi::RegisterType::Register;
 				}
 				else if (instruction.arguments[index].type == Kiwi::ArgumentType::Memory) {
-					return instruction.arguments[index].mem.reg.type == Kiwi::RegisterType::Register;
+					return instruction.arguments[index].mem.memptr.IsLeft() && instruction.arguments[index].mem.memptr.GetLeft().type == Kiwi::RegisterType::Register;
 				}
 
 				return false;
@@ -69,7 +69,7 @@ namespace Melon {
 					return instruction.arguments[index].reg;
 				}
 				else if (instruction.arguments[index].type == Kiwi::ArgumentType::Memory) {
-					return instruction.arguments[index].mem.reg;
+					return instruction.arguments[index].mem.memptr.GetLeft();
 				}
 
 				return Kiwi::Register();

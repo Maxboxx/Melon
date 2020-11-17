@@ -1,6 +1,6 @@
 #include "CustomInitNode.h"
 
-#include "StackNode.h"
+#include "MemoryNode.h"
 #include "TypeNode.h"
 
 #include "Melon/Parsing/Parser.h"
@@ -44,7 +44,7 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 		const ScopeList type = varType.scope;
 
 		if (s.type == SymbolType::Struct) {
-			Pointer<StackNode> sn = new StackNode(info.stack.Offset() + v.offset);
+			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset() + v.offset);
 			sn->type = type;
 
 			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->file).instructions);

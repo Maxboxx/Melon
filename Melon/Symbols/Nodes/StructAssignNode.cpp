@@ -3,7 +3,7 @@
 #include "Melon/Symbols/ScopeList.h"
 #include "Melon/Symbols/Symbols.h"
 
-#include "Melon/Nodes/StackNode.h"
+#include "Melon/Nodes/MemoryNode.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -39,19 +39,13 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 		Symbol argAssign = Symbol::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
 
 		List<NodePtr> args;
-		Pointer<StackNode> sn1 = new StackNode(c1.argument.mem.offset + argSym.offset);
+		Pointer<MemoryNode> sn1 = new MemoryNode(c1.argument.mem);
+		sn1->mem.offset += argSym.offset;
 		sn1->type = typeName;
 
-		if (c1.argument.mem.reg.type == RegisterType::Register) {
-			sn1->regIndex = c1.argument.mem.reg.index;
-		}
-
-		Pointer<StackNode> sn2 = new StackNode(c2.argument.mem.offset + argSym.offset);
+		Pointer<MemoryNode> sn2 = new MemoryNode(c2.argument.mem);
+		sn2->mem.offset += argSym.offset;
 		sn2->type = typeName;
-
-		if (c2.argument.mem.reg.type == RegisterType::Register) {
-			sn2->regIndex = c2.argument.mem.reg.index;
-		}
 
 		args.Add(sn1);
 		args.Add(sn2);

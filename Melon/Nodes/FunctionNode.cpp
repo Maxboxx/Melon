@@ -56,7 +56,8 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 
 	CompiledNode c;
 
-	Instruction func = Instruction::Function(Symbol::Find(this->func, file).size);
+	Instruction func = Instruction(InstructionType::Function);
+	func.instructionName = this->func.ToString();
 	c.instructions.Add(func);
 
 	UInt funcSize = node->GetSize();

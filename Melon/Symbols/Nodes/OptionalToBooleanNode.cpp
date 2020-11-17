@@ -3,7 +3,6 @@
 #include "Melon/Symbols/ScopeList.h"
 #include "Melon/Symbols/Symbols.h"
 
-#include "Melon/Nodes/StackNode.h"
 #include "Melon/Nodes/BooleanNode.h"
 
 #include "Kiwi/Kiwi.h"

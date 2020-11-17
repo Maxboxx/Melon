@@ -1,6 +1,6 @@
 #include "ReturnNode.h"
 
-#include "StackNode.h"
+#include "MemoryNode.h"
 #include "TypeNode.h"
 
 #include "Kiwi/Kiwi.h"
@@ -70,7 +70,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	for (UInt i = 0; i < nodes.Size(); i++) {
 		stackOffset -= types[i].size;
 
-		Pointer<StackNode> sn = new StackNode(stackOffset);
+		Pointer<MemoryNode> sn = new MemoryNode(stackOffset);
 		sn->type = types[i].scope;
 
 		info.important = true;

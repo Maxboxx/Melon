@@ -38,7 +38,7 @@ namespace Melon {
 
 			///T Compile
 			/// Returns the instruction list from <code>Node::Compile()</code>
-			Boxx::List<Optimizing::OptimizerInstruction> Compile();
+			Boxx::List<Optimizing::OptimizerInstruction> Compile(const Boxx::Set<Symbols::ScopeList>& usedVariables);
 
 			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;

@@ -1431,14 +1431,21 @@ void Symbol::Setup() {
 		intSym.basic = true;
 		intSym.size = integer.value < 0 ? -integer.value : integer.value;
 		intSym.isSigned = integer.value < 0;
+		intSym.scope = integer.key;
+		intSym.varType = intSym.scope;
 
 		// Min max
-		/*
 		Symbol min = Symbol(SymbolType::Variable);
 		min.attributes.Add(SymbolAttribute::Static);
 		min.attributes.Add(SymbolAttribute::Const);
 		min.varType = integer.key;
-		*/
+		intSym.Add(Scope("min"), min, FileInfo());
+
+		Symbol max = Symbol(SymbolType::Variable);
+		max.attributes.Add(SymbolAttribute::Static);
+		max.attributes.Add(SymbolAttribute::Const);
+		max.varType = integer.key;
+		intSym.Add(Scope("max"), max, FileInfo());
 
 		// Neg
 		Symbol neg = Symbol(SymbolType::Function);

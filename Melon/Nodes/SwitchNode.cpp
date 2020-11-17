@@ -2,7 +2,7 @@
 
 #include "Boxx/Math.h"
 
-#include "StackNode.h"
+#include "MemoryNode.h"
 #include "BreakNode.h"
 #include "TypeNode.h"
 
@@ -63,7 +63,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 		cn.size = Symbol::Find(Type(), file).size;
 
 	info.stack.PushExpr(Symbol::Find(this->match->Type(), this->match->file).size, cn);
-	Pointer<StackNode> matchStack = new StackNode(info.stack.Offset());
+	Pointer<MemoryNode> matchStack = new MemoryNode(info.stack.Offset());
 	matchStack->type = this->match->Type();
 
 	List<ScopeList> args;
@@ -114,7 +114,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 
 	Argument result = Argument(MemoryLocation(info.stack.Offset()));
 
-	Pointer<StackNode> sn = new StackNode(result.mem.offset);
+	Pointer<MemoryNode> sn = new MemoryNode(result.mem.offset);
 	sn->type = Type();
 
 	for (NodePtr expr : nodes) {

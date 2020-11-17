@@ -12,6 +12,7 @@
 #include "Boxx/System.h"
 #include "Boxx/Regex.h"
 #include "Boxx/File.h"
+#include "Boxx/Math.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -72,10 +73,46 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-List<OptimizerInstruction> RootNode::Compile() {
+List<OptimizerInstruction> RootNode::Compile(const Set<ScopeList>& usedVariables) {
+	CompiledNode c;
+
+	List<Tuple<ScopeList, InstructionType, Long, Long>> integers;
+	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::Byte,   InstructionType::Byte,  Math::ByteMin(),   Math::ByteMax()));
+	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::UByte,  InstructionType::Byte,  Math::UByteMin(),  Math::UByteMax()));
+	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::Short,  InstructionType::Short, Math::ShortMin(),  Math::ShortMax()));
+	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::UShort, InstructionType::Short, Math::UShortMin(), Math::UShortMax()));
+	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::Int,    InstructionType::Int,   Math::IntMin(),    Math::IntMax()));
+	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::UInt,   InstructionType::Int,   Math::UIntMin(),   Math::UIntMax()));
+	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::Long,   InstructionType::Long,  Math::LongMin(),   Math::LongMax()));
+	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::ULong,  InstructionType::Long,  Math::ULongMin(),  Math::ULongMax()));
+
+	for (const Tuple<ScopeList, InstructionType, Long, Long>& integer : integers) {
+		if (usedVariables.Contains(integer.value1.Add(Scope("min")))) {
+			Instruction name = Instruction(InstructionType::Static);
+			name.instructionName = integer.value1.Add(Scope("min")).ToString();
+			c.instructions.Add(name);
+
+			Instruction value = Instruction(integer.value2);
+			value.arguments.Add(integer.value3);
+			c.instructions.Add(value);
+		}
+
+		if (usedVariables.Contains(integer.value1.Add(Scope("max")))) {
+			Instruction name = Instruction(InstructionType::Static);
+			name.instructionName = integer.value1.Add(Scope("max")).ToString();
+			c.instructions.Add(name);
+
+			Instruction value = Instruction(integer.value2);
+			value.arguments.Add(integer.value4);
+			c.instructions.Add(value);
+		}
+	}
+
 	UByte index = 0;
 	CompileInfo info;
-	return Compile(info).instructions;
+	c.instructions.Add(Instruction(InstructionType::Code));
+	c.AddInstructions(Compile(info).instructions);
+	return c.instructions;
 }
 
 void RootNode::IncludeScan(ParsingInfo& info) {

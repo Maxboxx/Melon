@@ -58,6 +58,14 @@ namespace Boxx {
 		void operator=(const Either<T1, T2>& value);
 		void operator=(Either<T1, T2>&& value) noexcept;
 
+		///T Comparison
+		///M
+		bool operator==(const Either<T1, T2>& value) const;
+		bool operator!=(const Either<T1, T2>& value) const;
+		///M
+
+		bool operator<(const Either<T1, T2>& value) const;
+
 		///T Conversion to value
 		///E EitherTypeError: Thrown if the either is empty
 		///M
@@ -181,6 +189,36 @@ namespace Boxx {
 		isLeft = value.isLeft;
 		left  = std::move(value.left);
 		right = std::move(value.right);
+	}
+
+	template <class T1, class T2>
+	inline bool Either<T1, T2>::operator==(const Either<T1, T2>& value) const {
+		if (isLeft != value.isLeft) return false;
+
+		if (isLeft)
+			return left == value.left;
+		else
+			return right == value.right;
+	}
+
+	template <class T1, class T2>
+	inline bool Either<T1, T2>::operator!=(const Either<T1, T2>& value) const {
+		if (isLeft != value.isLeft) return true;
+
+		if (isLeft)
+			return left != value.left;
+		else
+			return right != value.right;
+	}
+
+	template <class T1, class T2>
+	inline bool Either<T1, T2>::operator<(const Either<T1, T2>& value) const {
+		if (isLeft != value.isLeft) return value.isLeft;
+
+		if (isLeft)
+			return left < value.left;
+		else
+			return right < value.right;
 	}
 
 	template <class T1, class T2>
