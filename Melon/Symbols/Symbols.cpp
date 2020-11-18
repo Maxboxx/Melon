@@ -66,6 +66,8 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 				f.type = SymbolType::Function;
 				f.scope = this->scope.Add(scope);
 				f.scope.absolute = true;
+				f.symbolNamespace = symbol.symbolNamespace;
+				f.includedNamespaces = symbol.includedNamespaces;
 				scopes.Add(scope.name, f);
 			}
 			else if (scopes[scope.name].variants.Size() == 1) {
@@ -1132,7 +1134,7 @@ Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types,
 			bool match = true;
 
 			for (UInt a = 0; a < types.Size(); a++) {
-				if (types[a] != FindNearestType(func.Pop(), s.variants[i].arguments[a + offset], file).scope) {
+				if (types[a] != FindNearestTypeInNamespace(func.Pop(), s.variants[i].arguments[a + offset], s.GetFileInfo()).scope) {
 					match = false;
 					break;
 				}
@@ -1153,7 +1155,7 @@ Symbol Symbol::FindFunction(const ScopeList& func, const List<ScopeList>& types,
 			match = true;
 
 			for (UInt a = 0; a < types.Size(); a++) {
-				if (!HasImplicitConversion(types[a], FindNearestType(func.Pop(), s.variants[i].arguments[a + offset], file).scope)) {
+				if (!HasImplicitConversion(types[a], FindNearestTypeInNamespace(func.Pop(), s.variants[i].arguments[a + offset], s.GetFileInfo()).scope)) {
 					match = false;
 					break;
 				}

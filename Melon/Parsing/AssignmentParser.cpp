@@ -146,28 +146,25 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const bool single, const bool
 
 	info.index++;
 
-	bool moreValues = true;
-
-	for (UInt i = 0; i < assign->vars.Size(); i++) {
-		if (moreValues) {
-			if (NodePtr node = ExpressionParser::Parse(info)) {
-				assign->values.Add(node);
-
-				if (i < assign->vars.Size() - 1) {
-					if (info.EndOfFile() || info.Current().type != TokenType::Comma) {
-						if (node->Types().Size() + i < assign->vars.Size())
-							ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("','", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-						moreValues = false;
-					}
-					else {
-						info.index++;
-					}
-				}
+	for (UInt i = 0; true; i++) {
+		if (i > 0) {
+			if (info.EndOfFile() || info.Current().type != TokenType::Comma) {
+				break;
 			}
-			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::FewExpressions, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-			}
+
+			info.index++;
 		}
+
+		if (NodePtr node = ExpressionParser::Parse(info)) {
+			assign->values.Add(node);
+		}
+		else {
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("expression", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		}
+	}
+
+	if (assign->values.Size() > assign->vars.Size()) {
+		ErrorLog::Error(SyntaxError(SyntaxError::ManyExprAssign, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
 	info.statementNumber++;

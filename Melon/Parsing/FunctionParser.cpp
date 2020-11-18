@@ -32,7 +32,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 
 		UInt line = 0;
 
-		Pointer<FunctionNode> func = new FunctionNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber));
+		Pointer<FunctionNode> func = new FunctionNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
 
 		if (info.Current().type == TokenType::ParenOpen) {
 			info.index++;
@@ -41,7 +41,10 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 			info.scopes = info.scopes.Add(funcHead.name);
 
 			if (!currentScope.Contains(funcHead.name)) {
-				Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+				Symbol scope = Symbol(SymbolType::Scope);
+				scope.symbolNamespace = info.currentNamespace;
+				scope.includedNamespaces = info.includedNamespaces;
+				Symbol::Add(info.scopes, scope, FileInfo(info.filename, info.Current().line, info.statementNumber));
 			}
 
 			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
@@ -120,10 +123,27 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 
 		info.statementNumber++;
 		s.node = func;
-		s.scope = info.scopes;
-		Symbol::Add(info.scopes, s, FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+		if (!funcHead.isOperator) {
+			info.scopes = info.scopes.Pop();
+
+			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+			fs.symbolNamespace = info.currentNamespace;
+			fs.includedNamespaces = info.includedNamespaces;
+			s.scope = info.scopes.Add(Scope::Call);
+			Symbol::Add(info.scopes.Add(Scope::Call), s, FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+			Scope scope = Scope::Call;
+			scope.variant = fs.Get(Scope::Call, FileInfo(info.filename, info.Current().line, info.statementNumber)).variants.Size() - 1;
+			info.scopes = info.scopes.Add(scope);
+		}
+		else {
+			s.scope = info.scopes;
+			Symbol::Add(info.scopes, s, FileInfo(info.filename, info.Current().line, info.statementNumber));
+		}
 
 		func->s = s;
+		func->s.scope = info.scopes;
 		func->func = info.scopes;
 
 		UInt loops = info.loops;

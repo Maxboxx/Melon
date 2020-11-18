@@ -199,7 +199,7 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 			ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
 		}
 
-		if (types[i] != ScopeList::Discard && !node.Is<NameNode>()) {
+		//if (types[i] != ScopeList::Discard && !node.Is<NameNode>()) {
 			for (const ScanType type : node->Scan(info)) {
 				scanSet.Add(type);
 
@@ -207,7 +207,7 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 					ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 				}
 			}
-		}
+		//}
 
 		if (info.Get().init) {
 			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {

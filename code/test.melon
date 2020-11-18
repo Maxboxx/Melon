@@ -1,7 +1,13 @@
+include Math.Vector
 
-function int: add(int: a, int: b) -> return a + b
+function byte, byte, byte: unpack(Vector: const v)
+	return v.x, v.y, v.z
+end
 
-int: a, b = int.min, int.max
+byte: x, _, z = unpack(Vector(1, 2, 3))
+byte: y = byte.max
 
-int: c = add(a, b)
 
+while x < y do
+	y = y - z
+end

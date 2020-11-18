@@ -11,7 +11,7 @@ using namespace Boxx;
 using namespace Kiwi;
 using namespace Melon::Optimizing;
 
-List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& instructionList, const UByte loops) {
+List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& instructionList, const UInt loops) {
 	List<Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>> segments = Split(instructionList);
 
 	for (UInt i = 0; i < loops; i++) {
@@ -603,7 +603,7 @@ void KiwiOptimizer::CombineComp(List<OptimizerInstruction>& instructions) {
 			if (i + 1 < instructions.Size()) {
 				const OptimizerInstruction inst2 = instructions[i + 1];
 
-				if (Instruction::IsComp(inst2.instruction.type)) continue;
+				if (!Instruction::IsComp(inst2.instruction.type)) continue;
 
 				if (inst2.instruction.arguments[0] == inst.instruction.arguments[2] && inst2.instruction.arguments[1].type == ArgumentType::Number) {
 					if (inst2.instruction.type == InstructionType::Eq) {

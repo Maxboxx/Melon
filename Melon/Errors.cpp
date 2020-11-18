@@ -229,7 +229,7 @@ const char* const SyntaxError::MultipleDefaultExpr  = "multiple default cases in
 const char* const SyntaxError::MultipleDefault      = "multiple default cases in swith statement";
 const char* const SyntaxError::DefaultRequired      = "default case required in switch expression";
 const char* const SyntaxError::ExprSwitchCase       = "expression expected in switch case";
-const char* const SyntaxError::FewExpressions       = "too few expressions after '='";
+const char* const SyntaxError::ManyExprAssign       = "too many expressions after '='";
 const char* const SyntaxError::FewVariables         = "not enough variables in variable list";
 const char* const SyntaxError::ArgNameExpected      = "argument name expected";
 const char* const SyntaxError::BreakIntLow          = "integer argument for break is less than 1";

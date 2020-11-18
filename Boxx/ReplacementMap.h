@@ -30,6 +30,13 @@ namespace Boxx {
 		///E MapKeyError: Thrown if the key already exists in the map
 		void Add(const T& key, const T& replacement);
 
+		///T Set Replacement
+		/// Sets the value of a replacement key
+		///A const T& key: The key to modify
+		///A const T& replacement: The new replacement value
+		///E MapKeyError: Thrown if the key does not exist
+		void Set(const T& key, const T& replacement);
+
 		///T Remove key
 		/// Remove a key from the map if it exists
 		void Remove(const T& key);
@@ -60,12 +67,9 @@ namespace Boxx {
 		///H Operators
 
 		///T Index
-		/// Gets/sets the replacement value for a specific key
+		/// Gets the replacement value for a specific key
 		///E MapKeyError: Thrown if the key does not exist
-		///M
 		T operator[](const T& key) const;
-		T& operator[](const T& key);
-		///M
 
 		void operator=(const ReplacementMap<T>& map);
 		void operator=(ReplacementMap<T>&& map) noexcept;
@@ -102,7 +106,19 @@ namespace Boxx {
 
 	template <class T>
 	inline void ReplacementMap<T>::Add(const T& key, const T& value) {
-		map.Add(key, value);
+		if (key != value) {
+			map.Add(key, value);
+		}
+	}
+
+	template <class T>
+	inline void ReplacementMap<T>::Set(const T& key, const T& value) {
+		if (key == value) {
+			Remove(key);
+		}
+		else {
+			map[key] = value;
+		}
 	}
 
 	template <class T>
@@ -153,11 +169,6 @@ namespace Boxx {
 
 	template <class T>
 	inline T ReplacementMap<T>::operator[](const T& key) const {
-		return map[key];
-	}
-
-	template <class T>
-	inline T& ReplacementMap<T>::operator[](const T& key) {
 		return map[key];
 	}
 

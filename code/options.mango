@@ -10,8 +10,8 @@
 	output: {
 		dir: "code/output"
 		
-		ast:        true
-		symbols:    true
+		ast:        false
+		symbols:    false
 		melon:      true
 		kiwi:       true
 		assembly:   true
@@ -19,8 +19,8 @@
 	}
 	
 	optimizing: {
-		ast:  0
-		kiwi: 0
+		ast:  true
+		kiwi: true
 	}
 }
 

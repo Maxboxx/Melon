@@ -203,13 +203,14 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 				opInfo.usedTypes     = scanInfo.usedTypes;
 				opInfo.usedFunctions = scanInfo.usedFunctions;
 				info.root.Optimize(opInfo);
-				scanInfo = ScanInfoStack();
 
 				if (ErrorLog::HasError()) {
 					throw CompileError("", FileInfo());
 				}
 
 				if (!opInfo.optimized) break;
+
+				scanInfo = ScanInfoStack();
 			}
 
 			scanInfo = info.root.Scan();

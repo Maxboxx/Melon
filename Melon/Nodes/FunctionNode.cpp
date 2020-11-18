@@ -81,7 +81,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 			size += info.stack.ptrSize;
 		}
 		else {
-			size += Symbol::FindNearest(scope, s.arguments[i], file).size;
+			size += Symbol::FindNearestInNamespace(scope, s.arguments[i], file).size;
 		}
 	}
 
@@ -135,7 +135,7 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 	}
 
 	for (const ScopeList& sl : s.arguments) {
-		Symbol s = Symbol::FindNearest(scope, sl, file);
+		Symbol s = Symbol::FindNearestInNamespace(scope, sl, file);
 
 		if (s.type != SymbolType::None && s.attributes.Contains(SymbolAttribute::Ref)) {
 			info.usedVariables.Add(s.scope);
