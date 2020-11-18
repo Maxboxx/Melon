@@ -2,10 +2,13 @@
 
 #include "Boxx/Map.h"
 #include "Boxx/Optional.h"
+#include "Boxx/Math.h"
 
 #include "Kiwi/Kiwi.h"
 
 #include "Nodes/SymbolNode.h"
+#include "Nodes/EmptySymbolNode.h"
+
 #include "Nodes/IntegerAssignNode.h"
 #include "Nodes/IntegerUnaryOperatorNode.h"
 #include "Nodes/IntegerBinaryOperatorNode.h"
@@ -798,7 +801,9 @@ void Symbol::SetTemplateValues(const ScopeList& scope, const FileInfo& file) {
 		if (!s.templateArgs.IsEmpty()) {
 			Symbol t = Find(s.varType, file);
 
-			for (UInt u = 0; u < s.templateArgs.Size(); u++) {
+			UInt min = Math::Min(s.templateArgs.Size(), t.templateArgs.Size());
+
+			for (UInt u = 0; u < min; u++) {
 				Symbol& arg = Find(t.templateArgs[u].Pop(), file).Get(t.templateArgs[u].Last(), file);
 
 				if (arg.type == SymbolType::Template) {
@@ -1600,6 +1605,11 @@ void Symbol::Setup() {
 	nilToBool.isExplicit = true;
 	nilToBool.symbolNode = new BooleanConstantNode(false);
 	nilSym.Add(Scope::As, nilToBool, FileInfo());
+
+	Symbol nilAssign = Symbol(SymbolType::Function);
+	nilAssign.arguments.Add(ScopeList::Nil);
+	nilAssign.symbolNode = new EmptySymbolNode();
+	nilSym.Add(Scope::Assign, nilAssign, FileInfo());
 
 	symbols.Add(ScopeList::Nil[0], nilSym, FileInfo());
 

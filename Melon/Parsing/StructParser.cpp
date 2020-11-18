@@ -92,7 +92,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 	for (UInt i = 0; i < sn->symbol.templateArgs.Size(); i++) {
 		Symbol t = Symbol(SymbolType::Template);
-		t.size = i;
+		t.templateIndex = i;
 		t.scope = sn->symbol.scope.Add(sn->symbol.templateArgs[i].Last());
 		t.varType = t.scope;
 		sn->symbol.Add(sn->symbol.templateArgs[i].Last(), t, FileInfo(info.filename, structLine, info.statementNumber));

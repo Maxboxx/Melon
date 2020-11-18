@@ -3,6 +3,7 @@
 #include "TypeParser.h"
 #include "VariableAttributeParser.h"
 #include "StatementParser.h"
+#include "TemplateParser.h"
 
 #include "Melon/Nodes/FunctionNode.h"
 #include "Melon/Nodes/EmptyNode.h"
@@ -20,6 +21,8 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, isPlain)) {
 		const FunctionHead funcHead = (FunctionHead)fh;
+		const Optional<List<Scope>> templateArgs = TemplateParser::ParseDefine(info);
+
 		Symbol s = Symbol(funcHead.isMethod && !funcHead.isOperator ? SymbolType::Method : SymbolType::Function);
 		s.symbolFile = info.currentFile;
 		s.symbolNamespace = info.currentNamespace;
@@ -38,6 +41,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 			info.index++;
 
 			Symbol currentScope = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+
 			info.scopes = info.scopes.Add(funcHead.name);
 
 			if (!currentScope.Contains(funcHead.name)) {
@@ -48,6 +52,26 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 			}
 
 			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+			if (templateArgs) {
+				Scope name = funcHead.name;
+				name.types = List<ScopeList>();
+				name.variant = fs.templateVariants.Size();
+				info.scopes = info.scopes.Pop().Add(name);
+
+				Symbol scope = Symbol(SymbolType::Scope);
+				scope.symbolNamespace = info.currentNamespace;
+				scope.includedNamespaces = info.includedNamespaces;
+				scope.scope = fs.scope;
+
+				for (const Scope& arg : templateArgs.Get()) {
+					scope.templateArgs.Add(ScopeList().Add(arg));
+				}
+
+				Symbol::Add(info.scopes, scope, FileInfo(info.filename, info.Current().line, info.statementNumber));
+
+				fs = scope;
+			}
 
 			if (!funcHead.isOperator) {
 				if (!fs.Contains(Scope::Call)) {
@@ -140,6 +164,18 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		else {
 			s.scope = info.scopes;
 			Symbol::Add(info.scopes, s, FileInfo(info.filename, info.Current().line, info.statementNumber));
+		}
+
+		if (templateArgs) {
+			Symbol fs = Symbol::Find(info.scopes.Pop(), FileInfo(info.filename, startLine, info.statementNumber));
+
+			for (UInt i = 0; i < templateArgs.Get().Size(); i++) {
+				Symbol t = Symbol(SymbolType::Template);
+				t.templateIndex = i;
+				t.scope = fs.scope.Add(templateArgs.Get()[i]);
+				t.varType = t.scope;
+				fs.Add(templateArgs.Get()[i], t, FileInfo(info.filename, startLine, info.statementNumber));
+			}
 		}
 
 		func->s = s;

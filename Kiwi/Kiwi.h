@@ -760,10 +760,11 @@ namespace Kiwi {
 			static Boxx::Regex simplePattern = Boxx::Regex("^[_%a]%w*$");
 
 			if (simplePattern.Match(label)) {
+				// Check for reserved names 
 				return label;
 			}
 			else {
-				return "<" + label + ">";
+				return "<" + label.Replace(">", "\\>") + ">";
 			}
 		}
 

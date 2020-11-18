@@ -229,10 +229,16 @@ Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 		info.functions = Collection<NodePtr>();
 
 		for (const NodePtr& func : functions) {
-			func.Cast<FunctionNode>()->isUsed = true;
+			if (func) {
+				func.Cast<FunctionNode>()->isUsed = true;
 
-			for (const ScanType type : func->Scan(info)) {
-				scanSet.Add(type);
+				for (const ScanType type : func->Scan(info)) {
+					scanSet.Add(type);
+				}
+			}
+			else {
+				// TODO: Remove
+				ErrorLog::Error(CompileError("func null error", file));
 			}
 		}
 	}

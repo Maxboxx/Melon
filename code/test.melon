@@ -1,13 +1,28 @@
-include Math.Vector
 
-function byte, byte, byte: unpack(Vector: const v)
-	return v.x, v.y, v.z
+--/
+struct Comparison
+	static function T: min<T>(T: a, T: b)
+		return if a < b -> a else b
+	end
+	
+	static function T: max<T>(T: a, T: b)
+		return if a > b -> a else b
+	end
+	
+	static function T: clamp<T>(T: value, T: min, T: max)
+		return if value < min then
+			min
+		elseif value > max then
+			max
+		else
+			value
+		end
+	end
 end
 
-byte: x, _, z = unpack(Vector(1, 2, 3))
-byte: y = byte.max
+int: a = Comparison.min<int>(3, 4)
+int: b = Comparison.max<int>(3, 4)
+int: c = Comparison.clamp<int>(4, 3, 5)
+/--
 
-
-while x < y do
-	y = y - z
-end
+nil: a = nil
