@@ -3,6 +3,7 @@
 #include "Boxx/String.h"
 #include "Boxx/List.h"
 #include "Boxx/Math.h"
+#include "Boxx/Map.h"
 
 #include "Kiwi.h"
 
@@ -500,6 +501,38 @@ namespace Kiwi {
 						logger.Error("undefined instruction");
 						converted.Add(in);
 						break;
+					}
+				}
+			}
+
+			Boxx::Map<Boxx::String, Boxx::String> names;
+
+			for (Instruction& inst : converted) {
+				for (Argument& arg : inst.arguments) {
+					if (arg.type == ArgumentType::Name) {
+						if (!names.Contains(arg.label, arg.label)) {
+							const Boxx::String name = "N" + Boxx::String::ToString(names.Size());
+							names.Add(arg.label, name);
+							arg.label = name;
+						}
+					}
+					else if (arg.type == ArgumentType::Memory && arg.mem.memptr.IsRight()) {
+						Boxx::String name = arg.mem.memptr.GetRight();
+
+						if (!names.Contains(name, name)) {
+							name = "N" + Boxx::String::ToString(names.Size());
+							names.Add(arg.label, name);
+						}
+
+						arg.mem.memptr = name;
+					}
+				}
+
+				if (inst.type == InstructionType::Function || inst.type == InstructionType::Static) {
+					if (!names.Contains(inst.instructionName, inst.instructionName)) {
+						const Boxx::String name = "N" + Boxx::String::ToString(names.Size());
+						names.Add(inst.instructionName, name);
+						inst.instructionName = name;
 					}
 				}
 			}

@@ -2,7 +2,7 @@
 struct Vector
 	byte: x, y, z
 	
-	function init()
+	--/function init()
 		self.x, self.y, self.z = 0, 0, 0
 	end
 	
@@ -12,7 +12,7 @@ struct Vector
 	
 	function init(byte: x, byte: y, byte: z)
 		self.x, self.y, self.z = x, y, z
-	end
+	end/--
 	
 	static function byte: dot(Vector: v1, Vector: v2)
 		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
