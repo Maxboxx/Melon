@@ -1,5 +1,4 @@
 
-
 struct Comparison
 	static function T: min<T>(T: a, T: b)
 		return if a < b -> a else b
@@ -19,6 +18,7 @@ struct Comparison
 		end
 	end
 end
+
 
 int: a = Comparison.min<int>(3, 4)
 int: b = Comparison.max<int>(3, 4)

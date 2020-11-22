@@ -104,6 +104,26 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 					sb += variant.node->ToMelon(indent + 1);
 				}
 			}
+
+			for (const Symbol& t : syms.value.templateVariants) {
+				if (t.Contains(Scope::Call)) {
+					for (const Symbol& variant : t.Get(Scope::Call, file).variants) {
+						if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
+							sb += "\n\n";
+							sb += tabs;
+							sb += variant.node->ToMelon(indent + 1);
+						}
+					}
+				}
+
+				for (const Symbol& variant : t.variants) {
+					if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
+						sb += "\n\n";
+						sb += tabs;
+						sb += variant.node->ToMelon(indent + 1);
+					}
+				}
+			}
 		}
 	}
 
