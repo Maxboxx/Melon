@@ -68,6 +68,7 @@ bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file,
 				Symbol f;
 				f.type = SymbolType::Function;
 				f.scope = this->scope.Add(scope);
+				f.varType = f.scope;
 				f.scope.absolute = true;
 				f.symbolNamespace = symbol.symbolNamespace;
 				f.includedNamespaces = symbol.includedNamespaces;

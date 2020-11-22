@@ -62,10 +62,11 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 				Symbol scope = Symbol(SymbolType::Scope);
 				scope.symbolNamespace = info.currentNamespace;
 				scope.includedNamespaces = info.includedNamespaces;
-				scope.scope = fs.scope;
+				scope.scope = info.scopes;
+				scope.varType = info.scopes;
 
 				for (const Scope& arg : templateArgs.Get()) {
-					scope.templateArgs.Add(ScopeList().Add(arg));
+					scope.templateArgs.Add(scope.scope.Add(arg));
 				}
 
 				Symbol::Add(info.scopes, scope, FileInfo(info.filename, info.Current().line, info.statementNumber));
@@ -155,6 +156,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 			fs.symbolNamespace = info.currentNamespace;
 			fs.includedNamespaces = info.includedNamespaces;
 			s.scope = info.scopes.Add(Scope::Call);
+			s.varType = s.scope;
 			Symbol::Add(info.scopes.Add(Scope::Call), s, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 			Scope scope = Scope::Call;
@@ -163,6 +165,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		}
 		else {
 			s.scope = info.scopes;
+			s.varType = s.scope;
 			Symbol::Add(info.scopes, s, FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 

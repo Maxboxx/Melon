@@ -202,6 +202,34 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 
 				nodes.Add(sn);
 			}
+			else {
+				/*if (s.Contains(Scope::Call)) {
+					for (Symbol& f : s.Get(Scope::Call, file).variants) {
+						Pointer<FunctionNode> fn = new FunctionNode(ScopeList(true), Symbol::templateSymbols[templateIndex].file);
+						fn->func = f.scope;
+						fn->s = f;
+
+						List<ScopeList> templateArgs;
+
+						for (const ScopeList& arg : s.templateArgs) {
+							templateArgs.Add(arg);
+						}
+
+						Scope last = s.scope.Last();
+						last.types = templateArgs;
+						last.variant = nullptr;
+						fn->func = fn->func.Pop().Pop().Add(last).Add(f.scope.Last());
+
+						for (const Scope& var : s.names) {
+							fn->argNames.Add(var);
+						}
+
+						fn->node = f.node;
+
+						funcs.Add(fn);
+					}
+				}*/
+			}
 		}
 	}
 	while (

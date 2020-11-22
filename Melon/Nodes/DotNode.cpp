@@ -97,6 +97,14 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 	if (s.type == SymbolType::Namespace && !s.Contains(name)) {
 		IncludeParser::ParseInclude(s.scope.Add(name), info);
 	}
+
+	if (name.types && !s.Contains(name)) {
+		Symbol::TemplateSymbol ts;
+		ts.type = s.scope.Add(name);
+		ts.scope = scope;
+		ts.file = file;
+		Symbol::templateSymbols.Add(ts);
+	}
 }
 
 Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
