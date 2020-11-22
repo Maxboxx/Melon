@@ -26,6 +26,7 @@ namespace Melon {
 	}
 
 	namespace Nodes {
+		class RootNode;
 
 		///T NodePtr
 		typedef Boxx::Pointer<class Node> NodePtr;
@@ -284,7 +285,7 @@ namespace Melon {
 			virtual Boxx::Long GetImmediate() const;
 
 			///H Static functions
-
+			
 			///T Scan Assignment
 			/// Scans an assignment
 			static void ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file);
@@ -300,6 +301,8 @@ namespace Melon {
 			///T Combine Side Effects
 			/// Combines two side effect scopes by returning the most global of the two
 			static Symbols::ScopeList CombineSideEffects(const Symbols::ScopeList& scope1, const Symbols::ScopeList& scope2);
+
+			static RootNode* root;
 
 		protected:
 

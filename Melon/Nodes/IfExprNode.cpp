@@ -34,11 +34,11 @@ ScopeList IfExprNode::Type() const {
 
 CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
-	cn.size = info.stack.ptrSize;
+	cn.size = Symbol::Find(Type(), file).size;
 
 	List<UInt> jumps;
 
-	info.stack.Push(Symbol::Find(Type(), file).size);
+	info.stack.Push(cn.size);
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	Pointer<MemoryNode> sn = new MemoryNode(cn.argument.mem.offset);

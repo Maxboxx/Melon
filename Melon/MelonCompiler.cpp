@@ -194,6 +194,10 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		ErrorLog::RevertToMarker();
 		ErrorLog::RemoveMarker();
 
+		info.root.parsingInfo = &info;
+
+		Node::root = &info.root;
+
 		ScanInfoStack scanInfo;
 
 		for (UInt i = 0; i < (ULong)compOptions.astOptimizationPasses + 1; i++) {

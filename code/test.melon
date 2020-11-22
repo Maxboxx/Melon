@@ -1,18 +1,18 @@
 
-struct Comparison
-	static function T: min<T>(T: a, T: b)
-		return if a < b -> a else b
+struct Comparison<A>
+	static function A: min<B>(A: a, B: b)
+		return if a < b -> a else b as A
 	end
 	
-	static function T: max<T>(T: a, T: b)
-		return if a > b -> a else b
+	static function A: max<B>(A: a, B: b)
+		return if a > b -> a else b as A
 	end
 	
-	static function T: clamp<T>(T: value, T: min, T: max)
+	static function A: clamp<B, C>(A: value, B: min, C: max)
 		return if value < min then
-			min
+			min as A
 		elseif value > max then
-			max
+			max as A
 		else
 			value
 		end
@@ -20,6 +20,6 @@ struct Comparison
 end
 
 
-int: a = Comparison.min<int>(3, 4)
-int: b = Comparison.max<int>(3, 4)
-int: c = Comparison.clamp<int>(4, 3, 5)
+int: a = Comparison<int>.min<byte>(3, 4)
+int: b = Comparison<ushort>.max<short>(3, 4)
+int: c = Comparison<long>.clamp<uint, ubyte>(4, 3, 5)

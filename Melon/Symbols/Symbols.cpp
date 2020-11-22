@@ -388,7 +388,8 @@ bool Symbol::IsType() const {
 		type == SymbolType::Class ||
 		type == SymbolType::Enum ||
 		type == SymbolType::Struct ||
-		type == SymbolType::Interface;
+		type == SymbolType::Interface ||
+		type == SymbolType::Template;
 }
 
 bool Symbol::IsVariable() const {
@@ -517,11 +518,11 @@ bool Symbol::HasTypeReturns() const {
 	return type == SymbolType::Function || type == SymbolType::Method;
 }
 
-void Symbol::SpecializeTemplate(Symbol& symbol, const List<ScopeList>& types, ParsingInfo& info) const {
-	return SpecializeTemplate(symbol, *this, types, info);
+void Symbol::SpecializeTemplate(Symbol& symbol, const List<ScopeList>& types, RootNode* const root) const {
+	return SpecializeTemplate(symbol, *this, types, root);
 }
 
-void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, const List<ScopeList>& types, ParsingInfo& info) const {
+void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, const List<ScopeList>& types, RootNode* const root) const {
 	symbol = *this;
 
 	bool isNotTemplateVariant = true;
@@ -603,7 +604,7 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 	for (const Pair<String, Symbol>& scope : scopes) {
 		if (scope.value.type != SymbolType::Template) {
 			symbol.scopes.Add(scope.key, Symbol(SymbolType::Scope));
-			scope.value.SpecializeTemplate(symbol.scopes[scope.key], templateSymbol, types, info);
+			scope.value.SpecializeTemplate(symbol.scopes[scope.key], templateSymbol, types, root);
 		}
 		else {
 			Symbol t  = scope.value;
@@ -619,19 +620,19 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 
 	for (const Symbol& variant : variants) {
 		symbol.variants.Add(Symbol(SymbolType::Scope));
-		variant.SpecializeTemplate(symbol.variants.Last(), templateSymbol, types, info);
+		variant.SpecializeTemplate(symbol.variants.Last(), templateSymbol, types, root);
 	}
 
 	symbol.templateVariants = List<Symbol>();
 
 	for (const Symbol& variant : templateVariants) {
 		symbol.templateVariants.Add(Symbol(SymbolType::Scope));
-		variant.SpecializeTemplate(symbol.templateVariants.Last(), templateSymbol, types, info);
+		variant.SpecializeTemplate(symbol.templateVariants.Last(), templateSymbol, types, root);
 	}
 
 	for (const Symbol& variant : symbol.templateVariants) {
 		symbol.templateVariants.Add(Symbol(SymbolType::Scope));
-		variant.SpecializeTemplate(symbol.templateVariants.Last(), Find(variant.varType, FileInfo()), types, info);
+		variant.SpecializeTemplate(symbol.templateVariants.Last(), templateSymbol, types, root);
 
 		if (symbol.templateVariants.Last().scope.Last().variant.Get() != symbol.templateVariants.Size() - 1) {
 			symbol.templateVariants.RemoveLast();
@@ -647,10 +648,10 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 			fn->node = funcNode->node;
 
 			symbol.node = fn;
-			symbol.size = info.root.funcs.Size();
+			symbol.size = root->funcs.Size();
 
 			fn->s    = symbol;
-			info.root.funcs.Add(symbol.node);
+			root->funcs.Add(symbol.node);
 		}
 	}
 }
@@ -676,8 +677,17 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& template
 			}
 
 			if (!isTemplate) {
+				bool found = false;
+
 				for (const ScopeList& arg : s.templateArgs) {
-					if (arg != type) {
+					if (arg == type) {
+						found = true;
+						break;
+					}
+				}
+
+				for (const ScopeList& arg : s.templateArgs) {
+					if (!found) {
 						args.Add(ReplaceTemplates(arg, templateSymbol, types));
 					}
 					else {

@@ -58,6 +58,14 @@ Symbol DotNode::GetSymbol() const {
 		}
 	}
 	else {
+		if (nodeSymbol.type != SymbolType::None && name.types && !nodeSymbol.Contains(name)) {
+			Symbol::TemplateSymbol ts;
+			ts.type = nodeSymbol.scope.Add(name);
+			ts.scope = scope;
+			ts.file = file;
+			Node::root->AddTemplateSpecialization(ts);
+		}
+
 		return nodeSymbol.Get(name, file);
 	}
 
@@ -97,14 +105,6 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 	if (s.type == SymbolType::Namespace && !s.Contains(name)) {
 		IncludeParser::ParseInclude(s.scope.Add(name), info);
 	}
-
-	if (name.types && !s.Contains(name)) {
-		Symbol::TemplateSymbol ts;
-		ts.type = s.scope.Add(name);
-		ts.scope = scope;
-		ts.file = file;
-		Symbol::templateSymbols.Add(ts);
-	}
 }
 
 Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
@@ -120,6 +120,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 	}
 
 	const ScopeList type = node->Type();
+
 	Symbol var = Symbol::Find(type.Add(name), file);
 
 	if (var.type == SymbolType::Variable && var.attributes.Contains(SymbolAttribute::Static)) {

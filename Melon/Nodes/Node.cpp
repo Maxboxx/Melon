@@ -16,6 +16,8 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
+RootNode* Node::root = nullptr;
+
 void CompiledNode::AddInstructions(const List<OptimizerInstruction>& instructions) {
 	for (const OptimizerInstruction& inst : instructions) {
 		this->instructions.Add(inst);

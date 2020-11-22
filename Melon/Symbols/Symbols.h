@@ -14,6 +14,7 @@
 namespace Melon {
 	namespace Nodes {
 		class Node;
+		class RootNode;
 	}
 
 	namespace Parsing {
@@ -285,8 +286,8 @@ namespace Melon {
 			///T Specialize Template
 			/// Specializes a template symbol
 			///M
-			void SpecializeTemplate(Symbol& symbol, const Boxx::List<ScopeList>& types, Parsing::ParsingInfo& info) const;
-			void SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, const Boxx::List<ScopeList>& types, Parsing::ParsingInfo& info) const;
+			void SpecializeTemplate(Symbol& symbol, const Boxx::List<ScopeList>& types, Melon::Nodes::RootNode* const root) const;
+			void SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, const Boxx::List<ScopeList>& types, Melon::Nodes::RootNode* const root) const;
 			///M
 
 			///H Static functions

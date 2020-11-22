@@ -46,6 +46,9 @@ namespace Melon {
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 
+			///T Add Template Specialization
+			void AddTemplateSpecialization(const Symbols::Symbol::TemplateSymbol& templateSymbol, const bool scan = true);
+
 			///T Scan
 			/// Used for scanning for errors
 			ScanInfoStack Scan();
@@ -57,6 +60,15 @@ namespace Melon {
 			///T To Melon Files
 			/// Writes the optimized code to melon files
 			void ToMelonFiles(const CompilerOptions& options) const;
+
+			Parsing::ParsingInfo* parsingInfo = nullptr;
+
+		private:
+			Boxx::UInt nodeIndex = 0;
+			Boxx::UInt funcIndex = 0;
+			Boxx::UInt templateIndex = 0;
+
+			bool includeScanning = false;
 		};
 	}
 }

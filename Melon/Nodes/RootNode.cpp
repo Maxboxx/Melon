@@ -116,9 +116,7 @@ List<OptimizerInstruction> RootNode::Compile(const Set<ScopeList>& usedVariables
 }
 
 void RootNode::IncludeScan(ParsingInfo& info) {
-	UInt nodeIndex = 0;
-	UInt funcIndex = 0;
-	UInt templateIndex = 0;
+	includeScanning = true;
 
 	Collection<UInt> failedNodes;
 	Collection<UInt> failedFuncs;
@@ -163,45 +161,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 		}
 
 		for (; templateIndex < Symbol::templateSymbols.Size(); templateIndex++) {
-			Tuple<Symbol, List<ScopeList>> templateInfo = Symbol::FindTemplateArgs(Symbol::templateSymbols[templateIndex]);
-			Scope templateScope = templateInfo.value1.scope.Last().Copy();
-			templateScope.types = templateInfo.value2;
-			templateScope.variant = nullptr;
-
-			if (Symbol::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) continue;
-
-			Scope last = templateInfo.value1.scope.Last();
-			last.variant = nullptr;
-			last.types   = nullptr;
-
-			Symbol templateSym = Symbol::Find(templateInfo.value1.scope.Pop().Add(last), file);
-			templateSym.templateVariants.Add(Symbol(templateInfo.value1.type));
-
-			Symbol& s = templateSym.templateVariants.Last();
-
-			templateInfo.value1.SpecializeTemplate(s, templateInfo.value2, info);
-
-			if (s.type == SymbolType::Struct) {
-				Pointer<StructNode> sn = new StructNode(ScopeList(true), Symbol::templateSymbols[templateIndex].file);
-				sn->name = s.scope.Last();
-
-				List<ScopeList> templateArgs;
-
-				for (const ScopeList& arg : s.templateArgs) {
-					templateArgs.Add(arg);
-				}
-
-				sn->name.types = templateArgs;
-				sn->name.variant = nullptr;
-
-				sn->symbol = s;
-				
-				for (const Scope& var : s.names) {
-					sn->vars.Add(var);
-				}
-
-				nodes.Add(sn);
-			}
+			AddTemplateSpecialization(Symbol::templateSymbols[templateIndex], false);
 		}
 	}
 	while (
@@ -211,6 +171,54 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 		!failedFuncs.IsEmpty() ||
 		templateIndex < Symbol::templateSymbols.Size()
 	);
+
+	includeScanning = false;
+}
+
+void RootNode::AddTemplateSpecialization(const Symbol::TemplateSymbol& templateSymbol, const bool scan) {
+	Tuple<Symbol, List<ScopeList>> templateInfo = Symbol::FindTemplateArgs(templateSymbol);
+	Scope templateScope = templateInfo.value1.scope.Last().Copy();
+	templateScope.types = templateInfo.value2;
+	templateScope.variant = nullptr;
+
+	if (Symbol::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) return;
+
+	Scope last = templateInfo.value1.scope.Last();
+	last.variant = nullptr;
+	last.types   = nullptr;
+
+	Symbol templateSym = Symbol::Find(templateInfo.value1.scope.Pop().Add(last), file);
+	templateSym.templateVariants.Add(Symbol(templateInfo.value1.type));
+
+	Symbol& s = templateSym.templateVariants.Last();
+
+	templateInfo.value1.SpecializeTemplate(s, templateInfo.value2, this);
+
+	if (s.type == SymbolType::Struct) {
+		Pointer<StructNode> sn = new StructNode(ScopeList(true), templateSymbol.file);
+		sn->name = s.scope.Last();
+
+		List<ScopeList> templateArgs;
+
+		for (const ScopeList& arg : s.templateArgs) {
+			templateArgs.Add(arg);
+		}
+
+		sn->name.types = templateArgs;
+		sn->name.variant = nullptr;
+
+		sn->symbol = s;
+
+		for (const Scope& var : s.names) {
+			sn->vars.Add(var);
+		}
+
+		nodes.Add(sn);
+	}
+
+	if (scan && !includeScanning) {
+		IncludeScan(*parsingInfo);
+	}
 }
 
 Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
@@ -367,6 +375,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 		}
 
 		sb += node->ToMelon(0);
+		sb += "\n";
 	}
 
 	if (writeToFile) {
