@@ -251,8 +251,9 @@ Tuple<Symbol, List<ScopeList>> Symbol::FindTemplateArgs(const TemplateSymbol& sy
 		}
 	}
 
+	// TODO: Better error
 	ErrorLog::Error(SymbolError("template error", symbol.file));
-	return Tuple<Symbol, List<ScopeList>>(empty, templateArgs);;
+	return Tuple<Symbol, List<ScopeList>>(empty, templateArgs);
 }
 
 Symbol Symbol::Get(const Scope& scope, const FileInfo& file) const {
@@ -547,7 +548,6 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 	else if (symbol.varType.Size() > 0) {
 		FileInfo file = symbol.GetFileInfo();
 		file.statementNumber++;
-		symbol.varType = FindNearestInNamespace(symbol.scope, symbol.varType, file).scope;
 		symbol.varType = ReplaceTemplates(symbol.varType, templateSymbol, types);
 	}
 
@@ -664,46 +664,65 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& template
 
 		if (scope.types) {
 			Symbol s = Find(list.Add(scope), FileInfo());
-			List<ScopeList> args;
 
-			bool isTemplate = false;
+			if (s.type != SymbolType::None) {
+				List<ScopeList> args;
 
-			if (i < type.Size() - 1) {
-				if (s.Contains(type[i + 1])) {
-					if (s.Get(type[i + 1], FileInfo()).type == SymbolType::Template) {
-						isTemplate = true;
+				bool isTemplate = false;
+
+				if (i < type.Size() - 1) {
+					if (s.Contains(type[i + 1])) {
+						if (s.Get(type[i + 1], FileInfo()).type == SymbolType::Template) {
+							isTemplate = true;
+						}
+					}
+				}
+
+				if (!isTemplate) {
+					bool found = false;
+
+					for (const ScopeList& arg : s.templateArgs) {
+						if (arg == type) {
+							found = true;
+							break;
+						}
+					}
+
+					for (const ScopeList& arg : s.templateArgs) {
+						if (!found) {
+							args.Add(ReplaceTemplates(arg, templateSymbol, types));
+						}
+						else {
+							args.Add(arg);
+						}
+					}
+
+					Scope newScope = scope.Copy();
+					newScope.types = args;
+					newScope.variant = nullptr;
+
+					if (Symbol::Contains(list.Add(newScope))) {
+						scope = Find(list.Add(newScope), FileInfo()).scope.Last();
+					}
+					else {
+						scope = newScope;
 					}
 				}
 			}
-
-			if (!isTemplate) {
+			else {
 				bool found = false;
 
-				for (const ScopeList& arg : s.templateArgs) {
+				for (const ScopeList& arg : scope.types.Get()) {
 					if (arg == type) {
 						found = true;
 						break;
 					}
 				}
 
-				for (const ScopeList& arg : s.templateArgs) {
+				for (ScopeList& arg : scope.types.Get()) {
 					if (!found) {
-						args.Add(ReplaceTemplates(arg, templateSymbol, types));
+						arg = ReplaceTemplates(arg, templateSymbol, types);
 					}
-					else {
-						args.Add(arg);
-					}
-				}
-
-				Scope newScope = scope.Copy();
-				newScope.types = args;
-				newScope.variant = nullptr;
-
-				if (Symbol::Contains(list.Add(newScope))) {
-					scope = Find(list.Add(newScope), FileInfo()).scope.Last();
-				}
-				else {
-					scope = newScope;
 				}
 			}
 		}

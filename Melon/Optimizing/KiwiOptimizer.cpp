@@ -24,10 +24,10 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 				copy.Add(inst.instruction.Copy());
 			}
 
-			CombinePushPop(segment.value);
-
 			CombineComp(segment.value);
 			RemoveComps(segment.value);
+
+			CombinePushPop(segment.value);
 
 			RemoveDuplicates(segment.value);
 			CombineDuplicates(segment.value);
@@ -88,7 +88,7 @@ List<Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>> KiwiOptimizer
 		bool start = false;
 		OptimizerInstruction inst = instructions[i];
 
-		if (inst.instruction.type == InstructionType::Function) {
+		if (inst.instruction.type == InstructionType::Function || inst.instruction.type == InstructionType::Code || inst.instruction.type == InstructionType::Static) {
 			start = true;
 		}
 		else if (inst.instruction.type == InstructionType::Sub && inst.instruction.arguments[0].type == ArgumentType::Register && inst.instruction.arguments[0].reg.type == RegisterType::Stack) {
@@ -118,7 +118,7 @@ List<Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>> KiwiOptimizer
 
 void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
-		if (instructions[i].IsLabelOrCall()) continue;
+		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 
@@ -128,7 +128,7 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 				i--;
 			}
 			else for (UInt j = i; j < instructions.Size(); j++) {
-				if (instructions[j].IsLabelOrCall()) break;
+				if (instructions[j].IsStackBreak()) break;
 				if (inst.important) break;
 				UInt nextAssign = NextAssign(instructions, i, inst.instruction.arguments[2]);
 
@@ -141,7 +141,7 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 				}
 
 				for (UInt u = j + 1; u < nextAssign; u++) {
-					if (instructions[u].IsLabelOrCall()) break;
+					if (instructions[u].IsStackBreak()) break;
 
 					if (instructions[u].instruction.type == InstructionType::Mov) {
 						if (instructions[u].instruction.arguments[1] == inst.instruction.arguments[2]) {
@@ -170,7 +170,7 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 			}
 
 			for (UInt j = i; j < instructions.Size(); j++) {
-				if (instructions[j].IsLabelOrCall()) break;
+				if (instructions[j].IsStackBreak()) break;
 				if (instructions[i].important) break;
 				UInt nextAssign = NextAssign(instructions, i, instructions[i].instruction.arguments[0]);
 
@@ -183,7 +183,7 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 				}
 
 				for (UInt u = j + 1; u < nextAssign; u++) {
-					if (instructions[u].IsLabelOrCall()) break;
+					if (instructions[u].IsStackBreak()) break;
 
 					if (instructions[u].instruction.type == InstructionType::Mov) {
 						if (instructions[u].instruction.arguments[1] == instructions[i].instruction.arguments[0]) {
@@ -206,7 +206,7 @@ void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
 
 void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
-		if (instructions[i].IsLabelOrCall()) continue;
+		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 
@@ -230,7 +230,7 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 					sizes.Add(totalSize);
 
 					for (UInt u = i + 1; u < instructions.Size(); u++) {
-						if (instructions[u].IsLabelOrCall()) break;
+						if (instructions[u].IsStackBreak()) break;
 
 						const OptimizerInstruction inst2 = instructions[u];
 
@@ -330,7 +330,7 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 					numbers.Add(num);
 
 					for (UInt u = i + 1; u < instructions.Size(); u++) {
-						if (instructions[u].IsLabelOrCall()) break;
+						if (instructions[u].IsStackBreak()) break;
 
 						const OptimizerInstruction inst2 = instructions[u];
 
@@ -431,7 +431,7 @@ void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
 
 void KiwiOptimizer::RemoveDuplicates(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
-		if (instructions[i].IsLabelOrCall()) continue;
+		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 
@@ -442,7 +442,7 @@ void KiwiOptimizer::RemoveDuplicates(List<OptimizerInstruction>& instructions) {
 			UInt index = NextAssign(instructions, i, arg1);
 
 			while (index < instructions.Size()) {
-				if (instructions[index].IsLabelOrCall()) break;
+				if (instructions[index].IsStackBreak()) break;
 
 				const OptimizerInstruction in = instructions[index];
 
@@ -462,7 +462,7 @@ void KiwiOptimizer::RemoveDuplicates(List<OptimizerInstruction>& instructions) {
 
 void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
-		if (instructions[i].IsLabelOrCall()) continue;
+		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 
@@ -476,7 +476,7 @@ void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) 
 			ReplacementMap<Register> replacement;
 
 			for (UInt u = i + 1; u < nextAssign1; u++) {
-				if (instructions[u].IsLabelOrCall()) break;
+				if (instructions[u].IsStackBreak()) break;
 
 				Optional<Tuple<Register, Register>> nextReplacement = nullptr;
 				Optional<Register> remove = nullptr;
@@ -583,7 +583,7 @@ void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) 
 
 void KiwiOptimizer::RemoveUnused(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
-		if (instructions[i].IsLabelOrCall()) continue;
+		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 	}
@@ -595,7 +595,7 @@ bool KiwiOptimizer::IsRegister(const Argument& arg) {
 
 void KiwiOptimizer::CombineComp(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
-		if (instructions[i].IsLabelOrCall()) continue;
+		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 
@@ -630,7 +630,7 @@ void KiwiOptimizer::CombineComp(List<OptimizerInstruction>& instructions) {
 
 void KiwiOptimizer::RemoveComps(List<OptimizerInstruction>& instructions) {
 	for (UInt i = 0; i < instructions.Size(); i++) {
-		if (instructions[i].IsLabelOrCall()) continue;
+		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 
@@ -670,25 +670,40 @@ void KiwiOptimizer::RemoveComps(List<OptimizerInstruction>& instructions) {
 }
 
 void KiwiOptimizer::CombinePushPop(List<OptimizerInstruction>& instructions) {
+	instructions.Insert(0, Instruction(InstructionType::Push, 0));
+
+	for (UInt i = 0; i < instructions.Size(); i++) {
+		if (instructions[i].IsLabelOrCall() || instructions[i].IsJumpOrRet() || instructions[i].CanJump()) {
+			instructions.Insert(i + 1, Instruction(InstructionType::Push, 0));
+			instructions.Insert(i, Instruction(InstructionType::Pop, 0));
+			i++;
+		}
+	}
+
+	instructions.Add(Instruction(InstructionType::Pop, 0));
+
 	for (UInt i = 0; i < instructions.Size(); i++) {
 		if (instructions[i].IsLabelOrCall()) continue;
+		if (instructions[i].IsJumpOrRet()) continue;
+		if (instructions[i].CanJump()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 
-		if ((inst.instruction.type == InstructionType::Push || inst.instruction.type == InstructionType::Pop) && inst.instruction.arguments.Size() == 0) {
+		if (inst.IsPushPop() && inst.instruction.arguments.Size() == 0) {
 			Long num = inst.instruction.type == InstructionType::Push ? inst.instruction.sizes[0] : -inst.instruction.sizes[0];
+			bool found = false;
 
 			for (UInt u = i + 1; u < instructions.Size(); u++) {
 				if (instructions[u].IsLabelOrCall()) break;
+				if (instructions[u].IsJumpOrRet()) break;
+				if (instructions[u].CanJump()) break;
+
 				const OptimizerInstruction inst2 = instructions[u];
 
-				if ((inst2.instruction.type == InstructionType::Push || inst2.instruction.type == InstructionType::Pop) && inst2.instruction.arguments.Size() == 0) {
+				if (inst2.IsPushPop() && inst2.instruction.arguments.Size() == 0) {
 					Long num2 = inst2.instruction.type == InstructionType::Push ? inst2.instruction.sizes[0] : -inst2.instruction.sizes[0];
 					Long combinedNum = num + num2;
-
-					if (inst.important && Math::Abs(num) > Math::Abs(combinedNum)) {
-						break;
-					}
+					found = true;
 
 					if (combinedNum == 0) {
 						OffsetStackPointer(instructions, i + 1, u - 1, num2);
@@ -713,6 +728,12 @@ void KiwiOptimizer::CombinePushPop(List<OptimizerInstruction>& instructions) {
 
 					break;
 				}
+			}
+
+			if (!found && num == 0) {
+				instructions.RemoveAt(i);
+				i--;
+				continue;
 			}
 		}
 	}

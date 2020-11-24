@@ -21,7 +21,18 @@ IntegerBinaryOperatorNode::IntegerBinaryOperatorNode(const UByte size, const boo
 }
 
 CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
+	const UInt top = info.stack.top;
 	CompiledNode c1 = nodes[0]->Compile(info);
+
+	if (c1.argument.type == ArgumentType::Memory) {
+		if (c1.argument.mem.memptr.IsLeft() && c1.argument.mem.memptr.GetLeft().type == RegisterType::Stack) {
+			if (info.stack.frame - c1.argument.mem.offset > top) {
+				info.stack.Push(c1.size);
+			}
+		}
+	}
+
+	const UInt frame = info.stack.frame;
 
 	Argument arg1;
 
@@ -51,6 +62,16 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 
 	for (const OptimizerInstruction& instruction : c2.instructions) {
 		c1.instructions.Add(instruction);
+	}
+
+	if (info.stack.frame > frame) {
+		if (c2.argument.type == ArgumentType::Memory) {
+			if (c2.argument.mem.memptr.IsLeft() && c2.argument.mem.memptr.GetLeft().type == RegisterType::Stack) {
+				c2.argument.mem.offset -= info.stack.frame - frame;
+			}
+		}
+
+		info.stack.PopExpr(frame, c1);
 	}
 
 	Instruction inst = Instruction(op);
@@ -83,5 +104,6 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 	c1.argument = arg1;
 	c1.instructions.Add(inst);
 
+	info.stack.top = top;
 	return c1;
 }

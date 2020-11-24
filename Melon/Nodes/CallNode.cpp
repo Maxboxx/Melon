@@ -256,9 +256,10 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 					Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)tempStack + memoryOffsets[i]));
 					sn->type = type.scope;
 
-					UInt top = info.stack.top;
+					StackPtr stack = info.stack;
 					c.AddInstructions(CompileAssignment(sn, args[i], info, args[i]->file).instructions);
-					info.stack.top = top;
+					info.stack.PopExpr(stack.frame, c);
+					info.stack.top = stack.top;
 
 					r = new RefNode(sn);
 				}
@@ -309,12 +310,16 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 
 			info.stack.Push(type.size);
 
+			UInt frame = info.stack.frame;
+
 			if (isMethod) {
 				c.AddInstructions(CompileAssignment(sn, this->args[i - 1], info, node->file).instructions);
 			}
 			else {
 				c.AddInstructions(CompileAssignment(sn, this->args[i], info, node->file).instructions);
 			}
+
+			info.stack.PopExpr(frame, c);
 		}
 	}
 

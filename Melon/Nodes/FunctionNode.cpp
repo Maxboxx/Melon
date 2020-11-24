@@ -165,6 +165,12 @@ Mango FunctionNode::ToMango() const {
 StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "";
 
+	for (const ScopeList& arg : Symbol::Find(s.scope, file).templateArgs) {
+		if (Symbol::Find(arg, file).type == SymbolType::Template) {
+			return "";
+		}
+	}
+
 	for (const SymbolAttribute attr : s.attributes) {
 		switch (attr) {
 			case SymbolAttribute::Debug:    sb += "debug "; break;
@@ -184,7 +190,9 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 
 	for (UInt i = 0; i < s.returnValues.Size(); i++) {
 		if (i > 0) sb += ", ";
-		sb += s.returnValues[i].ToSimpleString();
+
+		Symbol sym = Symbol::FindNearestInNamespace(s.scope.Pop(), s.returnValues[i], file);
+		sb += sym.scope.ToSimpleString();
 	}
 
 	if (!s.returnValues.IsEmpty()) {

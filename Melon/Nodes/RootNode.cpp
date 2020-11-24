@@ -177,6 +177,9 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 
 void RootNode::AddTemplateSpecialization(const Symbol::TemplateSymbol& templateSymbol, const bool scan) {
 	Tuple<Symbol, List<ScopeList>> templateInfo = Symbol::FindTemplateArgs(templateSymbol);
+
+	if (templateInfo.value1.type == SymbolType::None) return;
+
 	Scope templateScope = templateInfo.value1.scope.Last().Copy();
 	templateScope.types = templateInfo.value2;
 	templateScope.variant = nullptr;

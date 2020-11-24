@@ -16,7 +16,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr AssignmentParser::Parse(ParsingInfo& info, const bool single, const bool newAssign) {
+NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	const UInt startIndex = info.index;
 	const UInt startLine = info.Current().line;
 
@@ -35,13 +35,13 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const bool single, const bool
 			}
 		}
 
-		if (newAssign && !newVars) {
+		if ((flags & Flags::NewAssign) != Flags::None && !newVars) {
 			info.index = startIndex;
 			return nullptr;
 		}
 	}
 	else {
-		if (newAssign) {
+		if ((flags & Flags::NewAssign) != Flags::None) {
 			info.index = startIndex;
 			return nullptr;
 		}
@@ -54,6 +54,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const bool single, const bool
 	}
 
 	Pointer<AssignNode> assign = new AssignNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+	List<Tuple<ScopeList, Symbol, FileInfo>> symbols;
 
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
@@ -114,7 +115,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const bool single, const bool
 			v.varType = types[i];
 			v.attributes = attributes;
 
-			Symbol::Add(info.scopes.Add(name), v, FileInfo(info.filename, info.Current().line, info.statementNumber));
+			symbols.Add(Tuple<ScopeList, Symbol, FileInfo>(info.scopes.Add(name), v, FileInfo(info.filename, info.Current().line, info.statementNumber)));
 		}
 		else {
 			if (NodePtr node = AssignableParser::Parse(info)) {
@@ -126,7 +127,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const bool single, const bool
 		}
 	}
 
-	if (single && assign->vars.Size() > 1) {
+	if ((flags & Flags::Single) != Flags::None && assign->vars.Size() > 1) {
 		info.index = startIndex;
 		return nullptr;
 	}
@@ -139,6 +140,11 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const bool single, const bool
 	assign->types = types;
 
 	if (info.Current().type != TokenType::Assign) {
+		if ((flags & Flags::MethodCall) != Flags::None && info.Current().type == TokenType::ParenOpen) {
+			info.index = startIndex;
+			return nullptr;
+		}
+
 		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'='", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		info.index = startIndex;
 		return nullptr;
@@ -165,6 +171,10 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const bool single, const bool
 
 	if (assign->values.Size() > assign->vars.Size()) {
 		ErrorLog::Error(SyntaxError(SyntaxError::ManyExprAssign, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+	}
+
+	for (const Tuple<ScopeList, Symbol, FileInfo>& symbol : symbols) {
+		Symbol::Add(symbol.value1, symbol.value2, symbol.value3);
 	}
 
 	info.statementNumber++;

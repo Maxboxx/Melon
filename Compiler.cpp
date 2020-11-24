@@ -18,6 +18,7 @@ using namespace Melon;
 
 // TODO: Cleanup code
 
+// TODO: Template name info
 // TODO: Pointerify Symbol
 // TODO: Remove Set<ScanType>
 // TODO: Kiwi number constant smallest size

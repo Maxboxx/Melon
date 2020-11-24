@@ -53,6 +53,18 @@ namespace Melon {
 				return IsLabel() || IsCall();
 			}
 
+			bool IsPushPop() const {
+				return instruction.type == Kiwi::InstructionType::Push || instruction.type == Kiwi::InstructionType::Pop;
+			}
+
+			bool IsJumpOrRet() const {
+				return instruction.type == Kiwi::InstructionType::Jmp || instruction.type == Kiwi::InstructionType::Ret || instruction.type == Kiwi::InstructionType::Exit;
+			}
+
+			bool IsStackBreak() const {
+				return IsLabelOrCall() || IsPushPop() || IsJumpOrRet();
+			}
+
 			bool IsRegister(const Boxx::UInt index) const {
 				if (instruction.arguments[index].type == Kiwi::ArgumentType::Register) {
 					return instruction.arguments[index].reg.type == Kiwi::RegisterType::Register;

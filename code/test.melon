@@ -1,25 +1,45 @@
 
-struct Comparison<A>
-	static function A: min<B>(A: a, B: b)
-		return if a < b -> a else b as A
-	end
+
+struct Value<A>
+	A: value
 	
-	static function A: max<B>(A: a, B: b)
-		return if a > b -> a else b as A
-	end
-	
-	static function A: clamp<B, C>(A: value, B: min, C: max)
-		return if value < min then
-			min as A
-		elseif value > max then
-			max as A
+	function init(A: value) -> self.value = value
+	function      A:  get() -> return  self.value
+end
+
+
+struct Compare<A>
+	static function Value<A>: min<B, C>(Value<B>: value1, Value<C>: value2)
+		return if value1:get() < value2:get() then
+			Value<A>(value1:get())
 		else
-			value
+			Value<A>(value2:get())
+		end
+	end
+	
+	static function Value<A>: max<B, C>(Value<B>: value1, Value<C>: value2)
+		return if value1:get() > value2:get() then
+			Value<A>(value1:get())
+		else
+			Value<A>(value2:get())
+		end
+	end
+	
+	static function Value<A>: clamp<B, C, D>(Value<B>: value, Value<C>: min, Value<D>: max)
+		return if value:get() < min:get() then
+			Value<A>(min:get())
+		elseif value:get() > max:get() then
+			Value<A>(max:get())
+		else
+			Value<A>(value:get())
 		end
 	end
 end
 
 
-int: a = Comparison<int>.min<byte>(3, 4)
-int: b = Comparison<ushort>.max<short>(3, 4)
-int: c = Comparison<long>.clamp<uint, ubyte>(4, 3, 5)
+Value<byte>: a = Compare<byte>.min<short, int>(Value<short>(1), Value<int>(2))
+
+Value<ushort>: b = Compare<ushort>.max<ulong, byte>(Value<ulong>(3), Value<byte>(4))
+
+Value<int>: c = Compare<int>.clamp<ubyte, long, ushort>(Value<ubyte>(5), Value<long>(6), Value<ushort>(7))
+

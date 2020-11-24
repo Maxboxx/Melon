@@ -71,6 +71,12 @@ Mango StructNode::ToMango() const {
 StringBuilder StructNode::ToMelon(const UInt indent) const {
 	if (name.name == Scope::Optional.name) return "";
 
+	for (const ScopeList& arg : Symbol::Find(symbol.scope, file).templateArgs) {
+		if (Symbol::Find(arg, file).type == SymbolType::Template) {
+			return "";
+		}
+	}
+
 	StringBuilder sb = "struct ";
 
 	sb += name.ToSimpleString();

@@ -169,7 +169,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 	info.scopes = info.scopes.AddNext("for");
 	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
-	if (NodePtr init = AssignmentParser::Parse(info, true)) {
+	if (NodePtr init = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
 		info.statementNumber++;
 
 		if (info.Current().type == TokenType::Comma) {
@@ -215,7 +215,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 							ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'" + info.Current(-1).value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 						}
 					}
-					else if (NodePtr step = AssignmentParser::Parse(info, true)) {
+					else if (NodePtr step = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
 						fcn->loopStep = step;
 					}
 					else if (NodePtr step = ExpressionParser::Parse(info)) {

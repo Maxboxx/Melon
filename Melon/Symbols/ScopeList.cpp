@@ -280,6 +280,18 @@ String ScopeList::ToSimpleString() const {
 				case SymbolType::Function:
 				case SymbolType::Method: {
 					start = i;
+					
+					if (list[i].types) {
+						List<ScopeList> templateArgs;
+
+						for (const ScopeList& arg : s.templateArgs) {
+							templateArgs.Add(arg);
+						}
+
+						list[i].types = templateArgs;
+						list[i].variant = nullptr;
+					}
+
 					break;
 				}
 

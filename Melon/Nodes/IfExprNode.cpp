@@ -1,6 +1,6 @@
 #include "IfExprNode.h"
 
-#include "MemoryNode.h"
+#include "StackNode.h"
 #include "TypeNode.h"
 #include "ConvertNode.h"
 
@@ -38,18 +38,24 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 	List<UInt> jumps;
 
-	info.stack.Push(cn.size);
+	info.stack.PushExpr(cn.size, cn);
+	const UInt frame = info.stack.frame; 
+
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
-	Pointer<MemoryNode> sn = new MemoryNode(cn.argument.mem.offset);
+	Pointer<StackNode> sn = new StackNode(info.stack.top);
 	sn->type = Type();
 
-	for (UInt i = 0; i < conditions.Size(); i++) {
-		CompiledNode cond = conditions[i]->Compile(info);
+	StackPtr stack = info.stack;
 
-		for (const OptimizerInstruction& inst : cond.instructions) {
-			cn.instructions.Add(inst);
-		}
+	for (UInt i = 0; i < conditions.Size(); i++) {
+		info.stack = stack;
+		info.stack.PopExpr(frame, cn);
+
+		CompiledNode cond = conditions[i]->Compile(info);
+		cn.AddInstructions(cond.instructions);
+
+		stack = info.stack;
 
 		Instruction condInst = Instruction(InstructionType::Eq, 1);
 		condInst.arguments.Add(cond.argument);
@@ -60,6 +66,8 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 		cn.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
 
+		info.stack.PopExpr(frame, cn);
+
 		jumps.Add(cn.instructions.Size());
 		cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
 
@@ -67,7 +75,11 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 		cn.instructions.Add(Instruction::Label(info.label++));
 	}
 
+	info.stack = stack;
+
 	cn.AddInstructions(CompileAssignment(sn, nodes.Last(), info, nodes.Last()->file).instructions);
+
+	info.stack.PopExpr(frame, cn);
 
 	for (UInt i : jumps) {
 		cn.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));

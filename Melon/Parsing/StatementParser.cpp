@@ -29,7 +29,7 @@ NodePtr StatementParser::Parse(ParsingInfo& info, const bool single) {
 	if (NodePtr node = CallStatementParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = AssignmentParser::Parse(info, single)) {
+	else if (NodePtr node = AssignmentParser::Parse(info, single ? AssignmentParser::Flags::Single : AssignmentParser::Flags::None)) {
 		return node;
 	}
 	else if (NodePtr node = LoopParser::Parse(info)) {
