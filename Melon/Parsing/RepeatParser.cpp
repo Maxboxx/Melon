@@ -22,7 +22,7 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 	Pointer<RepeatNode> repeatNode = new RepeatNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 
 	info.scopes = info.scopes.AddNext("repeat");
-	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, repeatLine, info.statementNumber));
+	Symbols::Add(info.scopes, Symbols(SymbolType::Scope), FileInfo(info.filename, repeatLine, info.statementNumber));
 
 	info.scopeCount++;
 	info.loops++;

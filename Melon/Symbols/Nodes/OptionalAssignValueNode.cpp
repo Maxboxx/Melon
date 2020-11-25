@@ -24,20 +24,20 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 	const ScopeList type = nodes[0]->Type();
 	const bool isNil = nodes[1]->Type() == ScopeList::Nil;
 
-	Symbol s = Symbol::Find(type, nodes[0]->file);
+	Symbols s = Symbols::Find(type, nodes[0]->file);
 	UInt offset = 0;
 
 	for (UInt i = 0; i < s.names.Size(); i++) {
 		if (i > 0 && isNil) break;
 
-		Symbol argSym = s.Get(s.names[i], nodes[0]->file);
-		Symbol argType = argSym.GetType(nodes[0]->file);
+		Symbols argSym = s.Get(s.names[i], nodes[0]->file);
+		Symbols argType = argSym.GetType(nodes[0]->file);
 
 		const ScopeList typeName = argType.scope;
 
 		List<ScopeList> typeArgs;
 		typeArgs.Add(typeName);
-		Symbol argAssign = Symbol::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
+		Symbols argAssign = Symbols::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
 
 		List<NodePtr> args;
 		

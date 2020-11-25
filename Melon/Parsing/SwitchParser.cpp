@@ -20,7 +20,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 	}
 
 	info.scopes = info.scopes.AddNext("switch");
-	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+	Symbols::Add(info.scopes, Symbols(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	const UInt switchLine = info.Current().line;
 	info.index++;
@@ -38,11 +38,11 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 	while (info.Current().type == TokenType::Case || info.Current().type == TokenType::Default) {
 		if (info.Current().type == TokenType::Case) {
 			info.scopes = info.scopes.AddNext("case");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+			Symbols::Add(info.scopes, Symbols(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 		else {
 			info.scopes = info.scopes.AddNext("default");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+			Symbols::Add(info.scopes, Symbols(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 
 		bool isDefault = info.Current().type == TokenType::Default;

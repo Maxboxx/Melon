@@ -23,7 +23,7 @@ DotNode::~DotNode() {
 }
 
 ScopeList DotNode::Type() const {
-	const Symbol s = GetSymbol();
+	const Symbols s = GetSymbol();
 
 	if (s.type == SymbolType::Value || s.type == SymbolType::Variable || s.type == SymbolType::Template) {
 		return s.varType;
@@ -35,31 +35,31 @@ ScopeList DotNode::Type() const {
 	return ScopeList::undefined;
 }
 
-Symbol DotNode::GetSymbol() const {
+Symbols DotNode::GetSymbol() const {
 	UInt errorCount = ErrorLog::ErrorCount();
 
-	Symbol nodeSymbol = node->GetSymbol();
+	Symbols nodeSymbol = node->GetSymbol();
 
 	if (errorCount < ErrorLog::ErrorCount()) {
-		return Symbol();
+		return Symbols();
 	}
 
 	if (nodeSymbol.type == SymbolType::Variable) {
-		Symbol s = Symbol::Find(node->Type(), file);
+		Symbols s = Symbols::Find(node->Type(), file);
 
 		if (s.type == SymbolType::Struct) {
 			if (s.type != SymbolType::None && s.Contains(name)) {
-				const Symbol s2 = s.Get(name, file);
+				const Symbols s2 = s.Get(name, file);
 
 				if (s2.type != SymbolType::None) {
-					return Symbol::FindNearest(s2.scope, s2.varType, file);
+					return Symbols::FindNearest(s2.scope, s2.varType, file);
 				}
 			}
 		}
 	}
 	else {
 		if (nodeSymbol.type != SymbolType::None && name.types && !nodeSymbol.Contains(name)) {
-			Symbol::TemplateSymbol ts;
+			Symbols::TemplateSymbol ts;
 			ts.type = nodeSymbol.scope.Add(name);
 			ts.scope = scope;
 			ts.file = file;
@@ -69,17 +69,17 @@ Symbol DotNode::GetSymbol() const {
 		return nodeSymbol.Get(name, file);
 	}
 
-	return Symbol();
+	return Symbols();
 }
 
 CompiledNode DotNode::Compile(CompileInfo& info) {
 	const ScopeList type = node->Type();
-	Symbol s = Symbol::Find(type, file);
+	Symbols s = Symbols::Find(type, file);
 	CompiledNode c = node->Compile(info);
 
 	if (s.type == SymbolType::Struct || s.type == SymbolType::Type) {
-		Symbol var = s.Get(name, file);
-		Symbol varType = var.GetType(file);
+		Symbols var = s.Get(name, file);
+		Symbols varType = var.GetType(file);
 
 		if (var.attributes.Contains(SymbolAttribute::Static)) {
 			c.argument = MemoryLocation(0);
@@ -100,7 +100,7 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 void DotNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 	
-	Symbol s = node->GetSymbol();
+	Symbols s = node->GetSymbol();
 
 	if (s.type == SymbolType::Namespace && !s.Contains(name)) {
 		IncludeParser::ParseInclude(s.scope.Add(name), info);
@@ -121,7 +121,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 
 	const ScopeList type = node->Type();
 
-	Symbol var = Symbol::Find(type.Add(name), file);
+	Symbols var = Symbols::Find(type.Add(name), file);
 
 	if (var.type == SymbolType::Variable && var.attributes.Contains(SymbolAttribute::Static)) {
 		info.usedVariables.Add(var.scope);
@@ -133,14 +133,14 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
 				const ScopeList scope = type.Add(name);
-				Symbol& s = Symbol::Find(scope.Pop(), file).Get(scope.Last(), file);
+				Symbols& s = Symbols::Find(scope.Pop(), file).Get(scope.Last(), file);
 
 				if (s.type == SymbolType::Variable) {
 					if (info.Get().scopeInfo.WillContinue()) s.isAssigned = true;
 
 					scanSet.Remove(ScanType::Self);
 
-					if (Symbol::Find(scope.Pop(), file).IsAssigned()) {
+					if (Symbols::Find(scope.Pop(), file).IsAssigned()) {
 						info.Get().init = false;
 					}
 				}
@@ -153,7 +153,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
 				const ScopeList scope = type.Add(name);
-				Symbol& s = Symbol::Find(scope.Pop(), file).Get(scope.Last(), file);
+				Symbols& s = Symbols::Find(scope.Pop(), file).Get(scope.Last(), file);
 
 				if (s.type == SymbolType::Variable) {
 					if (!s.isAssigned) {

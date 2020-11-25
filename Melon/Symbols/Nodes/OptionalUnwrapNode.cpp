@@ -18,10 +18,10 @@ CompiledNode OptionalUnwrapNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	List<ScopeList> args;
 	args.Add(nodes[0]->Type());
 
-	Symbol s = Symbol::FindFunction(args[0].Add(Scope::Unwrap), args, nodes[0]->file);
+	Symbols s = Symbols::FindFunction(args[0].Add(Scope::Unwrap), args, nodes[0]->file);
 	if (s.type == SymbolType::None) return c;
 
-	Symbol r = Symbol::Find(s.returnValues[0], nodes[0]->file);
+	Symbols r = Symbols::Find(s.returnValues[0], nodes[0]->file);
 	if (r.type == SymbolType::None) return c;
 	c.size = r.size;
 	c.argument.mem.offset += 1;

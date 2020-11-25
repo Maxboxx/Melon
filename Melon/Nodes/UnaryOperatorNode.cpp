@@ -28,10 +28,10 @@ ScopeList UnaryOperatorNode::Type() const {
 	args.Add(node->Type());
 
 	const ScopeList type = node->Type();
-	const Symbol s = Symbol::FindFunction(type.Add(op), args, file);
+	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);
 
 	if (s.type != SymbolType::None && !s.returnValues.IsEmpty()) {
-		const Symbol s2 = Symbol::FindNearest(s.scope.Pop(), s.returnValues[0], file);
+		const Symbols s2 = Symbols::FindNearest(s.scope.Pop(), s.returnValues[0], file);
 
 		if (s2.type == SymbolType::Template) {
 			return s2.varType;
@@ -44,12 +44,12 @@ ScopeList UnaryOperatorNode::Type() const {
 	return ScopeList::undefined;
 }
 
-Symbol UnaryOperatorNode::GetSymbol() const {
+Symbols UnaryOperatorNode::GetSymbol() const {
 	if (op == Scope::Unwrap) {
-		return Symbol::Find(node->Type(), file).Get(Scope::Value, file);
+		return Symbols::Find(node->Type(), file).Get(Scope::Value, file);
 	}
 
-	return Symbol();
+	return Symbols();
 }
 
 Scope UnaryOperatorNode::GetOperator() const {
@@ -64,7 +64,7 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 	args.Add(node->Type());
 
 	const ScopeList type = node->Type();
-	const Symbol s = Symbol::FindFunction(type.Add(op), args, file);
+	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);
 
 	if (s.symbolNode) {
 		return s.symbolNode->Compile(nodes, info);
@@ -102,7 +102,7 @@ Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	args.Add(node->Type());
 
 	const ScopeList type = node->Type();
-	Symbol::FindFunction(type.Add(op), args, file);
+	Symbols::FindFunction(type.Add(op), args, file);
 
 	return scanSet;
 }
@@ -133,7 +133,7 @@ Mango UnaryOperatorNode::ToMango() const {
 	args.Add(node->Type());
 
 	const ScopeList type = node->Type();
-	const Symbol s = Symbol::FindFunction(type.Add(op), args, file);
+	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);
 
 	Mango mango = Mango(s.scope.ToString(), MangoType::List);
 	mango.Add(node->ToMango());

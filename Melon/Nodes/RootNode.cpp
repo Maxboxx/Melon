@@ -160,8 +160,8 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			}
 		}
 
-		for (; templateIndex < Symbol::templateSymbols.Size(); templateIndex++) {
-			AddTemplateSpecialization(Symbol::templateSymbols[templateIndex], false);
+		for (; templateIndex < Symbols::templateSymbols.Size(); templateIndex++) {
+			AddTemplateSpecialization(Symbols::templateSymbols[templateIndex], false);
 		}
 	}
 	while (
@@ -169,14 +169,14 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 		funcIndex < funcs.Size() ||
 		!failedNodes.IsEmpty() ||
 		!failedFuncs.IsEmpty() ||
-		templateIndex < Symbol::templateSymbols.Size()
+		templateIndex < Symbols::templateSymbols.Size()
 	);
 
 	includeScanning = false;
 }
 
-void RootNode::AddTemplateSpecialization(const Symbol::TemplateSymbol& templateSymbol, const bool scan) {
-	Tuple<Symbol, List<ScopeList>> templateInfo = Symbol::FindTemplateArgs(templateSymbol);
+void RootNode::AddTemplateSpecialization(const Symbols::TemplateSymbol& templateSymbol, const bool scan) {
+	Tuple<Symbols, List<ScopeList>> templateInfo = Symbols::FindTemplateArgs(templateSymbol);
 
 	if (templateInfo.value1.type == SymbolType::None) return;
 
@@ -184,16 +184,16 @@ void RootNode::AddTemplateSpecialization(const Symbol::TemplateSymbol& templateS
 	templateScope.types = templateInfo.value2;
 	templateScope.variant = nullptr;
 
-	if (Symbol::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) return;
+	if (Symbols::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) return;
 
 	Scope last = templateInfo.value1.scope.Last();
 	last.variant = nullptr;
 	last.types   = nullptr;
 
-	Symbol templateSym = Symbol::Find(templateInfo.value1.scope.Pop().Add(last), file);
-	templateSym.templateVariants.Add(Symbol(templateInfo.value1.type));
+	Symbols templateSym = Symbols::Find(templateInfo.value1.scope.Pop().Add(last), file);
+	templateSym.templateVariants.Add(Symbols(templateInfo.value1.type));
 
-	Symbol& s = templateSym.templateVariants.Last();
+	Symbols& s = templateSym.templateVariants.Last();
 
 	templateInfo.value1.SpecializeTemplate(s, templateInfo.value2, this);
 

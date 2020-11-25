@@ -28,7 +28,7 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	const ScopeList type1 = nodes[0]->Type();
 	const ScopeList type2 = nodes[1]->Type();
 
-	Symbol s = Symbol::Find(type1, nodes[0]->file);
+	Symbols s = Symbols::Find(type1, nodes[0]->file);
 	UInt compIndex = c1.instructions.Size();
 
 	Instruction comp = Instruction(InstructionType::Eq, 1);
@@ -42,14 +42,14 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	c1.instructions.Add(mov1);
 	c1.instructions.Last().important = important;
 
-	Symbol argSym = s.Get(s.names[1], nodes[0]->file);
-	Symbol argType = argSym.GetType(nodes[0]->file);
+	Symbols argSym = s.Get(s.names[1], nodes[0]->file);
+	Symbols argType = argSym.GetType(nodes[0]->file);
 
 	const ScopeList typeName = argType.scope;
 
 	List<ScopeList> typeArgs;
 	typeArgs.Add(typeName);
-	Symbol argAssign = Symbol::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
+	Symbols argAssign = Symbols::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
 
 	List<NodePtr> args;
 
@@ -59,7 +59,7 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 
 	args.Add(sn1);
 
-	Symbol s2 = Symbol::Find(type2, nodes[1]->file);
+	Symbols s2 = Symbols::Find(type2, nodes[1]->file);
 
 	Pointer<MemoryNode> sn2 = new MemoryNode(c2.argument.mem);
 	sn2->mem.offset++;

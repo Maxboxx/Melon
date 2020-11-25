@@ -23,7 +23,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		const FunctionHead funcHead = (FunctionHead)fh;
 		const Optional<List<Scope>> templateArgs = TemplateParser::ParseDefine(info);
 
-		Symbol s = Symbol(funcHead.isMethod && !funcHead.isOperator ? SymbolType::Method : SymbolType::Function);
+		Symbols s = Symbols(funcHead.isMethod && !funcHead.isOperator ? SymbolType::Method : SymbolType::Function);
 		s.symbolFile = info.currentFile;
 		s.symbolNamespace = info.currentNamespace;
 		s.includedNamespaces = info.includedNamespaces;
@@ -40,18 +40,18 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		if (info.Current().type == TokenType::ParenOpen) {
 			info.index++;
 
-			Symbol currentScope = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+			Symbols currentScope = Symbols::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 			info.scopes = info.scopes.Add(funcHead.name);
 
 			if (!currentScope.Contains(funcHead.name)) {
-				Symbol scope = Symbol(SymbolType::Scope);
+				Symbols scope = Symbols(SymbolType::Scope);
 				scope.symbolNamespace = info.currentNamespace;
 				scope.includedNamespaces = info.includedNamespaces;
-				Symbol::Add(info.scopes, scope, FileInfo(info.filename, info.Current().line, info.statementNumber));
+				Symbols::Add(info.scopes, scope, FileInfo(info.filename, info.Current().line, info.statementNumber));
 			}
 
-			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+			Symbols fs = Symbols::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 			if (templateArgs) {
 				Scope name = funcHead.name;
@@ -59,7 +59,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 				name.variant = fs.templateVariants.Size();
 				info.scopes = info.scopes.Pop().Add(name);
 
-				Symbol scope = Symbol(SymbolType::Scope);
+				Symbols scope = Symbols(SymbolType::Scope);
 				scope.symbolNamespace = info.currentNamespace;
 				scope.includedNamespaces = info.includedNamespaces;
 				scope.scope = info.scopes;
@@ -69,7 +69,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 					scope.templateArgs.Add(scope.scope.Add(arg));
 				}
 
-				Symbol::Add(info.scopes, scope, FileInfo(info.filename, info.Current().line, info.statementNumber));
+				Symbols::Add(info.scopes, scope, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 				fs = scope;
 			}
@@ -92,7 +92,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 				info.scopes = info.scopes.Pop().Add(scope);
 			}
 
-			List<Symbol> args;
+			List<Symbols> args;
 			List<String> argNames;
 
 			s.scope = info.scopes;
@@ -121,7 +121,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 					argNames.Add(info.Current().value);
 					func->argNames.Add(Scope(info.Current().value));
 
-					Symbol a = Symbol(SymbolType::Variable);
+					Symbols a = Symbols(SymbolType::Variable);
 					a.symbolFile = info.currentFile;
 					a.symbolNamespace = info.currentNamespace;
 					a.includedNamespaces = info.includedNamespaces;
@@ -152,12 +152,12 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		if (!funcHead.isOperator) {
 			info.scopes = info.scopes.Pop();
 
-			Symbol fs = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+			Symbols fs = Symbols::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 			fs.symbolNamespace = info.currentNamespace;
 			fs.includedNamespaces = info.includedNamespaces;
 			s.scope = info.scopes.Add(Scope::Call);
 			s.varType = s.scope;
-			Symbol::Add(info.scopes.Add(Scope::Call), s, FileInfo(info.filename, info.Current().line, info.statementNumber));
+			Symbols::Add(info.scopes.Add(Scope::Call), s, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 			Scope scope = Scope::Call;
 			scope.variant = fs.Get(Scope::Call, FileInfo(info.filename, info.Current().line, info.statementNumber)).variants.Size() - 1;
@@ -166,14 +166,14 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, const bool isPlain) {
 		else {
 			s.scope = info.scopes;
 			s.varType = s.scope;
-			Symbol::Add(info.scopes, s, FileInfo(info.filename, info.Current().line, info.statementNumber));
+			Symbols::Add(info.scopes, s, FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 
 		if (templateArgs) {
-			Symbol fs = Symbol::Find(info.scopes.Pop(), FileInfo(info.filename, startLine, info.statementNumber));
+			Symbols fs = Symbols::Find(info.scopes.Pop(), FileInfo(info.filename, startLine, info.statementNumber));
 
 			for (UInt i = 0; i < templateArgs.Get().Size(); i++) {
-				Symbol t = Symbol(SymbolType::Template);
+				Symbols t = Symbols(SymbolType::Template);
 				t.templateIndex = i;
 				t.scope = fs.scope.Add(templateArgs.Get()[i]);
 				t.varType = t.scope;

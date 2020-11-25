@@ -10,12 +10,18 @@
 #include "Melon/MelonCompiler.h"
 
 #include "Melon/Symbols/Symbols.h"
+#include "Melon/Symbols/Symbol.h"
+#include "Melon/Symbols/SymbolTable.h"
 #include "Melon/Symbols/ScopeList.h"
 
 #include "Melon/Nodes/Node.h"
 #include "Melon/Nodes/RootNode.h"
 
 namespace Melon {
+	namespace Symbols {
+		class SymbolTable;
+	}
+
 	namespace Parsing {
 
 		///B ParsingInfo
@@ -68,6 +74,10 @@ namespace Melon {
 			/// Used to keep track of the statement number of symbols
 			Boxx::UInt statementNumber = 1;
 
+			///T Scope
+			/// The symbol table for the current scope
+			SymbolTable* scope;
+
 			///H Methods
 
 			///T Next
@@ -88,6 +98,13 @@ namespace Melon {
 			///M
 			Token Current();
 			Token Current(const Boxx::Int offset);
+			///M
+
+			///T Get File Info
+			/// Gets the file info from the current parsing info
+			///M
+			FileInfo GetFileInfo() const;
+			FileInfo GetFileInfo(const Boxx::UInt line) const;
 			///M
 		};
 

@@ -19,7 +19,7 @@ NewVariableNode::~NewVariableNode() {
 }
 
 ScopeList NewVariableNode::GetType(const UInt index) const {
-	ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
+	ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 
 	ScopeList type = types[types.Size() > 1 ? index : 0];
 
@@ -27,7 +27,7 @@ ScopeList NewVariableNode::GetType(const UInt index) const {
 		return ScopeList::Discard;
 	}
 
-	Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, type, file), file);
+	Symbols s = Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, type, file), file);
 
 	if (s.type == SymbolType::Template) {
 		return s.varType;
@@ -49,7 +49,7 @@ List<ScopeList> NewVariableNode::GetVariables() const {
 			vars.Add(ScopeList::Discard);
 		}
 		else {
-			vars.Add(Symbol::FindInNamespace(scope.Add(n), file).scope);
+			vars.Add(Symbols::FindInNamespace(scope.Add(n), file).scope);
 		}
 	}
 
@@ -66,7 +66,7 @@ UInt NewVariableNode::GetSize() const {
 			size += StackPtr::ptrSize;
 		}
 		else {
-			size += Symbol::Find(GetType(i), file).size;
+			size += Symbols::Find(GetType(i), file).size;
 		}
 	}
 
@@ -75,17 +75,17 @@ UInt NewVariableNode::GetSize() const {
 
 CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurate error lines
 	CompiledNode cn;
-	cn.size = Symbol::Find(Type(), file).size;
+	cn.size = Symbols::Find(Type(), file).size;
 
 	if (GetType(0) != ScopeList::Discard) {
 		if (attributes[0].Contains(SymbolAttribute::Ref)) {
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			info.stack.Push(Symbol::Find(GetType(0), file).size);
+			info.stack.Push(Symbols::Find(GetType(0), file).size);
 		}
 
-		Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[0], file).stackIndex = info.stack.top;
+		Symbols::Find(Symbols::ReplaceTemplates(scope, file), file).Get(names[0], file).stackIndex = info.stack.top;
 	}
 
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
@@ -97,10 +97,10 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurat
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			info.stack.Push(Symbol::Find(GetType(i), file).size);
+			info.stack.Push(Symbols::Find(GetType(i), file).size);
 		}
 
-		Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[i], file).stackIndex = info.stack.top;
+		Symbols::Find(Symbols::ReplaceTemplates(scope, file), file).Get(names[i], file).stackIndex = info.stack.top;
 	}
 
 	return cn;
@@ -111,9 +111,9 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 		if (type == ScopeList::Discard) continue;
 
 		while (true) {
-			ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
+			ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 
-			Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, type, file), file);
+			Symbols s = Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, type, file), file);
 
 			bool done = true;
 
@@ -136,7 +136,7 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 }
 
 Set<ScanType> NewVariableNode::Scan(ScanInfoStack& info) {
-	Symbol::Find(Type(), file);
+	Symbols::Find(Type(), file);
 
 	for (UInt i = 0; i < types.Size(); i++) {
 		GetType(i);
@@ -145,7 +145,7 @@ Set<ScanType> NewVariableNode::Scan(ScanInfoStack& info) {
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (GetType(i) == ScopeList::Discard) continue;
 
-		Symbol::FindInNamespace(scope.Add(names[i]), file);
+		Symbols::FindInNamespace(scope.Add(names[i]), file);
 	}
 
 	return Set<ScanType>();
@@ -174,7 +174,7 @@ StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (i > 0) sb += ", ";
 
-		Symbol var = Symbol::FindInNamespace(scope.Add(names[i]), file);
+		Symbols var = Symbols::FindInNamespace(scope.Add(names[i]), file);
 
 		for (const SymbolAttribute attr : var.attributes) {
 			switch (attr) {

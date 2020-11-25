@@ -5,10 +5,14 @@
 #include "Parser.h"
 
 namespace Melon {
+	namespace Symbols {
+		enum class VariableAttributes;
+	}
+
 	namespace Parsing {
 		class VariableAttributeParser {
 		public:
-			static Boxx::Set<Symbols::SymbolAttribute> Parse(ParsingInfo& info, const bool includeRef = false);
+			static VariableAttributes Parse(ParsingInfo& info, const bool includeRef = false);
 		};
 	}
 }

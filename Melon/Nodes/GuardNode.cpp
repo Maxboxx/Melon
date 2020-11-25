@@ -222,7 +222,7 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 			}
 
 			case ScopeInfo::ScopeType::Function: {
-				Symbol func = Symbol::FindCurrentFunction(scope, file);
+				Symbols func = Symbols::FindCurrentFunction(scope, file);
 
 				if (func.returnValues.Size() == 0 && !info.Get().scopeInfo.hasReturned) {
 					end = new ReturnNode(scope, file);

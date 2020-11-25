@@ -23,7 +23,7 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-bool StructNode::IsRecursive(const Symbol& symbol) const {
+bool StructNode::IsRecursive(const Symbols& symbol) const {
 	if (symbol.type != SymbolType::Struct) return false;
 	if (symbol.isRecursive) return false;
 	if (symbol.scope == this->symbol.scope) return true;
@@ -38,7 +38,7 @@ bool StructNode::IsRecursive(const Symbol& symbol) const {
 }
 
 ScopeList StructNode::FindSideEffectScope(const bool assign) {
-	if (Symbol::Find(scope, file).type == SymbolType::Namespace) {
+	if (Symbols::Find(scope, file).type == SymbolType::Namespace) {
 		return ScopeList().Add(Scope::Global);
 	}
 
@@ -46,11 +46,11 @@ ScopeList StructNode::FindSideEffectScope(const bool assign) {
 }
 
 Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
-	Symbol& s = Symbol::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
+	Symbols& s = Symbols::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
 	s.size = 0;
 
 	for (const Scope& var : vars) {
-		Symbol& v = Symbol::Find(symbol.scope, file).Get(var, file);
+		Symbols& v = Symbols::Find(symbol.scope, file).Get(var, file);
 		v.offset = s.size;
 		s.size += s.Get(var, file).GetType(file).size;
 
@@ -71,8 +71,8 @@ Mango StructNode::ToMango() const {
 StringBuilder StructNode::ToMelon(const UInt indent) const {
 	if (name.name == Scope::Optional.name) return "";
 
-	for (const ScopeList& arg : Symbol::Find(symbol.scope, file).templateArgs) {
-		if (Symbol::Find(arg, file).type == SymbolType::Template) {
+	for (const ScopeList& arg : Symbols::Find(symbol.scope, file).templateArgs) {
+		if (Symbols::Find(arg, file).type == SymbolType::Template) {
 			return "";
 		}
 	}
@@ -91,10 +91,10 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 		sb += var.ToSimpleString();
 	}
 
-	for (const Pair<String, Symbol>& syms : symbol.scopes) {
+	for (const Pair<String, Symbols>& syms : symbol.scopes) {
 		if (syms.value.type == SymbolType::Scope) {
 			if (syms.value.Contains(Scope::Call)) {
-				for (const Symbol& variant : syms.value.Get(Scope::Call, file).variants) {
+				for (const Symbols& variant : syms.value.Get(Scope::Call, file).variants) {
 					if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
 						sb += "\n\n";
 						sb += tabs;
@@ -103,7 +103,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 				}
 			}
 
-			for (const Symbol& variant : syms.value.variants) {
+			for (const Symbols& variant : syms.value.variants) {
 				if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
 					sb += "\n\n";
 					sb += tabs;
@@ -111,9 +111,9 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 				}
 			}
 
-			for (const Symbol& t : syms.value.templateVariants) {
+			for (const Symbols& t : syms.value.templateVariants) {
 				if (t.Contains(Scope::Call)) {
-					for (const Symbol& variant : t.Get(Scope::Call, file).variants) {
+					for (const Symbols& variant : t.Get(Scope::Call, file).variants) {
 						if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
 							sb += "\n\n";
 							sb += tabs;
@@ -122,7 +122,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 					}
 				}
 
-				for (const Symbol& variant : t.variants) {
+				for (const Symbols& variant : t.variants) {
 					if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
 						sb += "\n\n";
 						sb += tabs;

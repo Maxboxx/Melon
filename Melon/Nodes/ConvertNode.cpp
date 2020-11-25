@@ -21,7 +21,7 @@ ConvertNode::~ConvertNode() {
 }
 
 ScopeList ConvertNode::Type() const {
-	Symbol s = Symbol::FindNearestInNamespace(scope, type, file);
+	Symbols s = Symbols::FindNearestInNamespace(scope, type, file);
 
 	if (s.type == SymbolType::Template) {
 		return s.varType;
@@ -39,7 +39,7 @@ CompiledNode ConvertNode::Compile(CompileInfo& info) {
 
 	if (node->Type() == convertType) return node->Compile(info);
 
-	Symbol convert = Symbol::FindExplicitConversion(node->Type(), convertType, file);
+	Symbols convert = Symbols::FindExplicitConversion(node->Type(), convertType, file);
 
 	if (convert.type == SymbolType::None) return CompiledNode();
 
@@ -70,7 +70,7 @@ Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {
 	ScopeList convertType = Type();
 
 	if (node->Type() == convertType) return node->Scan(info);
-	Symbol::FindExplicitConversion(node->Type(), convertType, file);
+	Symbols::FindExplicitConversion(node->Type(), convertType, file);
 	return node->Scan(info);
 }
 

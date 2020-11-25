@@ -19,7 +19,7 @@ namespace Melon {
 			Boxx::List<Symbols::Scope> values;
 
 			///T Symbol
-			Symbols::Symbol symbol;
+			Symbols::Symbols symbol;
 
 			EnumNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~EnumNode();

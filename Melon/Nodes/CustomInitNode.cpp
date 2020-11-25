@@ -30,7 +30,7 @@ ScopeList CustomInitNode::Type() const {
 CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 	CompiledNode c = node->Compile(info);
 
-	Symbol s = Symbol::Find(Type(), file);
+	Symbols s = Symbols::Find(Type(), file);
 
 	UInt offset = s.size;
 
@@ -39,8 +39,8 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 	UInt index = info.index;
 
 	for (UInt i = 0; i < vars.Size(); i++) {
-		Symbol v = s.Get(vars[i], file);
-		Symbol varType = v.GetType(file);
+		Symbols v = s.Get(vars[i], file);
+		Symbols varType = v.GetType(file);
 		const ScopeList type = varType.scope;
 
 		if (s.type == SymbolType::Struct) {
@@ -69,7 +69,7 @@ void CustomInitNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node->Scan(info);
 
-	Symbol s = Symbol::Find(Type(), file);
+	Symbols s = Symbols::Find(Type(), file);
 
 	if (s.type == SymbolType::None) return scanSet;
 
@@ -84,8 +84,8 @@ Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 			}
 		}
 
-		Symbol v = s.Get(vars[i], file);
-		Symbol varType = v.GetType(file);
+		Symbols v = s.Get(vars[i], file);
+		Symbols varType = v.GetType(file);
 
 		ScanAssignment(new TypeNode(varType.scope), expressions[i], info, expressions[i]->file);
 
@@ -136,15 +136,15 @@ Mango CustomInitNode::ToMango() const {
 
 	m.Add(node->ToMango());
 
-	Symbol s = Symbol::Find(Type(), file);
+	Symbols s = Symbols::Find(Type(), file);
 
 	for (UInt i = 0; i < vars.Size(); i++) {
-		Symbol v = s.Get(vars[i], file);
-		const ScopeList type = Symbol::FindNearest(Type(), v.varType, file).scope;
+		Symbols v = s.Get(vars[i], file);
+		const ScopeList type = Symbols::FindNearest(Type(), v.varType, file).scope;
 
 		List<ScopeList> argTypes;
 		argTypes.Add(expressions[i]->Type());
-		Mango a = Mango(Symbol::FindFunction(type.Add(Scope::Assign), argTypes, expressions[i]->file).scope.ToString(), MangoType::List);
+		Mango a = Mango(Symbols::FindFunction(type.Add(Scope::Assign), argTypes, expressions[i]->file).scope.ToString(), MangoType::List);
 		a.Add(Mango("var", vars[i].ToString()));
 		a.Add(expressions[i]->ToMango());
 		m.Add(a);

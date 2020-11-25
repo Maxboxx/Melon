@@ -20,7 +20,7 @@ Boxx::List<ScopeList> PtrNode::Types() const {
 	return node->Types();
 }
 
-Symbol PtrNode::GetSymbol() const {
+Symbols PtrNode::GetSymbol() const {
 	return node->GetSymbol();
 }
 

@@ -25,7 +25,7 @@ bool FunctionNode::IsScope() const {
 }
 
 bool FunctionNode::IsNotSpecialized() const {
-	Symbol sym = Symbol::Find(ScopeList().Add(s.scope[0]), file);
+	Symbols sym = Symbols::Find(ScopeList().Add(s.scope[0]), file);
 
 	for (UInt i = 0; i < s.scope.Size(); i++) {
 		if (i > 0) {
@@ -34,8 +34,8 @@ bool FunctionNode::IsNotSpecialized() const {
 
 		if (!sym.templateArgs.IsEmpty()) {
 			for (const ScopeList& type : sym.templateArgs) {
-				if (Symbol::Contains(type)) {
-					if (Symbol::Find(type, file).type == SymbolType::Template) {
+				if (Symbols::Contains(type)) {
+					if (Symbols::Find(type, file).type == SymbolType::Template) {
 						return true;
 					}
 				}
@@ -47,7 +47,7 @@ bool FunctionNode::IsNotSpecialized() const {
 }
 
 void FunctionNode::SetTemplateValues() const {
-	Symbol::SetTemplateValues(func, file);
+	Symbols::SetTemplateValues(func, file);
 }
 
 CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
@@ -81,7 +81,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 			size += info.stack.ptrSize;
 		}
 		else {
-			size += Symbol::FindNearestInNamespace(scope, s.arguments[i], file).size;
+			size += Symbols::FindNearestInNamespace(scope, s.arguments[i], file).size;
 		}
 	}
 
@@ -115,14 +115,14 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 
 	info.Push();
 
-	Symbol::Find(this->func, file);
+	Symbols::Find(this->func, file);
 	info.Get().scopeInfo.type = ScopeInfo::ScopeType::Function;
 	info.Get().scopeInfo.Reset();
 	info.Get().file = file;
 
 	if (func.Pop().Last() == Scope::Init) {
 		info.Get().init = true;
-		info.Get().symbol = Symbol::Find(func.Pop().Pop(), file);
+		info.Get().symbol = Symbols::Find(func.Pop().Pop(), file);
 		info.Get().symbol.ClearAssign();
 	}
 
@@ -135,7 +135,7 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 	}
 
 	for (const ScopeList& sl : s.arguments) {
-		Symbol s = Symbol::FindNearestInNamespace(scope, sl, file);
+		Symbols s = Symbols::FindNearestInNamespace(scope, sl, file);
 
 		if (s.type != SymbolType::None && s.attributes.Contains(SymbolAttribute::Ref)) {
 			info.usedVariables.Add(s.scope);
@@ -165,8 +165,8 @@ Mango FunctionNode::ToMango() const {
 StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "";
 
-	for (const ScopeList& arg : Symbol::Find(s.scope, file).templateArgs) {
-		if (Symbol::Find(arg, file).type == SymbolType::Template) {
+	for (const ScopeList& arg : Symbols::Find(s.scope, file).templateArgs) {
+		if (Symbols::Find(arg, file).type == SymbolType::Template) {
 			return "";
 		}
 	}
@@ -191,7 +191,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	for (UInt i = 0; i < s.returnValues.Size(); i++) {
 		if (i > 0) sb += ", ";
 
-		Symbol sym = Symbol::FindNearestInNamespace(s.scope.Pop(), s.returnValues[i], file);
+		Symbols sym = Symbols::FindNearestInNamespace(s.scope.Pop(), s.returnValues[i], file);
 		sb += sym.scope.ToSimpleString();
 	}
 

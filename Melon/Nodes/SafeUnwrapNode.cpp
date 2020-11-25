@@ -21,11 +21,11 @@ SafeUnwrapNode::~SafeUnwrapNode() {
 }
 
 ScopeList SafeUnwrapNode::Type() const  {
-	return Symbol::Find(node->Type(), file).Get(Scope::Value, file).varType;
+	return Symbols::Find(node->Type(), file).Get(Scope::Value, file).varType;
 }
 
-Symbol SafeUnwrapNode::GetSymbol() const  {
-	return Symbol::Find(Type(), file);
+Symbols SafeUnwrapNode::GetSymbol() const  {
+	return Symbols::Find(Type(), file);
 }
 
 CompiledNode SafeUnwrapNode::Compile(CompileInfo& info)  {

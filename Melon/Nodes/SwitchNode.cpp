@@ -60,9 +60,9 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
 	if (this->expr) 
-		cn.size = Symbol::Find(Type(), file).size;
+		cn.size = Symbols::Find(Type(), file).size;
 
-	info.stack.PushExpr(Symbol::Find(this->match->Type(), this->match->file).size, cn);
+	info.stack.PushExpr(Symbols::Find(this->match->Type(), this->match->file).size, cn);
 	Pointer<MemoryNode> matchStack = new MemoryNode(info.stack.Offset());
 	matchStack->type = this->match->Type();
 
@@ -85,7 +85,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 			nodeArgs.Add(matchStack);
 			nodeArgs.Add(node);
 
-			CompiledNode comp = Symbol::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file).symbolNode->Compile(nodeArgs, info);
+			CompiledNode comp = Symbols::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file).symbolNode->Compile(nodeArgs, info);
 			cn.AddInstructions(comp.instructions);
 
 			Instruction eq = Instruction(InstructionType::Ne, 1);
@@ -103,14 +103,14 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 		info.stack.PopExpr(frame, cn);
 	}
 
-	info.stack.Pop(Symbol::Find(this->match->Type(), this->match->file).size);
+	info.stack.Pop(Symbols::Find(this->match->Type(), this->match->file).size);
 
 	Instruction defJmp = Instruction(InstructionType::Jmp, 0);
 	defaultJump = cn.instructions.Size();
 	cn.instructions.Add(defJmp);
 
 	if (expr)
-		info.stack.PushExpr(Symbol::Find(Type(), file).size, cn);
+		info.stack.PushExpr(Symbols::Find(Type(), file).size, cn);
 
 	Argument result = Argument(MemoryLocation(info.stack.Offset()));
 
@@ -209,7 +209,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 
 	if (expr) {
 		cn.argument = result;
-		info.stack.Pop(Symbol::Find(Type(), file).size);
+		info.stack.Pop(Symbols::Find(Type(), file).size);
 	}
 
 	return cn;
@@ -305,14 +305,14 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 	}
 
 	if (expr) {
-		Symbol::Find(Type(), file);
+		Symbols::Find(Type(), file);
 	}
 
-	Symbol::Find(this->match->Type(), this->match->file);
+	Symbols::Find(this->match->Type(), this->match->file);
 
 	List<ScopeList> args;
 	args.Add(this->match->Type());
-	Symbol::FindFunction(this->match->Type().Add(Scope::Assign), args, this->match->file);
+	Symbols::FindFunction(this->match->Type().Add(Scope::Assign), args, this->match->file);
 
 	SwitchScanInfo switchInfo = ScanSetup(info.Get());
 
@@ -366,7 +366,7 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 				}
 			}
 
-			Symbol::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file);
+			Symbols::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file);
 		}
 	}
 

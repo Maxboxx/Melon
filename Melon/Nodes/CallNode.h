@@ -40,7 +40,7 @@ namespace Melon {
 
 			///T Get function
 			/// Finds the function to call
-			Symbols::Symbol GetFunc() const;
+			Symbols::Symbols GetFunc() const;
 
 			///T Is function
 			/// Checks if the node to call is a function

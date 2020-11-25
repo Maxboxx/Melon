@@ -271,7 +271,7 @@ String ScopeList::ToSimpleString() const {
 	Boxx::UInt start = 0;
 
 	if (absolute) {
-		Symbol s = Symbol::symbols;
+		Symbols s = Symbols::symbols;
 
 		for (Boxx::UInt i = 0; i < list.Size(); i++) {
 			s = s.Get(list[i], FileInfo());

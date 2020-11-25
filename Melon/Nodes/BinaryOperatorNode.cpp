@@ -24,10 +24,10 @@ BinaryOperatorNode::~BinaryOperatorNode() {
 }
 
 ScopeList BinaryOperatorNode::Type() const {
-	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
 	if (s.type != SymbolType::None && !s.returnValues.IsEmpty()) {
-		const Symbol s2 = Symbol::FindNearest(s.scope.Pop(), s.returnValues[0], file);
+		const Symbols s2 = Symbols::FindNearest(s.scope.Pop(), s.returnValues[0], file);
 
 		if (s2.type == SymbolType::Template) {
 			return s2.varType;
@@ -48,7 +48,7 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 	List<NodePtr> nodes;
 	nodes.Add(node1);
 	nodes.Add(node2);
-	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
 	if (s.type == SymbolType::None) return CompiledNode();
 
@@ -88,13 +88,13 @@ Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
 	return scanSet;
 }
 
 ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
-	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
 	if (s.symbolNode) {
 		return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
@@ -131,7 +131,7 @@ NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 }
 
 Mango BinaryOperatorNode::ToMango() const {
-	const ScopeList op = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file).scope;
+	const ScopeList op = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file).scope;
 
 	Mango mango = Mango(op.ToString(), MangoType::List);
 	mango.Add(node1->ToMango());

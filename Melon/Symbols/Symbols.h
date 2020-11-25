@@ -62,7 +62,7 @@ namespace Melon {
 
 		///B Symbol
 		/// Class for symbols
-		class Symbol {
+		class Symbols {
 		public:
 			///H Members
 
@@ -149,15 +149,15 @@ namespace Melon {
 
 			///T Variants
 			/// A list of overloads for the symbol
-			Boxx::List<Symbol> variants;
+			Boxx::List<Symbols> variants;
 
 			///T Template variants
 			/// A list of template variants for the symbol
-			Boxx::List<Symbol> templateVariants;
+			Boxx::List<Symbols> templateVariants;
 
 			///T Scopes
 			/// A map containing all child scopes
-			Boxx::Map<Boxx::String, Symbol> scopes;
+			Boxx::Map<Boxx::String, Symbols> scopes;
 
 			///T Attributes
 			/// A set of the attributes for this symbol
@@ -184,40 +184,40 @@ namespace Melon {
 
 			///T Constructors
 			///M
-			Symbol();
-			Symbol(const SymbolType type);
+			Symbols();
+			Symbols(const SymbolType type);
 			///M
 
-			~Symbol();
+			~Symbols();
 
 		private:
-			Symbol& GetTemplate(const Scope& scope, const FileInfo& file);
+			Symbols& GetTemplate(const Scope& scope, const FileInfo& file);
 
 		public:
 			struct TemplateSymbol;
 
-			static Boxx::Tuple<Symbol, Boxx::List<ScopeList>> FindTemplateArgs(const TemplateSymbol& symbol);
+			static Boxx::Tuple<Symbols, Boxx::List<ScopeList>> FindTemplateArgs(const TemplateSymbol& symbol);
 
 			///T Get
 			/// Get a specific child symbol
 			///M
-			Symbol& Get(const Scope& scope, const FileInfo& file);
-			Symbol Get(const Scope& scope, const FileInfo& file) const;
-			Symbol Get(const ScopeList& scope, const FileInfo& file) const;
+			Symbols& Get(const Scope& scope, const FileInfo& file);
+			Symbols Get(const Scope& scope, const FileInfo& file) const;
+			Symbols Get(const ScopeList& scope, const FileInfo& file) const;
 			///M
 
 			///T Get Type
-			Symbol GetType(const FileInfo& file) const;
+			Symbols GetType(const FileInfo& file) const;
 
 			///T Is of Type
 			/// Checks if the symbol is of the specified type
 			bool IsOfType(const ScopeList& type) const;
 
 			///T Get Return Type
-			Symbol GetReturnType(const Boxx::UInt index) const;
+			Symbols GetReturnType(const Boxx::UInt index) const;
 
 			///T Get Argument Type
-			Symbol GetArgumentType(const Boxx::UInt index) const;
+			Symbols GetArgumentType(const Boxx::UInt index) const;
 
 			FileInfo GetFileInfo() const;
 
@@ -230,7 +230,7 @@ namespace Melon {
 
 			///T Add
 			/// Adds a new child symbol
-			bool Add(const Scope& scope, const Symbol& symbol, const FileInfo& file, const bool redefine = false);
+			bool Add(const Scope& scope, const Symbols& symbol, const FileInfo& file, const bool redefine = false);
 
 			///T Is type
 			/// Checks if the symbol can be used as a type
@@ -286,8 +286,8 @@ namespace Melon {
 			///T Specialize Template
 			/// Specializes a template symbol
 			///M
-			void SpecializeTemplate(Symbol& symbol, const Boxx::List<ScopeList>& types, Melon::Nodes::RootNode* const root) const;
-			void SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, const Boxx::List<ScopeList>& types, Melon::Nodes::RootNode* const root) const;
+			void SpecializeTemplate(Symbols& symbol, const Boxx::List<ScopeList>& types, Melon::Nodes::RootNode* const root) const;
+			void SpecializeTemplate(Symbols& symbol, const Symbols& templateSymbol, const Boxx::List<ScopeList>& types, Melon::Nodes::RootNode* const root) const;
 			///M
 
 			///H Static functions
@@ -295,7 +295,7 @@ namespace Melon {
 			///T Replace Templates
 			/// Replaces template arguments with real types
 			///M
-			static ScopeList ReplaceTemplates(const ScopeList& type, const Symbol& templateSymbol, const Boxx::List<ScopeList>& types);
+			static ScopeList ReplaceTemplates(const ScopeList& type, const Symbols& templateSymbol, const Boxx::List<ScopeList>& types);
 			static ScopeList ReplaceTemplates(const ScopeList& type, const FileInfo& file);
 			static ScopeList ReplaceNearestTemplates(const ScopeList& scope, const ScopeList& type, const FileInfo& file);
 			///M
@@ -306,15 +306,15 @@ namespace Melon {
 
 			///T Add
 			/// Adds a new symbol
-			static bool Add(const ScopeList& scopes, const Symbol& symbol, const FileInfo& file, const bool redefine = false);
+			static bool Add(const ScopeList& scopes, const Symbols& symbol, const FileInfo& file, const bool redefine = false);
 
 			///T Find
 			/// Find a specific symbol
-			static Symbol Find(const ScopeList& scopes, const FileInfo& file);
+			static Symbols Find(const ScopeList& scopes, const FileInfo& file);
 
 			///T Find In Namespace
 			/// Find a specific symbol in the namespaces provided by <code>file</code>
-			static Symbol FindInNamespace(const ScopeList& scopes, const FileInfo& file);
+			static Symbols FindInNamespace(const ScopeList& scopes, const FileInfo& file);
 
 			///T Contains
 			/// Checks if a specific symbol exists
@@ -326,29 +326,29 @@ namespace Melon {
 			///T Find nearest
 			/// Find the nearest symbol to the specified scope
 			///M
-			static Symbol FindNearest(const ScopeList& scopes, const Scope& name, const FileInfo& file);
-			static Symbol FindNearest(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
+			static Symbols FindNearest(const ScopeList& scopes, const Scope& name, const FileInfo& file);
+			static Symbols FindNearest(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
 			///M
 
 			///T Find Nearest in Namespace
 			/// Find the nearest symbol to the specified scope in the namespaces provided by <code>file</code>
 			///M
-			static Symbol FindNearestInNamespace(const ScopeList& scopes, const Scope& name, const FileInfo& file);
-			static Symbol FindNearestInNamespace(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
+			static Symbols FindNearestInNamespace(const ScopeList& scopes, const Scope& name, const FileInfo& file);
+			static Symbols FindNearestInNamespace(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
 			///M
 
 			///T Find nearest type
 			/// Find the nearest type symbol to the specified scope
 			///M
-			static Symbol FindNearestType(const ScopeList& scopes, const Scope& name, const FileInfo& file);
-			static Symbol FindNearestType(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
+			static Symbols FindNearestType(const ScopeList& scopes, const Scope& name, const FileInfo& file);
+			static Symbols FindNearestType(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
 			///M
 
 			///T Find nearest type in namespace
 			/// Find the nearest type symbol to the specified scope in the namespaces provided by <code>file</code>
 			///M
-			static Symbol FindNearestTypeInNamespace(const ScopeList& scopes, const Scope& name, const FileInfo& file);
-			static Symbol FindNearestTypeInNamespace(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
+			static Symbols FindNearestTypeInNamespace(const ScopeList& scopes, const Scope& name, const FileInfo& file);
+			static Symbols FindNearestTypeInNamespace(const ScopeList& scopes, const ScopeList& name, const FileInfo& file);
 			///M
 
 			///T Is of Type
@@ -357,32 +357,32 @@ namespace Melon {
 
 			///T Find current function
 			/// Find the function the current scope is in
-			static Symbol FindCurrentFunction(const ScopeList& scopes, const FileInfo& file);
+			static Symbols FindCurrentFunction(const ScopeList& scopes, const FileInfo& file);
 
 			///T Find binary operator
 			/// Finds the binary operator for the specified operand types
-			static Symbol FindOperator(const Scope& op, const ScopeList& type1, const ScopeList& type2, const FileInfo& file);
+			static Symbols FindOperator(const Scope& op, const ScopeList& type1, const ScopeList& type2, const FileInfo& file);
 
 			///T Find function
 			/// Finds the overload for the specified function that accepts the specified argument types
-			static Symbol FindFunction(const ScopeList& func, const Boxx::List<ScopeList>& argTypes, const FileInfo& file);
+			static Symbols FindFunction(const ScopeList& func, const Boxx::List<ScopeList>& argTypes, const FileInfo& file);
 
 			///T Find method
 			/// Finds the overload for the specified method that accepts the specified argument types
-			static Symbol FindMethod(const ScopeList& func, const Boxx::List<ScopeList>& argTypes, const FileInfo& file);
+			static Symbols FindMethod(const ScopeList& func, const Boxx::List<ScopeList>& argTypes, const FileInfo& file);
 
 		private:
-			static Symbol FindFunction(const ScopeList& func, const Boxx::List<ScopeList>& argTypes, const FileInfo& file, const Boxx::UInt offset, const SymbolType type);
+			static Symbols FindFunction(const ScopeList& func, const Boxx::List<ScopeList>& argTypes, const FileInfo& file, const Boxx::UInt offset, const SymbolType type);
 
 		public:
 
 			///T Find Implicit Conversion
 			/// Finds the implicit conversion operator for a specific type
-			static Symbol FindImplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file);
+			static Symbols FindImplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file);
 
 			///T Find Explicit Conversion
 			/// Finds the implicit or explicit conversion operator for a specific type
-			static Symbol FindExplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file);
+			static Symbols FindExplicitConversion(const ScopeList& from, const ScopeList& to, const FileInfo& file);
 
 			///T Has Implicit Conversion
 			/// Checks if an implicit conversion operator for a specific type exists
@@ -405,13 +405,13 @@ namespace Melon {
 		private:
 			friend class ScopeList;
 
-			static Symbol symbols;
-			static Symbol empty;
+			static Symbols symbols;
+			static Symbols empty;
 
 			Boxx::List<Boxx::Mango> ToMangoList(const ScopeList& scopes);
 		};
 
-		struct Symbol::TemplateSymbol {
+		struct Symbols::TemplateSymbol {
 			ScopeList type;
 			ScopeList scope;
 			FileInfo file;

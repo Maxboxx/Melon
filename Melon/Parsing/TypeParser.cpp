@@ -34,11 +34,11 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 				optionalScope.types.Get().Add(ScopeList().Add((Scope)first));
 				first = optionalScope;
 
-				Symbol::TemplateSymbol ts;
+				Symbols::TemplateSymbol ts;
 				ts.type = ScopeList().Add((Scope)first);
 				ts.scope = info.scopes;
 				ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-				Symbol::templateSymbols.Add(ts);
+				Symbols::templateSymbols.Add(ts);
 			}
 		}
 
@@ -52,11 +52,11 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 				type = type.Add((Scope)scope);
 
 				if (scope.Get().types) {
-					Symbol::TemplateSymbol ts;
+					Symbols::TemplateSymbol ts;
 					ts.type = type;
 					ts.scope = info.scopes;
 					ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-					Symbol::templateSymbols[Symbol::templateSymbols.Size() - 1] = ts;
+					Symbols::templateSymbols[Symbols::templateSymbols.Size() - 1] = ts;
 				}
 
 				while (!info.EndOfFile() && (info.Current().type == TokenType::Question || info.Current().type == TokenType::DoubleQuestion)) {
@@ -69,11 +69,11 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 						optionalScope.types.Get().Add(ScopeList().Add(type));
 						type = ScopeList().Add(optionalScope);
 
-						Symbol::TemplateSymbol ts;
+						Symbols::TemplateSymbol ts;
 						ts.type = ScopeList().Add(type);
 						ts.scope = info.scopes;
 						ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-						Symbol::templateSymbols.Add(ts);
+						Symbols::templateSymbols.Add(ts);
 					}
 				}
 			}
@@ -117,11 +117,11 @@ Optional<Scope> TypeParser::ParseScope(ParsingInfo& info) {
 	if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
 		scope.types = templateArgs;
 
-		Symbol::TemplateSymbol ts;
+		Symbols::TemplateSymbol ts;
 		ts.type = ScopeList().Add(scope);
 		ts.scope = info.scopes;
 		ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-		Symbol::templateSymbols.Add(ts);
+		Symbols::templateSymbols.Add(ts);
 	}
 
 	return scope;

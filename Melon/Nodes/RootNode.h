@@ -47,7 +47,7 @@ namespace Melon {
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 
 			///T Add Template Specialization
-			void AddTemplateSpecialization(const Symbols::Symbol::TemplateSymbol& templateSymbol, const bool scan = true);
+			void AddTemplateSpecialization(const Symbols::Symbols::TemplateSymbol& templateSymbol, const bool scan = true);
 
 			///T Scan
 			/// Used for scanning for errors

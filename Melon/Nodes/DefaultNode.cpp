@@ -22,9 +22,9 @@ DefaultNode::~DefaultNode() {
 
 ScopeList DefaultNode::Type() const {
 	ScopeList type = node1->Type();
-	type = Symbol::Find(type, file).Get(Scope::Value, file).varType;
+	type = Symbols::Find(type, file).Get(Scope::Value, file).varType;
 
-	if (!Symbol::HasImplicitConversion(node2->Type(), type)) ErrorLog::Error(TypeError(TypeError::DefaultType, file));
+	if (!Symbols::HasImplicitConversion(node2->Type(), type)) ErrorLog::Error(TypeError(TypeError::DefaultType, file));
 
 	return type;
 }
@@ -35,7 +35,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 
 	List<UInt> jumps;
 
-	info.stack.PushExpr(Symbol::Find(Type(), file).size, cn);
+	info.stack.PushExpr(Symbols::Find(Type(), file).size, cn);
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	CompiledNode c1 = node1->Compile(info);
@@ -55,7 +55,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	Pointer<MemoryNode> sn2 = new MemoryNode(c1.argument.mem);
 	sn2->mem.offset++;
 
-	sn2->type = Symbol::Find(node1->Type(), file).Get(Scope::Value, file).varType;
+	sn2->type = Symbols::Find(node1->Type(), file).Get(Scope::Value, file).varType;
 
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
 
@@ -70,7 +70,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(Instruction::Label(info.label));
 	cn.instructions[jmp].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 
-	info.stack.Pop(Symbol::Find(Type(), file).size);
+	info.stack.Pop(Symbols::Find(Type(), file).size);
 
 	return cn;
 }
@@ -101,8 +101,8 @@ Set<ScanType> DefaultNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	Symbol::Find(Type(), file);
-	ScanAssignment(new TypeNode(Type()), new TypeNode(Symbol::Find(node1->Type(), node1->file).Get(Scope::Value, node1->file).varType), info, file);
+	Symbols::Find(Type(), file);
+	ScanAssignment(new TypeNode(Type()), new TypeNode(Symbols::Find(node1->Type(), node1->file).Get(Scope::Value, node1->file).varType), info, file);
 	ScanAssignment(new TypeNode(Type()), node2, info, file);
 
 	info.Get().scopeInfo = scopeInfo;

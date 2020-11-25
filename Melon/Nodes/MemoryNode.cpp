@@ -26,7 +26,7 @@ ScopeList MemoryNode::Type() const {
 CompiledNode MemoryNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = mem;
-	c.size = Symbol::Find(type, file).size;
+	c.size = Symbols::Find(type, file).size;
 	return c;
 }
 

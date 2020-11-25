@@ -25,34 +25,34 @@ CallNode::~CallNode() {
 
 }
 
-Symbol CallNode::GetFunc() const {
+Symbols CallNode::GetFunc() const {
 	List<ScopeList> argTypes;
 
 	for (NodePtr node : args) {
 		argTypes.Add(node->Type());
 	}
 
-	Symbol s;
+	Symbols s;
 
 	UInt errorCount = ErrorLog::ErrorCount();
 
 	ScopeList type = this->node->Type();
 
 	if (errorCount < ErrorLog::ErrorCount()) {
-		return Symbol();
+		return Symbols();
 	}
 
 	if (op) {
-		s = Symbol::FindFunction(type, argTypes, file);
+		s = Symbols::FindFunction(type, argTypes, file);
 	}
 	else if (IsInit()) {
-		s = Symbol::FindMethod(type.Add(Scope::Init).Add(Scope::Call), argTypes, this->node->file);
+		s = Symbols::FindMethod(type.Add(Scope::Init).Add(Scope::Call), argTypes, this->node->file);
 	}
 	else if (!isMethod) {
-		s = Symbol::FindFunction(type.Add(Scope::Call), argTypes, this->node->file);
+		s = Symbols::FindFunction(type.Add(Scope::Call), argTypes, this->node->file);
 	}
 	else {
-		s = Symbol::FindMethod(type.Add(methodName).Add(Scope::Call), argTypes, this->node->file);
+		s = Symbols::FindMethod(type.Add(methodName).Add(Scope::Call), argTypes, this->node->file);
 	}
 
 	if ((IsInit() && s.type == SymbolType::Method) || (isMethod ? s.type == SymbolType::Method : s.type == SymbolType::Function)) {
@@ -66,7 +66,7 @@ Symbol CallNode::GetFunc() const {
 	}
 
 	ErrorLog::Error(SymbolError(SymbolError::Function(type.ToString(), argStr), file));
-	return Symbol();
+	return Symbols();
 }
 
 bool CallNode::IsSelfPassing() const {
@@ -75,7 +75,7 @@ bool CallNode::IsSelfPassing() const {
 }
 
 bool CallNode::IsInit() const {
-	Symbol s = node->GetSymbol();
+	Symbols s = node->GetSymbol();
 
 	if (s.type == SymbolType::Struct) {
 		return !isMethod;
@@ -89,7 +89,7 @@ ScopeList CallNode::Type() const {
 }
 
 List<ScopeList> CallNode::Types() const {
-	Symbol s = GetFunc();
+	Symbols s = GetFunc();
 
 	List<ScopeList> types;
 
@@ -102,7 +102,7 @@ List<ScopeList> CallNode::Types() const {
 		types.Add(node->Type());
 	}
 	else for (const ScopeList& type : s.returnValues) {
-		const Symbol s2 = Symbol::FindNearestInNamespace(s.scope.Pop(), type, node->file);
+		const Symbols s2 = Symbols::FindNearestInNamespace(s.scope.Pop(), type, node->file);
 
 		if (s2.type != SymbolType::None) {
 			types.Add(s2.scope);
@@ -120,7 +120,7 @@ List<ScopeList> CallNode::Types() const {
 }
 
 CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
-	Symbol s = GetFunc();
+	Symbols s = GetFunc();
 
 	StackPtr stack = info.stack;
 	Int retSize = 0;
@@ -130,15 +130,15 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 
 	// Calculate return size
 	for (const ScopeList& type : s.returnValues)
-		retSize += Symbol::FindNearestInNamespace(s.scope.Pop(), type, FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+		retSize += Symbols::FindNearestInNamespace(s.scope.Pop(), type, FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
 
-	if (IsInit()) retSize = Symbol::Find(Type(), node->file).size;
+	if (IsInit()) retSize = Symbols::Find(Type(), node->file).size;
 
 	// Calculate arg size
 	for (UInt u = 0; u < s.arguments.Size(); u++) {
-		Symbol type = Symbol::FindNearestInNamespace(scope, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
+		Symbols type = Symbols::FindNearestInNamespace(scope, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
 
-		if (Symbol::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (Symbols::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
 			argSize += info.stack.ptrSize;
 		}
 		else {
@@ -156,14 +156,14 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		memoryOffsets.Add(0);
 		assignFirst.Add(false);
 
-		if (Symbol::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (Symbols::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
 			StackPtr stack = infoCpy.stack;
 			CompiledNode n = args[i]->Compile(infoCpy);
 
 			if (
 				n.argument.type != ArgumentType::Memory || 
 				(n.argument.mem.memptr.IsLeft() && n.argument.mem.memptr.GetLeft().type == RegisterType::Stack && stack.Offset(n.argument.mem.offset) >= stack.top) ||
-				!Symbol::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file) ||
+				!Symbols::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file) ||
 				noRefs[i]
 			) {
 				if (!noRefs[i] && !args[i]->IsImmediate() && !args[i].Is<CustomInitNode>()) {
@@ -180,7 +180,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 
 				assignFirst[assignFirst.Size() - 1] = true;
 
-				tempSize += Symbol::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).GetType(node->file).size;
+				tempSize += Symbols::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).GetType(node->file).size;
 				memoryOffsets[memoryOffsets.Size() - 1] = tempSize;
 			}
 		}
@@ -219,9 +219,9 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 
 	// Calculate compile arguments
 	for (UInt u = 0; u < s.arguments.Size(); u++) {
-		Symbol type = Symbol::FindNearestInNamespace(scope, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
+		Symbols type = Symbols::FindNearestInNamespace(scope, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
 
-		if (Symbol::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (Symbols::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
 			NodePtr r = nullptr;
 			Int i = IsInit() ? u - 1 : u;
 			bool isCompiled = false;
@@ -324,7 +324,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	}
 
 	if (!s.returnValues.IsEmpty()) {
-		c.size = Symbol::FindNearestInNamespace(s.symbolNamespace, s.returnValues[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+		c.size = Symbols::FindNearestInNamespace(s.symbolNamespace, s.returnValues[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
 	}
 	else {
 		c.size = info.stack.ptrSize;
@@ -353,7 +353,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 			retSize = 0;
 		}
 		else {
-			retSize -= Symbol::FindNearestInNamespace(s.scope.Pop(), s.returnValues[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+			retSize -= Symbols::FindNearestInNamespace(s.scope.Pop(), s.returnValues[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
 		}
 
 		c.argument = Argument(MemoryLocation(info.stack.Offset() + retSize));
@@ -378,7 +378,7 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 	}
 
-	Symbol s = GetFunc();
+	Symbols s = GetFunc();
 
 	if (info.Get().useFunction) {
 		if (!info.usedFunctions.Contains(s.scope)) {
@@ -388,7 +388,7 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 	}
 
 	for (UInt i = 0; i < args.Size(); i++) {
-		if (s.names.Size() > i && !Symbol::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (s.names.Size() > i && !Symbols::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
 			if (noRefs[i]) {
 				ErrorLog::Error(CompileError(CompileError::InvalidNoRef, args[i]->file));
 			}
@@ -405,8 +405,8 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 
 	for (UInt u = 0; u < s.arguments.Size(); u++) {
 		Int i = IsInit() ? u - 1 : u;
-		Symbol type = Symbol::FindNearestInNamespace(s.symbolNamespace, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
-		Symbol::Find(s.scope.Add(s.names[u]), node->file);
+		Symbols type = Symbols::FindNearestInNamespace(s.symbolNamespace, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
+		Symbols::Find(s.scope.Add(s.names[u]), node->file);
 		NodePtr arg;
 
 		if (i < 0) continue;

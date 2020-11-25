@@ -20,7 +20,7 @@ namespace Melon {
 
 			///T Symbol
 			/// The function symbol
-			Symbols::Symbol s;
+			Symbols::Symbols s;
 
 			///T Argument names
 			Boxx::List<Symbols::Scope> argNames;

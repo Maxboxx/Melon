@@ -58,7 +58,7 @@ UInt AssignNode::GetSize() const {
 	for (UInt i = 0; i < vars.Size(); i++) {
 		if (types[i] == ScopeList::Discard || vars[i].Is<DiscardNode>()) continue;
 
-		Symbol s = Symbol::Find(vars[i]->scope.Add(vars[i].Cast<NameNode>()->name), file);
+		Symbols s = Symbols::Find(vars[i]->scope.Add(vars[i].Cast<NameNode>()->name), file);
 
 		if (s.attributes.Contains(SymbolAttribute::Ref)) {
 			size += StackPtr::ptrSize;
@@ -84,12 +84,12 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			UInt size = Symbol::Find(vars[i]->Type(), file).size;
+			UInt size = Symbols::Find(vars[i]->Type(), file).size;
 			varSize += size;
 			info.stack.Push(size);
 		}
 
-		Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(vars[i].Cast<NameNode>()->name, file).stackIndex = info.stack.top;
+		Symbols::Find(Symbols::ReplaceTemplates(scope, file), file).Get(vars[i].Cast<NameNode>()->name, file).stackIndex = info.stack.top;
 	}
 
 	List<Pair<ScopeList, NodePtr>> values = Values();
@@ -111,10 +111,10 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			}
 
 			if (i + 1 >= this->values.Size()) {
-				UInt size = info.stack.top + Symbol::Find(values[i].key, values[i].value->file).size;
+				UInt size = info.stack.top + Symbols::Find(values[i].key, values[i].value->file).size;
 
 				for (UInt u = i + 1; u < values.Size(); u++) {
-					size += Symbol::Find(values[u].key, values[i].value->file).size;
+					size += Symbols::Find(values[u].key, values[i].value->file).size;
 					returnOffsets.Add(size);
 				}
 			}
@@ -146,9 +146,9 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 		if (type == ScopeList::Discard) continue;
 
 		while (true) {
-			ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
+			ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 
-			Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, type, file), file);
+			Symbols s = Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, type, file), file);
 
 			bool done = true;
 
@@ -212,7 +212,7 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 		if (info.Get().init) {
 			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 				if (nn->name == Scope::Self) {
-					Symbol::Find(nn->Type(), file).AssignAll();
+					Symbols::Find(nn->Type(), file).AssignAll();
 					scanSet.Remove(ScanType::Self);
 				}
 			}
@@ -339,7 +339,7 @@ Mango AssignNode::ToMango() const {
 		}
 
 		if (!vars[i].Is<DiscardNode>()) {
-			const ScopeList op = Symbol::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file).scope;
+			const ScopeList op = Symbols::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file).scope;
 
 			Mango mango = Mango(op.ToString(), MangoType::List);
 			mango.Add(vars[i]->ToMango());

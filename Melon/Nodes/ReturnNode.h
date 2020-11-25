@@ -23,7 +23,7 @@ namespace Melon {
 
 			///T Get Types
 			/// Get the symbols of the return values
-			Boxx::List<Symbols::Symbol> GetTypes() const;
+			Boxx::List<Symbols::Symbols> GetTypes() const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

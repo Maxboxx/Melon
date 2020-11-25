@@ -53,6 +53,25 @@ Melon::Token ParsingInfo::Current(const Int offset) {
 	return tokens[index + offset];
 }
 
+FileInfo ParsingInfo::GetFileInfo() const {
+	FileInfo file;
+	file.filename  = filename;
+	file.fileScope = currentFile.name;
+	file.statement = statementNumber;
+	file.includedNamespaces = includedNamespaces;
+	return file;
+}
+
+FileInfo ParsingInfo::GetFileInfo(const UInt line) const {
+	FileInfo file;
+	file.filename  = filename;
+	file.line      = line;
+	file.fileScope = currentFile.name;
+	file.statement = statementNumber;
+	file.includedNamespaces = includedNamespaces;
+	return file;
+}
+
 ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options) {
 	SetupTokens();
 

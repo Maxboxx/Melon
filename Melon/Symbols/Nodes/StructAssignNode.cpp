@@ -26,17 +26,17 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 
 	const ScopeList type = nodes[0]->Type();
 
-	Symbol s = Symbol::Find(type, nodes[0]->file);
+	Symbols s = Symbols::Find(type, nodes[0]->file);
 
 	for (UInt i = 0; i < s.names.Size(); i++) {
-		Symbol argSym = s.Get(s.names[i], nodes[0]->file);
-		Symbol argType = argSym.GetType(nodes[0]->file);
+		Symbols argSym = s.Get(s.names[i], nodes[0]->file);
+		Symbols argType = argSym.GetType(nodes[0]->file);
 
 		const ScopeList typeName = argType.scope;
 
 		List<ScopeList> typeArgs;
 		typeArgs.Add(typeName);
-		Symbol argAssign = Symbol::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
+		Symbols argAssign = Symbols::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
 
 		List<NodePtr> args;
 		Pointer<MemoryNode> sn1 = new MemoryNode(c1.argument.mem);

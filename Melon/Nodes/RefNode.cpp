@@ -20,7 +20,7 @@ Boxx::List<ScopeList> RefNode::Types() const {
 	return node->Types();
 }
 
-Symbol RefNode::GetSymbol() const {
+Symbols RefNode::GetSymbol() const {
 	return node->GetSymbol();
 }
 

@@ -34,7 +34,7 @@ ScopeList IfExprNode::Type() const {
 
 CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
-	cn.size = Symbol::Find(Type(), file).size;
+	cn.size = Symbols::Find(Type(), file).size;
 
 	List<UInt> jumps;
 
@@ -87,7 +87,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 	cn.instructions.Add(Instruction::Label(info.label++));
 
-	info.stack.Pop(Symbol::Find(Type(), file).size);
+	info.stack.Pop(Symbols::Find(Type(), file).size);
 
 	return cn;
 }
@@ -131,7 +131,7 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	Symbol::Find(Type(), file);
+	Symbols::Find(Type(), file);
 
 	info.Get().scopeInfo = scopeInfo;
 	return scanSet;

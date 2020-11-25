@@ -30,7 +30,7 @@ ScopeList SafeUnwrapEndNode::Type() const  {
 	scope.types = List<ScopeList>();
 	scope.types.Get().Add(node->Type());
 
-	return Symbol::Find(ScopeList().Add(scope), file).scope;
+	return Symbols::Find(ScopeList().Add(scope), file).scope;
 }
 
 CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
@@ -94,11 +94,11 @@ void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	type.types = List<ScopeList>();
 	type.types.Get().Add(nodeType);
 
-	Symbol::TemplateSymbol ts;
+	Symbols::TemplateSymbol ts;
 	ts.type = ScopeList().Add(type);
 	ts.scope = scope;
 	ts.file = file;
-	Symbol::templateSymbols.Add(ts);
+	Symbols::templateSymbols.Add(ts);
 }
 
 Set<ScanType> SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {

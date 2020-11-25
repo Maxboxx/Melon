@@ -25,16 +25,16 @@ ReturnNode::~ReturnNode() {
 
 }
 
-List<Symbol> ReturnNode::GetTypes() const {
-	List<Symbol> types;
+List<Symbols> ReturnNode::GetTypes() const {
+	List<Symbols> types;
 
-	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
+	Symbols s = Symbols::Find(Symbols::ReplaceTemplates(func, file), file);
 	
 	for (ScopeList type : s.returnValues) {
-		Symbol sym = Symbol::FindNearestInNamespace(Symbol::ReplaceTemplates(s.scope.Pop(), file), type, file);
+		Symbols sym = Symbols::FindNearestInNamespace(Symbols::ReplaceTemplates(s.scope.Pop(), file), type, file);
 
 		if (sym.type == SymbolType::Template) {
-			types.Add(Symbol::Find(sym.varType, file));
+			types.Add(Symbols::Find(sym.varType, file));
 		}
 		else {
 			types.Add(sym);
@@ -45,19 +45,19 @@ List<Symbol> ReturnNode::GetTypes() const {
 }
 
 CompiledNode ReturnNode::Compile(CompileInfo& info) {
-	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
+	Symbols s = Symbols::Find(Symbols::ReplaceTemplates(func, file), file);
 
 	UInt stackOffset = info.stack.ptrSize + info.stack.frame;
-	List<Symbol> types = GetTypes();
+	List<Symbols> types = GetTypes();
 
-	for (const Symbol& sym : types) {
+	for (const Symbols& sym : types) {
 		stackOffset += sym.size;
 	}
 
 	for (UInt i = 0; i < s.arguments.Size(); i++) {
-		Symbol sym = Symbol::FindNearestInNamespace(s.scope.Pop(), s.arguments[i], file);
+		Symbols sym = Symbols::FindNearestInNamespace(s.scope.Pop(), s.arguments[i], file);
 
-		if (Symbol::Find(s.scope.Add(s.names[i]), file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (Symbols::Find(s.scope.Add(s.names[i]), file).attributes.Contains(SymbolAttribute::Ref)) {
 			stackOffset += info.stack.ptrSize;
 		}
 		else {
@@ -105,17 +105,17 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
+	Symbols s = Symbols::Find(Symbols::ReplaceTemplates(func, file), file);
 
 	if (s.returnValues.Size() != nodes.Size()) {
 		ErrorLog::Error(CompileError(CompileError::Return(s.returnValues.Size(), nodes.Size()), file));
 	}
 
-	List<Symbol> types = GetTypes();
+	List<Symbols> types = GetTypes();
 
 	for (UInt i = 0; i < s.arguments.Size(); i++) {
-		Symbol::FindNearestInNamespace(s.scope.Pop(), s.arguments[i], file);
-		Symbol::Find(s.scope.Add(s.names[i]), file);
+		Symbols::FindNearestInNamespace(s.scope.Pop(), s.arguments[i], file);
+		Symbols::Find(s.scope.Add(s.names[i]), file);
 	}
 
 	for (UInt i = 0; i < nodes.Size(); i++) {

@@ -20,13 +20,13 @@ NameNode::~NameNode() {
 }
 
 ScopeList NameNode::Type() const {
-	Symbol s = GetSymbol();
+	Symbols s = GetSymbol();
 
 	if (s.type == SymbolType::Scope || s.type == SymbolType::Namespace || s.type == SymbolType::Struct || s.type == SymbolType::Enum) {
 		return s.scope;
 	}
 	else if (s.type != SymbolType::None) {
-		const Symbol s2 = s.GetType(file);
+		const Symbols s2 = s.GetType(file);
 
 		if (s2.type != SymbolType::None) {
 			return s2.scope;
@@ -36,13 +36,13 @@ ScopeList NameNode::Type() const {
 	return ScopeList::undefined;
 }
 
-Symbol NameNode::GetSymbol() const {
-	ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
+Symbols NameNode::GetSymbol() const {
+	ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 	Scope s = name.Copy();
 
 	if (s.types) {
 		for (ScopeList& type : s.types.Get()) {
-			Symbol sym = Symbol::FindNearestInNamespace(replacedScope, type, file);
+			Symbols sym = Symbols::FindNearestInNamespace(replacedScope, type, file);
 			
 			if (sym.type == SymbolType::Template) {
 				type = sym.varType;
@@ -56,20 +56,20 @@ Symbol NameNode::GetSymbol() const {
 	Scope noTemplateScope = s.Copy();
 	noTemplateScope.types = nullptr;
 
-	Symbol sym = Symbol::FindNearestInNamespace(replacedScope, noTemplateScope, file);
+	Symbols sym = Symbols::FindNearestInNamespace(replacedScope, noTemplateScope, file);
 
 	if (sym.type == SymbolType::Template) {
 		ScopeList type = sym.varType;
 		type[type.Size() - 1].types = s.types;
-		return Symbol::Find(type, file);
+		return Symbols::Find(type, file);
 	}
 
-	return Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, ScopeList().Add(s), file), file);
+	return Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, ScopeList().Add(s), file), file);
 }
 
 CompiledNode NameNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
-	Symbol s = GetSymbol();
+	Symbols s = GetSymbol();
 
 	if (!ignoreRef && s.attributes.Contains(SymbolAttribute::Ref)) {
 		Pointer<NameNode> name = new NameNode(scope, file);
@@ -89,7 +89,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
-	Symbol s = GetSymbol();
+	Symbols s = GetSymbol();
 
 	if (name == Scope::Self) {
 		scanSet.Add(ScanType::Self);
@@ -103,7 +103,7 @@ Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
 
 ScopeList NameNode::FindSideEffectScope(const bool assign) {
 	if (assign) {
-		Symbol s = GetSymbol();
+		Symbols s = GetSymbol();
 
 		if (s.IsArgument() && s.attributes.Contains(SymbolAttribute::Ref)) {
 			return s.scope.Pop().Pop();

@@ -13,7 +13,8 @@ namespace Melon {
 		private:
 			struct EnumValue {
 				Symbols::Scope name;
-				Boxx::ULong   value;
+				Boxx::ULong    value;
+				Boxx::UInt     line;
 			};
 
 			static Nodes::NodePtr ParseFunction(ParsingInfo& info);

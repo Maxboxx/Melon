@@ -22,7 +22,7 @@ ScopeList StackNode::Type() const {
 CompiledNode StackNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = MemoryLocation(info.stack.Offset(stack));
-	c.size = Symbol::Find(type, file).size;
+	c.size = Symbols::Find(type, file).size;
 	return c;
 }
 

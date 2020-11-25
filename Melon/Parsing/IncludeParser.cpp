@@ -87,7 +87,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 }
 
 void IncludeParser::ParseInclude(const ScopeList& include, ParsingInfo& info) {
-	Symbol s = Symbol::Find(include.Pop(), FileInfo());
+	Symbols s = Symbols::Find(include.Pop(), FileInfo());
 
 	if (System::DirectoryExists(s.symbolPath + "/" + include.Last().ToString())) {
 		ParseDirectory(s.symbolPath + "/" + include.Last().ToString(), include, info);
@@ -150,7 +150,7 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 			includeScopes = includeScopes.Add(include[u]);
 		}
 
-		if (!Symbol::Contains(includeScopes)) {
+		if (!Symbols::Contains(includeScopes)) {
 			Array<String> dirs = filename.Replace("\\", "/").Split("/");
 			String path = dirs[0];
 
@@ -158,10 +158,10 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 				path += "/" + dirs[u];
 			}
 
-			Symbol s = Symbol(SymbolType::Namespace);
+			Symbols s = Symbols(SymbolType::Namespace);
 			s.symbolNamespace = includeScopes;
 			s.symbolPath = path;
-			Symbol::Add(includeScopes, s, FileInfo(filename, 1, 0));
+			Symbols::Add(includeScopes, s, FileInfo(filename, 1, 0));
 		}
 	}
 }

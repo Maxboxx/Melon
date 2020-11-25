@@ -27,7 +27,7 @@ NodePtr GuardParser::Parse(ParsingInfo& info) {
 
 	if (NodePtr node = ConditionParser::Parse(info)) {
 		info.scopes = info.scopes.AddNext("guard");
-		Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, guardLine, info.statementNumber));
+		Symbols::Add(info.scopes, Symbols(SymbolType::Scope), FileInfo(info.filename, guardLine, info.statementNumber));
 
 		Pointer<GuardNode> gn = new GuardNode(info.scopes, FileInfo(info.filename, guardLine, info.statementNumber));
 		gn->cond = node;

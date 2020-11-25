@@ -155,7 +155,7 @@ namespace Melon {
 			bool init = false;
 			bool assign = false;
 			bool useFunction = true;
-			Symbols::Symbol symbol;
+			Symbols::Symbols symbol;
 			FileInfo file;
 			
 			ScopeInfo scopeInfo;
@@ -228,7 +228,7 @@ namespace Melon {
 
 			///T Get Symbol
 			/// Returns the symbol for the current node
-			virtual Symbols::Symbol GetSymbol() const;
+			virtual Symbols::Symbols GetSymbol() const;
 
 			///T Get Size
 			/// Gets the byte size of the node

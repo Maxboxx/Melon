@@ -39,7 +39,7 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		CompiledNode c = assign->values[0]->Compile(info);
 
-		Symbol s = Symbol::Find(assign->values[0]->Type(), file);
+		Symbols s = Symbols::Find(assign->values[0]->Type(), file);
 		Argument argCopy = c.argument;
 		argCopy.mem.offset++;
 
@@ -88,7 +88,7 @@ Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		NodePtr tempValue = assign->values[0];
 
-		Symbol s = Symbol::Find(assign->values[0]->Type(), file);
+		Symbols s = Symbols::Find(assign->values[0]->Type(), file);
 
 		if (s.scope.Size() > 0 && s.scope[0].name == Scope::Optional.name) {
 			Pointer<TypeNode> value = new TypeNode(s.Get(Scope::Value, file).varType);

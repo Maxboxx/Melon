@@ -180,7 +180,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 	const String code = FileReader(filename).ReadAll();
 
-	Symbol::Setup();
+	Symbols::Setup();
 
 	try {
 		ParsingInfo info = Parser::Parse(filename, compOptions);
@@ -234,7 +234,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		if (compOptions.outputSymbols) {
 			FileWriter symbols = FileWriter(compOptions.outputDirectory + compOptions.outputName + "_symbols.mango");
-			symbols.Write(Mango::Encode(Symbol::ToMango(true), true));
+			symbols.Write(Mango::Encode(Symbols::ToMango(true), true));
 			symbols.Close();
 		}
 

@@ -22,7 +22,7 @@ ScopeList ArgumentNode::Type() const {
 CompiledNode ArgumentNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = argument;
-	c.size = Symbol::Find(type, file).size;
+	c.size = Symbols::Find(type, file).size;
 	return c;
 }
 

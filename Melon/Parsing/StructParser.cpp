@@ -28,9 +28,9 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	Pointer<StructNode> sn = ParseName(info, structLine);
 
 	info.scopes = info.scopes.Add(sn->name);
-	Symbol::Add(info.scopes, sn->symbol, FileInfo(info.filename, info.Current().line, info.statementNumber));
+	Symbols::Add(info.scopes, sn->symbol, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
-	Symbol s = Symbol::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
+	Symbols s = Symbols::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	if (!s.templateVariants.IsEmpty()) {
 		sn->name.variant = s.templateVariants.Size() - 1;
@@ -51,7 +51,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 			Pointer<NewVariableNode> nn = node.Cast<NewVariableNode>();
 
 			for (UInt i = 0; i < nn->names.Size(); i++) {
-				Symbol v = Symbol(SymbolType::Variable);
+				Symbols v = Symbols(SymbolType::Variable);
 				v.symbolFile = info.currentFile;
 				v.symbolNamespace = info.currentNamespace;
 				v.includedNamespaces = info.includedNamespaces;
@@ -80,7 +80,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::End)
 		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("struct", structLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
-	Symbol assign = Symbol(SymbolType::Function);
+	Symbols assign = Symbols(SymbolType::Function);
 	assign.symbolFile = info.currentFile;
 	assign.symbolNamespace = info.currentNamespace;
 	assign.includedNamespaces = info.includedNamespaces;
@@ -88,10 +88,10 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	assign.symbolNode = new StructAssignNode();
 	sn->symbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line, info.statementNumber));
 
-	Symbol::Add(info.scopes, sn->symbol, FileInfo(info.filename, structLine, info.statementNumber), true);
+	Symbols::Add(info.scopes, sn->symbol, FileInfo(info.filename, structLine, info.statementNumber), true);
 
 	for (UInt i = 0; i < sn->symbol.templateArgs.Size(); i++) {
-		Symbol t = Symbol(SymbolType::Template);
+		Symbols t = Symbols(SymbolType::Template);
 		t.templateIndex = i;
 		t.scope = sn->symbol.scope.Add(sn->symbol.templateArgs[i].Last());
 		t.varType = t.scope;
@@ -122,7 +122,7 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 	}
 
 	info.index++;
-	Symbol structSymbol = Symbol(SymbolType::Struct);
+	Symbols structSymbol = Symbols(SymbolType::Struct);
 	structSymbol.symbolFile = info.currentFile;
 	structSymbol.symbolNamespace = info.currentNamespace;
 	structSymbol.includedNamespaces = info.includedNamespaces;
@@ -150,7 +150,7 @@ NodePtr StructParser::ParseFunction(ParsingInfo& info) {
 		if (Pointer<EmptyNode> en = node.Cast<EmptyNode>()) {
 			if (Pointer<FunctionNode> fn = en->node.Cast<FunctionNode>()) {
 				if (!fn->s.attributes.Contains(SymbolAttribute::Static)) {
-					Symbol a = Symbol(SymbolType::Variable);
+					Symbols a = Symbols(SymbolType::Variable);
 					a.symbolNamespace = info.currentNamespace;
 					a.includedNamespaces = info.includedNamespaces;
 					a.varType = info.scopes;
@@ -161,8 +161,8 @@ NodePtr StructParser::ParseFunction(ParsingInfo& info) {
 					fn->s.names.Insert(0, Scope::Self);
 					fn->argNames.Insert(0, Scope::Self);
 
-					Symbol::Add(fn->func, fn->s, FileInfo(info.filename, info.Current().line, info.statementNumber), true);
-					fn->s = Symbol::Find(fn->func, FileInfo(info.filename, info.Current().line, info.statementNumber));
+					Symbols::Add(fn->func, fn->s, FileInfo(info.filename, info.Current().line, info.statementNumber), true);
+					fn->s = Symbols::Find(fn->func, FileInfo(info.filename, info.Current().line, info.statementNumber));
 					fn->s.Add(Scope::Self, a, FileInfo(info.filename, info.Current().line, info.statementNumber));
 				}
 

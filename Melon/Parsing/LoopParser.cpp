@@ -81,7 +81,7 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 
 bool LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
 	info.scopes = info.scopes.AddNext("if");
-	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+	Symbols::Add(info.scopes, Symbols(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	if (NodePtr cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
@@ -122,7 +122,7 @@ bool LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, P
 
 bool LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
 	info.scopes = info.scopes.AddNext("while");
-	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+	Symbols::Add(info.scopes, Symbols(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	if (NodePtr cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
@@ -167,7 +167,7 @@ bool LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value
 
 bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
 	info.scopes = info.scopes.AddNext("for");
-	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+	Symbols::Add(info.scopes, Symbols(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	if (NodePtr init = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
 		info.statementNumber++;
@@ -277,7 +277,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 
 void LoopParser::ParseNone(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
 	info.scopes = info.scopes.AddNext(ls.also ? "also" : "else");
-	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+	Symbols::Add(info.scopes, Symbols(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
 
 	info.scopeCount++;
 	ls.statements = StatementParser::ParseMultiple(info);
