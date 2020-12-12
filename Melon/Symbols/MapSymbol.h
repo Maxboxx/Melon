@@ -15,15 +15,12 @@ namespace Melon {
 			/// Adds a symbol to the table
 			///R Symbol*: The new symbol
 			/// <code>nullptr</code> if the symbol already exists
-			Symbol* AddSymbol(const Boxx::String& name, Symbol* const symbol);
-
-			///T Get Symbol
-			/// Gets the symbol with the specified name
-			/// Returns <code>nullptr</code> if the symbol does not exist
-			Symbol* operator[](const Boxx::String& name) const;
+			Symbol* AddSymbol(const Scope& name, Symbol* const symbol);
 
 		protected:
-			Boxx::Map<Boxx::String, Symbol*> symbols;
+			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
+
+			Boxx::Map<Scope, Symbol*> symbols;
 		};
 	}
 }

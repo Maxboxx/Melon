@@ -14,17 +14,15 @@ namespace Melon {
 		public:
 			///H Members
 
-			///T name
-			/// The name of the scope
+			///T Name
 			Boxx::String name;
 
-			///T variant
-			/// Optional variant for the scope. Used for overloads
-			Boxx::Optional<Boxx::UInt> variant;
-
-			///T types
-			/// Extra types of the scope
+			///T Template types
 			Boxx::Optional<Boxx::List<ScopeList>> types;
+
+			///T Arguments
+			/// Arguments for a call
+			Boxx::Optional<Boxx::List<ScopeList>> arguments;
 
 			///H Constructors
 

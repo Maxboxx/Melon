@@ -235,7 +235,7 @@ Tuple<Symbol, List<ScopeList>> Symbol::FindTemplateArgs(const TemplateSymbol& sy
 
 			for (UInt i = 0; i < templateArgs.Size(); i++) {
 				FileInfo info = variant.GetFileInfo();
-				info.statementNumber++;
+				info.statement++;
 				Symbol symArg = Symbol::FindNearestInNamespace(variant.scope, variant.templateArgs[i], info);
 
 				if (symArg.type == SymbolType::Template) continue;
@@ -337,7 +337,7 @@ Symbol Symbol::GetReturnType(const UInt index) const {
 	FileInfo file;
 	file.currentNamespace = symbolNamespace;
 	file.includedNamespaces = includedNamespaces;
-	file.statementNumber = Math::UIntMax();
+	file.statement = Math::UIntMax();
 	return FindNearestInNamespace(scope.Pop(), returnValues[index], file);
 }
 
@@ -345,7 +345,7 @@ Symbol Symbol::GetArgumentType(const UInt index) const {
 	FileInfo file;
 	file.currentNamespace = symbolNamespace;
 	file.includedNamespaces = includedNamespaces;
-	file.statementNumber = Math::UIntMax();
+	file.statement = Math::UIntMax();
 	return FindNearestInNamespace(scope.Pop(), arguments[index], file);
 }
 
@@ -547,7 +547,7 @@ void Symbol::SpecializeTemplate(Symbol& symbol, const Symbol& templateSymbol, co
 	}
 	else if (symbol.varType.Size() > 0) {
 		FileInfo file = symbol.GetFileInfo();
-		file.statementNumber++;
+		file.statement++;
 		symbol.varType = ReplaceTemplates(symbol.varType, templateSymbol, types);
 	}
 
@@ -731,7 +731,7 @@ ScopeList Symbol::ReplaceTemplates(const ScopeList& type, const Symbol& template
 	}
 
 	FileInfo file = templateSymbol.GetFileInfo();
-	file.statementNumber++;
+	file.statement++;
 
 	ErrorLog::AddMarker();
 	Symbol s = Symbol::FindNearestInNamespace(templateSymbol.scope, list, file);
@@ -957,7 +957,7 @@ Symbol Symbol::FindNearest(const ScopeList& scopes, const ScopeList& scope, cons
 			if (s.Contains(scope, file)) {
 				Symbol sym = s.Get(scope, file);
 
-				if (sym.statementNumber < file.statementNumber) {
+				if (sym.statementNumber < file.statement) {
 					sym.scope = list.Add(scope);
 					sym.scope.absolute = true;
 					return sym;
@@ -1002,7 +1002,7 @@ Symbol Symbol::FindNearestInNamespace(const ScopeList& scopes, const ScopeList& 
 			if (s.Contains(scopeList, file)) {
 				Symbol sym = s.Get(scopeList, file);
 
-				if (sym.statementNumber < file.statementNumber) {
+				if (sym.statementNumber < file.statement) {
 					return sym;
 				}
 			}
@@ -1354,7 +1354,7 @@ List<Mango> Symbol::ToMangoList(const ScopeList& scope) {
 		this->scope = scope;
 
 		FileInfo file;
-		file.statementNumber++;
+		file.statement++;
 		m.Add("type", GetType(file).scope.ToString());
 
 		bool onlyType = true;

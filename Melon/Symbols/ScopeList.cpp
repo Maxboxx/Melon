@@ -123,8 +123,23 @@ String Scope::ToString() const {
 		scope += ">";
 	}
 
-	if (variant)
-		return scope + ":" + String::ToString((Boxx::Int)variant.Get());
+	if (arguments) {
+		scope += "(";
+
+		bool first = true;
+
+		for (const ScopeList& scopes : arguments.Get()) {
+			if (!first) {
+				scope += ",";
+			}
+
+			first = false;
+
+			scope += scopes.ToString();
+		}
+
+		scope += ")";
+	}
 
 	return scope;
 }
@@ -152,22 +167,62 @@ String Scope::ToSimpleString() const {
 		scope += ">";
 	}
 
-	if (variant)
-		return scope + ":" + String::ToString((Boxx::Int)variant.Get());
+	if (arguments) {
+		scope += "(";
+
+		bool first = true;
+
+		for (const ScopeList& scopes : arguments.Get()) {
+			if (!first) {
+				scope += ",";
+			}
+
+			first = false;
+
+			scope += scopes.ToString();
+		}
+
+		scope += ")";
+	}
 
 	return scope;
 }
 
 Scope Scope::Copy() const {
 	Scope scope = *this;
-	if (types) scope.types = types.Get().Copy();
+	if (types)     scope.types     = types.Get().Copy();
+	if (arguments) scope.arguments = arguments.Get().Copy();
 	return scope;
 }
 
 bool Scope::operator==(const Scope& scope) const {
-	if (variant.HasValue() != scope.variant.HasValue()) return false;
-	if (variant && variant.Get() != scope.variant.Get()) return false;
-	return name == scope.name;
+	if (name != scope.name) return false;
+	if (types.HasValue() != scope.types.HasValue()) return false;
+	if (arguments.HasValue() != scope.arguments.HasValue()) return false;
+
+	if (types) {
+		const List<ScopeList> types1 = types.Get();
+		const List<ScopeList> types2 = scope.types.Get();
+
+		if (types1.Size() != types2.Size()) return false;
+
+		for (UInt i = 0; i < types1.Size(); i++) {
+			if (types1[i] != types2[i]) return false;
+		}
+	}
+
+	if (arguments) {
+		const List<ScopeList> arguments1 = types.Get();
+		const List<ScopeList> arguments2 = scope.types.Get();
+
+		if (arguments1.Size() != arguments2.Size()) return false;
+
+		for (UInt i = 0; i < arguments1.Size(); i++) {
+			if (arguments1[i] != arguments2[i]) return false;
+		}
+	}
+
+	return true;
 }
 
 bool Scope::operator!=(const Scope& scope) const {
@@ -175,17 +230,29 @@ bool Scope::operator!=(const Scope& scope) const {
 }
 
 bool Scope::operator<(const Scope& scope) const {
-	if (name < scope.name) return true;
-	
-	if (name == scope.name) {
-		if (variant.HasValue() && scope.variant.HasValue()) {
-			return variant.Get() < scope.variant.Get();
+	if (name < scope.name) return false;
+	if (types.HasValue() != scope.types.HasValue()) return scope.types.HasValue();
+	if (arguments.HasValue() != scope.arguments.HasValue()) return scope.arguments.HasValue();
+
+	if (types) {
+		const List<ScopeList> types1 = types.Get();
+		const List<ScopeList> types2 = scope.types.Get();
+
+		if (types1.Size() != types2.Size()) return types1.Size() < types2.Size();
+
+		for (UInt i = 0; i < types1.Size(); i++) {
+			if (types1[i] < types2[i]) return true;
 		}
-		else if (scope.variant) {
-			return true;
-		}
-		else {
-			return false;
+	}
+
+	if (arguments) {
+		const List<ScopeList> arguments1 = types.Get();
+		const List<ScopeList> arguments2 = scope.types.Get();
+
+		if (arguments1.Size() != arguments2.Size()) return arguments1.Size() < arguments2.Size();
+
+		for (UInt i = 0; i < arguments1.Size(); i++) {
+			if (arguments1[i] < arguments2[i]) return true;
 		}
 	}
 
@@ -269,49 +336,6 @@ String ScopeList::ToString() const {
 String ScopeList::ToSimpleString() const {
 	ScopeList list = *this;
 	Boxx::UInt start = 0;
-
-	if (absolute) {
-		Symbols s = Symbols::symbols;
-
-		for (Boxx::UInt i = 0; i < list.Size(); i++) {
-			s = s.Get(list[i], FileInfo());
-
-			switch (s.type) {
-				case SymbolType::Function:
-				case SymbolType::Method: {
-					start = i;
-					
-					if (list[i].types) {
-						List<ScopeList> templateArgs;
-
-						for (const ScopeList& arg : s.templateArgs) {
-							templateArgs.Add(arg);
-						}
-
-						list[i].types = templateArgs;
-						list[i].variant = nullptr;
-					}
-
-					break;
-				}
-
-				case SymbolType::Struct: {
-					if (list[i].types) {
-						List<ScopeList> templateArgs;
-
-						for (const ScopeList& arg : s.templateArgs) {
-							templateArgs.Add(arg);
-						}
-
-						list[i].types = templateArgs;
-						list[i].variant = nullptr;
-					}
-					
-					break;
-				}
-			}
-		}
-	}
 
 	String str = "";
 

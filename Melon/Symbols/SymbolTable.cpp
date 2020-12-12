@@ -5,6 +5,8 @@
 
 #include "Melon/Errors.h"
 
+#include "Boxx/Regex.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -29,20 +31,22 @@ SymbolTable* SymbolTable::AddScope(const FileInfo& file) {
 	return table;
 }
 
-SymbolTable* SymbolTable::operator[](const UInt index) const {
-	if (scopes.Size() > index) {
-		return scopes[index];
+Symbol* SymbolTable::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+	static const Regex numReg = Regex("^%d+$");
+
+	if (index >= scopeList.Size()) return this;
+
+	if (numReg.Match(scopeList[index].name)) {
+		const UInt i = scopeList[index].name.ToUInt();
+
+		if (i < scopes.Size()) {
+			return scopes[i]->Find(scopeList, index + 1, file);
+		}
+	}
+	else {
+		return MapSymbol::Find(scopeList, index, file);
 	}
 
+	FindError(scopeList, index, file);
 	return nullptr;
-}
-
-UInt SymbolTable::Index() const {
-	return index;
-}
-
-Scope SymbolTable::Name() const {
-	Scope name = Scope("");
-	name.variant = index;
-	return name;
 }

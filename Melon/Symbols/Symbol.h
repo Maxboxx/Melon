@@ -26,7 +26,7 @@ namespace Melon {
 
 			///T Name
 			/// Gets the name of the symbol
-			virtual Scope Name() const;
+			Scope Name() const;
 
 			///T Absolute Name
 			/// Gets the absolute name of the symbol
@@ -43,6 +43,22 @@ namespace Melon {
 			///T Size
 			/// Gets the size of the symbol
 			virtual Boxx::UInt Size() const;
+
+			///T Find
+			/// Finds a specific symbol
+			/// Returns <code>nullptr</code> if a symbol was not found
+			///M
+			Symbol* Find(const Scope& scope, const FileInfo& file);
+			Symbol* Find(const ScopeList& scopeList, const FileInfo& file);
+			///M
+
+			///T Contains
+			/// Checks if the specified symbol exists and returns it
+			/// If the symbol was not found <code>nullptr</code> is returned
+			///M
+			Symbol* Contains(const Scope& scope);
+			Symbol* Contains(const ScopeList& scopeList);
+			///M
 
 			///T Is
 			/// Checks if the symbol is a specific type of symbol
@@ -64,9 +80,13 @@ namespace Melon {
 			}
 
 		protected:
+			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
+
+			void FindError(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
+
 			FileInfo file;
 			Symbol* parent = nullptr;
-			Boxx::String name;
+			Scope name;
 
 			friend MapSymbol;
 		};

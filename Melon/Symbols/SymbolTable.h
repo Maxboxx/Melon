@@ -21,22 +21,11 @@ namespace Melon {
 			///R SymbolTable*: The table for the new scope
 			SymbolTable* AddScope(const FileInfo& file);
 
-			///T Get Scope
-			/// Gets the scope with the specified index
-			/// Returns <code>nullptr</code> if the scope does not exist
-			SymbolTable* operator[](const Boxx::UInt index) const;
-
-			///T Index
-			/// Gets the index of the scope
-			Boxx::UInt Index() const;
-
-			///T Name
-			/// Gets the name of the scope
-			virtual Scope Name() const override;
+		protected:
+			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
 
 		private:
 			Boxx::List<SymbolTable*> scopes;
-			Boxx::UInt index = 0;
 
 			static SymbolTable globalTable;
 		};

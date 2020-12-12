@@ -15,12 +15,12 @@ MapSymbol::MapSymbol(const FileInfo& file) : Symbol(file) {
 }
 
 MapSymbol::~MapSymbol() {
-	for (const Pair<String, Symbol*>& symbol : symbols) {
+	for (const Pair<Scope, Symbol*>& symbol : symbols) {
 		delete symbol.value;
 	}
 }
 
-Symbol* MapSymbol::AddSymbol(const String& name, Symbol* const symbol) {
+Symbol* MapSymbol::AddSymbol(const Scope& name, Symbol* const symbol) {
 	try {
 		symbols.Add(name, symbol);
 		symbol->name = name;
@@ -29,17 +29,22 @@ Symbol* MapSymbol::AddSymbol(const String& name, Symbol* const symbol) {
 	}
 	catch (MapKeyError& e) {
 		delete symbol;
-		ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + name + SymbolError::RedefinitionEnd, symbol->file));
+		ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + name.ToString() + SymbolError::RedefinitionEnd, symbol->file));
 		return nullptr;
 	}
 }
 
-Symbol* MapSymbol::operator[](const String& name) const {
-	Symbol* symbol;
+Symbol* MapSymbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+	if (index >= scopeList.Size()) return this;
 
-	if (symbols.Contains(name, symbol)) {
-		return symbol;
+	const Scope& scope = scopeList[index];
+	Symbol* sym = nullptr;
+
+	if (symbols.Contains(scope, sym)) {
+		return sym->Find(scopeList, index + 1, file);
 	}
-
-	return nullptr;
+	else {
+		FindError(scopeList, index, file);
+		return nullptr;
+	}
 }
