@@ -11,6 +11,10 @@ namespace Melon {
 			TemplateTypeSymbol(const FileInfo& file);
 			~TemplateTypeSymbol();
 
+			///T Template Argument
+			/// Get the template argument at the specified index
+			Symbol* TemplateArgument(const Boxx::UInt index) const;
+
 			Boxx::List<ScopeList> templateArguments;
 
 		protected:

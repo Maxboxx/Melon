@@ -6,9 +6,6 @@ namespace Melon {
 	namespace Symbols {
 		class FunctionSymbol : public MapSymbol {
 		public:
-			Boxx::List<ScopeList> returnValues;
-			Boxx::List<Boxx::String> arguments;
-
 			FunctionSymbol(const FileInfo& file);
 			~FunctionSymbol();
 
@@ -19,6 +16,20 @@ namespace Melon {
 			///T Argument
 			/// Get the argument at the specified index
 			Symbol* Argument(const Boxx::UInt index) const;
+
+			///T Template Argument
+			/// Get the template argument at the specified index
+			Symbol* TemplateArgument(const Boxx::UInt index) const;
+
+			Boxx::List<ScopeList> templateArguments;
+			Boxx::List<ScopeList> returnValues;
+			Boxx::List<Scope> arguments;
+
+		protected:
+			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
+
+		private:
+			Boxx::List<FunctionSymbol*> overloads;
 		};
 	}
 }

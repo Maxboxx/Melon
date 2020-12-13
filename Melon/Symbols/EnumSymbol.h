@@ -1,22 +1,17 @@
 #pragma once
 
-#include "SymbolTable.h"
+#include "IntegerSymbol.h"
 
 namespace Melon {
 	namespace Symbols {
 		///B EnumSymbol
 		/// Contains information about an enum
-		class EnumSymbol : public MapSymbol {
+		class EnumSymbol : public IntegerSymbol {
 		public:
-			Boxx::UByte size = 1;
-			bool isSigned = false;
-
-			EnumSymbol(const FileInfo& file);
+			EnumSymbol(const Boxx::UInt size, const bool isSigned, const FileInfo& file);
 			~EnumSymbol();
 
-			virtual Symbol* Type();
-			virtual bool IsType() const;
-			virtual Boxx::UInt Size() const;
+			Boxx::Collection<Scope> values;
 		};
 	}
 }

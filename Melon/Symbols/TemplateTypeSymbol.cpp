@@ -10,7 +10,13 @@ TemplateTypeSymbol::TemplateTypeSymbol(const FileInfo& file) : TypeSymbol(0, fil
 }
 
 TemplateTypeSymbol::~TemplateTypeSymbol() {
+	for (TemplateTypeSymbol* variant : templateVariants) {
+		delete variant;
+	}
+}
 
+Symbol* TemplateTypeSymbol::TemplateArgument(const UInt index) const {
+	return nullptr;
 }
 
 Symbol* TemplateTypeSymbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
