@@ -3,6 +3,10 @@
 #include "Node.h"
 
 namespace Melon {
+	namespace Symbols {
+		class EnumSymbol;
+	}
+
 	namespace Nodes {
 
 		///B EnumNode
@@ -19,7 +23,7 @@ namespace Melon {
 			Boxx::List<Symbols::Scope> values;
 
 			///T Symbol
-			Symbols::Symbols symbol;
+			Symbols::EnumSymbol* symbol;
 
 			EnumNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~EnumNode();

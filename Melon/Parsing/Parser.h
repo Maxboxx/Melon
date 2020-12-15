@@ -11,17 +11,13 @@
 
 #include "Melon/Symbols/Symbols.h"
 #include "Melon/Symbols/Symbol.h"
-#include "Melon/Symbols/SymbolTable.h"
+#include "Melon/Symbols/ScopeSymbol.h"
 #include "Melon/Symbols/ScopeList.h"
 
 #include "Melon/Nodes/Node.h"
 #include "Melon/Nodes/RootNode.h"
 
 namespace Melon {
-	namespace Symbols {
-		class SymbolTable;
-	}
-
 	namespace Parsing {
 
 		///B ParsingInfo
@@ -76,7 +72,7 @@ namespace Melon {
 
 			///T Scope
 			/// The symbol table for the current scope
-			SymbolTable* scope;
+			ScopeSymbol* scope;
 
 			///H Methods
 

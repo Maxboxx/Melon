@@ -56,7 +56,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	}
 
 	Pointer<AssignNode> assign = new AssignNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
-	List<Tuple<String, Symbol*>> symbols;
+	List<Tuple<Scope, Symbol*>> symbols;
 
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
@@ -115,7 +115,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 			v->type = types[i];
 			v->attributes = attributes;
 
-			symbols.Add(Tuple<String, Symbol*>(name.name, v));
+			symbols.Add(Tuple<Scope, Symbol*>(name, v));
 		}
 		else {
 			if (NodePtr node = AssignableParser::Parse(info)) {
@@ -173,7 +173,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 		ErrorLog::Error(SyntaxError(SyntaxError::ManyExprAssign, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
-	for (const Tuple<String, Symbol*>& symbol : symbols) {
+	for (const Tuple<Scope, Symbol*>& symbol : symbols) {
 		info.scope->AddSymbol(symbol.value1, symbol.value2);
 	}
 

@@ -6,6 +6,7 @@
 
 #include "Melon/Symbols/EnumSymbol.h"
 #include "Melon/Symbols/ValueSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
 
 #include "Melon/Symbols/Nodes/IntegerAssignNode.h"
 #include "Melon/Symbols/Nodes/IntegerBinaryOperatorNode.h"
@@ -51,15 +52,15 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 
 	info.index++;
 
-	EnumSymbol* enumSymbol = new EnumSymbol(info.GetFileInfo(enumLine));
-	enumSymbol->size = 1;
-	enumSymbol->isSigned = false;
+	// TODO: size
+	EnumSymbol* enumSymbol = new EnumSymbol(1, false, info.GetFileInfo(enumLine));
 
-	Pointer<EnumNode> en = new EnumNode(info.scopes, FileInfo(info.filename, enumLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+	Pointer<EnumNode> en = new EnumNode(info.scopes, info.GetFileInfo(enumLine));
 
 	en->name = enumName;
 
-	enumSymbol = info.scope->AddSymbol(enumName.name, enumSymbol)->Cast<EnumSymbol>();
+	enumSymbol = info.scope->AddSymbol(enumName, enumSymbol)->Cast<EnumSymbol>();
+	en->symbol = enumSymbol;
 
 	List<EnumValue> values = ParseValues(info);
 
@@ -67,87 +68,38 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 		ValueSymbol* v = new ValueSymbol(info.GetFileInfo(value.line));
 		v->value = value.value;
 
-		enumSymbol->AddSymbol(value.name.name, v);
+		enumSymbol->AddSymbol(value.name, v);
 		en->values.Add(value.name);
 	}
 
-	while (true) {
-		bool found = false;
-
-		if (NodePtr node = ParseFunction(info)) {
-			found = true;
-		}
-
-		if (!found) break;
-	}
+	while (FunctionParser::Parse(info, enumSymbol));
 
 	if (info.Current().type != TokenType::End)
 		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("enum", enumLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
-	Symbols assign = Symbols(SymbolType::Function);
-	assign.symbolFile = info.currentFile;
-	assign.symbolNamespace = info.currentNamespace;
-	assign.includedNamespaces = info.includedNamespaces;
-	assign.arguments.Add(info.scopes);
-	assign.symbolNode = new IntegerAssignNode(enumSymbol.size);
-	enumSymbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line, info.statementNumber));
+	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo(info.Current().line));
+	assign->arguments.Add(enumSymbol->AbsoluteName());
+	assign->symbolNode = new IntegerAssignNode(enumSymbol->Size());
+	enumSymbol->AddSymbol(Scope::Assign, assign);
 
-	Symbols eq = Symbols(SymbolType::Function);
-	eq.symbolFile = info.currentFile;
-	eq.symbolNamespace = info.currentNamespace;
-	eq.includedNamespaces = info.includedNamespaces;
-	eq.arguments.Add(info.scopes);
-	eq.arguments.Add(info.scopes);
-	eq.returnValues.Add(ScopeList::Bool);
-	eq.symbolNode = new IntegerBinaryOperatorNode(enumSymbol.size, enumSymbol.isSigned, InstructionType::Eq);
-	enumSymbol.Add(Scope::Equal, eq, FileInfo(info.filename, info.Current().line, info.statementNumber));
+	FunctionSymbol* const eq = new FunctionSymbol(info.GetFileInfo(info.Current().line));
+	eq->arguments.Add(enumSymbol->AbsoluteName());
+	eq->arguments.Add(enumSymbol->AbsoluteName());
+	eq->returnValues.Add(ScopeList::Bool);
+	eq->symbolNode = new IntegerBinaryOperatorNode(enumSymbol->Size(), enumSymbol->IsSigned(), InstructionType::Eq);
+	enumSymbol->AddSymbol(Scope::Equal, eq);
 
-	Symbols ne = Symbols(SymbolType::Function);
-	ne.symbolFile = info.currentFile;
-	ne.symbolNamespace = info.currentNamespace;
-	ne.includedNamespaces = info.includedNamespaces;
-	ne.arguments.Add(info.scopes);
-	ne.arguments.Add(info.scopes);
-	ne.returnValues.Add(ScopeList::Bool);
-	ne.symbolNode = new IntegerBinaryOperatorNode(enumSymbol.size, enumSymbol.isSigned, InstructionType::Ne);
-	enumSymbol.Add(Scope::NotEqual, ne, FileInfo(info.filename, info.Current().line, info.statementNumber));
-
-	Symbols::Add(info.scopes, enumSymbol, FileInfo(info.filename, enumLine, info.statementNumber), true);
-	en->symbol = Symbols::Find(enumSymbol.scope, FileInfo(info.filename, enumLine, info.statementNumber));
+	FunctionSymbol* const ne = new FunctionSymbol(info.GetFileInfo(info.Current().line));
+	ne->arguments.Add(enumSymbol->AbsoluteName());
+	ne->arguments.Add(enumSymbol->AbsoluteName());
+	ne->returnValues.Add(ScopeList::Bool);
+	ne->symbolNode = new IntegerBinaryOperatorNode(enumSymbol->Size(), enumSymbol->IsSigned(), InstructionType::Ne);
+	enumSymbol->AddSymbol(Scope::NotEqual, ne);
 
 	info.index++;
 
 	info.scopes = info.scopes.Pop();
 	return en;
-}
-
-NodePtr EnumParser::ParseFunction(ParsingInfo& info) {
-	if (NodePtr node = FunctionParser::Parse(info, false)) {
-		if (Pointer<EmptyNode> en = node.Cast<EmptyNode>()) {
-			if (Pointer<FunctionNode> fn = en->node.Cast<FunctionNode>()) {
-				if (!fn->s.attributes.Contains(SymbolAttribute::Static)) {
-					Symbols a = Symbols(SymbolType::Variable);
-					a.symbolNamespace = info.currentNamespace;
-					a.includedNamespaces = info.includedNamespaces;
-					a.varType = info.scopes;
-					a.attributes.Add(SymbolAttribute::Ref);
-					//a.attributes.Add(SymbolAttribute::Const);	Add to class
-
-					fn->s.arguments.Insert(0, info.scopes);
-					fn->s.names.Insert(0, Scope::Self);
-					fn->argNames.Insert(0, Scope::Self);
-
-					Symbols::Add(fn->func, fn->s, FileInfo(info.filename, info.Current().line, info.statementNumber), true);
-					fn->s = Symbols::Find(fn->func, FileInfo(info.filename, info.Current().line, info.statementNumber));
-					fn->s.Add(Scope::Self, a, FileInfo(info.filename, info.Current().line, info.statementNumber));
-				}
-
-				return en;
-			}
-		}
-	}
-
-	return nullptr;
 }
 
 List<EnumParser::EnumValue> EnumParser::ParseValues(ParsingInfo& info) {

@@ -56,6 +56,10 @@ namespace Melon {
 			///T Copy
 			Scope Copy() const;
 
+			///T Is Empty
+			/// Checks if the scope is empty
+			bool IsEmpty() const;
+
 			///H Operators
 
 			///T Equality operators

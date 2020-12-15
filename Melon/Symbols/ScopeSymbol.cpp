@@ -1,4 +1,4 @@
-#include "SymbolTable.h"
+#include "ScopeSymbol.h"
 
 #include "Symbol.h"
 #include "ScopeList.h"
@@ -12,26 +12,26 @@ using namespace Boxx;
 using namespace Melon;
 using namespace Melon::Symbols;
 
-SymbolTable SymbolTable::globalTable;
+ScopeSymbol ScopeSymbol::globalTable;
 
-SymbolTable::SymbolTable(const FileInfo& file) : MapSymbol(file) {
+ScopeSymbol::ScopeSymbol(const FileInfo& file) : MapSymbol(file) {
 	
 }
 
-SymbolTable::~SymbolTable() {
-	for (const SymbolTable* const table : scopes) {
+ScopeSymbol::~ScopeSymbol() {
+	for (const ScopeSymbol* const table : scopes) {
 		delete table;
 	}
 }
 
-SymbolTable* SymbolTable::AddScope(const FileInfo& file) {
-	SymbolTable* const table = new SymbolTable(file);
+ScopeSymbol* ScopeSymbol::AddScope(const FileInfo& file) {
+	ScopeSymbol* const table = new ScopeSymbol(file);
 	table->parent = this;
 	scopes.Add(table);
 	return table;
 }
 
-Symbol* SymbolTable::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* ScopeSymbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
 	static const Regex numReg = Regex("^%d+$");
 
 	if (index >= scopeList.Size()) return this;

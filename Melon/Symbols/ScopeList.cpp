@@ -195,6 +195,10 @@ Scope Scope::Copy() const {
 	return scope;
 }
 
+bool Scope::IsEmpty() const {
+	return name.Size() == 0 && !types && !arguments;
+}
+
 bool Scope::operator==(const Scope& scope) const {
 	if (name != scope.name) return false;
 	if (types.HasValue() != scope.types.HasValue()) return false;
