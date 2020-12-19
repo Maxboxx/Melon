@@ -3,6 +3,9 @@
 #include "Boxx/System.h"
 #include "Boxx/Array.h"
 
+#include "Melon/Symbols/SymbolTable.h"
+#include "Melon/Symbols/NamespaceSymbol.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -87,10 +90,14 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 }
 
 void IncludeParser::ParseInclude(const ScopeList& include, ParsingInfo& info) {
-	Symbols s = Symbols::Find(include.Pop(), FileInfo());
+	if (Symbol* const s = SymbolTable::Find(include.Pop(), FileInfo())) {
+		if (NamespaceSymbol* const ns = s->Cast<NamespaceSymbol>()) {
+			String dir = ns->IncludedPath() + "/" + include.Last().ToString();
 
-	if (System::DirectoryExists(s.symbolPath + "/" + include.Last().ToString())) {
-		ParseDirectory(s.symbolPath + "/" + include.Last().ToString(), include, info);
+			if (System::DirectoryExists(dir)) {
+				ParseDirectory(dir, include, info);
+			}
+		}
 	}
 }
 
@@ -122,9 +129,8 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	UInt statementNumber = info.statementNumber;
 	info.statementNumber = 1;
 
-	ScopeList scopes = info.scopes;
-	info.scopes = include;
-	info.scopes.absolute = true;
+	ScopeSymbol* const scope = info.scope;
+	info.scope = SymbolTable::Find(include, FileInfo())->Cast<NamespaceSymbol>();
 
 	CreateIncludeSymbols(filename, include);
 
@@ -139,7 +145,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	info.loops = loops;
 	info.scopeCount = scopeCount;
 	info.statementNumber = statementNumber;
-	info.scopes = scopes;
+	info.scope = scope;
 }
 
 void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList& include) {
@@ -150,7 +156,7 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 			includeScopes = includeScopes.Add(include[u]);
 		}
 
-		if (!Symbols::Contains(includeScopes)) {
+		if (!SymbolTable::Contains(includeScopes)) {
 			Array<String> dirs = filename.Replace("\\", "/").Split("/");
 			String path = dirs[0];
 
@@ -158,10 +164,8 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 				path += "/" + dirs[u];
 			}
 
-			Symbols s = Symbols(SymbolType::Namespace);
-			s.symbolNamespace = includeScopes;
-			s.symbolPath = path;
-			Symbols::Add(includeScopes, s, FileInfo(filename, 1, 0));
+			NamespaceSymbol* const ns = SymbolTable::Find(includeScopes.Pop(), FileInfo())->Cast<NamespaceSymbol>();
+			ns->AddSymbol(includeScopes.Last(), new NamespaceSymbol(path, FileInfo(filename, 1, 0)));
 		}
 	}
 }

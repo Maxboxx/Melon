@@ -35,10 +35,6 @@ namespace Melon {
 			///T Namespace
 			Symbols::ScopeList currentNamespace;
 
-			///T Scopes
-			/// Used to keep track of the current scope
-			Symbols::ScopeList scopes;
-
 			///T Tokens
 			/// The tokens to parse
 			Boxx::List<Token> tokens;
@@ -72,7 +68,7 @@ namespace Melon {
 
 			///T Scope
 			/// The symbol table for the current scope
-			ScopeSymbol* scope;
+			Symbols::ScopeSymbol* scope;
 
 			///H Methods
 

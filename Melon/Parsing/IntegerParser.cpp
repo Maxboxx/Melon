@@ -11,7 +11,7 @@ using namespace Melon::Parsing;
 NodePtr IntegerParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Integer) {
 		Pointer<IntegerNode> node = new IntegerNode(FileInfo(info.filename, info.Current().line, info.statementNumber));
-		node->scope  = info.scopes;
+		node->scope  = info.scope->AbsoluteName();
 		node->number = info.Current().value.ToULong();
 		node->isUnsigned = true;
 		info.index++;
@@ -19,7 +19,7 @@ NodePtr IntegerParser::Parse(ParsingInfo& info) {
 	}
 	else if (info.Current().type == TokenType::Minus && info.Current(1).type == TokenType::Integer) {
 		Pointer<IntegerNode> node = new IntegerNode(FileInfo(info.filename, info.Current().line, info.statementNumber));
-		node->scope  = info.scopes;
+		node->scope  = info.scope->AbsoluteName();
 		node->number = -(Long)info.Current(1).value.ToULong();
 		node->isUnsigned = false;
 		info.index += 2;
