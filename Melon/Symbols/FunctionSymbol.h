@@ -44,13 +44,25 @@ namespace Melon {
 			/// Adds an overload
 			FunctionSymbol* AddOverload(FunctionSymbol* const overload);
 
+			///T Template arguments
 			Boxx::List<ScopeList> templateArguments;
-			Boxx::List<ScopeList> returnValues;
-			Boxx::List<Scope>     arguments;
 
+			///T Return values
+			Boxx::List<ScopeList> returnValues;
+
+			///T Arguments
+			/// Argument names if the function uses a <code>Node</code>
+			/// Argument types if the function uses a <code>SymbolNode</code>
+			Boxx::List<ScopeList> arguments;
+
+			///T Node
+			/// The node to use for the compilation of the function
+			///M
 			Boxx::Pointer<Nodes::SymbolNode> symbolNode;
 			Boxx::Pointer<Node> node;
+			///M
 
+			///T Function attrubutes
 			FunctionAttributes attributes = FunctionAttributes::None;
 
 		protected:

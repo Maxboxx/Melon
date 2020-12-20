@@ -90,13 +90,11 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 }
 
 void IncludeParser::ParseInclude(const ScopeList& include, ParsingInfo& info) {
-	if (Symbol* const s = SymbolTable::Find(include.Pop(), FileInfo())) {
-		if (NamespaceSymbol* const ns = s->Cast<NamespaceSymbol>()) {
-			String dir = ns->IncludedPath() + "/" + include.Last().ToString();
+	if (NamespaceSymbol* const ns = SymbolTable::Find<NamespaceSymbol>(include.Pop(), FileInfo())) {
+		String dir = ns->IncludedPath() + "/" + include.Last().ToString();
 
-			if (System::DirectoryExists(dir)) {
-				ParseDirectory(dir, include, info);
-			}
+		if (System::DirectoryExists(dir)) {
+			ParseDirectory(dir, include, info);
 		}
 	}
 }
@@ -130,7 +128,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	info.statementNumber = 1;
 
 	ScopeSymbol* const scope = info.scope;
-	info.scope = SymbolTable::Find(include, FileInfo())->Cast<NamespaceSymbol>();
+	info.scope = SymbolTable::Find<NamespaceSymbol>(include, FileInfo());
 
 	CreateIncludeSymbols(filename, include);
 
@@ -164,7 +162,7 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 				path += "/" + dirs[u];
 			}
 
-			NamespaceSymbol* const ns = SymbolTable::Find(includeScopes.Pop(), FileInfo())->Cast<NamespaceSymbol>();
+			NamespaceSymbol* const ns = SymbolTable::Find<NamespaceSymbol>(includeScopes.Pop(), FileInfo());
 			ns->AddSymbol(includeScopes.Last(), new NamespaceSymbol(path, FileInfo(filename, 1, 0)));
 		}
 	}

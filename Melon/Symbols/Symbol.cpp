@@ -19,6 +19,11 @@ Symbol* Symbol::Parent() const {
 	return parent;
 }
 
+template <class T>
+T* Symbol::Parent() const {
+	return parent->Cast<T>();
+}
+
 Scope Symbol::Name() const {
 	return name;
 }
@@ -33,15 +38,11 @@ ScopeList Symbol::AbsoluteName() const {
 }
 
 Symbol* Symbol::Type() {
-	return this;
+	return nullptr;
 }
 
 bool Symbol::IsType() const {
 	return false;
-}
-
-UInt Symbol::Size() const {
-	return 0;
 }
 
 Symbol* Symbol::Find(const Scope& scope, const FileInfo& file) {
@@ -50,6 +51,16 @@ Symbol* Symbol::Find(const Scope& scope, const FileInfo& file) {
 
 Symbol* Symbol::Find(const ScopeList& scopeList, const FileInfo& file) {
 	return Find(scopeList, 0, file);
+}
+
+template <class T>
+T* Symbol::Find(const Scope& scope, const FileInfo& file) {
+	return Find(ScopeList().Add(scope), file)->Cast<T>();
+}
+
+template <class T>
+T* Symbol::Find(const ScopeList& scopeList, const FileInfo& file) {
+	return Find(scopeList, 0, file)->Cast<T>();
 }
 
 Symbol* Symbol::Contains(const Scope& scope) {
@@ -62,6 +73,20 @@ Symbol* Symbol::Contains(const ScopeList& scopeList) {
 	ErrorLog::Revert();
 
 	return symbol;
+}
+
+template <class T>
+T* Symbol::Contains(const Scope& scope) {
+	return Contains(ScopeList().Add(scope))->Cast<T>();
+}
+
+template <class T>
+T* Symbol::Contains(const ScopeList& scopeList) {
+	ErrorLog::AddMarker();
+	Symbol* const symbol = Find(scopeList, 0, FileInfo());
+	ErrorLog::Revert();
+
+	return symbol->Cast<T>();
 }
 
 Symbol* Symbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {

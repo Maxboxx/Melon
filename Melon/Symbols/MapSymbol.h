@@ -15,7 +15,10 @@ namespace Melon {
 			/// Adds a symbol to the table
 			///R Symbol*: The new symbol
 			/// <code>nullptr</code> if the symbol already exists
-			Symbol* AddSymbol(const Scope& name, Symbol* const symbol);
+			///M
+			template <class T>
+			T* AddSymbol(const Scope& name, T* const symbol);
+			///M
 
 		protected:
 			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);

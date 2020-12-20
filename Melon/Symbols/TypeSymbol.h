@@ -11,7 +11,9 @@ namespace Melon {
 			TypeSymbol(const Boxx::UInt size, const FileInfo& file);
 			~TypeSymbol();
 
-			Boxx::UInt Size() const;
+			///T Size
+			/// Gets the stack size of the type
+			virtual Boxx::UInt Size() const;
 
 		protected:
 			Boxx::UInt size;

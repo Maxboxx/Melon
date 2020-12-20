@@ -24,6 +24,13 @@ namespace Melon {
 			/// Gets the parent symbol
 			Symbol* Parent() const;
 
+			///T Specific Parent
+			/// Gets the parent symbol if the parent is of a specific type
+			///M
+			template <class T>
+			T* Parent() const;
+			///M
+
 			///T Name
 			/// Gets the name of the symbol
 			Scope Name() const;
@@ -34,15 +41,12 @@ namespace Melon {
 
 			///T Type
 			/// Gets the type of the symbol
+			///R Symbol*: The symbol of the type or <code>nullptr</code> if the symbol does not have a type
 			virtual Symbol* Type();
 
 			///T Is Type
 			/// Checks if the symbol is a type
 			virtual bool IsType() const;
-
-			///T Size
-			/// Gets the size of the symbol
-			virtual Boxx::UInt Size() const;
 
 			///T Find
 			/// Finds a specific symbol
@@ -52,12 +56,31 @@ namespace Melon {
 			Symbol* Find(const ScopeList& scopeList, const FileInfo& file);
 			///M
 
+			///T Find Specific type
+			/// Finds a specific symbol of a specific symbol type specified by the template argument
+			///M
+			template <class T>
+			T* Find(const Scope& scope, const FileInfo& file);
+			template <class T>
+			T* Find(const ScopeList& scope, const FileInfo& file);
+			///M
+
 			///T Contains
 			/// Checks if the specified symbol exists and returns it
 			/// If the symbol was not found <code>nullptr</code> is returned
 			///M
 			Symbol* Contains(const Scope& scope);
 			Symbol* Contains(const ScopeList& scopeList);
+			///M
+
+			///T Contains Specific type
+			/// Checks if the specified symbol of the specified type exists and returns it
+			/// If the symbol was not found <code>nullptr</code> is returned
+			///M
+			template <class T>
+			T* Contains(const Scope& scope);
+			template <class T>
+			T* Contains(const ScopeList& scope);
 			///M
 
 			///T Is

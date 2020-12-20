@@ -20,7 +20,8 @@ MapSymbol::~MapSymbol() {
 	}
 }
 
-Symbol* MapSymbol::AddSymbol(const Scope& name, Symbol* const symbol) {
+template <class T>
+T* MapSymbol::AddSymbol(const Scope& name, T* const symbol) {
 	try {
 		symbols.Add(name, symbol);
 		symbol->name = name;

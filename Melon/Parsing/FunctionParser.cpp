@@ -25,7 +25,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, parent == nullptr)) {
 		const FunctionHead funcHead = (FunctionHead)fh;
-		Pointer<FunctionNode> func = new FunctionNode(info.scopes, info.GetFileInfo(startLine));
+		Pointer<FunctionNode> func = new FunctionNode(info.scope->AbsoluteName(), info.GetFileInfo(startLine));
 
 		UInt line = 0;
 
@@ -57,7 +57,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 			var->attributes = arg.attributes;
 			funcSym->AddSymbol(arg.name, var);
 
-			funcSym->arguments.Add(arg.name);
+			funcSym->arguments.Add(ScopeList().Add(arg.name));
 		}
 
 		UInt loops = info.loops;

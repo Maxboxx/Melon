@@ -11,6 +11,8 @@
 
 #include "Melon/Nodes/RootNode.h"
 
+#include "Melon/Symbols/SymbolTable.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -82,7 +84,7 @@ ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options
 	info.loops = 0;
 	info.scopeCount = 0;
 	info.statementNumber = 1;
-	info.scopes.absolute = true;
+	info.scope = SymbolTable::Find<ScopeSymbol>(ScopeList(), FileInfo());
 
 	ParseFile(filename, info);
 

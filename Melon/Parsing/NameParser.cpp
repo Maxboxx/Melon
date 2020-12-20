@@ -11,7 +11,7 @@ using namespace Melon::Parsing;
 
 NodePtr NameParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Name) {
-		Pointer<NameNode> node = new NameNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+		Pointer<NameNode> node = new NameNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current().line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
 		node->name = Scope(info.Current().value);
 		info.index++;
 		return node;

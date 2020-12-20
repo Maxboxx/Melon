@@ -63,7 +63,7 @@ NodePtr GuardParser::Parse(ParsingInfo& info) {
 			info.scopeCount--;
 		}
 
-		info.scope = info.scope->Parent()->Cast<ScopeSymbol>();
+		info.scope = info.scope->Parent<ScopeSymbol>();
 		info.statementNumber++;
 		return gn;
 	}

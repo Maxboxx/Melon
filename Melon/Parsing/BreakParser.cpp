@@ -12,7 +12,7 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Break) {
 		info.index++;
 
-		Pointer<BreakNode> bn = new BreakNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		Pointer<BreakNode> bn = new BreakNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		bn->isBreak = true;
 		bn->loops = 1;
 		bn->breakBool = false;

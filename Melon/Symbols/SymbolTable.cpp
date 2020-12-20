@@ -14,3 +14,13 @@ Symbol* SymbolTable::Find(const ScopeList& name, const FileInfo& file) {
 Symbol* SymbolTable::Contains(const ScopeList& name) {
 	return symbols->Contains(name);
 }
+
+template <class T>
+T* SymbolTable::Find(const ScopeList& name, const FileInfo& file) {
+	return symbols->Find(name, file)->Cast<T>();
+}
+
+template <class T>
+T* SymbolTable::Contains(const ScopeList& name) {
+	return symbols->Contains(name)->Cast<T>();
+}

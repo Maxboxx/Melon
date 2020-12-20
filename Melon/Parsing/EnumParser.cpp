@@ -55,11 +55,11 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	// TODO: size
 	EnumSymbol* enumSymbol = new EnumSymbol(1, false, info.GetFileInfo(enumLine));
 
-	Pointer<EnumNode> en = new EnumNode(info.scopes, info.GetFileInfo(enumLine));
+	Pointer<EnumNode> en = new EnumNode(info.scope->AbsoluteName(), info.GetFileInfo(enumLine));
 
 	en->name = enumName;
 
-	enumSymbol = info.scope->AddSymbol(enumName, enumSymbol)->Cast<EnumSymbol>();
+	enumSymbol = info.scope->AddSymbol(enumName, enumSymbol);
 	en->symbol = enumSymbol;
 
 	List<EnumValue> values = ParseValues(info);
@@ -98,7 +98,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 
 	info.index++;
 
-	info.scopes = info.scopes.Pop();
+	info.scope = info.scope->Parent<ScopeSymbol>();
 	return en;
 }
 

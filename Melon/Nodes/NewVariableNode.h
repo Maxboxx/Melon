@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+
 namespace Melon {
 	namespace Nodes {
 
@@ -21,7 +23,7 @@ namespace Melon {
 
 			///T Attributes
 			/// All attributes for each variable
-			Boxx::List<Boxx::Set<Symbols::SymbolAttribute>> attributes;
+			Boxx::List<Symbols::VariableAttributes> attributes;
 
 			NewVariableNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~NewVariableNode();
