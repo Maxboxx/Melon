@@ -65,6 +65,8 @@ namespace Melon {
 			///T Function attrubutes
 			FunctionAttributes attributes = FunctionAttributes::None;
 
+			virtual Scope Name() const override;
+
 		protected:
 			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
 

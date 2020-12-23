@@ -24,7 +24,7 @@ Scope Symbol::Name() const {
 }
 
 ScopeList Symbol::AbsoluteName() const {
-	if (parent) {
+	if (parent && parent->parent) {
 		return parent->AbsoluteName().Add(Name());
 	}
 	else {

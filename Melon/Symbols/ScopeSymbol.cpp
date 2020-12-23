@@ -25,6 +25,7 @@ ScopeSymbol::~ScopeSymbol() {
 ScopeSymbol* ScopeSymbol::AddScope(const FileInfo& file) {
 	ScopeSymbol* const table = new ScopeSymbol(file);
 	table->parent = this;
+	table->name   = Scope(String::ToString(scopes.Size()));
 	scopes.Add(table);
 	return table;
 }

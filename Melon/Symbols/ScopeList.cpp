@@ -403,4 +403,4 @@ void ScopeList::operator=(const ScopeList& scopeList) {
 	}
 }
 
-const ScopeList ScopeList::undefined = ScopeList(true).Add(Scope("<undefined>"));
+const ScopeList ScopeList::undefined = ScopeList(true).Add(Scope("???"));

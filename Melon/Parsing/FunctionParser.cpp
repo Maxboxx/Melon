@@ -412,6 +412,7 @@ List<FunctionParser::Argument> FunctionParser::ParseArguments(ParsingInfo& info)
 		}
 	}
 
+	info.index++;
 	return arguments;
 }
 
@@ -424,10 +425,11 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 	funcHead.isMethod   = !isPlain || (funcHead.attributes & FunctionAttributes::Static) == FunctionAttributes::None;
 
 	if (info.Current().type != TokenType::Function) {
-		if (funcHead.attributes == FunctionAttributes::None) {
+		if (funcHead.attributes != FunctionAttributes::None) {
 			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'function'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-			return nullptr;
 		}
+
+		return nullptr;
 	}
 
 	if (info.Next().type == TokenType::Operator && !isPlain) {

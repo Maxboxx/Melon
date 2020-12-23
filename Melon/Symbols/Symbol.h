@@ -33,7 +33,7 @@ namespace Melon {
 
 			///T Name
 			/// Gets the name of the symbol
-			Scope Name() const;
+			virtual Scope Name() const;
 
 			///T Absolute Name
 			/// Gets the absolute name of the symbol

@@ -58,8 +58,10 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 		if (!found) break;
 	}
 
-	if (info.Current().type != TokenType::End)
+	if (info.Current().type != TokenType::End) {
 		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("struct", structLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		return nullptr;
+	}
 
 	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo(info.Current().line));
 	assign->arguments.Add(sn->symbol->AbsoluteName());
@@ -67,8 +69,6 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	sn->symbol->AddSymbol(Scope::Assign, assign);
 
 	info.index++;
-
-	info.scope = info.scope->Parent<ScopeSymbol>();
 	return sn;
 }
 

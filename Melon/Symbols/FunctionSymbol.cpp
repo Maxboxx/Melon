@@ -1,5 +1,7 @@
 #include "FunctionSymbol.h"
 
+#include "VariableSymbol.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -48,4 +50,37 @@ Symbol* FunctionSymbol::Find(const ScopeList& scopeList, const UInt index, const
 
 	FindError(scopeList, index, file);
 	return nullptr;
+}
+
+Scope FunctionSymbol::Name() const {
+	if (!overloads.IsEmpty()) {
+		return name;
+	}
+	else {
+		Scope name = this->name;
+
+		if (!templateArguments.IsEmpty()) {
+			name.types = templateArguments;
+		}
+		
+		if (symbolNode) {
+			name.arguments = arguments;
+			return name;
+		}
+		else {
+			List<ScopeList> args;
+
+			for (UInt i = 0; i < arguments.Size(); i++) {
+				if (Symbol* const type = Argument(i)) {
+					args.Add(type->AbsoluteName());
+				}
+				else {
+					args.Add(ScopeList::undefined);
+				}
+			}
+
+			name.arguments = args;
+			return name;
+		}
+	}
 }
