@@ -33,10 +33,6 @@ CompiledNode BooleanNode::Compile(CompileInfo& info) {
 	return node;
 }
 
-Mango BooleanNode::ToMango() const {
-	return Mango("bool", boolean);
-}
-
 StringBuilder BooleanNode::ToMelon(const UInt indent) const {
 	return String(boolean ? "true" : "false");
 }

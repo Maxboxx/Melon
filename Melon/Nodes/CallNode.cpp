@@ -32,6 +32,7 @@ Symbols CallNode::GetFunc() const {
 		argTypes.Add(node->Type());
 	}
 
+	/* TODO: node
 	Symbols s;
 
 	UInt errorCount = ErrorLog::ErrorCount();
@@ -66,7 +67,9 @@ Symbols CallNode::GetFunc() const {
 	}
 
 	ErrorLog::Error(SymbolError(SymbolError::Function(type.ToString(), argStr), file));
-	return Symbols();
+	*/
+
+	return Symbols::Symbols();
 }
 
 bool CallNode::IsSelfPassing() const {
@@ -75,11 +78,13 @@ bool CallNode::IsSelfPassing() const {
 }
 
 bool CallNode::IsInit() const {
+	/* TODO: node
 	Symbols s = node->GetSymbol();
 
 	if (s.type == SymbolType::Struct) {
 		return !isMethod;
 	}
+	*/
 
 	return false;
 }
@@ -89,6 +94,7 @@ ScopeList CallNode::Type() const {
 }
 
 List<ScopeList> CallNode::Types() const {
+	/* TODO: node
 	Symbols s = GetFunc();
 
 	List<ScopeList> types;
@@ -117,9 +123,13 @@ List<ScopeList> CallNode::Types() const {
 	}
 
 	return types;
+	*/
+
+	return List<ScopeList>();
 }
 
 CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+	/* TODO: node
 	Symbols s = GetFunc();
 
 	StackPtr stack = info.stack;
@@ -361,6 +371,9 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		info.stack.top = stack.top;
 		return c;
 	}
+	*/
+
+	return CompiledNode();
 }
 
 void CallNode::IncludeScan(ParsingInfo& info) {
@@ -374,6 +387,7 @@ void CallNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node->Scan(info);
 
+	/* TODO: node
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 	}
@@ -425,6 +439,7 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 
 		ScanAssignment(new TypeNode(type.scope), arg, info, node->file);
 	}
+	*/
 
 	return scanSet;
 }
@@ -437,20 +452,6 @@ NodePtr CallNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango CallNode::ToMango() const {
-	Mango call = Mango(GetFunc().scope.ToString(), MangoType::Map);
-	call.Add("value", node->ToMango());
-
-	Mango args = Mango(MangoType::List);
-
-	for (NodePtr node : this->args)
-		args.Add(node->ToMango());
-
-	call.Add("args", args);
-
-	return call;
 }
 
 StringBuilder CallNode::ToMelon(const UInt indent) const {

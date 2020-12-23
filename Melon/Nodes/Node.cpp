@@ -108,7 +108,7 @@ void Node::IncludeScan(ParsingInfo& info) {
 }
 
 Symbols Node::GetSymbol() const {
-	return Symbols();
+	return Symbols::Symbols();
 }
 
 UInt Node::GetSize() const {
@@ -130,13 +130,17 @@ Long Node::GetImmediate() const {
 void Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
 	List<ScopeList> args;
 	args.Add(value->Type());
+
+	/* TODO: node
 	Symbols::FindFunction(var->Type().Add(Scope::Assign), args, file);
+	*/
 }
 
 CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file) {
 	List<ScopeList> args;
 	args.Add(value->Type());
 
+	/* TODO: node
 	Symbols assign = Symbols::FindFunction(var->Type().Add(Scope::Assign), args, file);
 
 	if (assign.type != SymbolType::None) {
@@ -154,6 +158,9 @@ CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& in
 	else {
 		return CompiledNode();
 	}
+	*/
+
+	return CompiledNode();
 }
 
 bool Node::IsEmpty(const NodePtr& node) {

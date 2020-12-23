@@ -25,8 +25,6 @@ namespace Melon {
 
 		private:
 			Boxx::List<ScopeSymbol*> scopes;
-
-			static ScopeSymbol globalTable;
 		};
 	}
 }

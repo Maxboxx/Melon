@@ -62,16 +62,6 @@ Set<ScanType> BreakNode::Scan(ScanInfoStack& info) {
 	return Set<ScanType>();
 };
 
-Mango BreakNode::ToMango() const {
-	Mango m = Mango(scopeWise ? "break!" : (isBreak ? "break" : "abort"), MangoType::List);
-	m.Add(Mango(scopeWise ? (Int)loops - 1 : (Int)loops));
-
-	if (isBreak && !scopeWise)
-		m.Add(Mango((bool)breakBool));
-
-	return m;
-}
-
 StringBuilder BreakNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = String(scopeWise ? "break!" : (isBreak ? "break" : "abort"));
 	sb += " ";

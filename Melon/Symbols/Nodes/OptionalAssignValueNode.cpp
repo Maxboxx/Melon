@@ -24,6 +24,7 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 	const ScopeList type = nodes[0]->Type();
 	const bool isNil = nodes[1]->Type() == ScopeList::Nil;
 
+	/* TODO: node
 	Symbols s = Symbols::Find(type, nodes[0]->file);
 	UInt offset = 0;
 
@@ -63,6 +64,7 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 	}
 
 	info.important = important;
+	*/
 
 	return c1;
 }

@@ -55,6 +55,7 @@ List<Pair<ScopeList, NodePtr>> AssignNode::Values() const {
 UInt AssignNode::GetSize() const {
 	UInt size = 0;
 
+	/* TODO: node
 	for (UInt i = 0; i < vars.Size(); i++) {
 		if (types[i] == ScopeList::Discard || vars[i].Is<DiscardNode>()) continue;
 
@@ -67,6 +68,7 @@ UInt AssignNode::GetSize() const {
 			size += s.GetType(file).size;
 		}
 	}
+	*/
 
 	return size;
 }
@@ -76,6 +78,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 	UInt varSize = 0;
 
+	/* TODO: node
 	for (UInt i = 0; i < vars.Size(); i++) {
 		if (types[i] == ScopeList::Discard || vars[i].Is<DiscardNode>()) continue;
 
@@ -91,6 +94,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 		Symbols::Find(Symbols::ReplaceTemplates(scope, file), file).Get(vars[i].Cast<NameNode>()->name, file).stackIndex = info.stack.top;
 	}
+	*/
 
 	List<Pair<ScopeList, NodePtr>> values = Values();
 	List<UInt> returnOffsets;
@@ -111,12 +115,14 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			}
 
 			if (i + 1 >= this->values.Size()) {
+				/* TODO: node
 				UInt size = info.stack.top + Symbols::Find(values[i].key, values[i].value->file).size;
 
 				for (UInt u = i + 1; u < values.Size(); u++) {
 					size += Symbols::Find(values[u].key, values[i].value->file).size;
 					returnOffsets.Add(size);
 				}
+				*/
 			}
 			else {
 				info.stack.PopExpr(frame, c);
@@ -145,6 +151,7 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 	for (const ScopeList& type : types) {
 		if (type == ScopeList::Discard) continue;
 
+		/* TODO: node
 		while (true) {
 			ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 
@@ -167,6 +174,7 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 
 			if (done) break;
 		}
+		*/
 	}
 
 	for (NodePtr var : vars) {
@@ -203,17 +211,21 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 			for (const ScanType type : node->Scan(info)) {
 				scanSet.Add(type);
 
+				/* TODO: node
 				if (type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 					ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 				}
+				*/
 			}
 		//}
 
 		if (info.Get().init) {
 			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 				if (nn->name == Scope::Self) {
+					/* TODO: node
 					Symbols::Find(nn->Type(), file).AssignAll();
 					scanSet.Remove(ScanType::Self);
+					*/
 				}
 			}
 		}
@@ -229,9 +241,11 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
 
+			/* TODO: node
 			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
+			*/
 		}
 	}
 
@@ -263,11 +277,13 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 			continue;
 		}
 
+		/* TODO: node
 		if (vars[i]->GetSymbol().IsVariable() && !vars[i]->HasSideEffects(scope) && !info.usedVariables.Contains(vars[i]->GetSymbol().scope)) {
 			vars[i] = new DiscardNode(vars[i]->scope, vars[i]->file);
 			info.optimized = true;
 			removed = true;
 		}
+		*/
 	}
 
 	if (removed) for (UInt i = values.Size(); i > 0;) {
@@ -323,44 +339,6 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango AssignNode::ToMango() const {
-	Mango assign = Mango("assign", MangoType::List);
-
-	for (UInt i = 0; i < vars.Size(); i++) {
-		List<ScopeList> args;
-
-		if (values.Size() > i) {
-			args.Add(values[i]->Type());
-		}
-		else {
-			args.Add(values.Last()->Types()[i - values.Size() + 1]);
-		}
-
-		if (!vars[i].Is<DiscardNode>()) {
-			const ScopeList op = Symbols::FindFunction(vars[i]->Type().Add(Scope::Assign), args, vars[i]->file).scope;
-
-			Mango mango = Mango(op.ToString(), MangoType::List);
-			mango.Add(vars[i]->ToMango());
-
-			if (values.Size() > i) {
-				mango.Add(values[i]->ToMango());
-			}
-
-			assign.Add(mango);
-		}
-		else {
-			if (values.Size() > i) {
-				assign.Add(values[i]->ToMango());
-			}
-			else {
-				assign.Add(Mango(MangoType::Nil));
-			}
-		}
-	}
-
-	return assign;
 }
 
 StringBuilder AssignNode::ToMelon(const UInt indent) const {

@@ -20,21 +20,6 @@ MapSymbol::~MapSymbol() {
 	}
 }
 
-template <class T>
-T* MapSymbol::AddSymbol(const Scope& name, T* const symbol) {
-	try {
-		symbols.Add(name, symbol);
-		symbol->name = name;
-		symbol->parent = this;
-		return symbol;
-	}
-	catch (MapKeyError& e) {
-		if (symbol->parent == nullptr) delete symbol;
-		ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + name.ToString() + SymbolError::RedefinitionEnd, symbol->file));
-		return nullptr;
-	}
-}
-
 Symbol* MapSymbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
 	if (index >= scopeList.Size()) return this;
 

@@ -16,22 +16,6 @@ using namespace Kiwi;
 
 using namespace Melon;
 
-// TODO: Cleanup code
-
-// TODO: Template name info
-// TODO: Pointerify Symbol
-// TODO: Remove Set<ScanType>
-// TODO: Kiwi number constant smallest size
-// TODO: Kiwi number comparison update sign
-// TODO: Kiwi data/code reposition
-// TODO: Combined assignment operators
-// TODO: Combined comarison operator
-// TODO: Add specific error for single assignment
-// TODO: Static variables
-// TODO: Improve error messages
-// TODO: Error for unwrap operator
-// TODO: FindSideEffectScope for assignments
-
 int main() {
 	try {
 		CompilerOptions options = CompilerOptions::LoadFromFile("code/options.mango");

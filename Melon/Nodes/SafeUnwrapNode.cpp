@@ -21,11 +21,19 @@ SafeUnwrapNode::~SafeUnwrapNode() {
 }
 
 ScopeList SafeUnwrapNode::Type() const  {
+	/* TODO: node
 	return Symbols::Find(node->Type(), file).Get(Scope::Value, file).varType;
+	*/
+
+	return ScopeList();
 }
 
-Symbols SafeUnwrapNode::GetSymbol() const  {
+Melon::Symbols::Symbols SafeUnwrapNode::GetSymbol() const {
+	/* TODO: node
 	return Symbols::Find(Type(), file);
+	*/
+
+	return Symbols::Symbols();
 }
 
 CompiledNode SafeUnwrapNode::Compile(CompileInfo& info)  {
@@ -58,12 +66,6 @@ NodePtr SafeUnwrapNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 
 	return nullptr;
-}
-
-Mango SafeUnwrapNode::ToMango() const  {
-	Mango mango = Mango("?", MangoType::List);
-	mango.Add(node->ToMango());
-	return mango;
 }
 
 StringBuilder SafeUnwrapNode::ToMelon(const UInt indent) const  {

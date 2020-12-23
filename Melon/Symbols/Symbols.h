@@ -190,11 +190,14 @@ namespace Melon {
 
 			~Symbols();
 
+			/*
 		private:
 			Symbols& GetTemplate(const Scope& scope, const FileInfo& file);
-
+			*/
 		public:
 			struct TemplateSymbol;
+
+			/*
 
 			static Boxx::Tuple<Symbols, Boxx::List<ScopeList>> FindTemplateArgs(const TemplateSymbol& symbol);
 
@@ -409,6 +412,7 @@ namespace Melon {
 			static Symbols empty;
 
 			Boxx::List<Boxx::Mango> ToMangoList(const ScopeList& scopes);
+			*/
 		};
 
 		struct Symbols::TemplateSymbol {

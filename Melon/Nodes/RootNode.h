@@ -40,7 +40,6 @@ namespace Melon {
 			/// Returns the instruction list from <code>Node::Compile()</code>
 			Boxx::List<Optimizing::OptimizerInstruction> Compile(const Boxx::Set<Symbols::ScopeList>& usedVariables);
 
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;

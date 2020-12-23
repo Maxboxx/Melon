@@ -50,8 +50,10 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 
 		mov.sizes[0] = size;
 		mov.sizes[1] = size;
+		/* TODO: node
 		mov.signs[0] = Symbols::Find(nodes[0]->Type(), nodes[0]->file).isSigned;
 		mov.signs[1] = Symbols::Find(nodes[1]->Type(), nodes[1]->file).isSigned;
+		*/
 		mov.arguments.Add(arg1);
 		mov.arguments.Add(c1.argument);
 
@@ -77,8 +79,10 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 	Instruction inst = Instruction(op);
 	inst.sizes[0] = c1.size;
 	inst.sizes[1] = nodes[1]->IsImmediate() ? Math::Max(c1.size, c2.size) : c2.size;
+	/* TODO: node
 	inst.signs[0] = Symbols::Find(nodes[0]->Type(), nodes[0]->file).isSigned;
 	inst.signs[1] = Symbols::Find(nodes[1]->Type(), nodes[1]->file).isSigned;
+	*/
 	inst.arguments.Add(arg1);
 	inst.arguments.Add(c2.argument);
 

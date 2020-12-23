@@ -28,6 +28,8 @@ ScopeList UnaryOperatorNode::Type() const {
 	args.Add(node->Type());
 
 	const ScopeList type = node->Type();
+
+	/* TODO: node
 	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);
 
 	if (s.type != SymbolType::None && !s.returnValues.IsEmpty()) {
@@ -40,16 +42,19 @@ ScopeList UnaryOperatorNode::Type() const {
 			return s2.scope;
 		}
 	}
+	*/
 
 	return ScopeList::undefined;
 }
 
 Symbols UnaryOperatorNode::GetSymbol() const {
+	/* TODO: node
 	if (op == Scope::Unwrap) {
 		return Symbols::Find(node->Type(), file).Get(Scope::Value, file);
 	}
+	*/
 
-	return Symbols();
+	return Symbols::Symbols();
 }
 
 Scope UnaryOperatorNode::GetOperator() const {
@@ -64,6 +69,8 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 	args.Add(node->Type());
 
 	const ScopeList type = node->Type();
+
+	/* TODO: node
 	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);
 
 	if (s.symbolNode) {
@@ -80,6 +87,9 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 		cn->op = true;
 		return cn->Compile(info);
 	}
+	*/
+
+	return CompiledNode();
 }
 
 void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
@@ -94,6 +104,7 @@ Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
 		ErrorLog::Warning(WarningError("unwrap operator does not work properly for nil values", file));
 	}
 
+	/* TODO: node
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 	}
@@ -102,7 +113,9 @@ Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	args.Add(node->Type());
 
 	const ScopeList type = node->Type();
+
 	Symbols::FindFunction(type.Add(op), args, file);
+	*/
 
 	return scanSet;
 }
@@ -126,18 +139,6 @@ NodePtr UnaryOperatorNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango UnaryOperatorNode::ToMango() const {
-	List<ScopeList> args;
-	args.Add(node->Type());
-
-	const ScopeList type = node->Type();
-	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);
-
-	Mango mango = Mango(s.scope.ToString(), MangoType::List);
-	mango.Add(node->ToMango());
-	return mango;
 }
 
 StringBuilder UnaryOperatorNode::ToMelon(const UInt indent) const {

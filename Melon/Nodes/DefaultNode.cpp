@@ -22,9 +22,11 @@ DefaultNode::~DefaultNode() {
 
 ScopeList DefaultNode::Type() const {
 	ScopeList type = node1->Type();
+	/* TODO: node
 	type = Symbols::Find(type, file).Get(Scope::Value, file).varType;
 
 	if (!Symbols::HasImplicitConversion(node2->Type(), type)) ErrorLog::Error(TypeError(TypeError::DefaultType, file));
+	*/
 
 	return type;
 }
@@ -35,6 +37,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 
 	List<UInt> jumps;
 
+	/* TODO: node
 	info.stack.PushExpr(Symbols::Find(Type(), file).size, cn);
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
@@ -71,6 +74,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.instructions[jmp].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 
 	info.stack.Pop(Symbols::Find(Type(), file).size);
+	*/
 
 	return cn;
 }
@@ -85,6 +89,7 @@ Set<ScanType> DefaultNode::Scan(ScanInfoStack& info) {
 
 	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
 
+	/* TODO: node
 	for (const ScanType type : node1->Scan(info)) {
 		scanSet.Add(type);
 
@@ -104,6 +109,7 @@ Set<ScanType> DefaultNode::Scan(ScanInfoStack& info) {
 	Symbols::Find(Type(), file);
 	ScanAssignment(new TypeNode(Type()), new TypeNode(Symbols::Find(node1->Type(), node1->file).Get(Scope::Value, node1->file).varType), info, file);
 	ScanAssignment(new TypeNode(Type()), node2, info, file);
+	*/
 
 	info.Get().scopeInfo = scopeInfo;
 	return scanSet;
@@ -118,13 +124,6 @@ NodePtr DefaultNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = node2->Optimize(info)) node2 = node;
 
 	return nullptr;
-}
-
-Mango DefaultNode::ToMango() const {
-	Mango mango = Mango("??", MangoType::List);
-	mango.Add(node1->ToMango());
-	mango.Add(node2->ToMango());
-	return mango;
 }
 
 StringBuilder DefaultNode::ToMelon(const UInt indent) const {

@@ -26,8 +26,9 @@ ReturnNode::~ReturnNode() {
 }
 
 List<Symbols> ReturnNode::GetTypes() const {
-	List<Symbols> types;
+	List<Symbols::Symbols> types;
 
+	/* TODO: node
 	Symbols s = Symbols::Find(Symbols::ReplaceTemplates(func, file), file);
 	
 	for (ScopeList type : s.returnValues) {
@@ -40,11 +41,13 @@ List<Symbols> ReturnNode::GetTypes() const {
 			types.Add(sym);
 		}
 	}
+	*/
 
 	return types;
 }
 
 CompiledNode ReturnNode::Compile(CompileInfo& info) {
+	/* TODO: node
 	Symbols s = Symbols::Find(Symbols::ReplaceTemplates(func, file), file);
 
 	UInt stackOffset = info.stack.ptrSize + info.stack.frame;
@@ -64,10 +67,12 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 			stackOffset += sym.size;
 		}
 	}
+	*/
 
 	CompiledNode c;
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
+		/* TODO: node
 		stackOffset -= types[i].size;
 
 		Pointer<MemoryNode> sn = new MemoryNode(stackOffset);
@@ -76,6 +81,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 		info.important = true;
 		c.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
 		info.important = false;
+		*/
 	}
 
 	info.stack.PopExpr(0, c);
@@ -105,6 +111,7 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
+	/* TODO: node
 	Symbols s = Symbols::Find(Symbols::ReplaceTemplates(func, file), file);
 
 	if (s.returnValues.Size() != nodes.Size()) {
@@ -122,6 +129,7 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 		if (i >= types.Size()) break;
 		ScanAssignment(new TypeNode(types[i].scope), nodes[i], info, nodes[i]->file);
 	}
+	*/
 
 	return scanSet;
 }
@@ -142,15 +150,6 @@ NodePtr ReturnNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango ReturnNode::ToMango() const {
-	Mango m = Mango("return", MangoType::List);
-
-	for (NodePtr node : nodes)
-		m.Add(node->ToMango());
-
-	return m;
 }
 
 StringBuilder ReturnNode::ToMelon(const UInt indent) const {

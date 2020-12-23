@@ -12,7 +12,7 @@
 
 namespace Melon {
 	namespace Symbols {
-		class Symbols;
+		class FunctionSymbol;
 	}
 
 	///B ErrorLog
@@ -158,7 +158,7 @@ namespace Melon {
 		}
 
 		///T Func Not Return
-		static Boxx::String FuncNotReturn(const Symbols::Symbols& func);
+		static Boxx::String FuncNotReturn(const Symbols::FunctionSymbol* func);
 
 		///T Return
 		static Boxx::String Return(const Boxx::UInt funcRetCount, const Boxx::UInt args);

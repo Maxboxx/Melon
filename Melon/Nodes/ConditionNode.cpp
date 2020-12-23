@@ -39,6 +39,7 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		CompiledNode c = assign->values[0]->Compile(info);
 
+		/* TODO: node
 		Symbols s = Symbols::Find(assign->values[0]->Type(), file);
 		Argument argCopy = c.argument;
 		argCopy.mem.offset++;
@@ -70,6 +71,7 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 		c.instructions.Add(Instruction::Label(info.label++));
 
 		return c;
+		*/
 	}
 	else {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
@@ -88,6 +90,7 @@ Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		NodePtr tempValue = assign->values[0];
 
+		/* TODO: node
 		Symbols s = Symbols::Find(assign->values[0]->Type(), file);
 
 		if (s.scope.Size() > 0 && s.scope[0].name == Scope::Optional.name) {
@@ -102,6 +105,7 @@ Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
 
 		assign->values[0] = tempValue;
 		return scanSet;
+		*/
 	}
 	else {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
@@ -139,10 +143,6 @@ NodePtr ConditionNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango ConditionNode::ToMango() const {
-	return cond->ToMango();
 }
 
 StringBuilder ConditionNode::ToMelon(const UInt indent) const {

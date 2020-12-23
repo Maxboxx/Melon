@@ -22,10 +22,6 @@ CompiledNode DiscardNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-Mango DiscardNode::ToMango() const {
-	return Mango(String("_"));
-}
-
 StringBuilder DiscardNode::ToMelon(const Boxx::UInt indent) const {
 	return "_";
 }

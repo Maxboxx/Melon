@@ -20,6 +20,7 @@ NameNode::~NameNode() {
 }
 
 ScopeList NameNode::Type() const {
+	/* TODO: node
 	Symbols s = GetSymbol();
 
 	if (s.type == SymbolType::Scope || s.type == SymbolType::Namespace || s.type == SymbolType::Struct || s.type == SymbolType::Enum) {
@@ -32,11 +33,13 @@ ScopeList NameNode::Type() const {
 			return s2.scope;
 		}
 	}
+	*/
 
 	return ScopeList::undefined;
 }
 
 Symbols NameNode::GetSymbol() const {
+	/* TODO: node
 	ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 	Scope s = name.Copy();
 
@@ -65,10 +68,15 @@ Symbols NameNode::GetSymbol() const {
 	}
 
 	return Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, ScopeList().Add(s), file), file);
+	*/;
+
+	return Symbols::Symbols();
 }
 
 CompiledNode NameNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
+
+	/* TODO: node
 	Symbols s = GetSymbol();
 
 	if (!ignoreRef && s.attributes.Contains(SymbolAttribute::Ref)) {
@@ -83,12 +91,15 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 	}
 
 	cn.size = s.GetType(file).size;
+	*/
+
 	return cn;
 }
 
 Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
+	/* TODO: node
 	Symbols s = GetSymbol();
 
 	if (name == Scope::Self) {
@@ -97,12 +108,14 @@ Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
 	else if (s.type == SymbolType::Variable) {
 		info.usedVariables.Add(s.scope);
 	}
+	*/
 
 	return scanSet;
 }
 
 ScopeList NameNode::FindSideEffectScope(const bool assign) {
 	if (assign) {
+		/* TODO: node
 		Symbols s = GetSymbol();
 
 		if (s.IsArgument() && s.attributes.Contains(SymbolAttribute::Ref)) {
@@ -111,14 +124,10 @@ ScopeList NameNode::FindSideEffectScope(const bool assign) {
 		else {
 			return s.scope.Pop();
 		}
+		*/
 	}
-	else {
-		return scope;
-	}
-}
 
-Mango NameNode::ToMango() const {
-	return Mango(Type().ToString(), GetSymbol().scope.ToString());
+	return scope;
 }
 
 StringBuilder NameNode::ToMelon(const UInt indent) const {

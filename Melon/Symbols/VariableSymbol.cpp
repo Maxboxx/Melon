@@ -14,5 +14,5 @@ VariableSymbol::~VariableSymbol() {
 }
 
 Symbol* VariableSymbol::Type() {
-	
+	return nullptr;
 }

@@ -50,10 +50,6 @@ Set<ScanType> PtrNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
 }
 
-Mango PtrNode::ToMango() const {
-	return node->ToMango();
-}
-
 StringBuilder PtrNode::ToMelon(const UInt indent) const {
 	return node->ToMelon(indent);
 }

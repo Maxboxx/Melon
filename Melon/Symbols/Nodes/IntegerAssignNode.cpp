@@ -30,8 +30,10 @@ CompiledNode IntegerAssignNode::Compile(const List<NodePtr>& nodes, CompileInfo&
 	OptimizerInstruction mov = Instruction(InstructionType::Mov);
 	mov.instruction.sizes[0] = c1.size;
 	mov.instruction.sizes[1] = nodes[1]->IsImmediate() ? c1.size : c2.size;
+	/* TODO: node
 	mov.instruction.signs[0] = Symbols::Find(nodes[0]->Type(), nodes[0]->file).isSigned;
 	mov.instruction.signs[1] = Symbols::Find(nodes[1]->Type(), nodes[1]->file).isSigned;
+	*/
 	mov.important = important;
 	mov.instruction.arguments.Add(OffsetArgument(c1.argument, frame, info));
 	mov.instruction.arguments.Add(c2.argument);

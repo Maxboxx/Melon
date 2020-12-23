@@ -22,12 +22,10 @@ ScopeList ArgumentNode::Type() const {
 CompiledNode ArgumentNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = argument;
+	/* TODO: node
 	c.size = Symbols::Find(type, file).size;
+	*/
 	return c;
-}
-
-Mango ArgumentNode::ToMango() const {
-	return Mango();
 }
 
 StringBuilder ArgumentNode::ToMelon(const UInt indent) const {

@@ -160,22 +160,25 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			}
 		}
 
+		/* TODO: node
 		for (; templateIndex < Symbols::templateSymbols.Size(); templateIndex++) {
 			AddTemplateSpecialization(Symbols::templateSymbols[templateIndex], false);
 		}
+		*/
 	}
 	while (
 		nodeIndex < nodes.Size() ||
 		funcIndex < funcs.Size() ||
 		!failedNodes.IsEmpty() ||
-		!failedFuncs.IsEmpty() ||
-		templateIndex < Symbols::templateSymbols.Size()
+		!failedFuncs.IsEmpty() /* TODO: node ||
+		templateIndex < Symbols::templateSymbols.Size() */
 	);
 
 	includeScanning = false;
 }
 
-void RootNode::AddTemplateSpecialization(const Symbols::TemplateSymbol& templateSymbol, const bool scan) {
+void RootNode::AddTemplateSpecialization(const Symbols::Symbols::TemplateSymbol& templateSymbol, const bool scan) {
+	/* TODO: node
 	Tuple<Symbols, List<ScopeList>> templateInfo = Symbols::FindTemplateArgs(templateSymbol);
 
 	if (templateInfo.value1.type == SymbolType::None) return;
@@ -222,6 +225,7 @@ void RootNode::AddTemplateSpecialization(const Symbols::TemplateSymbol& template
 	if (scan && !includeScanning) {
 		IncludeScan(*parsingInfo);
 	}
+	*/
 }
 
 Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
@@ -310,16 +314,6 @@ NodePtr RootNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-Mango RootNode::ToMango() const {
-	Mango mango = Mango("ast", MangoType::List);
-
-	for (const NodePtr& node : nodes) {
-		mango.Add(node->ToMango());
-	}
-
-	return mango;
-}
-
 StringBuilder RootNode::ToMelon(const UInt indent) const {
 	return StringBuilder();
 }
@@ -389,5 +383,9 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 }
 
 String RootNode::ToString() const {
+	/* TODO: node
 	return Mango::Encode(ToMango(), true);
+	*/
+
+	return "";
 }

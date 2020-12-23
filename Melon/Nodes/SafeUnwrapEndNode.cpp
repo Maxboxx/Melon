@@ -30,7 +30,11 @@ ScopeList SafeUnwrapEndNode::Type() const  {
 	scope.types = List<ScopeList>();
 	scope.types.Get().Add(node->Type());
 
+	/* TODO: node
 	return Symbols::Find(ScopeList().Add(scope), file).scope;
+	*/
+
+	return ScopeList();
 }
 
 CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
@@ -94,11 +98,13 @@ void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	type.types = List<ScopeList>();
 	type.types.Get().Add(nodeType);
 
+	/* TODO: node
 	Symbols::TemplateSymbol ts;
 	ts.type = ScopeList().Add(type);
 	ts.scope = scope;
 	ts.file = file;
 	Symbols::templateSymbols.Add(ts);
+	*/
 }
 
 Set<ScanType> SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {
@@ -113,12 +119,6 @@ NodePtr SafeUnwrapEndNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 
 	return nullptr;
-}
-
-Mango SafeUnwrapEndNode::ToMango() const  {
-	Mango mango = Mango("?", MangoType::List);
-	mango.Add(node->ToMango());
-	return mango;
 }
 
 StringBuilder SafeUnwrapEndNode::ToMelon(const UInt indent) const  {

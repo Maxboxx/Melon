@@ -162,6 +162,7 @@ CompiledNode LogicNode::Compile(CompileInfo& info) {
 Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node1->Scan(info);
 
+	/* TODO: node
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
 	}
@@ -191,6 +192,7 @@ Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
 	for (const ScanType type : convert2->Scan(info)) {
 		scanSet.Add(type);
 	}
+	*/
 
 	return scanSet;
 }
@@ -206,15 +208,6 @@ NodePtr LogicNode::Optimize(OptimizeInfo& info) {
 	// TODO: Optimize
 
 	return nullptr;
-}
-
-Mango LogicNode::ToMango() const {
-	const Scope op = GetOperator();
-
-	Mango mango = Mango(op.ToString(), MangoType::List);
-	mango.Add(node1->ToMango());
-	mango.Add(node2->ToMango());
-	return mango;
 }
 
 StringBuilder LogicNode::ToMelon(const UInt indent) const {

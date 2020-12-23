@@ -113,15 +113,6 @@ NodePtr StatementsNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-Mango StatementsNode::ToMango() const {
-	Mango m = Mango(MangoType::List);
-
-	for (NodePtr node : statements)
-		m.Add(node->ToMango());
-
-	return m;
-}
-
 StringBuilder StatementsNode::ToMelon(const UInt indent) const {
 	StringBuilder sb;
 	String tabs = String('\t').Repeat(indent);

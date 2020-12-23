@@ -38,5 +38,15 @@ namespace Melon {
 		private:
 			static Boxx::Pointer<ScopeSymbol> symbols;
 		};
+
+		template <class T>
+		inline T* SymbolTable::Find(const ScopeList& name, const FileInfo& file) {
+			return symbols->Symbol::Find(name, file)->Cast<T>();
+		}
+
+		template <class T>
+		inline T* SymbolTable::Contains(const ScopeList& name) {
+			return symbols->Contains(name)->Cast<T>();
+		}
 	}
 }

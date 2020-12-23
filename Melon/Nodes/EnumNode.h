@@ -29,7 +29,6 @@ namespace Melon {
 			~EnumNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

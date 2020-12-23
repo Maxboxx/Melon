@@ -122,6 +122,7 @@ Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
 	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Loop);
 
+	/* TODO: node
 	for (const ScanType type : content->Scan(info)) {
 		scanSet.Add(type);
 
@@ -137,6 +138,7 @@ Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 			ErrorLog::Error(CompileError(CompileError::SelfInit, condition->file));
 		}
 	}
+	*/
 
 	info.Get().scopeInfo.ExitScope();
 	info.Get().scopeInfo = ScopeInfo::WeakBranchUnion(scopeInfo, info.Get().scopeInfo);
@@ -165,13 +167,6 @@ NodePtr RepeatNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango RepeatNode::ToMango() const {
-	Mango mango = Mango("repeat", MangoType::Map);
-	mango.Add("condition", condition->ToMango());
-	mango.Add("content", content->ToMango());
-	return mango;
 }
 
 StringBuilder RepeatNode::ToMelon(const UInt indent) const {

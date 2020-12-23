@@ -44,23 +44,26 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
+/* TODO: node
 Symbol Symbol::symbols = Symbol(SymbolType::Namespace);
 Symbol Symbol::empty = Symbol(SymbolType::None);
 
 List<Symbol::TemplateSymbol> Symbol::templateSymbols;
+*/
 
-Symbol::Symbol() {
+Melon::Symbols::Symbols::Symbols() {
 	this->type = SymbolType::None;
 }
 
-Symbol::Symbol(const SymbolType type) {
+Melon::Symbols::Symbols::Symbols(const SymbolType type) {
 	this->type = type;
 }
 
-Symbol::~Symbol() {
+Melon::Symbols::Symbols::~Symbols() {
 
 }
 
+/* TODO: node
 bool Symbol::Add(const Scope& scope, const Symbol& symbol, const FileInfo& file, const bool redefine) {
 	try {
 		if (symbol.type == SymbolType::Function || symbol.type == SymbolType::Method) {
@@ -320,7 +323,6 @@ bool Symbol::IsOfType(const ScopeList& type) const {
 		return type == varType;
 	}
 
-	/*
 	FileInfo file;
 	file.currentNamespace = symbolNamespace;
 	file.includedNamespaces = includedNamespaces;
@@ -330,7 +332,6 @@ bool Symbol::IsOfType(const ScopeList& type) const {
 	ErrorLog::Revert();
 
 	return s.IsOfType(type);
-	*/
 }
 
 Symbol Symbol::GetReturnType(const UInt index) const {
@@ -1718,3 +1719,4 @@ void Symbol::Setup() {
 
 	symbols.Add(Scope::Optional, optionalScope, FileInfo());
 }
+*/

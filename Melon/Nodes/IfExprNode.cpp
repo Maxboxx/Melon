@@ -34,7 +34,10 @@ ScopeList IfExprNode::Type() const {
 
 CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
+
+	/* TODO: node
 	cn.size = Symbols::Find(Type(), file).size;
+	*/
 
 	List<UInt> jumps;
 
@@ -87,7 +90,9 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 	cn.instructions.Add(Instruction::Label(info.label++));
 
+	/* TODO: node
 	info.stack.Pop(Symbols::Find(Type(), file).size);
+	*/
 
 	return cn;
 }
@@ -109,6 +114,7 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 
 	Pointer<TypeNode> type = new TypeNode(Type());
 
+	/* TODO: node
 	for (const NodePtr& node : nodes) {
 		for (const ScanType type : node->Scan(info)) {
 			scanSet.Add(type);
@@ -132,6 +138,7 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 	}
 
 	Symbols::Find(Type(), file);
+	*/
 
 	info.Get().scopeInfo = scopeInfo;
 	return scanSet;
@@ -194,28 +201,6 @@ NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango IfExprNode::ToMango() const {
-	Mango mango = Mango("ifexp", MangoType::List);
-
-	for (UInt i = 0; i < nodes.Size(); i++) {
-		Mango m = Mango(MangoType::Map);
-
-		if (i == 0) m.SetLabel("if");
-		else if (i < conditions.Size()) m.SetLabel("elseif");
-		else m.SetLabel("else");
-
-		if (i < conditions.Size()) {
-			m.Add("condition", conditions[i]->ToMango());
-		}
-
-		m.Add("expr", nodes[i]->ToMango());
-
-		mango.Add(m);
-	}
-
-	return mango;
 }
 
 StringBuilder IfExprNode::ToMelon(const UInt indent) const {

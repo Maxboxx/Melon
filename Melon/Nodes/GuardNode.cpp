@@ -112,6 +112,7 @@ void GuardNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> GuardNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = cond->Scan(info);
 
+	/* TODO: node
 	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
 	if (info.Get().init) scopeInfo.unassigned = info.Get().symbol.GetUnassignedVarsSet();
 
@@ -143,6 +144,7 @@ Set<ScanType> GuardNode::Scan(ScanInfoStack& info) {
 	}
 
 	info.Get().scopeInfo = ScopeInfo::BranchIntersection(elseScope, info.Get().scopeInfo);
+	*/
 
 	return scanSet;
 }
@@ -222,6 +224,7 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 			}
 
 			case ScopeInfo::ScopeType::Function: {
+				/* TODO: node
 				Symbols func = Symbols::FindCurrentFunction(scope, file);
 
 				if (func.returnValues.Size() == 0 && !info.Get().scopeInfo.hasReturned) {
@@ -232,6 +235,7 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 				}
 
 				info.Get().scopeInfo.willNotReturn = false;
+				*/
 
 				break;
 			}
@@ -242,14 +246,6 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 			}
 		}
 	}
-}
-
-Mango GuardNode::ToMango() const {
-	Mango mango = Mango("guard", MangoType::Map);
-	mango.Add("condition", cond->ToMango());
-	if (else_) mango.Add("else", else_->ToMango());
-	mango.Add("continue", continue_->ToMango());
-	return mango;
 }
 
 StringBuilder GuardNode::ToMelon(const UInt indent) const {

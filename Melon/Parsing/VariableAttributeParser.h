@@ -6,13 +6,13 @@
 
 namespace Melon {
 	namespace Symbols {
-		enum class VariableAttributes;
+		enum class VariableAttributes : Boxx::UByte;
 	}
 
 	namespace Parsing {
 		class VariableAttributeParser {
 		public:
-			static VariableAttributes Parse(ParsingInfo& info, const bool includeRef = false);
+			static Symbols::VariableAttributes Parse(ParsingInfo& info, const bool includeRef = false);
 		};
 	}
 }

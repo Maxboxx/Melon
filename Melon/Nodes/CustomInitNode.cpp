@@ -29,7 +29,7 @@ ScopeList CustomInitNode::Type() const {
 
 CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 	CompiledNode c = node->Compile(info);
-
+	/* TODO: node
 	Symbols s = Symbols::Find(Type(), file);
 
 	UInt offset = s.size;
@@ -56,6 +56,9 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 	c.argument = Argument(MemoryLocation(info.stack.Offset()));
 	info.stack.Pop(s.size);
 	return c;
+	*/
+
+	return CompiledNode();
 }
 
 void CustomInitNode::IncludeScan(ParsingInfo& info) {
@@ -69,6 +72,7 @@ void CustomInitNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node->Scan(info);
 
+	/* TODO: node
 	Symbols s = Symbols::Find(Type(), file);
 
 	if (s.type == SymbolType::None) return scanSet;
@@ -107,6 +111,7 @@ Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 			}
 		}
 	}
+	*/
 
 	return scanSet;
 }
@@ -129,28 +134,6 @@ NodePtr CustomInitNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango CustomInitNode::ToMango() const {
-	Mango m = Mango("init", MangoType::List);
-
-	m.Add(node->ToMango());
-
-	Symbols s = Symbols::Find(Type(), file);
-
-	for (UInt i = 0; i < vars.Size(); i++) {
-		Symbols v = s.Get(vars[i], file);
-		const ScopeList type = Symbols::FindNearest(Type(), v.varType, file).scope;
-
-		List<ScopeList> argTypes;
-		argTypes.Add(expressions[i]->Type());
-		Mango a = Mango(Symbols::FindFunction(type.Add(Scope::Assign), argTypes, expressions[i]->file).scope.ToString(), MangoType::List);
-		a.Add(Mango("var", vars[i].ToString()));
-		a.Add(expressions[i]->ToMango());
-		m.Add(a);
-	}
-
-	return m;
 }
 
 StringBuilder CustomInitNode::ToMelon(const UInt indent) const {

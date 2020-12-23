@@ -26,6 +26,7 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 
 	const ScopeList type = nodes[0]->Type();
 
+	/* TODO: node
 	Symbols s = Symbols::Find(type, nodes[0]->file);
 
 	for (UInt i = 0; i < s.names.Size(); i++) {
@@ -56,6 +57,7 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 	}
 
 	info.important = important;
+	*/
 
 	return c1;
 }

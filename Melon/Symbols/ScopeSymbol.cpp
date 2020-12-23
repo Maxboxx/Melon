@@ -12,8 +12,6 @@ using namespace Boxx;
 using namespace Melon;
 using namespace Melon::Symbols;
 
-ScopeSymbol ScopeSymbol::globalTable;
-
 ScopeSymbol::ScopeSymbol(const FileInfo& file) : MapSymbol(file) {
 	
 }

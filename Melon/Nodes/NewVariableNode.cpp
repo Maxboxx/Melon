@@ -19,6 +19,7 @@ NewVariableNode::~NewVariableNode() {
 }
 
 ScopeList NewVariableNode::GetType(const UInt index) const {
+	/* TODO: node
 	ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 
 	ScopeList type = types[types.Size() > 1 ? index : 0];
@@ -35,6 +36,9 @@ ScopeList NewVariableNode::GetType(const UInt index) const {
 	else {
 		return s.scope;
 	}
+	*/
+
+	return ScopeList();
 }
 
 ScopeList NewVariableNode::Type() const {
@@ -49,7 +53,9 @@ List<ScopeList> NewVariableNode::GetVariables() const {
 			vars.Add(ScopeList::Discard);
 		}
 		else {
+			/* TODO: node
 			vars.Add(Symbols::FindInNamespace(scope.Add(n), file).scope);
+			*/
 		}
 	}
 
@@ -62,12 +68,14 @@ UInt NewVariableNode::GetSize() const {
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (names[i] == ScopeList::Discard.Last()) continue;
 
+		/* TODO: node
 		if (attributes[i].Contains(SymbolAttribute::Ref)) {
 			size += StackPtr::ptrSize;
 		}
 		else {
 			size += Symbols::Find(GetType(i), file).size;
 		}
+		*/
 	}
 
 	return size;
@@ -75,6 +83,7 @@ UInt NewVariableNode::GetSize() const {
 
 CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurate error lines
 	CompiledNode cn;
+	/* TODO: node
 	cn.size = Symbols::Find(Type(), file).size;
 
 	if (GetType(0) != ScopeList::Discard) {
@@ -102,6 +111,7 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurat
 
 		Symbols::Find(Symbols::ReplaceTemplates(scope, file), file).Get(names[i], file).stackIndex = info.stack.top;
 	}
+	*/
 
 	return cn;
 }
@@ -110,6 +120,7 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 	for (const ScopeList& type : types) {
 		if (type == ScopeList::Discard) continue;
 
+		/* TODO: node
 		while (true) {
 			ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 
@@ -132,10 +143,12 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 
 			if (done) break;
 		}
+		*/
 	}
 }
 
 Set<ScanType> NewVariableNode::Scan(ScanInfoStack& info) {
+	/* TODO: node
 	Symbols::Find(Type(), file);
 
 	for (UInt i = 0; i < types.Size(); i++) {
@@ -147,18 +160,9 @@ Set<ScanType> NewVariableNode::Scan(ScanInfoStack& info) {
 
 		Symbols::FindInNamespace(scope.Add(names[i]), file);
 	}
+	*/
 
 	return Set<ScanType>();
-}
-
-Mango NewVariableNode::ToMango() const {
-	Mango mango = Mango("newvar", MangoType::List);
-
-	for (UInt i = 0; i < names.Size(); i++) {
-		mango.Add(Mango(GetType(i).ToString(), scope.Add(names[i]).ToString()));
-	}
-
-	return mango;
 }
 
 StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
@@ -174,6 +178,7 @@ StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (i > 0) sb += ", ";
 
+		/* TODO: node
 		Symbols var = Symbols::FindInNamespace(scope.Add(names[i]), file);
 
 		for (const SymbolAttribute attr : var.attributes) {
@@ -182,6 +187,7 @@ StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 				case SymbolAttribute::Copy:  sb += "copy "; break;
 			}
 		}
+		*/
 
 		sb += names[i].ToSimpleString();
 	}

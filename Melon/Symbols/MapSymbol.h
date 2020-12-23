@@ -25,5 +25,20 @@ namespace Melon {
 
 			Boxx::Map<Scope, Symbol*> symbols;
 		};
+
+		template <class T>
+		inline T* MapSymbol::AddSymbol(const Scope& name, T* const symbol) {
+			try {
+				symbols.Add(name, symbol);
+				symbol->name = name;
+				symbol->parent = this;
+				return symbol;
+			}
+			catch (Boxx::MapKeyError& e) {
+				if (symbol->parent == nullptr) delete symbol;
+				ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + name.ToString() + SymbolError::RedefinitionEnd, symbol->file));
+				return nullptr;
+			}
+		}
 	}
 }

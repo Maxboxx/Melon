@@ -97,10 +97,6 @@ CompiledNode IntegerNode::Compile(CompileInfo& info) {
 	return node;
 }
 
-Mango IntegerNode::ToMango() const {
-	return Mango(Type().ToString(), number);
-}
-
 StringBuilder IntegerNode::ToMelon(const UInt indent) const {
 	return isUnsigned ? String::ToString((ULong)number) : String::ToString(number);
 }

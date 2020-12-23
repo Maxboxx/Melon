@@ -24,6 +24,7 @@ BinaryOperatorNode::~BinaryOperatorNode() {
 }
 
 ScopeList BinaryOperatorNode::Type() const {
+	/* TODO: node
 	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
 	if (s.type != SymbolType::None && !s.returnValues.IsEmpty()) {
@@ -36,6 +37,7 @@ ScopeList BinaryOperatorNode::Type() const {
 			return s2.scope;
 		}
 	}
+	*/
 
 	return ScopeList::undefined;
 }
@@ -48,6 +50,8 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 	List<NodePtr> nodes;
 	nodes.Add(node1);
 	nodes.Add(node2);
+
+	/* TODO: node
 	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
 	if (s.type == SymbolType::None) return CompiledNode();
@@ -66,6 +70,9 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 		cn->op = true;
 		return cn->Compile(info);
 	}
+	*/
+
+	return CompiledNode();
 }
 
 void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
@@ -76,6 +83,7 @@ void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
 Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node1->Scan(info);
 
+	/* TODO: node
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
 	}
@@ -89,11 +97,13 @@ Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {
 	}
 
 	Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	*/
 
 	return scanSet;
 }
 
 ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
+	/* TODO: node
 	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
 	if (s.symbolNode) {
@@ -103,6 +113,9 @@ ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
 		// TODO: Check operator function
 		return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
 	}
+	*/
+
+	return ScopeList();
 }
 
 NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
@@ -128,15 +141,6 @@ NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango BinaryOperatorNode::ToMango() const {
-	const ScopeList op = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file).scope;
-
-	Mango mango = Mango(op.ToString(), MangoType::List);
-	mango.Add(node1->ToMango());
-	mango.Add(node2->ToMango());
-	return mango;
 }
 
 StringBuilder BinaryOperatorNode::ToMelon(const UInt indent) const {

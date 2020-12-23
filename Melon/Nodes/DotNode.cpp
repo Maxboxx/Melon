@@ -23,6 +23,7 @@ DotNode::~DotNode() {
 }
 
 ScopeList DotNode::Type() const {
+	/* TODO: node
 	const Symbols s = GetSymbol();
 
 	if (s.type == SymbolType::Value || s.type == SymbolType::Variable || s.type == SymbolType::Template) {
@@ -31,6 +32,7 @@ ScopeList DotNode::Type() const {
 	else if (s.type != SymbolType::None) {
 		return s.scope;
 	}
+	*/
 
 	return ScopeList::undefined;
 }
@@ -38,6 +40,7 @@ ScopeList DotNode::Type() const {
 Symbols DotNode::GetSymbol() const {
 	UInt errorCount = ErrorLog::ErrorCount();
 
+	/* TODO: node
 	Symbols nodeSymbol = node->GetSymbol();
 
 	if (errorCount < ErrorLog::ErrorCount()) {
@@ -68,12 +71,15 @@ Symbols DotNode::GetSymbol() const {
 
 		return nodeSymbol.Get(name, file);
 	}
+	*/
 
-	return Symbols();
+	return Symbols::Symbols();
 }
 
 CompiledNode DotNode::Compile(CompileInfo& info) {
 	const ScopeList type = node->Type();
+
+	/* TODO: node
 	Symbols s = Symbols::Find(type, file);
 	CompiledNode c = node->Compile(info);
 
@@ -95,16 +101,21 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 	}
 
 	return c;
+	*/
+
+	return CompiledNode();
 }
 
 void DotNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 	
+	/* TODO: node
 	Symbols s = node->GetSymbol();
 
 	if (s.type == SymbolType::Namespace && !s.Contains(name)) {
 		IncludeParser::ParseInclude(s.scope.Add(name), info);
 	}
+	*/
 }
 
 Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
@@ -121,6 +132,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 
 	const ScopeList type = node->Type();
 
+	/* TODO: node
 	Symbols var = Symbols::Find(type.Add(name), file);
 
 	if (var.type == SymbolType::Variable && var.attributes.Contains(SymbolAttribute::Static)) {
@@ -168,6 +180,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 	else {
 		scanSet.Remove(ScanType::Self);
 	}
+	*/
 
 	return scanSet;
 }
@@ -184,12 +197,6 @@ NodePtr DotNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 
 	return nullptr;
-}
-
-Mango DotNode::ToMango() const {
-	Mango m = Mango(node->Type().Add(name).ToString(), MangoType::List);
-	m.Add(node->ToMango());
-	return m;
 }
 
 StringBuilder DotNode::ToMelon(const UInt indent) const {

@@ -13,8 +13,6 @@
 
 #include "Melon/Nodes/RootNode.h"
 
-#include "Melon/Symbols/Symbols.h"
-
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
@@ -180,7 +178,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 	const String code = FileReader(filename).ReadAll();
 
-	Symbols::Setup();
+	//SymbolTable::Setup();
 
 	try {
 		ParsingInfo info = Parser::Parse(filename, compOptions);
@@ -189,6 +187,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			throw CompileError("", FileInfo());
 		}
 
+		/*
 		ErrorLog::AddMarker();
 		info.root.IncludeScan(info);
 		ErrorLog::RevertToMarker();
@@ -232,18 +231,6 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		List<Instruction> optimizedInstructions = KiwiOptimizer::Optimize(instructions, compOptions.kiwiOptimizationPasses);
 
-		if (compOptions.outputSymbols) {
-			FileWriter symbols = FileWriter(compOptions.outputDirectory + compOptions.outputName + "_symbols.mango");
-			symbols.Write(Mango::Encode(Symbols::ToMango(true), true));
-			symbols.Close();
-		}
-
-		if (compOptions.outputAST) {
-			FileWriter ast = FileWriter(compOptions.outputDirectory + compOptions.outputName + "_ast.mango");
-			ast.Write(info.root.ToString());
-			ast.Close();
-		}
-
 		if (compOptions.outputMelon) {
 			info.root.ToMelonFiles(compOptions);
 		}
@@ -281,6 +268,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		}
 
 		if (error) throw CompileError("", FileInfo());
+		*/
 
 		ErrorLog::Success(PlainError("compilation successful"));
 		ErrorLog::LogErrors();

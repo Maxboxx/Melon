@@ -108,14 +108,6 @@ NodePtr ForConditionNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-Mango ForConditionNode::ToMango() const {
-	Mango mango = Mango(MangoType::Map);
-	mango.Add("init", loopInit->ToMango());
-	mango.Add("condition", loopCondition->ToMango());
-	mango.Add("step", loopStep->ToMango());
-	return mango;
-}
-
 StringBuilder ForConditionNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = loopInit->ToMelon(indent);
 	sb += ", ";

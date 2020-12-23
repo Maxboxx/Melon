@@ -87,7 +87,7 @@ namespace Melon {
 			/// Checks if the symbol is a specific type of symbol
 			///M
 			template <class T>
-			bool Is() const {
+			bool Is() {
 			///M
 				return dynamic_cast<T*>(this) != nullptr;
 			}
@@ -97,7 +97,7 @@ namespace Melon {
 			/// Returns <code>nullptr</code> if the cast fails
 			///M
 			template <class T>
-			T* Cast() const {
+			T* Cast() {
 			///M
 				return dynamic_cast<T*>(this);
 			}
@@ -113,5 +113,34 @@ namespace Melon {
 
 			friend MapSymbol;
 		};
+
+		template <class T>
+		inline T* Symbol::Parent() const {
+			return parent->Cast<T>();
+		}
+
+		template <class T>
+		inline T* Symbol::Find(const Scope& scope, const FileInfo& file) {
+			return Find(ScopeList().Add(scope), file)->Cast<T>();
+		}
+
+		template <class T>
+		inline T* Symbol::Find(const ScopeList& scopeList, const FileInfo& file) {
+			return Find(scopeList, 0, file)->Cast<T>();
+		}
+
+		template <class T>
+		inline T* Symbol::Contains(const Scope& scope) {
+			return Contains(ScopeList().Add(scope))->Cast<T>();
+		}
+
+		template <class T>
+		inline T* Symbol::Contains(const ScopeList& scopeList) {
+			ErrorLog::AddMarker();
+			Symbol* const symbol = Find(scopeList, 0, FileInfo());
+			ErrorLog::Revert();
+
+			return symbol->Cast<T>();
+		}
 	}
 }

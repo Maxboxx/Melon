@@ -18,10 +18,6 @@ CompiledNode EnumNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-Mango EnumNode::ToMango() const {
-	return Mango();
-}
-
 StringBuilder EnumNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "enum ";
 	sb += name.ToString();
@@ -33,7 +29,9 @@ StringBuilder EnumNode::ToMelon(const UInt indent) const {
 		sb += tabs;
 		sb += values[i].ToString();
 		sb += " = ";
+		/* TODO: node
 		sb += String::ToString(symbol.Get(values[i], file).value);
+		*/
 		sb += i != values.Size() - 1 ? ",\n" : "\n";
 	}
 

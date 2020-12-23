@@ -28,6 +28,7 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	const ScopeList type1 = nodes[0]->Type();
 	const ScopeList type2 = nodes[1]->Type();
 
+	/* TODO: node
 	Symbols s = Symbols::Find(type1, nodes[0]->file);
 	UInt compIndex = c1.instructions.Size();
 
@@ -88,6 +89,7 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	info.label++;
 
 	info.important = important;
+	*/
 
 	return c1;
 }

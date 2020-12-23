@@ -526,14 +526,17 @@ LoopNode::LoopScanInfo LoopNode::ScanSetup(ScanInfo& info) const {
 
 	loopInfo.scope = info.scopeInfo.CopyBranch();
 
+	/* TODO: node
 	if (loopInfo.init) {
 		loopInfo.scope.unassigned = info.symbol.GetUnassignedVarsSet();
 	}
+	*/
 
 	return loopInfo;
 }
 
 void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
+	/* TODO: node
 	if (loopInfo.init) {
 		if (!segment.also) {
 			for (const Scope& var : loopInfo.scope.unassigned) {
@@ -546,6 +549,7 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 			}
 		}
 	}
+	*/
 
 	if (!segment.also) {
 		info.scopeInfo = loopInfo.scope.CopyBranch();
@@ -556,9 +560,11 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 }
 
 void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const {
+	/* TODO: node
 	if (info.init) {
 		info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
 	}
+	*/
 
 	if (segments[0].IsLoop()) {
 		loopInfo.mainSegment = ScopeInfo::WeakBranchUnion(loopInfo.scope, info.scopeInfo);
@@ -573,9 +579,11 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 }
 
 void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
+	/* TODO: node
 	if (info.init) {
 		info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
 	}
+	*/
 
 	if (segment.also) {
 		loopInfo.alsoSegments.Add(info.scopeInfo);
@@ -630,6 +638,7 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 		info.Get().scopeInfo.EnterScope(segments[i].IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
 		ScanPreContents(loopInfo, info.Get(), segments[i]);
 
+		/* TODO: node
 		if (segments[i].type != LoopType::None) {
 			for (const ScanType type : segments[i].condition->Scan(info)) {
 				scanSet.Add(type);
@@ -661,6 +670,7 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 		}
 
 		info.Get().scopeInfo.ExitScope();
+		*/
 	}
 
 	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
@@ -781,40 +791,6 @@ NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango LoopNode::ToMango() const {
-	Mango mango = Mango("loop", MangoType::List);
-
-	for (UInt i = 0; i < segments.Size(); i++) {
-		String name = "";
-
-		if (segments[i].type == LoopType::If)
-			name = "if";
-		else if (segments[i].type == LoopType::While)
-			name = "while";
-		else if (segments[i].type == LoopType::For)
-			name = "for";
-
-		if (i > 0) {
-			if (segments[i].also)
-				name = "also" + name;
-			else
-				name = "else" + name;
-		}
-
-		Mango s = Mango(name, MangoType::Map);
-
-		if (segments[i].type == LoopType::If || segments[i].type == LoopType::While || segments[i].type == LoopType::For) {
-			s.Add("condition", segments[i].condition->ToMango());
-		}
-
-		s.Add("content", segments[i].statements->ToMango());
-
-		mango.Add(s);
-	}
-
-	return mango;
 }
 
 StringBuilder LoopNode::ToMelon(const UInt indent) const {

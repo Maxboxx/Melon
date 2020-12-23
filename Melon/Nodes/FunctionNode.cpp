@@ -25,6 +25,7 @@ bool FunctionNode::IsScope() const {
 }
 
 bool FunctionNode::IsNotSpecialized() const {
+	/* TODO: node
 	Symbols sym = Symbols::Find(ScopeList().Add(s.scope[0]), file);
 
 	for (UInt i = 0; i < s.scope.Size(); i++) {
@@ -42,12 +43,15 @@ bool FunctionNode::IsNotSpecialized() const {
 			}
 		}
 	}
+	*/
 
 	return false;
 }
 
 void FunctionNode::SetTemplateValues() const {
+	/* TODO: node
 	Symbols::SetTemplateValues(func, file);
+	*/
 }
 
 CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
@@ -74,6 +78,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 
 	Long size = info.stack.ptrSize;
 
+	/* TODO: node
 	for (Int i = s.arguments.Size() - 1; i >= 0; i--) {
 		s.Get(argNames[i], file).stackIndex = -size;
 
@@ -84,6 +89,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 			size += Symbols::FindNearestInNamespace(scope, s.arguments[i], file).size;
 		}
 	}
+	*/
 
 	c.AddInstructions(node->Compile(info).instructions);
 
@@ -115,6 +121,7 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 
 	info.Push();
 
+	/* TODO: node
 	Symbols::Find(this->func, file);
 	info.Get().scopeInfo.type = ScopeInfo::ScopeType::Function;
 	info.Get().scopeInfo.Reset();
@@ -148,6 +155,7 @@ Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
 
 	info.Pop();
 	return scanSet;
+	*/
 }
 
 NodePtr FunctionNode::Optimize(OptimizeInfo& info) {
@@ -156,20 +164,16 @@ NodePtr FunctionNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-Mango FunctionNode::ToMango() const {
-	Mango m = node->ToMango();
-	m.SetLabel(func.ToString());
-	return m;
-}
-
 StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "";
 
+	/* TODO: node
 	for (const ScopeList& arg : Symbols::Find(s.scope, file).templateArgs) {
 		if (Symbols::Find(arg, file).type == SymbolType::Template) {
 			return "";
 		}
 	}
+	*/
 
 	for (const SymbolAttribute attr : s.attributes) {
 		switch (attr) {
@@ -191,8 +195,10 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	for (UInt i = 0; i < s.returnValues.Size(); i++) {
 		if (i > 0) sb += ", ";
 
+		/* TODO: node
 		Symbols sym = Symbols::FindNearestInNamespace(s.scope.Pop(), s.returnValues[i], file);
 		sb += sym.scope.ToSimpleString();
+		*/
 	}
 
 	if (!s.returnValues.IsEmpty()) {
@@ -200,9 +206,11 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	}
 
 	if (isOperator) {
+		/* TODO: node
 		Scope scope = func.Last();
 		scope.variant = nullptr;
 		sb += scope.ToSimpleString();
+		*/
 	}
 	else {
 		sb += func.Pop().Last().ToSimpleString();
@@ -214,6 +222,8 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 
 	for (UInt i = start; i < argNames.Size(); i++) {
 		if (i > start) sb += ", ";
+
+		/* TODO: node
 		sb += s.Get(argNames[i], file).varType.ToSimpleString();
 		sb += ": ";
 
@@ -224,6 +234,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 				case SymbolAttribute::Ref:   sb += "ref "; break;
 			}
 		}
+		*/
 
 		sb += argNames[i].ToSimpleString();
 	}

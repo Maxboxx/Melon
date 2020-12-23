@@ -105,12 +105,6 @@ NodePtr DoNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-Mango DoNode::ToMango() const {
-	Mango mango = nodes->ToMango();
-	mango.SetLabel("do");
-	return mango;
-}
-
 StringBuilder DoNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "do\n";
 	sb += String('\t').Repeat(indent + 1);

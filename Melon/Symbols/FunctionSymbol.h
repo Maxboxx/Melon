@@ -59,7 +59,7 @@ namespace Melon {
 			/// The node to use for the compilation of the function
 			///M
 			Boxx::Pointer<Nodes::SymbolNode> symbolNode;
-			Boxx::Pointer<Node> node;
+			Boxx::Pointer<Melon::Nodes::Node> node;
 			///M
 
 			///T Function attrubutes

@@ -15,7 +15,6 @@ namespace Melon {
 
 			virtual Symbols::ScopeList Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

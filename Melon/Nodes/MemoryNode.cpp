@@ -26,12 +26,12 @@ ScopeList MemoryNode::Type() const {
 CompiledNode MemoryNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = mem;
-	c.size = Symbols::Find(type, file).size;
-	return c;
-}
 
-Mango MemoryNode::ToMango() const {
-	return Mango();
+	/* TODO: node
+	c.size = Symbols::Find(type, file).size;
+	*/
+
+	return c;
 }
 
 StringBuilder MemoryNode::ToMelon(const UInt indent) const {

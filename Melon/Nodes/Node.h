@@ -243,10 +243,6 @@ namespace Melon {
 			/// Compiles the node
 			virtual CompiledNode Compile(CompileInfo& info) = 0;
 
-			///T To Mango
-			/// Converts the node to mango
-			virtual Boxx::Mango ToMango() const = 0;
-
 			///T To Melon
 			/// Converts the node to melon
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const = 0;

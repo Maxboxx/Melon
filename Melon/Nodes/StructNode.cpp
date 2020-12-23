@@ -23,29 +23,35 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-bool StructNode::IsRecursive(const Symbols& symbol) const {
+bool StructNode::IsRecursive(const Symbols::Symbols& symbol) const {
 	if (symbol.type != SymbolType::Struct) return false;
 	if (symbol.isRecursive) return false;
-	if (symbol.scope == this->symbol.scope) return true;
 
+	/* TODO: node
+	if (symbol.scope == this->symbol.scope) return true;
+	
 	for (const Scope& name : symbol.names) {
 		if (IsRecursive(symbol.Get(name, file).GetType(file))) {
 			return true;
 		}
 	}
+	*/
 
 	return false;
 }
 
 ScopeList StructNode::FindSideEffectScope(const bool assign) {
+	/* TODO: node
 	if (Symbols::Find(scope, file).type == SymbolType::Namespace) {
 		return ScopeList().Add(Scope::Global);
 	}
+	*/
 
 	return scope;
 }
 
 Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
+	/* TODO: node
 	Symbols& s = Symbols::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
 	s.size = 0;
 
@@ -60,22 +66,21 @@ Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
 			ErrorLog::Error(SymbolError(SymbolError::RecursiveStruct(this->name.ToString()), file));
 		}
 	}
+	*/
 
 	return Set<ScanType>();
-}
-
-Mango StructNode::ToMango() const {
-	return Mango();
 }
 
 StringBuilder StructNode::ToMelon(const UInt indent) const {
 	if (name.name == Scope::Optional.name) return "";
 
+	/* TODO: node
 	for (const ScopeList& arg : Symbols::Find(symbol.scope, file).templateArgs) {
 		if (Symbols::Find(arg, file).type == SymbolType::Template) {
 			return "";
 		}
 	}
+	*/
 
 	StringBuilder sb = "struct ";
 
@@ -86,11 +91,16 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 	for (const Scope& var : vars) {
 		sb += "\n";
 		sb += tabs;
+
+		/* TODO: node
 		sb += symbol.Get(var, file).varType.ToSimpleString();
+		*/
+
 		sb += ": ";
 		sb += var.ToSimpleString();
 	}
 
+	/* TODO: node
 	for (const Pair<String, Symbols>& syms : symbol.scopes) {
 		if (syms.value.type == SymbolType::Scope) {
 			if (syms.value.Contains(Scope::Call)) {
@@ -132,6 +142,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 			}
 		}
 	}
+	*/
 
 	sb += "\n";
 	sb += String('\t').Repeat(indent);
