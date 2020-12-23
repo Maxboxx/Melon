@@ -29,7 +29,7 @@ T* MapSymbol::AddSymbol(const Scope& name, T* const symbol) {
 		return symbol;
 	}
 	catch (MapKeyError& e) {
-		delete symbol;
+		if (symbol->parent == nullptr) delete symbol;
 		ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + name.ToString() + SymbolError::RedefinitionEnd, symbol->file));
 		return nullptr;
 	}

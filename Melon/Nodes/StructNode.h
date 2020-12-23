@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/StructSymbol.h"
+
 namespace Melon {
 	namespace Nodes {
 
@@ -19,7 +21,7 @@ namespace Melon {
 			Boxx::List<Symbols::Scope> vars;
 
 			///T Symbol
-			Symbols::Symbols symbol;
+			Symbols::StructSymbol* symbol;
 
 			StructNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~StructNode();

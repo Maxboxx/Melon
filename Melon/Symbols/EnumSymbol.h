@@ -11,6 +11,7 @@ namespace Melon {
 			EnumSymbol(const Boxx::UInt size, const bool isSigned, const FileInfo& file);
 			~EnumSymbol();
 
+			///T Values
 			Boxx::Collection<Scope> values;
 		};
 	}

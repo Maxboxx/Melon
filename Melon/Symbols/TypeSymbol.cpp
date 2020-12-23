@@ -16,3 +16,7 @@ TypeSymbol::~TypeSymbol() {
 UInt TypeSymbol::Size() const {
 	return size;
 }
+
+UInt TypeSymbol::MemorySize() const {
+	return size;
+}

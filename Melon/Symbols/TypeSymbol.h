@@ -15,6 +15,10 @@ namespace Melon {
 			/// Gets the stack size of the type
 			virtual Boxx::UInt Size() const;
 
+			///T Memory Size
+			/// Gets the memory size of the type
+			virtual Boxx::UInt MemorySize() const;
+
 		protected:
 			Boxx::UInt size;
 		};

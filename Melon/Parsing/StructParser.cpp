@@ -4,6 +4,9 @@
 #include "FunctionParser.h"
 #include "TemplateParser.h"
 
+#include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/TemplateSymbol.h"
+
 #include "Melon/Symbols/Nodes/StructAssignNode.h"
 
 #include "Melon/Nodes/StructNode.h"
@@ -27,23 +30,6 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 	Pointer<StructNode> sn = ParseName(info, structLine);
 
-	info.scopes = info.scopes.Add(sn->name);
-	Symbols::Add(info.scopes, sn->symbol, FileInfo(info.filename, info.Current().line, info.statementNumber));
-
-	Symbols s = Symbols::Find(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber));
-
-	if (!s.templateVariants.IsEmpty()) {
-		sn->name.variant = s.templateVariants.Size() - 1;
-	}
-
-	info.scopes = info.scopes.Pop().Add(sn->name);
-	sn->symbol.scope = info.scopes;
-	sn->symbol.varType = sn->symbol.scope;
-
-	for (ScopeList& arg : sn->symbol.templateArgs) {
-		arg = info.scopes.Add(arg);
-	}
-
 	while (true) {
 		bool found = false;
 
@@ -51,26 +37,21 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 			Pointer<NewVariableNode> nn = node.Cast<NewVariableNode>();
 
 			for (UInt i = 0; i < nn->names.Size(); i++) {
-				Symbols v = Symbols(SymbolType::Variable);
-				v.symbolFile = info.currentFile;
-				v.symbolNamespace = info.currentNamespace;
-				v.includedNamespaces = info.includedNamespaces;
+				VariableSymbol* const var = new VariableSymbol(info.GetFileInfo(info.Current().line));
 
 				if (nn->types.Size() == 1)
-					v.varType = nn->types[0];
+					var->type = nn->types[0];
 				else
-					v.varType = nn->types[i];
+					var->type = nn->types[i];
 
-				v.attributes = nn->attributes[i];
-
-				sn->symbol.Add(nn->names[i], v, FileInfo(info.filename, info.Current().line, info.statementNumber));
-				sn->vars.Add(nn->names[i]);
-				sn->symbol.names.Add(nn->names[i]);
+				var->attributes = nn->attributes[i];
+				sn->symbol->AddSymbol(nn->names[i], var);
+				sn->symbol->members.Add(nn->names[i]);
 			}
 
 			found = true;
 		}
-		else if (NodePtr node = ParseFunction(info)) {
+		else if (FunctionParser::Parse(info, sn->symbol)) {
 			found = true;
 		}
 
@@ -80,27 +61,14 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::End)
 		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("struct", structLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
-	Symbols assign = Symbols(SymbolType::Function);
-	assign.symbolFile = info.currentFile;
-	assign.symbolNamespace = info.currentNamespace;
-	assign.includedNamespaces = info.includedNamespaces;
-	assign.arguments.Add(info.scopes);
-	assign.symbolNode = new StructAssignNode();
-	sn->symbol.Add(Scope::Assign, assign, FileInfo(info.filename, info.Current().line, info.statementNumber));
-
-	Symbols::Add(info.scopes, sn->symbol, FileInfo(info.filename, structLine, info.statementNumber), true);
-
-	for (UInt i = 0; i < sn->symbol.templateArgs.Size(); i++) {
-		Symbols t = Symbols(SymbolType::Template);
-		t.templateIndex = i;
-		t.scope = sn->symbol.scope.Add(sn->symbol.templateArgs[i].Last());
-		t.varType = t.scope;
-		sn->symbol.Add(sn->symbol.templateArgs[i].Last(), t, FileInfo(info.filename, structLine, info.statementNumber));
-	}
+	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo(info.Current().line));
+	assign->arguments.Add(sn->symbol->AbsoluteName());
+	assign->symbolNode = new StructAssignNode();
+	sn->symbol->AddSymbol(Scope::Assign, assign);
 
 	info.index++;
 
-	info.scopes = info.scopes.Pop();
+	info.scope = info.scope->Parent<ScopeSymbol>();
 	return sn;
 }
 
@@ -122,56 +90,43 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 	}
 
 	info.index++;
-	Symbols structSymbol = Symbols(SymbolType::Struct);
-	structSymbol.symbolFile = info.currentFile;
-	structSymbol.symbolNamespace = info.currentNamespace;
-	structSymbol.includedNamespaces = info.includedNamespaces;
-	structSymbol.scope = info.scopes.Add(structName);
+	StructSymbol* sym;
+	bool redefine = false;
 	
-	if (Optional<List<Scope>> templateList = TemplateParser::ParseDefine(info)) {
-		for (const Scope& arg : templateList.Get()) {
-			structSymbol.templateArgs.Add(ScopeList().Add(arg));
+	if (Symbol* const s = info.scope->Contains(structName)) {
+		sym = s->Cast<StructSymbol>();
+		redefine = true;
+	}
+	else {
+		sym = info.scope->AddSymbol(structName, new StructSymbol(info.GetFileInfo(structLine)));
+	}
+	
+	if (Optional<List<ScopeList>> templateList = TemplateParser::ParseDefine(info)) {
+		StructSymbol* tsym = new StructSymbol(info.GetFileInfo(structLine));
+
+		for (const ScopeList& arg : templateList.Get()) {
+			if (arg[0].IsEmpty()) {
+				tsym->AddSymbol(arg[1], new TemplateSymbol(info.GetFileInfo(structLine)));
+			}
+
+			tsym->templateArguments.Add(arg);
 		}
 
-		structName.types = List<ScopeList>();
+		Scope templateScope = Scope("");
+		templateScope.types = templateList.Get();
+
+		sym = sym->AddSymbol(templateScope, tsym);
 		info.statementNumber++;
 	}
-
-	Pointer<StructNode> sn = new StructNode(info.scopes, FileInfo(info.filename, structLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
-	sn->name = structName;
-	structSymbol.node = sn;
-	sn->symbol = structSymbol;
-
-	return sn;
-}
-
-NodePtr StructParser::ParseFunction(ParsingInfo& info) {
-	if (NodePtr node = FunctionParser::Parse(info, false)) {
-		if (Pointer<EmptyNode> en = node.Cast<EmptyNode>()) {
-			if (Pointer<FunctionNode> fn = en->node.Cast<FunctionNode>()) {
-				if (!fn->s.attributes.Contains(SymbolAttribute::Static)) {
-					Symbols a = Symbols(SymbolType::Variable);
-					a.symbolNamespace = info.currentNamespace;
-					a.includedNamespaces = info.includedNamespaces;
-					a.varType = info.scopes;
-					a.attributes.Add(SymbolAttribute::Ref);
-					//a.attributes.Add(SymbolAttribute::Const);	Add to class
-
-					fn->s.arguments.Insert(0, info.scopes);
-					fn->s.names.Insert(0, Scope::Self);
-					fn->argNames.Insert(0, Scope::Self);
-
-					Symbols::Add(fn->func, fn->s, FileInfo(info.filename, info.Current().line, info.statementNumber), true);
-					fn->s = Symbols::Find(fn->func, FileInfo(info.filename, info.Current().line, info.statementNumber));
-					fn->s.Add(Scope::Self, a, FileInfo(info.filename, info.Current().line, info.statementNumber));
-				}
-
-				return en;
-			}
-		}
+	else if (redefine) {
+		info.scope->AddSymbol(structName, sym);
 	}
 
-	return nullptr;
+	Pointer<StructNode> sn = new StructNode(info.scope->AbsoluteName(), FileInfo(info.filename, structLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+	sn->name = structName;
+	sn->symbol = sym;
+
+	return sn;
 }
 
 NodePtr StructParser::ParseVariable(ParsingInfo& info) {

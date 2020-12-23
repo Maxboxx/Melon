@@ -30,7 +30,7 @@ NodePtr SwitchExpressionParser::Parse(ParsingInfo& info, const bool returnOnErro
 		error = true;
 	}
 
-	Pointer<SwitchNode> switchexpr = new SwitchNode(info.scopes, FileInfo(info.filename, switchLine, info.statementNumber));
+	Pointer<SwitchNode> switchexpr = new SwitchNode(info.scope->AbsoluteName(), FileInfo(info.filename, switchLine, info.statementNumber));
 	switchexpr->expr = true;
 	switchexpr->match = value;
 
