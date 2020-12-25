@@ -8,6 +8,7 @@
 #include "Melon/Nodes/FunctionNode.h"
 #include "Melon/Nodes/EmptyNode.h"
 
+#include "Melon/Symbols/MapSymbol.h";
 #include "Melon/Symbols/TemplateSymbol.h";
 
 using namespace Boxx;

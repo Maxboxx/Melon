@@ -12,15 +12,15 @@ using namespace Melon::Parsing;
 RefNode::RefNode(const NodePtr& node) : Node(node->scope, node->file) {this->node = node;}
 RefNode::~RefNode() {}
 
-ScopeList RefNode::Type() const {
+Symbol* RefNode::Type() const {
 	return node->Type();
 }
 
-Boxx::List<ScopeList> RefNode::Types() const {
+Boxx::List<Symbol*> RefNode::Types() const {
 	return node->Types();
 }
 
-Symbols RefNode::GetSymbol() const {
+Symbol* RefNode::GetSymbol() const {
 	return node->GetSymbol();
 }
 

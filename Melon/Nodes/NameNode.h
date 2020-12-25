@@ -20,8 +20,8 @@ namespace Melon {
 			NameNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~NameNode();
 
-			virtual Symbols::ScopeList Type() const override;
-			virtual Symbols::Symbols GetSymbol() const override;
+			virtual Symbols::Symbol* Type() const override;
+			virtual Symbols::Symbol* GetSymbol() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;

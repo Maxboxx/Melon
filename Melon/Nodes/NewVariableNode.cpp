@@ -18,7 +18,7 @@ NewVariableNode::~NewVariableNode() {
 
 }
 
-ScopeList NewVariableNode::GetType(const UInt index) const {
+Symbol* NewVariableNode::GetType(const UInt index) const {
 	/* TODO: node
 	ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 
@@ -38,10 +38,10 @@ ScopeList NewVariableNode::GetType(const UInt index) const {
 	}
 	*/
 
-	return ScopeList();
+	return nullptr;
 }
 
-ScopeList NewVariableNode::Type() const {
+Symbol* NewVariableNode::Type() const {
 	return GetType(0);
 }
 

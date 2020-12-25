@@ -187,12 +187,12 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			throw CompileError("", FileInfo());
 		}
 
-		/*
 		ErrorLog::AddMarker();
 		info.root.IncludeScan(info);
 		ErrorLog::RevertToMarker();
 		ErrorLog::RemoveMarker();
 
+		/*
 		info.root.parsingInfo = &info;
 
 		Node::root = &info.root;

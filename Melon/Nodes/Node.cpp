@@ -33,12 +33,12 @@ Node::~Node() {
 
 }
 
-ScopeList Node::Type() const {
-	return ScopeList::undefined;
+Symbol* Node::Type() const {
+	return nullptr;
 }
 
-List<ScopeList> Node::Types() const {
-	List<ScopeList> types;
+List<Symbol*> Node::Types() const {
+	List<Symbol*> types;
 	types.Add(Type());
 	return types;
 }
@@ -87,7 +87,7 @@ ScopeList Node::CombineSideEffects(const ScopeList& scope1, const ScopeList& sco
 
 	for (UInt i = 0; i < len; i++) {
 		if (scope1[i] != scope2[i]) {
-			return true;
+			return ScopeList(true);
 		}
 	}
 
@@ -107,8 +107,8 @@ void Node::IncludeScan(ParsingInfo& info) {
 	
 }
 
-Symbols Node::GetSymbol() const {
-	return Symbols::Symbols();
+Symbol* Node::GetSymbol() const {
+	return nullptr;
 }
 
 UInt Node::GetSize() const {
@@ -128,7 +128,7 @@ Long Node::GetImmediate() const {
 }
 
 void Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
-	List<ScopeList> args;
+	List<Symbol*> args;
 	args.Add(value->Type());
 
 	/* TODO: node
@@ -137,7 +137,7 @@ void Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const
 }
 
 CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file) {
-	List<ScopeList> args;
+	List<Symbol*> args;
 	args.Add(value->Type());
 
 	/* TODO: node

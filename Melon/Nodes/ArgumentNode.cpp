@@ -15,8 +15,8 @@ ArgumentNode::~ArgumentNode() {
 
 }
 
-ScopeList ArgumentNode::Type() const {
-	return type;
+Symbol* ArgumentNode::Type() const {
+	return SymbolTable::FindAbsolute(type, file);
 }
 
 CompiledNode ArgumentNode::Compile(CompileInfo& info) {

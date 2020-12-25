@@ -22,7 +22,7 @@ namespace Melon {
 			AssignNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~AssignNode();
 
-			Boxx::List<Boxx::Pair<Symbols::ScopeList, NodePtr>> Values() const;
+			Boxx::List<Boxx::Pair<Symbols::Symbol*, NodePtr>> Values() const;
 
 			virtual Boxx::UInt GetSize() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;

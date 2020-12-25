@@ -19,7 +19,7 @@ NameNode::~NameNode() {
 
 }
 
-ScopeList NameNode::Type() const {
+Symbol* NameNode::Type() const {
 	/* TODO: node
 	Symbols s = GetSymbol();
 
@@ -35,10 +35,10 @@ ScopeList NameNode::Type() const {
 	}
 	*/
 
-	return ScopeList::undefined;
+	return nullptr;
 }
 
-Symbols NameNode::GetSymbol() const {
+Symbol* NameNode::GetSymbol() const {
 	/* TODO: node
 	ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 	Scope s = name.Copy();
@@ -70,7 +70,7 @@ Symbols NameNode::GetSymbol() const {
 	return Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, ScopeList().Add(s), file), file);
 	*/;
 
-	return Symbols::Symbols();
+	return nullptr;
 }
 
 CompiledNode NameNode::Compile(CompileInfo& info) {

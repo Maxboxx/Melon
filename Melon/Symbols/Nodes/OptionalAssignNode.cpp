@@ -25,8 +25,8 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	c1.AddInstructions(c2.instructions);
 	c1.argument = OffsetArgument(c1.argument, frame, info);
 
-	const ScopeList type1 = nodes[0]->Type();
-	const ScopeList type2 = nodes[1]->Type();
+	Symbol* const type1 = nodes[0]->Type();
+	Symbol* const type2 = nodes[1]->Type();
 
 	/* TODO: node
 	Symbols s = Symbols::Find(type1, nodes[0]->file);

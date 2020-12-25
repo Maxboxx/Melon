@@ -21,7 +21,7 @@ namespace Melon {
 			StackNode(const Boxx::UInt stack);
 			~StackNode();
 
-			virtual Symbols::ScopeList Type() const override;
+			virtual Symbols::Symbol* Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};

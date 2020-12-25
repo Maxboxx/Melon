@@ -12,15 +12,15 @@ using namespace Melon::Symbols;
 PtrNode::PtrNode(const NodePtr& node) : Node(node->scope, node->file) {this->node = node;}
 PtrNode::~PtrNode() {}
 
-ScopeList PtrNode::Type() const {
+Symbol* PtrNode::Type() const {
 	return node->Type();
 }
 
-Boxx::List<ScopeList> PtrNode::Types() const {
+Boxx::List<Symbol*> PtrNode::Types() const {
 	return node->Types();
 }
 
-Symbols PtrNode::GetSymbol() const {
+Symbol* PtrNode::GetSymbol() const {
 	return node->GetSymbol();
 }
 

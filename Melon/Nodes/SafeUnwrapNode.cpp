@@ -20,20 +20,20 @@ SafeUnwrapNode::~SafeUnwrapNode() {
 
 }
 
-ScopeList SafeUnwrapNode::Type() const  {
+Symbol* SafeUnwrapNode::Type() const  {
 	/* TODO: node
 	return Symbols::Find(node->Type(), file).Get(Scope::Value, file).varType;
 	*/
 
-	return ScopeList();
+	return nullptr;
 }
 
-Melon::Symbols::Symbols SafeUnwrapNode::GetSymbol() const {
+Symbol* SafeUnwrapNode::GetSymbol() const {
 	/* TODO: node
 	return Symbols::Find(Type(), file);
 	*/
 
-	return Symbols::Symbols();
+	return nullptr;
 }
 
 CompiledNode SafeUnwrapNode::Compile(CompileInfo& info)  {

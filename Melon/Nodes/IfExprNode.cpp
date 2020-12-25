@@ -22,8 +22,8 @@ IfExprNode::~IfExprNode() {
 
 }
 
-ScopeList IfExprNode::Type() const {
-	ScopeList type = nodes[0]->Type();
+Symbol* IfExprNode::Type() const {
+	Symbol* type = nodes[0]->Type();
 
 	for (UInt i = 1; i < nodes.Size(); i++) {
 		if (type != nodes[i]->Type()) ErrorLog::Error(TypeError(TypeError::IfExprType, file));
@@ -47,7 +47,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	Pointer<StackNode> sn = new StackNode(info.stack.top);
-	sn->type = Type();
+	sn->type = Type()->AbsoluteName();
 
 	StackPtr stack = info.stack;
 
@@ -112,7 +112,7 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 
 	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
 
-	Pointer<TypeNode> type = new TypeNode(Type());
+	Pointer<TypeNode> type = new TypeNode(Type()->AbsoluteName());
 
 	/* TODO: node
 	for (const NodePtr& node : nodes) {
@@ -190,7 +190,7 @@ NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 			Pointer<ConvertNode> cn = new ConvertNode(nodes[0]->scope, nodes[0]->file);
 			cn->isExplicit = true;
 			cn->node = nodes[0];
-			cn->type = Type();
+			cn->type = Type()->AbsoluteName();
 			info.optimized = true;
 			return cn;
 		}

@@ -15,8 +15,8 @@ StackNode::~StackNode() {
 
 }
 
-ScopeList StackNode::Type() const {
-	return type;
+Symbol* StackNode::Type() const {
+	return SymbolTable::FindAbsolute(type, file);
 }
 
 CompiledNode StackNode::Compile(CompileInfo& info) {

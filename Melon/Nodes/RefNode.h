@@ -17,9 +17,9 @@ namespace Melon {
 			RefNode(const NodePtr& node);
 			~RefNode();
 
-			virtual Symbols::ScopeList Type() const override;
-			virtual Boxx::List<Symbols::ScopeList> Types() const override;
-			virtual Symbols::Symbols GetSymbol() const override;
+			virtual Symbols::Symbol* Type() const override;
+			virtual Boxx::List<Symbols::Symbol*> Types() const override;
+			virtual Symbols::Symbol* GetSymbol() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;

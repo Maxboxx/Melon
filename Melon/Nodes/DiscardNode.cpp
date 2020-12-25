@@ -14,8 +14,8 @@ DiscardNode::~DiscardNode() {
 
 }
 
-ScopeList DiscardNode::Type() const {
-	return ScopeList::undefined;
+Symbol* DiscardNode::Type() const {
+	return nullptr;
 }
 
 CompiledNode DiscardNode::Compile(CompileInfo& info) {

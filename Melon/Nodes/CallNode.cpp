@@ -26,7 +26,7 @@ CallNode::~CallNode() {
 }
 
 Symbols CallNode::GetFunc() const {
-	List<ScopeList> argTypes;
+	List<Symbol*> argTypes;
 
 	for (NodePtr node : args) {
 		argTypes.Add(node->Type());
@@ -89,11 +89,11 @@ bool CallNode::IsInit() const {
 	return false;
 }
 
-ScopeList CallNode::Type() const {
+Symbol* CallNode::Type() const {
 	return Types()[0];
 }
 
-List<ScopeList> CallNode::Types() const {
+List<Symbol*> CallNode::Types() const {
 	/* TODO: node
 	Symbols s = GetFunc();
 
@@ -125,7 +125,7 @@ List<ScopeList> CallNode::Types() const {
 	return types;
 	*/
 
-	return List<ScopeList>();
+	return List<Symbol*>();
 }
 
 CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines

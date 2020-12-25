@@ -152,7 +152,7 @@ namespace Melon {
 			ScopeList();
 
 			///T Absolute
-			ScopeList(const bool absolute);
+			explicit ScopeList(const bool absolute);
 
 			///T Copy ScopeList
 			ScopeList(const ScopeList& scopeList);

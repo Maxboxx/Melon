@@ -25,16 +25,16 @@ SafeUnwrapEndNode::~SafeUnwrapEndNode() {
 
 }
 
-ScopeList SafeUnwrapEndNode::Type() const  {
+Symbol* SafeUnwrapEndNode::Type() const  {
 	Scope scope = Scope::Optional;
 	scope.types = List<ScopeList>();
-	scope.types.Get().Add(node->Type());
+	scope.types.Get().Add(node->Type()->AbsoluteName());
 
 	/* TODO: node
 	return Symbols::Find(ScopeList().Add(scope), file).scope;
 	*/
 
-	return ScopeList();
+	return nullptr;
 }
 
 CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
@@ -49,10 +49,10 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 	cn.instructions.Add(mov1);
 
 	Pointer<MemoryNode> sn1 = new MemoryNode(arg.mem.offset + 1);
-	sn1->type = node->Type();
+	sn1->type = node->Type()->AbsoluteName();
 
 	Pointer<MemoryNode> sn2 = new MemoryNode(cn.argument.mem);
-	sn2->type = node->Type();
+	sn2->type = node->Type()->AbsoluteName();
 
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
 
@@ -88,7 +88,7 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	node->IncludeScan(info);
 
-	const ScopeList nodeType = node->Type();
+	const ScopeList nodeType = node->Type()->AbsoluteName();
 
 	if (nodeType == ScopeList::undefined) {
 		throw IncludeScanError();

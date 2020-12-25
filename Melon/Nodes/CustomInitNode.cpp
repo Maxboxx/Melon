@@ -23,7 +23,7 @@ CustomInitNode::~CustomInitNode() {
 
 }
 
-ScopeList CustomInitNode::Type() const {
+Symbol* CustomInitNode::Type() const {
 	return node->Type();
 }
 

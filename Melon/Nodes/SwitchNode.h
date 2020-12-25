@@ -58,7 +58,7 @@ namespace Melon {
 			/// Cleanup for the switch scan info
 			void ScanCleanup(SwitchScanInfo& loopInfo, ScanInfo& info) const;
 
-			virtual Symbols::ScopeList Type() const override;
+			virtual Symbols::Symbol* Type() const override;
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;

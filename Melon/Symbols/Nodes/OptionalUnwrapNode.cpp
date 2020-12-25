@@ -15,7 +15,7 @@ using namespace Melon::Symbols::Nodes;
 CompiledNode OptionalUnwrapNode::Compile(const Boxx::List<NodePtr>& nodes, CompileInfo& info) const {
 	CompiledNode c = nodes[0]->Compile(info);
 
-	List<ScopeList> args;
+	List<Symbol*> args;
 	args.Add(nodes[0]->Type());
 
 	/* TODO: node

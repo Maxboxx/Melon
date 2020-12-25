@@ -23,11 +23,11 @@ UnaryOperatorNode::~UnaryOperatorNode() {
 
 }
 
-ScopeList UnaryOperatorNode::Type() const {
-	List<ScopeList> args;
+Symbol* UnaryOperatorNode::Type() const {
+	List<Symbol*> args;
 	args.Add(node->Type());
 
-	const ScopeList type = node->Type();
+	Symbol* const type = node->Type();
 
 	/* TODO: node
 	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);
@@ -44,17 +44,17 @@ ScopeList UnaryOperatorNode::Type() const {
 	}
 	*/
 
-	return ScopeList::undefined;
+	return nullptr;
 }
 
-Symbols UnaryOperatorNode::GetSymbol() const {
+Symbol* UnaryOperatorNode::GetSymbol() const {
 	/* TODO: node
 	if (op == Scope::Unwrap) {
 		return Symbols::Find(node->Type(), file).Get(Scope::Value, file);
 	}
 	*/
 
-	return Symbols::Symbols();
+	return nullptr;
 }
 
 Scope UnaryOperatorNode::GetOperator() const {
@@ -65,10 +65,10 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 	List<NodePtr> nodes;
 	nodes.Add(node);
 
-	List<ScopeList> args;
+	List<Symbol*> args;
 	args.Add(node->Type());
 
-	const ScopeList type = node->Type();
+	Symbol* const type = node->Type();
 
 	/* TODO: node
 	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);

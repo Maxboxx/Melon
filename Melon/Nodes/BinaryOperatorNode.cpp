@@ -23,7 +23,7 @@ BinaryOperatorNode::~BinaryOperatorNode() {
 
 }
 
-ScopeList BinaryOperatorNode::Type() const {
+Symbol* BinaryOperatorNode::Type() const {
 	/* TODO: node
 	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
@@ -39,7 +39,7 @@ ScopeList BinaryOperatorNode::Type() const {
 	}
 	*/
 
-	return ScopeList::undefined;
+	return nullptr;
 }
 
 Scope BinaryOperatorNode::GetOperator() const {
@@ -124,7 +124,7 @@ NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 
 	// TODO: Add more operators
 	if (node1->IsImmediate() && node2->IsImmediate()) {
-		if (node1->Type() == ScopeList::Bool && node2->Type() == ScopeList::Bool) {
+		if (node1->Type()->AbsoluteName() == ScopeList::Bool && node2->Type()->AbsoluteName() == ScopeList::Bool) {
 			if (op == Scope::Equal) {
 				Pointer<BooleanNode> bn = new BooleanNode(node1->file);
 				bn->boolean = node1->GetImmediate() == node2->GetImmediate();

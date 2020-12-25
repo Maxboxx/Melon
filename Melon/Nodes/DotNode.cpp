@@ -22,7 +22,7 @@ DotNode::~DotNode() {
 
 }
 
-ScopeList DotNode::Type() const {
+Symbol* DotNode::Type() const {
 	/* TODO: node
 	const Symbols s = GetSymbol();
 
@@ -34,10 +34,10 @@ ScopeList DotNode::Type() const {
 	}
 	*/
 
-	return ScopeList::undefined;
+	return nullptr;
 }
 
-Symbols DotNode::GetSymbol() const {
+Symbol* DotNode::GetSymbol() const {
 	UInt errorCount = ErrorLog::ErrorCount();
 
 	/* TODO: node
@@ -73,11 +73,11 @@ Symbols DotNode::GetSymbol() const {
 	}
 	*/
 
-	return Symbols::Symbols();
+	return nullptr;
 }
 
 CompiledNode DotNode::Compile(CompileInfo& info) {
-	const ScopeList type = node->Type();
+	Symbol* const type = node->Type();
 
 	/* TODO: node
 	Symbols s = Symbols::Find(type, file);
@@ -130,7 +130,7 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 		return scanSet;
 	}
 
-	const ScopeList type = node->Type();
+	Symbol* const type = node->Type();
 
 	/* TODO: node
 	Symbols var = Symbols::Find(type.Add(name), file);

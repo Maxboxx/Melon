@@ -17,7 +17,7 @@ namespace Melon {
 			BooleanNode(const FileInfo& file);
 			~BooleanNode();
 
-			virtual Symbols::ScopeList Type() const override;
+			virtual Symbols::Symbol* Type() const override;
 			virtual bool IsImmediate() const override;
 			virtual Boxx::Long GetImmediate() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;

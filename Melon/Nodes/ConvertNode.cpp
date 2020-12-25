@@ -20,7 +20,7 @@ ConvertNode::~ConvertNode() {
 
 }
 
-ScopeList ConvertNode::Type() const {
+Symbol* ConvertNode::Type() const {
 	/* TODO: node
 	Symbols s = Symbols::FindNearestInNamespace(scope, type, file);
 
@@ -35,11 +35,11 @@ ScopeList ConvertNode::Type() const {
 	}
 	*/
 
-	return ScopeList();
+	return nullptr;
 }
 
 CompiledNode ConvertNode::Compile(CompileInfo& info) {
-	ScopeList convertType = Type();
+	Symbol* convertType = Type();
 
 	if (node->Type() == convertType) return node->Compile(info);
 
@@ -73,7 +73,7 @@ void ConvertNode::IncludeScan(ParsingInfo& info) {
 }
 
 Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {
-	ScopeList convertType = Type();
+	Symbol* convertType = Type();
 
 	/* TODO: node
 	if (node->Type() == convertType) return node->Scan(info);
@@ -99,7 +99,7 @@ StringBuilder ConvertNode::ToMelon(const UInt indent) const {
 
 	if (isExplicit) {
 		sb += " as ";
-		sb += Type().ToString();
+		sb += Type()->AbsoluteName().ToString();
 	}
 
 	return sb;

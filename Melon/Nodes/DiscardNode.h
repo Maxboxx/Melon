@@ -13,7 +13,7 @@ namespace Melon {
 			DiscardNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~DiscardNode();
 
-			virtual Symbols::ScopeList Type() const override;
+			virtual Symbols::Symbol* Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};

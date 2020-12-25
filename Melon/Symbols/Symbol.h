@@ -12,6 +12,8 @@
 namespace Melon {
 	namespace Symbols {
 		class MapSymbol;
+		class TypeSymbol;
+		class SymbolTable;
 
 		///B Symbol
 		/// Contains information about a symbol
@@ -42,7 +44,7 @@ namespace Melon {
 			///T Type
 			/// Gets the type of the symbol
 			///R Symbol*: The symbol of the type or <code>nullptr</code> if the symbol does not have a type
-			virtual Symbol* Type();
+			virtual TypeSymbol* Type();
 
 			///T Is Type
 			/// Checks if the symbol is a type
@@ -112,6 +114,7 @@ namespace Melon {
 			Scope name;
 
 			friend MapSymbol;
+			friend SymbolTable;
 		};
 
 		template <class T>
@@ -121,26 +124,46 @@ namespace Melon {
 
 		template <class T>
 		inline T* Symbol::Find(const Scope& scope, const FileInfo& file) {
-			return Find(ScopeList().Add(scope), file)->Cast<T>();
+			if (Symbol* const sym = Find(ScopeList().Add(scope), file)) {
+				return sym->Cast<T>();
+			}
+			else {
+				return nullptr;
+			}
 		}
 
 		template <class T>
 		inline T* Symbol::Find(const ScopeList& scopeList, const FileInfo& file) {
-			return Find(scopeList, 0, file)->Cast<T>();
+			if (Symbol* const sym = Find(scopeList, file)) {
+				return sym->Cast<T>();
+			}
+			else {
+				return nullptr;
+			}
 		}
 
 		template <class T>
 		inline T* Symbol::Contains(const Scope& scope) {
-			return Contains(ScopeList().Add(scope))->Cast<T>();
+			if (Symbol* const sym = Contains(ScopeList().Add(scope))) {
+				return sym->Cast<T>();
+			}
+			else {
+				return nullptr;
+			}
 		}
 
 		template <class T>
 		inline T* Symbol::Contains(const ScopeList& scopeList) {
 			ErrorLog::AddMarker();
-			Symbol* const symbol = Find(scopeList, 0, FileInfo());
+			Symbol* const sym = Find(scopeList, 0, FileInfo());
 			ErrorLog::Revert();
 
-			return symbol->Cast<T>();
+			if (sym) {
+				return sym->Cast<T>();
+			}
+			else {
+				return nullptr;
+			}
 		}
 	}
 }

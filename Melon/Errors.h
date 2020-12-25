@@ -94,7 +94,7 @@ namespace Melon {
 		Symbols::ScopeList currentNamespace;
 
 		///T File Scope
-		Boxx::String fileScope;
+		Symbols::Scope fileScope;
 
 		///T Included Namespaces
 		Boxx::Set<Symbols::ScopeList> includedNamespaces;

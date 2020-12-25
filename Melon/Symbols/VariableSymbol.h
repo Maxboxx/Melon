@@ -29,7 +29,7 @@ namespace Melon {
 			VariableSymbol(const FileInfo& file);
 			~VariableSymbol();
 
-			virtual Symbol* Type() override;
+			virtual TypeSymbol* Type() override;
 		};
 	}
 }

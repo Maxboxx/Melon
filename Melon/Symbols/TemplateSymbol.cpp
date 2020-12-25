@@ -13,6 +13,6 @@ TemplateSymbol::~TemplateSymbol() {
 
 }
 
-Symbol* TemplateSymbol::Type() {
+TypeSymbol* TemplateSymbol::Type() {
 	return nullptr;
 }

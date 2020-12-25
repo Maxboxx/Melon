@@ -16,39 +16,39 @@ IntegerNode::~IntegerNode() {
 
 }
 
-ScopeList IntegerNode::Type() const {
+Symbol* IntegerNode::Type() const {
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {
-			return ScopeList::UByte;
+			return SymbolTable::FindAbsolute(ScopeList::UByte, file);
 		}
 		else if ((ULong)number <= Math::UShortMax()) {
-			return ScopeList::UShort;
+			return SymbolTable::FindAbsolute(ScopeList::UShort, file);
 		}
 		else if ((ULong)number <= Math::UIntMax()) {
-			return ScopeList::UInt;
+			return SymbolTable::FindAbsolute(ScopeList::UInt, file);
 		}
 		else if ((ULong)number <= Math::ULongMax()) {
-			return ScopeList::ULong;
+			return SymbolTable::FindAbsolute(ScopeList::ULong, file);
 		}
 		else {
-			return ScopeList::Huge;
+			return SymbolTable::FindAbsolute(ScopeList::Huge, file);
 		}
 	}
 	else {
 		if (number >= Math::ByteMin()) {
-			return ScopeList::Byte;
+			return SymbolTable::FindAbsolute(ScopeList::Byte, file);
 		}
 		else if (number >= Math::ShortMin()) {
-			return ScopeList::Short;
+			return SymbolTable::FindAbsolute(ScopeList::Short, file);
 		}
 		else if (number >= Math::IntMin()) {
-			return ScopeList::Int;
+			return SymbolTable::FindAbsolute(ScopeList::Int, file);
 		}
 		else if (number >= Math::LongMin()) {
-			return ScopeList::Long;
+			return SymbolTable::FindAbsolute(ScopeList::Long, file);
 		}
 		else {
-			return ScopeList::Huge;
+			return SymbolTable::FindAbsolute(ScopeList::Huge, file);
 		}
 	}
 }

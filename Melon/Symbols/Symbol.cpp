@@ -32,7 +32,7 @@ ScopeList Symbol::AbsoluteName() const {
 	}
 }
 
-Symbol* Symbol::Type() {
+TypeSymbol* Symbol::Type() {
 	return nullptr;
 }
 

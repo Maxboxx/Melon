@@ -90,7 +90,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 }
 
 void IncludeParser::ParseInclude(const ScopeList& include, ParsingInfo& info) {
-	if (NamespaceSymbol* const ns = SymbolTable::Find<NamespaceSymbol>(include.Pop(), FileInfo())) {
+	if (NamespaceSymbol* const ns = SymbolTable::FindAbsolute<NamespaceSymbol>(include.Pop(), FileInfo())) {
 		String dir = ns->IncludedPath() + "/" + include.Last().ToString();
 
 		if (System::DirectoryExists(dir)) {
@@ -128,7 +128,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	info.statementNumber = 1;
 
 	ScopeSymbol* const scope = info.scope;
-	info.scope = SymbolTable::Find<NamespaceSymbol>(include, FileInfo());
+	info.scope = SymbolTable::FindAbsolute<NamespaceSymbol>(include, FileInfo());
 
 	CreateIncludeSymbols(filename, include);
 
@@ -154,7 +154,7 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 			includeScopes = includeScopes.Add(include[u]);
 		}
 
-		if (!SymbolTable::Contains(includeScopes)) {
+		if (!SymbolTable::ContainsAbsolute(includeScopes)) {
 			Array<String> dirs = filename.Replace("\\", "/").Split("/");
 			String path = dirs[0];
 
@@ -162,7 +162,7 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 				path += "/" + dirs[u];
 			}
 
-			NamespaceSymbol* const ns = SymbolTable::Find<NamespaceSymbol>(includeScopes.Pop(), FileInfo());
+			NamespaceSymbol* const ns = SymbolTable::FindAbsolute<NamespaceSymbol>(includeScopes.Pop(), FileInfo());
 			ns->AddSymbol(includeScopes.Last(), new NamespaceSymbol(path, FileInfo(filename, 1, 0)));
 		}
 	}

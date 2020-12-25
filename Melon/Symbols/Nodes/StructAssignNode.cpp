@@ -24,7 +24,7 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 	c1.AddInstructions(c2.instructions);
 	c1.argument = OffsetArgument(c1.argument, frame, info);
 
-	const ScopeList type = nodes[0]->Type();
+	Symbol* const type = nodes[0]->Type();
 
 	/* TODO: node
 	Symbols s = Symbols::Find(type, nodes[0]->file);

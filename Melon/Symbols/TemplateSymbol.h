@@ -15,7 +15,7 @@ namespace Melon {
 			TemplateSymbol(const FileInfo& file);
 			~TemplateSymbol();
 
-			virtual Symbol* Type() override;
+			virtual TypeSymbol* Type() override;
 		};
 	}
 }

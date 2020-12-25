@@ -28,10 +28,10 @@ SwitchNode::~SwitchNode() {
 
 }
 
-ScopeList SwitchNode::Type() const {
-	if (!expr) return ScopeList::undefined;
+Symbol* SwitchNode::Type() const {
+	if (!expr) return nullptr;
 
-	ScopeList type = nodes[0]->Type();
+	Symbol* type = nodes[0]->Type();
 
 	for (UInt i = 1; i < nodes.Size(); i++) {
 		if (type != nodes[i]->Type()) ErrorLog::Error(TypeError(TypeError::SwitchExprType, file));

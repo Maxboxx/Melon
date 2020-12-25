@@ -14,8 +14,8 @@ NilNode::~NilNode() {
 
 }
 
-ScopeList NilNode::Type() const {
-	return ScopeList::Nil;
+Symbol* NilNode::Type() const {
+	return SymbolTable::FindAbsolute(ScopeList::Nil, file);
 }
 
 bool NilNode::IsImmediate() const {

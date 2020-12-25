@@ -13,6 +13,6 @@ VariableSymbol::~VariableSymbol() {
 	
 }
 
-Symbol* VariableSymbol::Type() {
+TypeSymbol* VariableSymbol::Type() {
 	return nullptr;
 }

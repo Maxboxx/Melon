@@ -21,8 +21,8 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 
 	CompiledNode c1 = nodes[0]->Compile(info);
 
-	const ScopeList type = nodes[0]->Type();
-	const bool isNil = nodes[1]->Type() == ScopeList::Nil;
+	Symbol* const type = nodes[0]->Type();
+	const bool isNil = nodes[1]->Type() == SymbolTable::FindAbsolute(ScopeList::Nil, FileInfo());
 
 	/* TODO: node
 	Symbols s = Symbols::Find(type, nodes[0]->file);

@@ -13,7 +13,7 @@ namespace Melon {
 			ValueSymbol(const FileInfo& file);
 			~ValueSymbol();
 
-			virtual Symbol* Type() override;
+			virtual TypeSymbol* Type() override;
 		};
 	}
 }

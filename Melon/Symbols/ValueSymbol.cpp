@@ -1,5 +1,7 @@
 #include "ValueSymbol.h"
 
+#include "TypeSymbol.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -13,6 +15,6 @@ ValueSymbol::~ValueSymbol() {
 
 }
 
-Symbol* ValueSymbol::Type() {
-	return parent;
+TypeSymbol* ValueSymbol::Type() {
+	return parent->Cast<TypeSymbol>();
 }

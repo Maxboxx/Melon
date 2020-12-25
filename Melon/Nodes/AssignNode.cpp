@@ -12,6 +12,9 @@
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/TypeSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -31,21 +34,21 @@ AssignNode::~AssignNode() {
 
 }
 
-List<Pair<ScopeList, NodePtr>> AssignNode::Values() const {
-	List<Pair<ScopeList, NodePtr>> types;
+List<Pair<Symbol*, NodePtr>> AssignNode::Values() const {
+	List<Pair<Symbol*, NodePtr>> types;
 
 	for (UInt i = 0; i < vars.Size(); i++) {
 		if (i + 1 >= values.Size()) {
-			List<ScopeList> returnTypes = values[i]->Types();
+			List<Symbol*> returnTypes = values[i]->Types();
 
 			for (UInt u = 0; u < vars.Size() - i; u++) {
-				types.Add(Pair<ScopeList, NodePtr>(returnTypes[u], values[i]));
+				types.Add(Pair<Symbol*, NodePtr>(returnTypes[u], values[i]));
 			}
 
 			break;
 		}
 		else {
-			types.Add(Pair<ScopeList, NodePtr>(values[i]->Type(), values[i]));
+			types.Add(Pair<Symbol*, NodePtr>(values[i]->Type(), values[i]));
 		}
 	}
 
@@ -55,20 +58,20 @@ List<Pair<ScopeList, NodePtr>> AssignNode::Values() const {
 UInt AssignNode::GetSize() const {
 	UInt size = 0;
 
-	/* TODO: node
 	for (UInt i = 0; i < vars.Size(); i++) {
 		if (types[i] == ScopeList::Discard || vars[i].Is<DiscardNode>()) continue;
 
-		Symbols s = Symbols::Find(vars[i]->scope.Add(vars[i].Cast<NameNode>()->name), file);
-
-		if (s.attributes.Contains(SymbolAttribute::Ref)) {
-			size += StackPtr::ptrSize;
-		}
-		else {
-			size += s.GetType(file).size;
+		if (Symbol* const s = vars[i]->GetSymbol()) {
+			if (VariableSymbol* const var = s->Cast<VariableSymbol>()) {
+				if ((var->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+					size += StackPtr::ptrSize;
+				}
+				else {
+					size += var->Type()->Size();
+				}
+			}
 		}
 	}
-	*/
 
 	return size;
 }
@@ -96,7 +99,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 	}
 	*/
 
-	List<Pair<ScopeList, NodePtr>> values = Values();
+	List<Pair<ScopeList, NodePtr>> values;// = Values();
 	List<UInt> returnOffsets;
 	const UInt frame = info.stack.frame;
 
@@ -193,7 +196,7 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 
 	Set<ScanType> scanSet;
 
-	List<Pair<ScopeList, NodePtr>> values = Values();
+	List<Pair<ScopeList, NodePtr>> values;// = Values();
 
 	bool errors = errorCount < ErrorLog::ErrorCount();
 
@@ -203,9 +206,9 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 		NodePtr node = vars[i];
 		node->Type();
 
-		if (types[i] == ScopeList::Discard && node->GetSymbol().attributes.Contains(SymbolAttribute::Const)) {
-			ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
-		}
+		//if (types[i] == ScopeList::Discard && node->GetSymbol().attributes.Contains(SymbolAttribute::Const)) {
+		//	ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
+		//}
 
 		//if (types[i] != ScopeList::Discard && !node.Is<NameNode>()) {
 			for (const ScanType type : node->Scan(info)) {
