@@ -13,7 +13,7 @@ namespace Melon {
 			ConditionNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~ConditionNode();
 
-			virtual Symbols::Symbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::UInt GetSize() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

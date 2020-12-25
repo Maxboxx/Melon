@@ -19,7 +19,7 @@ NameNode::~NameNode() {
 
 }
 
-Symbol* NameNode::Type() const {
+TypeSymbol* NameNode::Type() const {
 	/* TODO: node
 	Symbols s = GetSymbol();
 

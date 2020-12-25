@@ -23,11 +23,11 @@ UnaryOperatorNode::~UnaryOperatorNode() {
 
 }
 
-Symbol* UnaryOperatorNode::Type() const {
-	List<Symbol*> args;
+TypeSymbol* UnaryOperatorNode::Type() const {
+	List<TypeSymbol*> args;
 	args.Add(node->Type());
 
-	Symbol* const type = node->Type();
+	TypeSymbol* const type = node->Type();
 
 	/* TODO: node
 	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);

@@ -14,7 +14,7 @@ DiscardNode::~DiscardNode() {
 
 }
 
-Symbol* DiscardNode::Type() const {
+TypeSymbol* DiscardNode::Type() const {
 	return nullptr;
 }
 

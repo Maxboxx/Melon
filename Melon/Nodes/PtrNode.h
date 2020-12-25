@@ -17,8 +17,8 @@ namespace Melon {
 			PtrNode(const NodePtr& node);
 			~PtrNode();
 
-			virtual Symbols::Symbol* Type() const override;
-			virtual Boxx::List<Symbols::Symbol*> Types() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
+			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override;
 			virtual Symbols::Symbol* GetSymbol() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

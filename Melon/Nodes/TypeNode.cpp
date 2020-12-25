@@ -19,8 +19,8 @@ CompiledNode TypeNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-Symbol* TypeNode::Type() const {
-	return SymbolTable::FindAbsolute(type, file);
+TypeSymbol* TypeNode::Type() const {
+	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
 StringBuilder TypeNode::ToMelon(const UInt indent) const {

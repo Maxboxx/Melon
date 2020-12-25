@@ -24,11 +24,11 @@ Scope Symbol::Name() const {
 }
 
 ScopeList Symbol::AbsoluteName() const {
-	if (parent && parent->parent) {
+	if (parent) {
 		return parent->AbsoluteName().Add(Name());
 	}
 	else {
-		return ScopeList(true).Add(Name());
+		return ScopeList(true);
 	}
 }
 

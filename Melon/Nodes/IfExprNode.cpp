@@ -22,8 +22,8 @@ IfExprNode::~IfExprNode() {
 
 }
 
-Symbol* IfExprNode::Type() const {
-	Symbol* type = nodes[0]->Type();
+TypeSymbol* IfExprNode::Type() const {
+	TypeSymbol* type = nodes[0]->Type();
 
 	for (UInt i = 1; i < nodes.Size(); i++) {
 		if (type != nodes[i]->Type()) ErrorLog::Error(TypeError(TypeError::IfExprType, file));

@@ -187,7 +187,7 @@
 		<DisplayString Condition="scopes.list->size == 5 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]}</DisplayString>
 		<DisplayString Condition="scopes.list->size > 5 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]} ...</DisplayString>
 
-		<DisplayString Condition="scopes.list->size == 0 &amp;&amp; absolute">"global"</DisplayString>
+		<DisplayString Condition="scopes.list->size == 0 &amp;&amp; absolute">global ""</DisplayString>
 		<DisplayString Condition="scopes.list->size == 1 &amp;&amp; absolute">global {scopes.list->list[0]}</DisplayString>
 		<DisplayString Condition="scopes.list->size == 2 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}</DisplayString>
 		<DisplayString Condition="scopes.list->size == 3 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}</DisplayString>
@@ -222,7 +222,7 @@
 	</Type>
 
 	<Type Name="Melon::Symbols::FunctionSymbol">
-		<DisplayString>FunctionSymbol {Name()}</DisplayString>
+		<DisplayString>FunctionSymbol {name}</DisplayString>
 
 		<Expand>
 			<Item Name="symbols" Condition="overloads.list->size == 0">symbols</Item>
@@ -236,6 +236,16 @@
 
 		<Expand>
 			<Item Name="type">type</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Melon::Symbols::IntegerSymbol">
+		<DisplayString>IntegerSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="size">size</Item>
+			<Item Name="signed">isSigned</Item>
+			<Item Name="symbols">symbols</Item>
 		</Expand>
 	</Type>
 </AutoVisualizer>

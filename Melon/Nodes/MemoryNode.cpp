@@ -19,8 +19,8 @@ MemoryNode::~MemoryNode() {
 
 }
 
-Symbol* MemoryNode::Type() const {
-	return SymbolTable::FindAbsolute(type, file);
+TypeSymbol* MemoryNode::Type() const {
+	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
 CompiledNode MemoryNode::Compile(CompileInfo& info) {

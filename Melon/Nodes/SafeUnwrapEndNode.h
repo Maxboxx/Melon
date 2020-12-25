@@ -17,7 +17,7 @@ namespace Melon {
 			SafeUnwrapEndNode(const Symbols::ScopeList& scope, const FileInfo& file);
 			~SafeUnwrapEndNode();
 
-			virtual Symbols::Symbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;

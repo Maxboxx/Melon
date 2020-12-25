@@ -33,12 +33,12 @@ Node::~Node() {
 
 }
 
-Symbol* Node::Type() const {
+TypeSymbol* Node::Type() const {
 	return nullptr;
 }
 
-List<Symbol*> Node::Types() const {
-	List<Symbol*> types;
+List<TypeSymbol*> Node::Types() const {
+	List<TypeSymbol*> types;
 	types.Add(Type());
 	return types;
 }

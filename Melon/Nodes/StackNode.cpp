@@ -15,8 +15,8 @@ StackNode::~StackNode() {
 
 }
 
-Symbol* StackNode::Type() const {
-	return SymbolTable::FindAbsolute(type, file);
+TypeSymbol* StackNode::Type() const {
+	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
 CompiledNode StackNode::Compile(CompileInfo& info) {

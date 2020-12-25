@@ -20,8 +20,8 @@ DefaultNode::~DefaultNode() {
 
 }
 
-Symbol* DefaultNode::Type() const {
-	Symbol* type = node1->Type();
+TypeSymbol* DefaultNode::Type() const {
+	TypeSymbol* type = node1->Type();
 	/* TODO: node
 	type = Symbols::Find(type, file).Get(Scope::Value, file).varType;
 

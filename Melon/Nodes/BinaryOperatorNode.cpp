@@ -23,7 +23,7 @@ BinaryOperatorNode::~BinaryOperatorNode() {
 
 }
 
-Symbol* BinaryOperatorNode::Type() const {
+TypeSymbol* BinaryOperatorNode::Type() const {
 	/* TODO: node
 	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 

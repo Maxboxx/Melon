@@ -22,8 +22,8 @@ LogicNode::~LogicNode() {
 
 }
 
-Symbol* LogicNode::Type() const {
-	return SymbolTable::FindAbsolute(ScopeList::Bool, file);
+TypeSymbol* LogicNode::Type() const {
+	return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Bool, file);
 }
 
 Scope LogicNode::GetOperator() const {

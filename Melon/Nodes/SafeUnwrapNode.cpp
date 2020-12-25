@@ -20,7 +20,7 @@ SafeUnwrapNode::~SafeUnwrapNode() {
 
 }
 
-Symbol* SafeUnwrapNode::Type() const  {
+TypeSymbol* SafeUnwrapNode::Type() const  {
 	/* TODO: node
 	return Symbols::Find(node->Type(), file).Get(Scope::Value, file).varType;
 	*/

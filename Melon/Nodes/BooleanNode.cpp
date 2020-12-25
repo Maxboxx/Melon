@@ -14,8 +14,8 @@ BooleanNode::~BooleanNode() {
 
 }
 
-Symbol* BooleanNode::Type() const {
-	return SymbolTable::FindAbsolute(ScopeList::Bool, file);
+TypeSymbol* BooleanNode::Type() const {
+	return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Bool, file);
 }
 
 bool BooleanNode::IsImmediate() const {

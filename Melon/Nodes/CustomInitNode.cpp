@@ -23,7 +23,7 @@ CustomInitNode::~CustomInitNode() {
 
 }
 
-Symbol* CustomInitNode::Type() const {
+TypeSymbol* CustomInitNode::Type() const {
 	return node->Type();
 }
 

@@ -65,6 +65,10 @@ namespace Melon {
 			///T Function attrubutes
 			FunctionAttributes attributes = FunctionAttributes::None;
 
+			///T Is Explicit
+			/// Used for type conversions
+			bool isExplicit = false;
+
 			virtual Scope Name() const override;
 
 		protected:

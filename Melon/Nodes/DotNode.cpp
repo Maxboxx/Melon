@@ -22,7 +22,7 @@ DotNode::~DotNode() {
 
 }
 
-Symbol* DotNode::Type() const {
+TypeSymbol* DotNode::Type() const {
 	/* TODO: node
 	const Symbols s = GetSymbol();
 

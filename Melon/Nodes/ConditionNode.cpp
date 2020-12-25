@@ -27,7 +27,7 @@ ConditionNode::~ConditionNode() {
 
 }
 
-Symbol* ConditionNode::Type() const {
+TypeSymbol* ConditionNode::Type() const {
 	return cond->Type();
 }
 

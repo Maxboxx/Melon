@@ -25,7 +25,7 @@ SafeUnwrapEndNode::~SafeUnwrapEndNode() {
 
 }
 
-Symbol* SafeUnwrapEndNode::Type() const  {
+TypeSymbol* SafeUnwrapEndNode::Type() const  {
 	Scope scope = Scope::Optional;
 	scope.types = List<ScopeList>();
 	scope.types.Get().Add(node->Type()->AbsoluteName());

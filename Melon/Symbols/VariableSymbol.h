@@ -8,9 +8,13 @@ namespace Melon {
 		///B VariableAttributes
 		/// The different attributes a variable can have
 		enum class VariableAttributes : Boxx::UByte {
-			None  = 0,
-			Const = 1,
-			Ref   = 2
+			///T Values
+			///M
+			None   = 0,
+			Const  = 1,
+			Ref    = 2,
+			Static = 4
+			///M
 		};
 
 		BOXX_ENUM_FLAGS(VariableAttributes);

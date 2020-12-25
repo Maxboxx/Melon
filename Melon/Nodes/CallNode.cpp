@@ -89,11 +89,11 @@ bool CallNode::IsInit() const {
 	return false;
 }
 
-Symbol* CallNode::Type() const {
+TypeSymbol* CallNode::Type() const {
 	return Types()[0];
 }
 
-List<Symbol*> CallNode::Types() const {
+List<TypeSymbol*> CallNode::Types() const {
 	/* TODO: node
 	Symbols s = GetFunc();
 
@@ -125,7 +125,7 @@ List<Symbol*> CallNode::Types() const {
 	return types;
 	*/
 
-	return List<Symbol*>();
+	return List<TypeSymbol*>();
 }
 
 CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines

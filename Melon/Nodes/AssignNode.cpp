@@ -13,7 +13,7 @@
 #include "Melon/Parsing/IncludeParser.h"
 
 #include "Melon/Symbols/VariableSymbol.h"
-#include "Melon/Symbols/TypeSymbol.h"
+#include "Melon/Symbols/NamespaceSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -34,21 +34,21 @@ AssignNode::~AssignNode() {
 
 }
 
-List<Pair<Symbol*, NodePtr>> AssignNode::Values() const {
-	List<Pair<Symbol*, NodePtr>> types;
+List<Pair<TypeSymbol*, NodePtr>> AssignNode::Values() const {
+	List<Pair<TypeSymbol*, NodePtr>> types;
 
 	for (UInt i = 0; i < vars.Size(); i++) {
 		if (i + 1 >= values.Size()) {
-			List<Symbol*> returnTypes = values[i]->Types();
+			List<TypeSymbol*> returnTypes = values[i]->Types();
 
 			for (UInt u = 0; u < vars.Size() - i; u++) {
-				types.Add(Pair<Symbol*, NodePtr>(returnTypes[u], values[i]));
+				types.Add(Pair<TypeSymbol*, NodePtr>(returnTypes[u], values[i]));
 			}
 
 			break;
 		}
 		else {
-			types.Add(Pair<Symbol*, NodePtr>(values[i]->Type(), values[i]));
+			types.Add(Pair<TypeSymbol*, NodePtr>(values[i]->Type(), values[i]));
 		}
 	}
 
@@ -99,7 +99,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 	}
 	*/
 
-	List<Pair<ScopeList, NodePtr>> values;// = Values();
+	List<Pair<TypeSymbol*, NodePtr>> values = Values();
 	List<UInt> returnOffsets;
 	const UInt frame = info.stack.frame;
 
@@ -133,7 +133,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 		}
 		else if (!vars[i].Is<DiscardNode>()) {
 			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
-			sn->type = values[i].key;
+			//sn->type = values[i].key;
 
 			info.important = true;
 			c.AddInstructions(CompileAssignment(vars[i], sn, info, vars[i]->file).instructions);
@@ -154,30 +154,26 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 	for (const ScopeList& type : types) {
 		if (type == ScopeList::Discard) continue;
 
-		/* TODO: node
 		while (true) {
-			ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
-
-			Symbols s = Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, type, file), file);
+			Symbol* s = SymbolTable::Find(type, scope, file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 			bool done = true;
 
 			for (UInt i = 1; i < type.Size(); i++) {
-				if (s.type == SymbolType::Namespace) {
-					if (!s.Contains(type[i])) {
-						IncludeParser::ParseInclude(s.scope.Add(type[i]), info);
-						done = false;
-						break;
+				if (s->Is<NamespaceSymbol>()) {
+					if (Symbol* const sym = s->Contains(type[i])) {
+						s = sym;
 					}
 					else {
-						s = s.Get(type[i], FileInfo());
+						IncludeParser::ParseInclude(s->AbsoluteName().Add(type[i]), info);
+						done = false;
+						break;
 					}
 				}
 			}
 
 			if (done) break;
 		}
-		*/
 	}
 
 	for (NodePtr var : vars) {

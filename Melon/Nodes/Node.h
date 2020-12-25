@@ -18,6 +18,7 @@
 #include "Melon/Symbols/ScopeList.h"
 #include "Melon/Symbols/Symbols.h"
 #include "Melon/Symbols/SymbolTable.h"
+#include "Melon/Symbols/TypeSymbol.h"
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
@@ -220,12 +221,12 @@ namespace Melon {
 
 			///T Type
 			/// Returns the absolute type of the node
-			virtual Symbols::Symbol* Type() const;
+			virtual Symbols::TypeSymbol* Type() const;
 
 			///T Types
 			/// Returns the absolute types of the node
 			/// Defaults to a list containing the result from <code>Type()</code>
-			virtual Boxx::List<Symbols::Symbol*> Types() const;
+			virtual Boxx::List<Symbols::TypeSymbol*> Types() const;
 
 			///T Get Symbol
 			/// Returns the symbol for the current node

@@ -49,8 +49,8 @@ namespace Melon {
 			///T Is Init
 			bool IsInit() const;
 
-			virtual Symbols::Symbol* Type() const override;
-			virtual Boxx::List<Symbols::Symbol*> Types() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
+			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;

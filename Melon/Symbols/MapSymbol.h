@@ -35,8 +35,8 @@ namespace Melon {
 				return symbol;
 			}
 			catch (Boxx::MapKeyError& e) {
-				if (symbol->parent == nullptr) delete symbol;
 				ErrorLog::Error(SymbolError(SymbolError::RedefinitionStart + name.ToString() + SymbolError::RedefinitionEnd, symbol->file));
+				if (symbol->parent == nullptr) delete symbol;
 				return nullptr;
 			}
 		}

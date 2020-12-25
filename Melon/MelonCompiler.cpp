@@ -178,7 +178,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 	const String code = FileReader(filename).ReadAll();
 
-	//SymbolTable::Setup();
+	SymbolTable::Setup();
 
 	try {
 		ParsingInfo info = Parser::Parse(filename, compOptions);
@@ -187,10 +187,9 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			throw CompileError("", FileInfo());
 		}
 
-		ErrorLog::AddMarker();
+		//ErrorLog::AddMarker();
 		info.root.IncludeScan(info);
-		ErrorLog::RevertToMarker();
-		ErrorLog::RemoveMarker();
+		//ErrorLog::Revert();
 
 		/*
 		info.root.parsingInfo = &info;

@@ -20,7 +20,7 @@ namespace Melon {
 			IntegerNode(const FileInfo& file);
 			~IntegerNode();
 
-			virtual Symbols::Symbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual bool IsImmediate() const override;
 			virtual Boxx::Long GetImmediate() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;

@@ -26,7 +26,7 @@ namespace Melon {
 
 			///H Methods
 
-			virtual Symbols::Symbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Symbols::Symbol* GetSymbol() const override;
 
 			///T Get operator

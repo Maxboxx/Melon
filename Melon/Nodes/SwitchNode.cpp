@@ -28,10 +28,10 @@ SwitchNode::~SwitchNode() {
 
 }
 
-Symbol* SwitchNode::Type() const {
+TypeSymbol* SwitchNode::Type() const {
 	if (!expr) return nullptr;
 
-	Symbol* type = nodes[0]->Type();
+	TypeSymbol* type = nodes[0]->Type();
 
 	for (UInt i = 1; i < nodes.Size(); i++) {
 		if (type != nodes[i]->Type()) ErrorLog::Error(TypeError(TypeError::SwitchExprType, file));

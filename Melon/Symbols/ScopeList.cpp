@@ -234,7 +234,7 @@ bool Scope::operator!=(const Scope& scope) const {
 }
 
 bool Scope::operator<(const Scope& scope) const {
-	if (name < scope.name) return false;
+	if (name < scope.name) return true;
 	if (types.HasValue() != scope.types.HasValue()) return scope.types.HasValue();
 	if (arguments.HasValue() != scope.arguments.HasValue()) return scope.arguments.HasValue();
 

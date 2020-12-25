@@ -22,7 +22,7 @@ namespace Melon {
 			CompiledNode CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) const;
 			CompiledNode CompileXor(CompileInfo& info, const bool checkEqual) const;
 
-			virtual Symbols::Symbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Symbols::Scope GetOperator() const;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;

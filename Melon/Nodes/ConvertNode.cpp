@@ -20,7 +20,7 @@ ConvertNode::~ConvertNode() {
 
 }
 
-Symbol* ConvertNode::Type() const {
+TypeSymbol* ConvertNode::Type() const {
 	/* TODO: node
 	Symbols s = Symbols::FindNearestInNamespace(scope, type, file);
 

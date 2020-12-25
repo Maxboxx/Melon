@@ -33,9 +33,9 @@ namespace Melon {
 			Boxx::List<Symbols::ScopeList> GetVariables() const;
 
 			///T Get the type of the specified type index
-			Symbols::Symbol* GetType(const Boxx::UInt index) const;
+			Symbols::TypeSymbol* GetType(const Boxx::UInt index) const;
 
-			virtual Symbols::Symbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::UInt GetSize() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

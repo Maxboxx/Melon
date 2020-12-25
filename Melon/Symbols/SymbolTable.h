@@ -7,6 +7,8 @@
 
 namespace Melon {
 	namespace Symbols {
+		class IntegerSymbol;
+
 		///B SymbolTable
 		/// A table containing all symbols
 		class SymbolTable {
@@ -100,6 +102,22 @@ namespace Melon {
 			static T* Contains(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 			///M
 
+			///T Setup
+			/// Adds basic types to the symbol table
+			static void Setup();
+
+			///T Basic types
+			///M
+			static IntegerSymbol* Byte;
+			static IntegerSymbol* UByte;
+			static IntegerSymbol* Short;
+			static IntegerSymbol* UShort;
+			static IntegerSymbol* Int;
+			static IntegerSymbol* UInt;
+			static IntegerSymbol* Long;
+			static IntegerSymbol* ULong;
+			///M
+
 		private:
 			static Symbol* FindInNamespaces(const ScopeList& name, const FileInfo& file);
 
@@ -107,6 +125,8 @@ namespace Melon {
 			static ScopeList ReplaceTemplates(const ScopeList& name, const ScopeList& scope, const FileInfo& file);
 
 			static Boxx::Pointer<ScopeSymbol> symbols;
+
+			static void SetupIntegers();
 		};
 
 		BOXX_ENUM_FLAGS(SymbolTable::SearchOptions);
