@@ -227,6 +227,8 @@
 		<Expand>
 			<Item Name="symbols" Condition="overloads.list->size == 0">symbols</Item>
 			<Item Name="scopes" Condition="overloads.list->size == 0">scopes</Item>
+			<Item Name="arguments" Condition="overloads.list->size == 0">arguments</Item>
+			<Item Name="returns" Condition="overloads.list->size == 0">returnValues</Item>
 			<Item Name="overloads" Condition="overloads.list->size > 0">overloads</Item>
 		</Expand>
 	</Type>

@@ -6,6 +6,7 @@
 #include "NamespaceSymbol.h"
 #include "IntegerSymbol.h"
 #include "VariableSymbol.h"
+#include "StructSymbol.h"
 
 #include "Nodes/SymbolNode.h"
 #include "Nodes/IntegerUnaryOperatorNode.h"
@@ -14,6 +15,17 @@
 #include "Nodes/IntegerNotNode.h"
 #include "Nodes/IntegerAssignNode.h"
 #include "Nodes/IntegerConvertNode.h"
+#include "Nodes/BooleanAssignNode.h"
+#include "Nodes/BooleanCompareNode.h"
+#include "Nodes/BooleanNotNode.h"
+#include "Nodes/BooleanToBooleanNode.h"
+#include "Nodes/BooleanConstantNode.h"
+#include "Nodes/EmptySymbolNode.h"
+#include "Nodes/OptionalAssignNode.h"
+#include "Nodes/OptionalAssignValueNode.h"
+#include "Nodes/OptionalUnwrapNode.h"
+#include "Nodes/OptionalToBooleanNode.h"
+#include "Nodes/OptionalNotNode.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -234,6 +246,9 @@ ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& 
 
 void SymbolTable::Setup() {
 	SetupIntegers();
+	SetupBoolean();
+	SetupNil();
+	SetupOptional();
 }
 
 IntegerSymbol* SymbolTable::Byte   = nullptr;
@@ -246,7 +261,6 @@ IntegerSymbol* SymbolTable::Long   = nullptr;
 IntegerSymbol* SymbolTable::ULong  = nullptr;
 
 void SymbolTable::SetupIntegers() {
-	// -------------- Integers --------------
 	Map<ScopeList, Boxx::Byte> integers;
 	integers.Add(ScopeList::Byte, -1);
 	integers.Add(ScopeList::UByte, 1);
@@ -393,146 +407,121 @@ void SymbolTable::SetupIntegers() {
 	SymbolTable::ULong  = FindAbsolute<IntegerSymbol>(ScopeList::ULong,  FileInfo());
 }
 
-	/*
-	// ----------------- Boolean ---------------------
-	Symbol boolSym = Symbol(SymbolType::Type);
-	boolSym.size = 1;
-	boolSym.isSigned = false;
-	boolSym.basic = true;
+IntegerSymbol* SymbolTable::Bool = nullptr;
 
-	Symbol boolAssign = Symbol(SymbolType::Function);
-	boolAssign.arguments.Add(ScopeList::Bool);
-	boolAssign.symbolNode = new BooleanAssignNode();
-	boolSym.Add(Scope::Assign, boolAssign, FileInfo());
+void SymbolTable::SetupBoolean() {
+	IntegerSymbol* const boolSym = symbols->AddSymbol(ScopeList::Bool[0], new IntegerSymbol(1, false, FileInfo()));
 
-	Symbol boolEq = Symbol(SymbolType::Function);
-	boolEq.arguments.Add(ScopeList::Bool);
-	boolEq.arguments.Add(ScopeList::Bool);
-	boolEq.returnValues.Add(ScopeList::Bool);
-	boolEq.symbolNode = new BooleanCompareNode(InstructionType::Eq);
-	boolSym.Add(Scope::Equal, boolEq, FileInfo());
+	FunctionSymbol* const assign  = boolSym->AddSymbol(Scope::Assign, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign1->symbolNode = new BooleanAssignNode();
+	assign1->arguments.Add(ScopeList::Bool);
 
-	Symbol boolNe = Symbol(SymbolType::Function);
-	boolNe.arguments.Add(ScopeList::Bool);
-	boolNe.arguments.Add(ScopeList::Bool);
-	boolNe.returnValues.Add(ScopeList::Bool);
-	boolNe.symbolNode = new BooleanCompareNode(InstructionType::Ne);
-	boolSym.Add(Scope::NotEqual, boolNe, FileInfo());
+	FunctionSymbol* const eq  = boolSym->AddSymbol(Scope::Equal, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const eq1 = eq->AddOverload(new FunctionSymbol(FileInfo()));
+	eq1->symbolNode = new BooleanCompareNode(InstructionType::Eq);
+	eq1->arguments.Add(ScopeList::Bool);
+	eq1->arguments.Add(ScopeList::Bool);
+	eq1->returnValues.Add(ScopeList::Bool);
 
-	Symbol boolNot = Symbol(SymbolType::Function);
-	boolNot.arguments.Add(ScopeList::Bool);
-	boolNot.returnValues.Add(ScopeList::Bool);
-	boolNot.symbolNode = new BooleanNotNode();
-	boolSym.Add(Scope::Not, boolNot, FileInfo());
+	FunctionSymbol* const ne  = boolSym->AddSymbol(Scope::NotEqual, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const ne1 = ne->AddOverload(new FunctionSymbol(FileInfo()));
+	ne1->symbolNode = new BooleanCompareNode(InstructionType::Ne);
+	ne1->arguments.Add(ScopeList::Bool);
+	ne1->arguments.Add(ScopeList::Bool);
+	ne1->returnValues.Add(ScopeList::Bool);
 
-	Symbol boolToBool = Symbol(SymbolType::Function);
-	boolToBool.arguments.Add(ScopeList::Bool);
-	boolToBool.returnValues.Add(ScopeList::Bool);
-	boolToBool.isExplicit = false;
-	boolToBool.symbolNode = new BooleanToBooleanNode();
-	boolSym.Add(Scope::As, boolToBool, FileInfo());
+	FunctionSymbol* const boolNot  = boolSym->AddSymbol(Scope::Not, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const boolNot1 = boolNot->AddOverload(new FunctionSymbol(FileInfo()));
+	boolNot1->symbolNode = new BooleanNotNode();
+	boolNot1->arguments.Add(ScopeList::Bool);
+	boolNot1->returnValues.Add(ScopeList::Bool);
 
-	symbols.Add(ScopeList::Bool[0], boolSym, FileInfo());
+	FunctionSymbol* const toBool  = boolSym->AddSymbol(Scope::As, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const toBool1 = toBool->AddOverload(new FunctionSymbol(FileInfo()));
+	toBool1->symbolNode = new BooleanToBooleanNode();
+	toBool1->arguments.Add(ScopeList::Bool);
+	toBool1->returnValues.Add(ScopeList::Bool);
+	toBool1->isExplicit = false;
 
-	// ----------------- Nil ---------------------
+	SymbolTable::Bool = boolSym;
+}
 
-	Symbol nilSym = Symbol(SymbolType::Type);
-	nilSym.scope  = ScopeList::Nil;
-	nilSym.size   = 0;
-	nilSym.basic  = true;
+TypeSymbol* SymbolTable::Nil = nullptr;
 
-	Symbol nilNot = Symbol(SymbolType::Function);
-	nilNot.arguments.Add(ScopeList::Nil);
-	nilNot.returnValues.Add(ScopeList::Bool);
-	nilNot.symbolNode = new BooleanConstantNode(true);
-	nilSym.Add(Scope::Not, nilNot, FileInfo());
+void SymbolTable::SetupNil() {
+	TypeSymbol* const nilSym = symbols->AddSymbol(ScopeList::Nil[0], new TypeSymbol(0, FileInfo()));
 
-	Symbol nilToBool = Symbol(SymbolType::Function);
-	nilToBool.arguments.Add(ScopeList::Nil);
-	nilToBool.returnValues.Add(ScopeList::Bool);
-	nilToBool.isExplicit = true;
-	nilToBool.symbolNode = new BooleanConstantNode(false);
-	nilSym.Add(Scope::As, nilToBool, FileInfo());
+	FunctionSymbol* const nilNot  = nilSym->AddSymbol(Scope::Not, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const nilNot1 = nilNot->AddOverload(new FunctionSymbol(FileInfo()));
+	nilNot1->symbolNode = new BooleanConstantNode(true);
+	nilNot1->arguments.Add(ScopeList::Bool);
+	nilNot1->returnValues.Add(ScopeList::Bool);
 
-	Symbol nilAssign = Symbol(SymbolType::Function);
-	nilAssign.arguments.Add(ScopeList::Nil);
-	nilAssign.symbolNode = new EmptySymbolNode();
-	nilSym.Add(Scope::Assign, nilAssign, FileInfo());
+	FunctionSymbol* const toBool  = nilSym->AddSymbol(Scope::As, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const toBool1 = toBool->AddOverload(new FunctionSymbol(FileInfo()));
+	toBool1->symbolNode = new BooleanConstantNode(false);
+	toBool1->arguments.Add(ScopeList::Nil);
+	toBool1->returnValues.Add(ScopeList::Bool);
+	toBool1->isExplicit = true;
 
-	symbols.Add(ScopeList::Nil[0], nilSym, FileInfo());
+	FunctionSymbol* const assign  = nilSym->AddSymbol(Scope::Assign, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign1->symbolNode = new EmptySymbolNode();
+	assign1->arguments.Add(ScopeList::Nil);
 
-	// ----------------- Optional ---------------------
-	Symbol optionalScope = Symbol(SymbolType::Scope);
-	optionalScope.scope  = ScopeList(true).Add(Scope::Optional);
-	optionalScope.basic  = true;
+	SymbolTable::Nil = nilSym;
+}
 
-	{
-		Symbol optionalSym = Symbol(SymbolType::Struct);
-		Scope last   = optionalScope.scope.Last();
-		last.types   = List<ScopeList>();
-		last.variant = (UInt)0;
+void SymbolTable::SetupOptional() {
+	StructSymbol* const optionalSym = symbols->AddSymbol(Scope::Optional, new StructSymbol(FileInfo()));
+	List<ScopeList> args;
+	args.Add(ScopeList().Add(Scope("")).Add(Scope("T")));
+	Scope scope = Scope("");
+	scope.types = args;
 
-		optionalSym.scope  = optionalScope.scope.Pop().Add(last);
-		optionalSym.varType = optionalSym.scope;
+	StructSymbol* const optional = optionalSym->AddSymbol(scope, new StructSymbol(FileInfo()));
+	optional->templateArguments.Add(args[0]);
 
-		optionalSym.names.Add(Scope::HasValue);
-		optionalSym.names.Add(Scope::Value);
+	TemplateSymbol* const templateSym = optional->AddSymbol(Scope("T"), new TemplateSymbol(FileInfo()));
+	templateSym->type = templateSym->AbsoluteName();
 
-		optionalSym.templateArgs.Add(ScopeList().Add(Scope("T")));
+	VariableSymbol* const hasValue = optional->AddSymbol(Scope::HasValue, new VariableSymbol(FileInfo()));
+	hasValue->type = ScopeList::Bool;
 
-		{
-			Symbol templateArg  = Symbol(SymbolType::Template);
-			templateArg.scope   = optionalSym.scope.Add(ScopeList().Add(Scope("T")));
-			templateArg.varType = templateArg.scope;
-			optionalSym.Add(templateArg.scope.Last(), templateArg, FileInfo());
+	VariableSymbol* const value = optional->AddSymbol(Scope::Value, new VariableSymbol(FileInfo()));
+	value->type = templateSym->AbsoluteName();
 
-			Symbol hasSym  = Symbol(SymbolType::Variable);
-			hasSym.varType = ScopeList::Bool;
-			hasSym.scope   = optionalSym.scope.Add(Scope::HasValue);
-			optionalSym.Add(Scope::HasValue, hasSym, FileInfo());
+	FunctionSymbol* const assign  = optional->AddSymbol(Scope::Assign, new FunctionSymbol(FileInfo()));
 
-			Symbol valueSym  = Symbol(SymbolType::Variable);
-			valueSym.varType = templateArg.scope;
-			valueSym.scope   = optionalSym.scope.Add(Scope::Value);
-			optionalSym.Add(Scope::Value, valueSym, FileInfo());
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign1->symbolNode = new OptionalAssignNode();
+	assign1->arguments.Add(optional->AbsoluteName());
 
-			Symbol optionalAssign = Symbol(SymbolType::Function);
-			optionalAssign.arguments.Add(optionalSym.scope);
-			optionalAssign.symbolNode = new OptionalAssignNode();
-			optionalSym.Add(Scope::Assign, optionalAssign, FileInfo());
+	FunctionSymbol* const assign2 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign2->symbolNode = new OptionalAssignValueNode();
+	assign2->arguments.Add(templateSym->AbsoluteName());
 
-			Symbol valueAssign = Symbol(SymbolType::Function);
-			valueAssign.arguments.Add(valueSym.varType);
-			valueAssign.symbolNode = new OptionalAssignValueNode();
-			optionalSym.Add(Scope::Assign, valueAssign, FileInfo());
+	FunctionSymbol* const assign3 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign3->symbolNode = new OptionalAssignValueNode();
+	assign3->arguments.Add(ScopeList::Nil);
 
-			Symbol nilAssign = Symbol(SymbolType::Function);
-			nilAssign.arguments.Add(ScopeList::Nil);
-			nilAssign.symbolNode = new OptionalAssignValueNode();
-			optionalSym.Add(Scope::Assign, nilAssign, FileInfo());
+	FunctionSymbol* const unwrap  = optional->AddSymbol(Scope::Unwrap, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const unwrap1 = unwrap->AddOverload(new FunctionSymbol(FileInfo()));
+	unwrap1->symbolNode = new OptionalUnwrapNode();
+	unwrap1->arguments.Add(optional->AbsoluteName());
+	unwrap1->returnValues.Add(templateSym->AbsoluteName());
 
-			Symbol unwrap = Symbol(SymbolType::Function);
-			unwrap.arguments.Add(optionalSym.scope);
-			unwrap.returnValues.Add(templateArg.scope);
-			unwrap.symbolNode = new OptionalUnwrapNode();
-			optionalSym.Add(Scope::Unwrap, unwrap, FileInfo());
+	FunctionSymbol* const toBool  = optional->AddSymbol(Scope::As, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const toBool1 = toBool->AddOverload(new FunctionSymbol(FileInfo()));
+	toBool1->symbolNode = new OptionalToBooleanNode();
+	toBool1->arguments.Add(optional->AbsoluteName());
+	toBool1->returnValues.Add(ScopeList::Bool);
+	toBool1->isExplicit = true;
 
-			Symbol toBool = Symbol(SymbolType::Function);
-			toBool.arguments.Add(optionalSym.scope);
-			toBool.returnValues.Add(ScopeList::Bool);
-			toBool.isExplicit = true;
-			toBool.symbolNode = new OptionalToBooleanNode();
-			optionalSym.Add(Scope::As, toBool, FileInfo());
-
-			Symbol optionalNot = Symbol(SymbolType::Function);
-			optionalNot.arguments.Add(optionalSym.scope);
-			optionalNot.returnValues.Add(ScopeList::Bool);
-			optionalNot.symbolNode = new OptionalNotNode();
-			optionalSym.Add(Scope::Not, optionalNot, FileInfo());
-		}
-
-		optionalScope.templateVariants.Add(optionalSym);
-	}
-
-	symbols.Add(Scope::Optional, optionalScope, FileInfo());
-	*/
+	FunctionSymbol* const optionalNot  = optional->AddSymbol(Scope::Not, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const optionalNot1 = optionalNot->AddOverload(new FunctionSymbol(FileInfo()));
+	optionalNot1->symbolNode = new OptionalNotNode();
+	optionalNot1->arguments.Add(optional->AbsoluteName());
+	optionalNot1->returnValues.Add(ScopeList::Bool);
+}

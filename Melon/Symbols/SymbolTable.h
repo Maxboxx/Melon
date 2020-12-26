@@ -116,6 +116,8 @@ namespace Melon {
 			static IntegerSymbol* UInt;
 			static IntegerSymbol* Long;
 			static IntegerSymbol* ULong;
+			static IntegerSymbol* Bool;
+			static TypeSymbol*    Nil;
 			///M
 
 		private:
@@ -127,6 +129,9 @@ namespace Melon {
 			static Boxx::Pointer<ScopeSymbol> symbols;
 
 			static void SetupIntegers();
+			static void SetupBoolean();
+			static void SetupNil();
+			static void SetupOptional();
 		};
 
 		BOXX_ENUM_FLAGS(SymbolTable::SearchOptions);
