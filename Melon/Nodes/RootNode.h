@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/TemplateTypeSymbol.h"
+
 namespace Melon {
 	struct CompilerOptions;
 
@@ -46,7 +48,7 @@ namespace Melon {
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 
 			///T Add Template Specialization
-			void AddTemplateSpecialization(const Symbols::Symbols::TemplateSymbol& templateSymbol, const bool scan = true);
+			void AddTemplateSpecialization(const Symbols::ScopeList& name, const Symbols::ScopeList& scope, const FileInfo& file, const bool scan = true);
 
 			///T Scan
 			/// Used for scanning for errors
@@ -63,6 +65,8 @@ namespace Melon {
 			Parsing::ParsingInfo* parsingInfo = nullptr;
 
 		private:
+			Boxx::Tuple<Symbols::TemplateTypeSymbol*, Boxx::List<Symbols::ScopeList>> FindTemplateArgs(const Symbols::ScopeList& name, const Symbols::ScopeList& scope, const FileInfo& file);
+
 			Boxx::UInt nodeIndex = 0;
 			Boxx::UInt funcIndex = 0;
 			Boxx::UInt templateIndex = 0;

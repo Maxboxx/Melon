@@ -11,9 +11,13 @@ namespace Melon {
 			IntegerSymbol(const Boxx::UInt size, const bool isSigned, const FileInfo& file);
 			~IntegerSymbol();
 
+			///T Is Signed
+			/// Checks if the integer is signed or not
 			bool IsSigned() const;
 
-		private:
+			virtual IntegerSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+
+		protected:
 			bool isSigned;
 		};
 	}

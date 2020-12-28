@@ -6,6 +6,10 @@
 #include "ScopeSymbol.h"
 
 namespace Melon {
+	namespace Nodes {
+		class RootNode;
+	}
+
 	namespace Symbols {
 		class IntegerSymbol;
 
@@ -106,6 +110,11 @@ namespace Melon {
 			/// Adds basic types to the symbol table
 			static void Setup();
 
+			///T Specialize Template
+			/// Specializes a template symbol
+			/// The symbols are specialized during include scan
+			static void SpecializeTemplate(const ScopeList& name, const ScopeList& scope, const FileInfo& file); 
+
 			///T Basic types
 			///M
 			static IntegerSymbol* Byte;
@@ -132,6 +141,15 @@ namespace Melon {
 			static void SetupBoolean();
 			static void SetupNil();
 			static void SetupOptional();
+
+			friend Melon::Nodes::RootNode;
+
+			struct TemplateInfo {
+				ScopeList name, scope;
+				FileInfo file;
+			};
+
+			static Boxx::List<TemplateInfo> templateSymbols;
 		};
 
 		BOXX_ENUM_FLAGS(SymbolTable::SearchOptions);

@@ -37,6 +37,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
 Pointer<ScopeSymbol> SymbolTable::symbols = new ScopeSymbol(FileInfo());
+List<SymbolTable::TemplateInfo> SymbolTable::templateSymbols;
 
 Symbol* SymbolTable::FindAbsolute(const ScopeList& name, const FileInfo& file) {
 	if (name.Size() > 0 && name[0] == Scope::Global) {
@@ -169,6 +170,14 @@ Symbol* SymbolTable::FindInNamespaces(const ScopeList& name, const FileInfo& fil
 
 	ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + name.ToString() + SymbolError::NotFoundEnd, file));
 	return nullptr;
+}
+
+void SymbolTable::SpecializeTemplate(const ScopeList& name, const ScopeList& scope, const FileInfo& file) {
+	TemplateInfo info;
+	info.name  = name;
+	info.scope = scope;
+	info.file  = file;
+	templateSymbols.Add(info);
 }
 
 ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const FileInfo& file) {
@@ -450,7 +459,7 @@ void SymbolTable::SetupBoolean() {
 TypeSymbol* SymbolTable::Nil = nullptr;
 
 void SymbolTable::SetupNil() {
-	TypeSymbol* const nilSym = symbols->AddSymbol(ScopeList::Nil[0], new TypeSymbol(0, FileInfo()));
+	TypeSymbol* const nilSym = symbols->AddSymbol(ScopeList::Nil[0], new IntegerSymbol(0, false, FileInfo()));
 
 	FunctionSymbol* const nilNot  = nilSym->AddSymbol(Scope::Not, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const nilNot1 = nilNot->AddOverload(new FunctionSymbol(FileInfo()));

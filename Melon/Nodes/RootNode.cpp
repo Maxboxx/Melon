@@ -9,10 +9,14 @@
 
 #include "Melon/MelonCompiler.h"
 
+#include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/StructSymbol.h"
+
 #include "Boxx/System.h"
 #include "Boxx/Regex.h"
 #include "Boxx/File.h"
 #include "Boxx/Math.h"
+#include "Boxx/ReplacementMap.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -160,62 +164,59 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			}
 		}
 
-		/* TODO: node
-		for (; templateIndex < Symbols::templateSymbols.Size(); templateIndex++) {
-			AddTemplateSpecialization(Symbols::templateSymbols[templateIndex], false);
+		for (; templateIndex < SymbolTable::templateSymbols.Size(); templateIndex++) {
+			SymbolTable::TemplateInfo info = SymbolTable::templateSymbols[templateIndex];
+			AddTemplateSpecialization(info.name, info.scope, info.file, false);
 		}
-		*/
 	}
 	while (
 		nodeIndex < nodes.Size() ||
 		funcIndex < funcs.Size() ||
 		!failedNodes.IsEmpty() ||
-		!failedFuncs.IsEmpty() /* TODO: node ||
-		templateIndex < Symbols::templateSymbols.Size() */
+		!failedFuncs.IsEmpty() ||
+		templateIndex < SymbolTable::templateSymbols.Size()
 	);
 
 	includeScanning = false;
 }
 
-void RootNode::AddTemplateSpecialization(const Symbols::Symbols::TemplateSymbol& templateSymbol, const bool scan) {
-	/* TODO: node
-	Tuple<Symbols, List<ScopeList>> templateInfo = Symbols::FindTemplateArgs(templateSymbol);
+void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const bool scan) {
+	Tuple<TemplateTypeSymbol*, List<ScopeList>> templateInfo = FindTemplateArgs(name, scope, file);
 
-	if (templateInfo.value1.type == SymbolType::None) return;
+	if (templateInfo.value1 == nullptr) return;
 
-	Scope templateScope = templateInfo.value1.scope.Last().Copy();
+	Scope templateScope = templateInfo.value1->Name().Copy();
 	templateScope.types = templateInfo.value2;
-	templateScope.variant = nullptr;
 
-	if (Symbols::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) return;
+	if (SymbolTable::ContainsAbsolute(templateInfo.value1->AbsoluteName().Pop().Add(templateScope))) return;
 
-	Scope last = templateInfo.value1.scope.Last();
-	last.variant = nullptr;
-	last.types   = nullptr;
+	ReplacementMap<TypeSymbol*> templateTypes;
 
-	Symbols templateSym = Symbols::Find(templateInfo.value1.scope.Pop().Add(last), file);
-	templateSym.templateVariants.Add(Symbols(templateInfo.value1.type));
+	for (UInt i = 0; i < templateInfo.value2.Size(); i++) {
+		if (TypeSymbol* const type = templateInfo.value1->TemplateArgument(i)) {
+			if (type->Is<TemplateSymbol>()) {
+				templateTypes.Add(type, SymbolTable::FindAbsolute<TypeSymbol>(templateInfo.value2[i], file));
+			}
+		}
+	}
 
-	Symbols& s = templateSym.templateVariants.Last();
+	Symbol* const s = templateInfo.value1->SpecializeTemplate(templateTypes, this);
 
-	templateInfo.value1.SpecializeTemplate(s, templateInfo.value2, this);
-
-	if (s.type == SymbolType::Struct) {
-		Pointer<StructNode> sn = new StructNode(ScopeList(true), templateSymbol.file);
-		sn->name = s.scope.Last();
+	if (StructSymbol* const sym = s->Cast<StructSymbol>()) {
+		Pointer<StructNode> sn = new StructNode(ScopeList(true), file);
+		sn->name = sym->Parent()->Name();
 
 		List<ScopeList> templateArgs;
 
-		for (const ScopeList& arg : s.templateArgs) {
+		for (const ScopeList& arg : sym->templateArguments) {
 			templateArgs.Add(arg);
 		}
 
 		sn->name.types = templateArgs;
-		sn->name.variant = nullptr;
 
-		sn->symbol = s;
+		sn->symbol = sym;
 
-		for (const Scope& var : s.names) {
+		for (const Scope& var : sym->members) {
 			sn->vars.Add(var);
 		}
 
@@ -225,7 +226,48 @@ void RootNode::AddTemplateSpecialization(const Symbols::Symbols::TemplateSymbol&
 	if (scan && !includeScanning) {
 		IncludeScan(*parsingInfo);
 	}
-	*/
+}
+
+Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const ScopeList& name, const ScopeList& scope, const FileInfo& file) {
+	List<ScopeList> templateArgs = name.Last().types.Get().Copy();
+
+	for (ScopeList& type : templateArgs) {
+		type = SymbolTable::Find(name, scope, file)->AbsoluteName();
+	}
+
+	Scope last = Scope(name.Last().name);
+
+	TemplateTypeSymbol* const sym = SymbolTable::Find<TemplateTypeSymbol>(name.Pop().Add(last), scope, file);
+
+	if (sym == nullptr) {
+		return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, templateArgs);
+	}
+
+	bool found = false;
+
+	for (TemplateTypeSymbol* const variant : sym->templateVariants) {
+		if (variant->templateArguments.Size() == templateArgs.Size()) {
+			bool match = true;
+
+			for (UInt i = 0; i < templateArgs.Size(); i++) {
+				Symbol* const symArg = variant->TemplateArgument(i);
+
+				if (symArg->Is<TemplateSymbol>()) continue;
+				if (symArg->AbsoluteName() == templateArgs[i]) continue;
+
+				match = false;
+				break;
+			}
+
+			if (match) {
+				return Tuple<TemplateTypeSymbol*, List<ScopeList>>(variant, templateArgs);
+			}
+		}
+	}
+
+	// TODO: Better error
+	ErrorLog::Error(SymbolError("template error", file));
+	return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, templateArgs);
 }
 
 Set<ScanType> RootNode::Scan(ScanInfoStack& info) {

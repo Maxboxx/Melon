@@ -115,7 +115,8 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 		Scope templateScope = Scope("");
 		templateScope.types = templateList.Get();
 
-		sym = sym->AddSymbol(templateScope, tsym);
+		sym->AddTemplateVariant(tsym);
+		sym = tsym;
 		info.statementNumber++;
 	}
 	else if (redefine) {

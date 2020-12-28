@@ -30,7 +30,7 @@ namespace Melon {
 
 			///T Return Type
 			/// Get the return type at the specified index
-			Symbol* ReturnType(const Boxx::UInt index) const;
+			TypeSymbol* ReturnType(const Boxx::UInt index) const;
 
 			///T Argument
 			/// Get the argument at the specified index
@@ -70,6 +70,7 @@ namespace Melon {
 			bool isExplicit = false;
 
 			virtual Scope Name() const override;
+			virtual FunctionSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 		protected:
 			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;

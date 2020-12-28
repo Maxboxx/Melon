@@ -34,13 +34,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 				optionalScope.types.Get().Add(ScopeList().Add((Scope)first));
 				first = optionalScope;
 
-				/* TODO: template
-				Symbols::TemplateSymbol ts;
-				ts.type = ScopeList().Add((Scope)first);
-				ts.scope = info.scopes;
-				ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-				Symbols::templateSymbols.Add(ts);
-				*/
+				SymbolTable::SpecializeTemplate(ScopeList().Add((Scope)first), info.scope->AbsoluteName(), info.GetFileInfo(info.Current(-1).line));
 			}
 		}
 
@@ -54,13 +48,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 				type = type.Add((Scope)scope);
 
 				if (scope.Get().types) {
-					/* TODO: template
-					Symbols::TemplateSymbol ts;
-					ts.type = type;
-					ts.scope = info.scopes;
-					ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-					Symbols::templateSymbols[Symbols::templateSymbols.Size() - 1] = ts;
-					*/
+					SymbolTable::SpecializeTemplate(type, info.scope->AbsoluteName(), info.GetFileInfo(info.Current(-1).line));
 				}
 
 				while (!info.EndOfFile() && (info.Current().type == TokenType::Question || info.Current().type == TokenType::DoubleQuestion)) {
@@ -73,13 +61,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 						optionalScope.types.Get().Add(ScopeList().Add(type));
 						type = ScopeList().Add(optionalScope);
 
-						/* TODO: template
-						Symbols::TemplateSymbol ts;
-						ts.type = ScopeList().Add(type);
-						ts.scope = info.scopes;
-						ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-						Symbols::templateSymbols.Add(ts);
-						*/
+						SymbolTable::SpecializeTemplate(ScopeList().Add(type), info.scope->AbsoluteName(), info.GetFileInfo(info.Current(-1).line));
 					}
 				}
 			}
@@ -123,13 +105,7 @@ Optional<Scope> TypeParser::ParseScope(ParsingInfo& info) {
 	if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
 		scope.types = templateArgs;
 
-		/* TODO: template
-		Symbols::TemplateSymbol ts;
-		ts.type = ScopeList().Add(scope);
-		ts.scope = info.scopes;
-		ts.file = FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces);
-		Symbols::templateSymbols.Add(ts);
-		*/
+		SymbolTable::SpecializeTemplate(ScopeList().Add(scope), info.scope->AbsoluteName(), info.GetFileInfo(info.Current(-1).line));
 	}
 
 	return scope;

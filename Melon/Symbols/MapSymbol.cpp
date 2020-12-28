@@ -2,12 +2,16 @@
 
 #include "Symbol.h"
 #include "ScopeList.h"
+#include "TypeSymbol.h"
+
+#include "Melon/Nodes/RootNode.h"
 
 #include "Melon/Errors.h"
 
 using namespace Boxx;
 
 using namespace Melon;
+using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
 MapSymbol::MapSymbol(const FileInfo& file) : Symbol(file) {

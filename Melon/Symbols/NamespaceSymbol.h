@@ -13,6 +13,8 @@ namespace Melon {
 
 			Boxx::String IncludedPath() const;
 
+			virtual NamespaceSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+
 		protected:
 			Boxx::String includedPath;
 		};

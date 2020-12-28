@@ -20,6 +20,8 @@ namespace Melon {
 			T* AddSymbol(const Scope& name, T* const symbol);
 			///M
 
+			virtual MapSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
+
 		protected:
 			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
 

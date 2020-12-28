@@ -20,10 +20,13 @@ namespace Melon {
 			///R ScopeSymbol*: The table for the new scope
 			ScopeSymbol* AddScope(const FileInfo& file);
 
+			virtual ScopeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+
 		protected:
 			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
 
-		private:
+			void AddScope(ScopeSymbol* const scope);
+
 			Boxx::List<ScopeSymbol*> scopes;
 		};
 	}

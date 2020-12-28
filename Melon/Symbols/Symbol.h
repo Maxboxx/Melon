@@ -4,12 +4,17 @@
 #include "Boxx/Set.h"
 #include "Boxx/List.h"
 #include "Boxx/Map.h"
+#include "Boxx/ReplacementMap.h"
 
 #include "ScopeList.h"
 
 #include "Melon/Errors.h"
 
 namespace Melon {
+	namespace Nodes {
+		class RootNode;
+	}
+
 	namespace Symbols {
 		class MapSymbol;
 		class TypeSymbol;
@@ -49,6 +54,10 @@ namespace Melon {
 			///T Is Type
 			/// Checks if the symbol is a type
 			virtual bool IsType() const;
+
+			///T Specialize Template
+			/// Specializes a template symbol
+			virtual Symbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) = 0;
 
 			///T Find
 			/// Finds a specific symbol

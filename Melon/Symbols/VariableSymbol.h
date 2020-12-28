@@ -34,6 +34,7 @@ namespace Melon {
 			~VariableSymbol();
 
 			virtual TypeSymbol* Type() override;
+			virtual VariableSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 		};
 	}
 }

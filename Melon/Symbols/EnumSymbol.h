@@ -11,6 +11,8 @@ namespace Melon {
 			EnumSymbol(const Boxx::UInt size, const bool isSigned, const FileInfo& file);
 			~EnumSymbol();
 
+			virtual EnumSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+
 			///T Values
 			Boxx::Collection<Scope> values;
 		};

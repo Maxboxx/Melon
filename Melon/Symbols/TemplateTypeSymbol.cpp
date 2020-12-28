@@ -15,7 +15,13 @@ TemplateTypeSymbol::~TemplateTypeSymbol() {
 	}
 }
 
-Symbol* TemplateTypeSymbol::TemplateArgument(const UInt index) const {
+void TemplateTypeSymbol::AddTemplateVariant(TemplateTypeSymbol* const sym) {
+	sym->name = name;
+	sym->parent = this;
+	templateVariants.Add(sym);
+}
+
+TypeSymbol* TemplateTypeSymbol::TemplateArgument(const UInt index) const {
 	return nullptr;
 }
 

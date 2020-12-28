@@ -19,6 +19,8 @@ namespace Melon {
 			/// Gets the memory size of the type
 			virtual Boxx::UInt MemorySize() const;
 
+			virtual TypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
+
 		protected:
 			Boxx::UInt size;
 		};
