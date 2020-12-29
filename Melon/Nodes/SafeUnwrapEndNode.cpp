@@ -17,7 +17,7 @@ using namespace Melon::Optimizing;
 
 String SafeUnwrapEndNode::jumpInstName = "?jmp";
 
-SafeUnwrapEndNode::SafeUnwrapEndNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+SafeUnwrapEndNode::SafeUnwrapEndNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

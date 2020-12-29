@@ -25,7 +25,7 @@ namespace Melon {
 
 			bool scopeWise = false;
 
-			BreakNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			BreakNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~BreakNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;

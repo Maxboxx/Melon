@@ -40,20 +40,16 @@ namespace Melon {
 
 			///T Name
 			/// Gets the name of the symbol
-			virtual Scope Name() const;
+			virtual Scope Name();
 
 			///T Absolute Name
 			/// Gets the absolute name of the symbol
-			virtual ScopeList AbsoluteName() const;
+			virtual ScopeList AbsoluteName();
 
 			///T Type
 			/// Gets the type of the symbol
 			///R Symbol*: The symbol of the type or <code>nullptr</code> if the symbol does not have a type
 			virtual TypeSymbol* Type();
-
-			///T Is Type
-			/// Checks if the symbol is a type
-			virtual bool IsType() const;
 
 			///T Specialize Template
 			/// Specializes a template symbol

@@ -25,7 +25,7 @@ namespace Melon {
 			/// All attributes for each variable
 			Boxx::List<Symbols::VariableAttributes> attributes;
 
-			NewVariableNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			NewVariableNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~NewVariableNode();
 
 			///T Get Variables

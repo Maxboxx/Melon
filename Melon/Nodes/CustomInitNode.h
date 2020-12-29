@@ -21,7 +21,7 @@ namespace Melon {
 			/// The expressions to assign to the variables
 			Boxx::List<NodePtr> expressions;
 
-			CustomInitNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			CustomInitNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~CustomInitNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;

@@ -26,7 +26,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-AssignNode::AssignNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+AssignNode::AssignNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -155,7 +155,7 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 		if (type == ScopeList::Discard) continue;
 
 		while (true) {
-			Symbol* s = SymbolTable::Find(type, scope, file, SymbolTable::SearchOptions::ReplaceTemplates);
+			Symbol* s = SymbolTable::Find(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 			bool done = true;
 
@@ -252,7 +252,7 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 }
 
 ScopeList AssignNode::FindSideEffectScope(const bool assign) {
-	ScopeList list = vars[0] ? vars[0]->GetSideEffectScope(true) : scope;
+	ScopeList list = vars[0] ? vars[0]->GetSideEffectScope(true) : scope->AbsoluteName();
 
 	for (UInt i = 1; i < vars.Size(); i++) {
 		if (vars[i]) {
@@ -288,7 +288,7 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 	if (removed) for (UInt i = values.Size(); i > 0;) {
 		i--;
 
-		if (vars[i].Is<DiscardNode>() && !values[i]->HasSideEffects(scope)) {
+		if (vars[i].Is<DiscardNode>() && !values[i]->HasSideEffects(scope->AbsoluteName())) {
 			if (i >= values.Size() - 1) {
 				bool isDiscard = true;
 			

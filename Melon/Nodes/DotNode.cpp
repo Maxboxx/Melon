@@ -14,7 +14,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-DotNode::DotNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+DotNode::DotNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -190,7 +190,7 @@ ScopeList DotNode::FindSideEffectScope(const bool assign) {
 		return node->GetSideEffectScope(assign);
 	}
 
-	return scope;
+	return scope->AbsoluteName();
 }
 
 NodePtr DotNode::Optimize(OptimizeInfo& info) {

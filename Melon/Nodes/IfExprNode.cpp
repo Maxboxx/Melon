@@ -14,7 +14,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-IfExprNode::IfExprNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+IfExprNode::IfExprNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 	
 }
 

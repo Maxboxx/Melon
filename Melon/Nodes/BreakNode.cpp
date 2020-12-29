@@ -13,7 +13,7 @@ String BreakNode::scopeBreakInstName = "break!";
 String BreakNode::breakTrueInstName = "breaktrue";
 String BreakNode::breakFalseInstName = "breakfalse";
 
-BreakNode::BreakNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+BreakNode::BreakNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 	
 }
 

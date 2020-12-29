@@ -12,7 +12,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-ConvertNode::ConvertNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+ConvertNode::ConvertNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

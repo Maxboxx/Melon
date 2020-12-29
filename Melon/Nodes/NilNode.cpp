@@ -6,7 +6,7 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-NilNode::NilNode(const FileInfo& file) : Node(ScopeList(), file) {
+NilNode::NilNode(const FileInfo& file) : Node(nullptr, file) {
 
 }
 

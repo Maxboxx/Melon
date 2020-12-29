@@ -7,7 +7,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-ArgumentNode::ArgumentNode(const Argument& arg) : Node(ScopeList(), FileInfo()) {
+ArgumentNode::ArgumentNode(const Argument& arg) : Node(nullptr, FileInfo()) {
 	argument = arg;
 }
 

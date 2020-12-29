@@ -11,7 +11,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StructNode::StructNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+StructNode::StructNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -47,7 +47,7 @@ ScopeList StructNode::FindSideEffectScope(const bool assign) {
 	}
 	*/
 
-	return scope;
+	return scope->AbsoluteName();
 }
 
 Set<ScanType> StructNode::Scan(ScanInfoStack& info) {

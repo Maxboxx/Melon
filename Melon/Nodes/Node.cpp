@@ -24,7 +24,7 @@ void CompiledNode::AddInstructions(const List<OptimizerInstruction>& instruction
 	}
 }
 
-Node::Node(const ScopeList& scope, const FileInfo& file) {
+Node::Node(Symbol* const scope, const FileInfo& file) {
 	this->scope = scope;
 	this->file = file;
 }
@@ -48,7 +48,7 @@ Set<ScanType> Node::Scan(ScanInfoStack& info) {
 }
 
 bool Node::HasSideEffects() {
-	return HasSideEffects(scope);
+	return HasSideEffects(scope->AbsoluteName());
 }
 
 bool Node::HasSideEffects(const ScopeList& scope) {
@@ -76,7 +76,7 @@ ScopeList Node::GetSideEffectScope(const bool assign) {
 }
 
 ScopeList Node::FindSideEffectScope(const bool assign) {
-	return scope;
+	return scope->AbsoluteName();
 }
 
 ScopeList Node::CombineSideEffects(const ScopeList& scope1, const ScopeList& scope2) {

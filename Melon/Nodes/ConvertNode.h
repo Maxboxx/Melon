@@ -10,7 +10,7 @@ namespace Melon {
 			Symbols::ScopeList type;
 			bool isExplicit = false;
 
-			ConvertNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			ConvertNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ConvertNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;

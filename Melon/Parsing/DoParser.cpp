@@ -16,9 +16,9 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 		UInt line = info.Current().line;
 		info.index++;
 
-		info.scope = info.scope->AddScope(info.GetFileInfo(line));
+		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(line));
 
-		Pointer<DoNode> node = new DoNode(info.scope->AbsoluteName(), info.GetFileInfo(line));
+		Pointer<DoNode> node = new DoNode(info.scope, info.GetFileInfo(line));
 
 		info.scopeCount++;
 

@@ -7,11 +7,11 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-MemoryNode::MemoryNode(const Boxx::Int offset) : Node(ScopeList(), FileInfo()) {
+MemoryNode::MemoryNode(const Boxx::Int offset) : Node(nullptr, FileInfo()) {
 	this->mem = MemoryLocation(offset);
 }
 
-MemoryNode::MemoryNode(const MemoryLocation& mem) : Node(ScopeList(), FileInfo()) {
+MemoryNode::MemoryNode(const MemoryLocation& mem) : Node(nullptr, FileInfo()) {
 	this->mem = mem;
 }
 

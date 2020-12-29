@@ -18,7 +18,7 @@ namespace Melon {
 			/// The conditions for the segments
 			Boxx::List<NodePtr> conditions;
 
-			IfExprNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			IfExprNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~IfExprNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;

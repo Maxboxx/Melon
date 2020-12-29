@@ -21,7 +21,7 @@ namespace Melon {
 			///T End
 			NodePtr end;
 
-			GuardNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			GuardNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~GuardNode();
 
 			void AddScopeBreak(ScanInfoStack& info);

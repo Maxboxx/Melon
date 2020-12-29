@@ -17,7 +17,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CallNode::CallNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+CallNode::CallNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

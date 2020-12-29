@@ -23,7 +23,7 @@ namespace Melon {
 			///T Symbol
 			Symbols::StructSymbol* symbol;
 
-			StructNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			StructNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~StructNode();
 
 			///T Is Recursive

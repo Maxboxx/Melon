@@ -15,7 +15,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CustomInitNode::CustomInitNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+CustomInitNode::CustomInitNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

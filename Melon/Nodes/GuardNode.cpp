@@ -22,7 +22,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-GuardNode::GuardNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+GuardNode::GuardNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

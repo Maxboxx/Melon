@@ -29,7 +29,7 @@ namespace Melon {
 			///T Default
 			NodePtr def;
 
-			SwitchNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			SwitchNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~SwitchNode();
 
 			struct SwitchScanInfo {

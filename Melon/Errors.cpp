@@ -155,7 +155,7 @@ UInt ErrorLog::ErrorCount() {
 	return count;
 }
 
-String CompileError::FuncNotReturn(const FunctionSymbol* func) {
+String CompileError::FuncNotReturn(FunctionSymbol* const func) {
 	if (func->returnValues.Size() > 1) {
 		return "function '" + func->AbsoluteName().ToString() + "' must return values";
 	}

@@ -10,7 +10,7 @@ namespace Melon {
 		public:
 			StructSymbol(const FileInfo& file);
 			~StructSymbol();
-
+			
 			virtual StructSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 			///T Non static members

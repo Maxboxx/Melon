@@ -127,7 +127,7 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	UInt statementNumber = info.statementNumber;
 	info.statementNumber = 1;
 
-	ScopeSymbol* const scope = info.scope;
+	MapSymbol* const scope = info.scope;
 	info.scope = SymbolTable::FindAbsolute<NamespaceSymbol>(include, FileInfo());
 
 	CreateIncludeSymbols(filename, include);

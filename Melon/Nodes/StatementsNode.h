@@ -13,7 +13,7 @@ namespace Melon {
 			///T List of statements
 			Boxx::List<NodePtr> statements;
 
-			StatementsNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			StatementsNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~StatementsNode();
 
 			virtual Boxx::UInt GetSize() const override;

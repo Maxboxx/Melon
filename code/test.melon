@@ -1,5 +1,4 @@
 
-
 struct Value<A>
 	A: value
 	

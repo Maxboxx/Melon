@@ -21,10 +21,11 @@ namespace Melon {
 
 			///T Template Argument
 			/// Get the template argument at the specified index
-			TypeSymbol* TemplateArgument(const Boxx::UInt index) const;
+			TypeSymbol* TemplateArgument(const Boxx::UInt index);
 
 			Boxx::List<ScopeList> templateArguments;
 
+			virtual Scope Name() override;
 			virtual TemplateTypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 
 		protected:

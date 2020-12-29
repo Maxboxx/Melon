@@ -158,7 +158,7 @@ namespace Melon {
 		}
 
 		///T Func Not Return
-		static Boxx::String FuncNotReturn(const Symbols::FunctionSymbol* func);
+		static Boxx::String FuncNotReturn(Symbols::FunctionSymbol* const func);
 
 		///T Return
 		static Boxx::String Return(const Boxx::UInt funcRetCount, const Boxx::UInt args);

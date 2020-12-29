@@ -21,7 +21,7 @@ namespace Melon {
 			///H Constructors
 
 			///T Constructor
-			BinaryOperatorNode(const Symbols::ScopeList& scope, const Symbols::Scope& op, const FileInfo& file);
+			BinaryOperatorNode(Symbols::Symbol* const scope, const Symbols::Scope& op, const FileInfo& file);
 			~BinaryOperatorNode();
 
 			///H Methods

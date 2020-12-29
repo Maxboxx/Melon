@@ -28,7 +28,7 @@ namespace Melon {
 			///T Is used
 			bool isUsed = true;
 
-			FunctionNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			FunctionNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~FunctionNode();
 
 			///T Is Not Specialized

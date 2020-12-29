@@ -13,7 +13,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-RepeatNode::RepeatNode(const Symbols::ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+RepeatNode::RepeatNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

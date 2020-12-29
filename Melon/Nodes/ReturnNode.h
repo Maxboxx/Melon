@@ -18,7 +18,7 @@ namespace Melon {
 			/// The absolute name of the function to return from
 			Symbols::ScopeList func;
 
-			ReturnNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			ReturnNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ReturnNode();
 
 			///T Get Types

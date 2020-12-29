@@ -1,5 +1,6 @@
 #include "FunctionSymbol.h"
 
+#include "SymbolTable.h"
 #include "VariableSymbol.h"
 #include "TypeSymbol.h"
 
@@ -19,16 +20,47 @@ FunctionSymbol::~FunctionSymbol() {
 	
 }
 
-TypeSymbol* FunctionSymbol::ReturnType(const UInt index) const {
-	return nullptr;
+TypeSymbol* FunctionSymbol::ReturnType(const UInt index) {
+	if (index >= returnValues.Size()) return nullptr;
+	return SymbolTable::Find<TypeSymbol>(returnValues[index], Parent()->AbsoluteName(), file);
 }
 
-Symbol* FunctionSymbol::Argument(const UInt index) const {
-	return nullptr;
+TypeSymbol* FunctionSymbol::ArgumentType(const UInt index) {
+	if (index >= arguments.Size()) return nullptr;
+	
+	if (symbolNode) {
+		return SymbolTable::FindAbsolute<TypeSymbol>(arguments[index], file);
+	}
+	else if (Symbol* const arg = Symbol::Find(arguments[index], file)) {
+		return arg->Type();
+	}
+	else {
+		return nullptr;
+	}
 }
 
-Symbol* FunctionSymbol::TemplateArgument(const UInt index) const {
-	return nullptr;
+VariableSymbol* FunctionSymbol::Argument(const UInt index) {
+	if (index >= arguments.Size()) return nullptr;
+
+	if (symbolNode) {
+		return nullptr;
+	}
+	else {
+		return Symbol::Find<VariableSymbol>(arguments[index], file);
+	}
+}
+
+TypeSymbol* FunctionSymbol::TemplateArgument(const UInt index) {
+	if (index >= templateArguments.Size()) return nullptr;
+
+	ScopeList arg = templateArguments[index];
+
+	if (arg[0] == Scope("")) {
+		return Symbol::Find<TypeSymbol>(arg[1], file);
+	}
+	else {
+		return SymbolTable::FindAbsolute<TypeSymbol>(arg, file);
+	}
 }
 
 FunctionSymbol* FunctionSymbol::AddOverload(FunctionSymbol* const overload) {
@@ -56,7 +88,7 @@ Symbol* FunctionSymbol::Find(const ScopeList& scopeList, const UInt index, const
 	return nullptr;
 }
 
-Scope FunctionSymbol::Name() const {
+Scope FunctionSymbol::Name() {
 	if (!overloads.IsEmpty()) {
 		return name;
 	}
@@ -75,7 +107,7 @@ Scope FunctionSymbol::Name() const {
 			List<ScopeList> args;
 
 			for (UInt i = 0; i < arguments.Size(); i++) {
-				if (Symbol* const type = Argument(i)) {
+				if (TypeSymbol* const type = ArgumentType(i)) {
 					args.Add(type->AbsoluteName());
 				}
 				else {
@@ -104,7 +136,7 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 		}
 
 		for (UInt i = 0; i < templateArguments.Size(); i++) {
-			sym->templateArguments.Add(replacement.GetValue(TemplateArgument(i)->Type())->AbsoluteName());
+			sym->templateArguments.Add(replacement.GetValue(TemplateArgument(i))->AbsoluteName());
 		}
 
 		for (const Pair<Scope, Symbol*>& s : symbols) {

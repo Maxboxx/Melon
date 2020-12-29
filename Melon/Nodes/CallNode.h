@@ -33,7 +33,7 @@ namespace Melon {
 			///T Statement
 			bool isStatement = false;
 
-			CallNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			CallNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~CallNode();
 
 			///H Methods

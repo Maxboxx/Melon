@@ -39,7 +39,7 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 	info.index++;
 
 	if (NodePtr expr = ExpressionParser::Parse(info)) {
-		Pointer<IfExprNode> ifexpr = new IfExprNode(info.scope->AbsoluteName(), FileInfo(info.filename, ifLine, info.statementNumber));
+		Pointer<IfExprNode> ifexpr = new IfExprNode(info.scope, info.GetFileInfo(ifLine));
 		ifexpr->nodes.Add(expr);
 		ifexpr->conditions.Add(cond);
 

@@ -19,9 +19,9 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 	const UInt repeatLine = info.Current().line;
 	info.index++;
 
-	Pointer<RepeatNode> repeatNode = new RepeatNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+	Pointer<RepeatNode> repeatNode = new RepeatNode(info.scope, info.GetFileInfo(info.Current(-1).line));
 
-	info.scope = info.scope->AddScope(info.GetFileInfo(repeatLine));
+	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(repeatLine));
 
 	info.scopeCount++;
 	info.loops++;

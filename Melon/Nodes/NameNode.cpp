@@ -11,7 +11,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NameNode::NameNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+NameNode::NameNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -127,7 +127,7 @@ ScopeList NameNode::FindSideEffectScope(const bool assign) {
 		*/
 	}
 
-	return scope;
+	return scope->AbsoluteName();
 }
 
 StringBuilder NameNode::ToMelon(const UInt indent) const {

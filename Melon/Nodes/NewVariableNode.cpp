@@ -10,7 +10,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NewVariableNode::NewVariableNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+NewVariableNode::NewVariableNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

@@ -25,7 +25,7 @@ namespace Melon {
 			///T Symbol
 			Symbols::EnumSymbol* symbol;
 
-			EnumNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			EnumNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~EnumNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;

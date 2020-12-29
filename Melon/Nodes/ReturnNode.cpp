@@ -17,7 +17,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-ReturnNode::ReturnNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+ReturnNode::ReturnNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -135,7 +135,7 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 }
 
 ScopeList ReturnNode::FindSideEffectScope(const bool assign) {
-	ScopeList list = nodes.IsEmpty() ? scope : scope.Pop();
+	ScopeList list = nodes.IsEmpty() ? scope->AbsoluteName() : scope->Parent()->AbsoluteName();
 
 	for (NodePtr& node : nodes) {
 		list = CombineSideEffects(list, node->GetSideEffectScope(assign));

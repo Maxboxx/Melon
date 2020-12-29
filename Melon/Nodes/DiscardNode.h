@@ -10,7 +10,7 @@ namespace Melon {
 		class DiscardNode : public Node {
 		public:
 			///T Constructor
-			DiscardNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			DiscardNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DiscardNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;

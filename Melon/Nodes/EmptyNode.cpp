@@ -5,7 +5,7 @@ using namespace Boxx;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-EmptyNode::EmptyNode() : Node(ScopeList(), FileInfo()) {
+EmptyNode::EmptyNode() : Node(nullptr, FileInfo()) {
 
 }
 

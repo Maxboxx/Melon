@@ -12,7 +12,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Optimizing;
 
-FunctionNode::FunctionNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+FunctionNode::FunctionNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

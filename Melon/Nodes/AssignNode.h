@@ -19,7 +19,7 @@ namespace Melon {
 			/// List of all types
 			Boxx::List<Symbols::ScopeList> types;
 
-			AssignNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			AssignNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~AssignNode();
 
 			Boxx::List<Boxx::Pair<Symbols::TypeSymbol*, NodePtr>> Values() const;

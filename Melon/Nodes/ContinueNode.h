@@ -14,7 +14,7 @@ namespace Melon {
 			/// The amount of loops to continue
 			Boxx::UInt loops;
 
-			ContinueNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			ContinueNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ContinueNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;

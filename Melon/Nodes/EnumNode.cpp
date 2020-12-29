@@ -6,7 +6,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-EnumNode::EnumNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+EnumNode::EnumNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

@@ -20,7 +20,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-SwitchNode::SwitchNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+SwitchNode::SwitchNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

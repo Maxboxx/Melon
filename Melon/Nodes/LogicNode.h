@@ -14,7 +14,7 @@ namespace Melon {
 			TokenType type;
 
 			///T Constructor
-			LogicNode(const Symbols::ScopeList& scope, const TokenType type, const FileInfo& file);
+			LogicNode(Symbols::Symbol* const scope, const TokenType type, const FileInfo& file);
 			~LogicNode();
 
 			static CompiledNode CompileToBool(const NodePtr& node, CompileInfo& info);

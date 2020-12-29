@@ -85,6 +85,14 @@ Symbol* SymbolTable::Find(ScopeList name, ScopeList scope, const FileInfo& file,
 		return FindAbsolute(name, file);
 	}
 
+	for (Boxx::UInt i = 0; i < name.Size(); i++) {
+		if (name[i].types) {
+			for (ScopeList& type : name[i].types.Get()) {
+				type = Find(type, scope, file)->AbsoluteName();
+			}
+		}
+	}
+
 	const bool ignoreOrder = (options & SearchOptions::IgnoreOrder) != SearchOptions::None; 
 
 	if (scope.Size() > 0) {

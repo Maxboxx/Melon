@@ -19,7 +19,7 @@ using namespace Melon::Optimizing;
 
 String ConditionNode::conditionInstName = "assigncond";
 
-ConditionNode::ConditionNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+ConditionNode::ConditionNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

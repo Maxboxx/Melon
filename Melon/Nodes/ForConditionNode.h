@@ -17,7 +17,7 @@ namespace Melon {
 			Boxx::Optional<Symbols::Scope> stepOperator;
 			NodePtr loopStep;
 
-			ForConditionNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			ForConditionNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ForConditionNode();
 
 			virtual Boxx::UInt GetSize() const override;

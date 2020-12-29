@@ -19,11 +19,11 @@ Symbol* Symbol::Parent() const {
 	return parent;
 }
 
-Scope Symbol::Name() const {
+Scope Symbol::Name() {
 	return name;
 }
 
-ScopeList Symbol::AbsoluteName() const {
+ScopeList Symbol::AbsoluteName() {
 	if (parent) {
 		return parent->AbsoluteName().Add(Name());
 	}
@@ -34,10 +34,6 @@ ScopeList Symbol::AbsoluteName() const {
 
 TypeSymbol* Symbol::Type() {
 	return nullptr;
-}
-
-bool Symbol::IsType() const {
-	return false;
 }
 
 Symbol* Symbol::Find(const Scope& scope, const FileInfo& file) {

@@ -19,7 +19,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StatementsNode::StatementsNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+StatementsNode::StatementsNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -76,7 +76,7 @@ Set<ScanType> StatementsNode::Scan(ScanInfoStack& info) {
 }
 
 ScopeList StatementsNode::FindSideEffectScope(const bool assign) {
-	if (statements.IsEmpty()) return scope;
+	if (statements.IsEmpty()) return scope->AbsoluteName();
 
 	ScopeList list = statements[0]->GetSideEffectScope(assign);
 

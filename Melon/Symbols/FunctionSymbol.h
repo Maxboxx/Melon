@@ -23,6 +23,8 @@ namespace Melon {
 
 		BOXX_ENUM_FLAGS(FunctionAttributes);
 
+		class VariableSymbol;
+
 		class FunctionSymbol : public ScopeSymbol {
 		public:
 			FunctionSymbol(const FileInfo& file);
@@ -30,15 +32,19 @@ namespace Melon {
 
 			///T Return Type
 			/// Get the return type at the specified index
-			TypeSymbol* ReturnType(const Boxx::UInt index) const;
+			TypeSymbol* ReturnType(const Boxx::UInt index);
+
+			///T Argument Type
+			/// Get the argument type at the specified index
+			TypeSymbol* ArgumentType(const Boxx::UInt index);
 
 			///T Argument
 			/// Get the argument at the specified index
-			Symbol* Argument(const Boxx::UInt index) const;
+			VariableSymbol* Argument(const Boxx::UInt index);
 
 			///T Template Argument
 			/// Get the template argument at the specified index
-			Symbol* TemplateArgument(const Boxx::UInt index) const;
+			TypeSymbol* TemplateArgument(const Boxx::UInt index);
 
 			///T Add Overload
 			/// Adds an overload
@@ -69,7 +75,7 @@ namespace Melon {
 			/// Used for type conversions
 			bool isExplicit = false;
 
-			virtual Scope Name() const override;
+			virtual Scope Name() override;
 			virtual FunctionSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 		protected:

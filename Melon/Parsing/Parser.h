@@ -67,8 +67,8 @@ namespace Melon {
 			Boxx::UInt statementNumber = 1;
 
 			///T Scope
-			/// The symbol table for the current scope
-			Symbols::ScopeSymbol* scope;
+			/// The symbol for the current scope
+			Symbols::MapSymbol* scope;
 
 			///H Methods
 

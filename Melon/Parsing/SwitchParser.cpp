@@ -19,7 +19,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		return nullptr;
 	}
 
-	info.scope = info.scope->AddScope(info.GetFileInfo(info.Current().line));
+	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
 
 	const UInt switchLine = info.Current().line;
 	info.index++;
@@ -30,12 +30,12 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("match expression", "'switch'", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
-	Pointer<SwitchNode> switchNode = new SwitchNode(info.scope->AbsoluteName(), FileInfo(info.filename, switchLine, info.statementNumber));
+	Pointer<SwitchNode> switchNode = new SwitchNode(info.scope, info.GetFileInfo(switchLine));
 	switchNode->expr = false;
 	switchNode->match = value;
 
 	while (info.Current().type == TokenType::Case || info.Current().type == TokenType::Default) {
-		info.scope = info.scope->AddScope(info.GetFileInfo(info.Current().line));
+		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
 
 		bool isDefault = info.Current().type == TokenType::Default;
 		const UInt caseLine = info.Current().line;

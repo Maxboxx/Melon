@@ -27,7 +27,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-RootNode::RootNode() : Node(ScopeList(), FileInfo()) {
+RootNode::RootNode() : Node(nullptr, FileInfo()) {
 
 }
 
@@ -38,7 +38,7 @@ RootNode::~RootNode() {
 CompiledNode RootNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
-	Pointer<StatementsNode> statements = new StatementsNode(ScopeList(), FileInfo());
+	Pointer<StatementsNode> statements = new StatementsNode(nullptr, FileInfo());
 	statements->statements = nodes;
 	UInt size = statements->GetSize();
 
@@ -203,7 +203,7 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 	Symbol* const s = templateInfo.value1->SpecializeTemplate(templateTypes, this);
 
 	if (StructSymbol* const sym = s->Cast<StructSymbol>()) {
-		Pointer<StructNode> sn = new StructNode(ScopeList(true), file);
+		Pointer<StructNode> sn = new StructNode(SymbolTable::FindAbsolute(ScopeList(true), file), file);
 		sn->name = sym->Parent()->Name();
 
 		List<ScopeList> templateArgs;
@@ -232,7 +232,7 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 	List<ScopeList> templateArgs = name.Last().types.Get().Copy();
 
 	for (ScopeList& type : templateArgs) {
-		type = SymbolTable::Find(name, scope, file)->AbsoluteName();
+		type = SymbolTable::Find(type, scope, file)->AbsoluteName();
 	}
 
 	Scope last = Scope(name.Last().name);

@@ -19,7 +19,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 	const UInt startIndex = info.index;
 
-	Pointer<NewVariableNode> node = new NewVariableNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current().line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+	Pointer<NewVariableNode> node = new NewVariableNode(info.scope, info.GetFileInfo(info.Current().line));
 
 	while (const Optional<ScopeList> type = ParseType(info)) {
 		node->types.Add(type.Get());

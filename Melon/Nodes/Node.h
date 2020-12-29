@@ -202,7 +202,7 @@ namespace Melon {
 
 			///T Scope
 			/// The scope the node is in
-			Symbols::ScopeList scope;
+			Symbols::Symbol* scope;
 
 			///T File
 			/// The file info of the node
@@ -214,7 +214,7 @@ namespace Melon {
 			///H Constructors
 
 			///T Constructor
-			Node(const Symbols::ScopeList& scope, const FileInfo& file);
+			Node(Symbols::Symbol* const scope, const FileInfo& file);
 			~Node();
 
 			///H Methods

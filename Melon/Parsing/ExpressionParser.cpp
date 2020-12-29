@@ -59,13 +59,13 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 						Pointer<BinaryOperatorNode> node;
 
 						if (IsLogic(token.type)) {
-							node = new LogicNode(info.scope->AbsoluteName(), token.type, FileInfo(info.filename, token.line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+							node = new LogicNode(info.scope, token.type, info.GetFileInfo(token.line));
 						}
 						else if (token.type == TokenType::DoubleQuestion) {
-							node = new DefaultNode(info.scope->AbsoluteName(), FileInfo(info.filename, token.line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+							node = new DefaultNode(info.scope, info.GetFileInfo(token.line));
 						}
 						else {
-							node = new BinaryOperatorNode(info.scope->AbsoluteName(), Scope(token.value), FileInfo(info.filename, token.line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+							node = new BinaryOperatorNode(info.scope, Scope(token.value), info.GetFileInfo(token.line));
 						}
 
 						operators.Add(Pair<TokenType, Pointer<BinaryOperatorNode>>(token.type, node));
@@ -215,7 +215,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 		info.index++;
 
 		if (NodePtr node = ParseValue(info)) {
-			Pointer<UnaryOperatorNode> opNode = new UnaryOperatorNode(info.scope->AbsoluteName(), Scope(token.value), FileInfo(info.filename, token.line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+			Pointer<UnaryOperatorNode> opNode = new UnaryOperatorNode(info.scope, Scope(token.value), info.GetFileInfo(token.line));
 
 			opNode->node = node;
 			return opNode;
@@ -291,7 +291,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		
 		if (NodePtr dotNode = DotParser::Parse(info)) {
 			Pointer<DotNode> dn = dotNode.Cast<DotNode>();
-			Pointer<NameNode> nn = new NameNode(ScopeList(), FileInfo(info.filename, line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+			Pointer<NameNode> nn = new NameNode(nullptr, info.GetFileInfo(line));
 			nn->name = Scope::Global;
 			dn->node = nn;
 			return dn;
@@ -308,7 +308,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		return nullptr;
 	}
 	else if (Optional<Scope> node = TypeParser::ParseScope(info)) {
-		Pointer<NameNode> nn = new NameNode(info.scope->AbsoluteName(), FileInfo(info.filename, startLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+		Pointer<NameNode> nn = new NameNode(info.scope, info.GetFileInfo(startLine));
 		nn->name = (Scope)node;
 		return nn;
 	}
@@ -352,7 +352,7 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 			}
 
 			if (info.Current().type == TokenType::Exclamation) {
-				Pointer<UnaryOperatorNode> unwrap = new UnaryOperatorNode(info.scope->AbsoluteName(), Scope::Unwrap, FileInfo(info.filename, info.Current().line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+				Pointer<UnaryOperatorNode> unwrap = new UnaryOperatorNode(info.scope, Scope::Unwrap, info.GetFileInfo(info.Current().line));
 				unwrap->node = node;
 				info.index++;
 				node = unwrap;
@@ -362,7 +362,7 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 			if (info.Current().type == TokenType::Question) {
 				hasSafeUnwrap = true;
 
-				Pointer<SafeUnwrapNode> unwrap = new SafeUnwrapNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current().line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+				Pointer<SafeUnwrapNode> unwrap = new SafeUnwrapNode(info.scope, info.GetFileInfo(info.Current().line));
 				unwrap->node = node;
 				info.index++;
 				node = unwrap;
@@ -373,7 +373,7 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 		}
 
 		if (hasSafeUnwrap) {
-			Pointer<SafeUnwrapEndNode> unwrap = new SafeUnwrapEndNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+			Pointer<SafeUnwrapEndNode> unwrap = new SafeUnwrapEndNode(info.scope, info.GetFileInfo(info.Current(-1).line));
 			unwrap->node = node;
 			node = unwrap;
 		}

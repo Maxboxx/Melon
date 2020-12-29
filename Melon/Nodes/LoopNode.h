@@ -64,7 +64,7 @@ namespace Melon {
 			/// All segments in the loop structure
 			Boxx::List<LoopSegment> segments;
 
-			LoopNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			LoopNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~LoopNode();
 
 			///T Will A Segment Run

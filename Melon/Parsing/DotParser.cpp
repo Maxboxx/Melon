@@ -17,7 +17,7 @@ NodePtr DotParser::Parse(ParsingInfo& info) {
 	if (info.Next().type != TokenType::Name)
 		ErrorLog::Error(SyntaxError(SyntaxError::DotName, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
-	Pointer<DotNode> dn = new DotNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+	Pointer<DotNode> dn = new DotNode(info.scope, info.GetFileInfo(info.Current(-1).line));
 	dn->name = Scope(info.Current().value);
 
 	info.index++;

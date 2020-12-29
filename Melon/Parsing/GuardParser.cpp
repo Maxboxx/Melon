@@ -26,9 +26,9 @@ NodePtr GuardParser::Parse(ParsingInfo& info) {
 	info.index++;
 
 	if (NodePtr node = ConditionParser::Parse(info)) {
-		info.scope = info.scope->AddScope(info.GetFileInfo(guardLine));
+		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(guardLine));
 
-		Pointer<GuardNode> gn = new GuardNode(info.scope->AbsoluteName(), info.GetFileInfo(guardLine));
+		Pointer<GuardNode> gn = new GuardNode(info.scope, info.GetFileInfo(guardLine));
 		gn->cond = node;
 
 		if (info.Current().type == TokenType::Else) {

@@ -14,7 +14,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols::Nodes;
 
-LogicNode::LogicNode(const ScopeList& scope, const TokenType type, const FileInfo& file) : BinaryOperatorNode(scope, Scope(), file) {
+LogicNode::LogicNode(Symbol* const scope, const TokenType type, const FileInfo& file) : BinaryOperatorNode(scope, Scope(), file) {
 	this->type = type;
 }
 

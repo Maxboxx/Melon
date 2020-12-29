@@ -26,11 +26,11 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, parent == nullptr)) {
 		const FunctionHead funcHead = (FunctionHead)fh;
-		Pointer<FunctionNode> func = new FunctionNode(info.scope->AbsoluteName(), info.GetFileInfo(startLine));
+		Pointer<FunctionNode> func = new FunctionNode(info.scope, info.GetFileInfo(startLine));
 
 		UInt line = 0;
 
-		MapSymbol* const parentSym = parent ? parent->Cast<MapSymbol>() : info.scope->Cast<MapSymbol>();
+		MapSymbol* const parentSym = parent ? parent->Cast<MapSymbol>() : info.scope;
 		FunctionSymbol* functionParent = nullptr;
 
 		if (Symbol* const func = parentSym->Contains(funcHead.name)) {
@@ -67,7 +67,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		info.scopeCount = 0;
 		bool single = info.Current().type == TokenType::Arrow;
 
-		ScopeSymbol* const temp = info.scope;
+		MapSymbol* const temp = info.scope;
 		info.scope = funcSym;
 
 		if (single) {

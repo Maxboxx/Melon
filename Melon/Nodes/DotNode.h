@@ -18,7 +18,7 @@ namespace Melon {
 			/// The name of the dot operator
 			Symbols::Scope name;
 
-			DotNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			DotNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DotNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;

@@ -11,7 +11,7 @@ namespace Melon {
 		///B DefaultNode
 		class DefaultNode : public BinaryOperatorNode {
 		public:
-			DefaultNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			DefaultNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DefaultNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;

@@ -10,7 +10,7 @@ namespace Melon {
 			///T condition
 			NodePtr cond;
 
-			ConditionNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			ConditionNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ConditionNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;

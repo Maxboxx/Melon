@@ -1,5 +1,6 @@
 #include "VariableSymbol.h"
 
+#include "SymbolTable.h"
 #include "TypeSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
@@ -19,7 +20,7 @@ VariableSymbol::~VariableSymbol() {
 }
 
 TypeSymbol* VariableSymbol::Type() {
-	return nullptr;
+	return SymbolTable::Find<TypeSymbol>(type, Parent()->AbsoluteName(), file);
 }
 
 VariableSymbol* VariableSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {

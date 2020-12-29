@@ -14,7 +14,7 @@ namespace Melon {
 			/// The unwrapped node
 			NodePtr node;
 
-			SafeUnwrapEndNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			SafeUnwrapEndNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~SafeUnwrapEndNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;

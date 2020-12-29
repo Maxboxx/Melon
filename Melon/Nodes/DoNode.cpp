@@ -16,7 +16,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DoNode::DoNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+DoNode::DoNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

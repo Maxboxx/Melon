@@ -9,7 +9,7 @@ namespace Melon {
 			NodePtr condition;
 			NodePtr content;
 
-			RepeatNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			RepeatNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~RepeatNode();
 
 			virtual Boxx::UInt GetSize() const override;

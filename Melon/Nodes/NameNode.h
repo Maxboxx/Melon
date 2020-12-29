@@ -17,7 +17,7 @@ namespace Melon {
 			/// Used to ignore ref
 			bool ignoreRef = false;
 
-			NameNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			NameNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~NameNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;

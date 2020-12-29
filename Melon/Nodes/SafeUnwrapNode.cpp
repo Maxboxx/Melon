@@ -12,7 +12,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-SafeUnwrapNode::SafeUnwrapNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+SafeUnwrapNode::SafeUnwrapNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

@@ -17,7 +17,7 @@ NodePtr ReturnParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Return) {
 		info.index++;
 
-		Pointer<ReturnNode> ret = new ReturnNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+		Pointer<ReturnNode> ret = new ReturnNode(info.scope, info.GetFileInfo(info.Current(-1).line));
 
 		while (NodePtr node = ExpressionParser::Parse(info)) {
 			ret->nodes.Add(node);

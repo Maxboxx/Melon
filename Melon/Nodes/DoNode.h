@@ -8,7 +8,7 @@ namespace Melon {
 		public:
 			NodePtr nodes;
 
-			DoNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			DoNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DoNode();
 
 			virtual Boxx::UInt GetSize() const override;

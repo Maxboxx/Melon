@@ -55,7 +55,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	// TODO: size
 	EnumSymbol* enumSymbol = new EnumSymbol(1, false, info.GetFileInfo(enumLine));
 
-	Pointer<EnumNode> en = new EnumNode(info.scope->AbsoluteName(), info.GetFileInfo(enumLine));
+	Pointer<EnumNode> en = new EnumNode(info.scope, info.GetFileInfo(enumLine));
 
 	en->name = enumName;
 

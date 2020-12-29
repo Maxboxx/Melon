@@ -12,7 +12,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DefaultNode::DefaultNode(const ScopeList& scope, const FileInfo& file) : BinaryOperatorNode(scope, Scope::Default, file) {
+DefaultNode::DefaultNode(Symbol* const scope, const FileInfo& file) : BinaryOperatorNode(scope, Scope::Default, file) {
 
 }
 

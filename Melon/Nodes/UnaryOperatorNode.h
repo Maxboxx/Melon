@@ -21,7 +21,7 @@ namespace Melon {
 			///H Constructors
 
 			///T Constructor
-			UnaryOperatorNode(const Symbols::ScopeList& scope, const Symbols::Scope& op, const FileInfo& file);
+			UnaryOperatorNode(Symbols::Symbol* const scope, const Symbols::Scope& op, const FileInfo& file);
 			~UnaryOperatorNode();
 
 			///H Methods

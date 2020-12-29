@@ -27,8 +27,10 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 	const UInt structLine = info.Current().line;
 	info.index++;
+	MapSymbol* const temp = info.scope;
 
 	Pointer<StructNode> sn = ParseName(info, structLine);
+	info.scope = sn->symbol;
 
 	while (true) {
 		bool found = false;
@@ -60,6 +62,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 
 	if (info.Current().type != TokenType::End) {
 		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("struct", structLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		info.scope = temp;
 		return nullptr;
 	}
 
@@ -69,6 +72,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	sn->symbol->AddSymbol(Scope::Assign, assign);
 
 	info.index++;
+	info.scope = temp;
 	return sn;
 }
 
@@ -123,7 +127,7 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 		info.scope->AddSymbol(structName, sym);
 	}
 
-	Pointer<StructNode> sn = new StructNode(info.scope->AbsoluteName(), FileInfo(info.filename, structLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+	Pointer<StructNode> sn = new StructNode(info.scope, info.GetFileInfo(structLine));
 	sn->name = structName;
 	sn->symbol = sym;
 

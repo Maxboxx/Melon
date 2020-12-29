@@ -18,7 +18,7 @@ using namespace Melon::Parsing;
 NodePtr LoopParser::Parse(ParsingInfo& info) {
 	if (!IsLoopStart(info.Current().type)) return nullptr;
 
-	Pointer<LoopNode> loop = new LoopNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current().line, info.statementNumber));
+	Pointer<LoopNode> loop = new LoopNode(info.scope, info.GetFileInfo(info.Current().line));
 
 	const UInt startLine = info.Current().line;
 	const String start = info.Current().value;
@@ -80,7 +80,7 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 }
 
 bool LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
-	info.scope = info.scope->AddScope(info.GetFileInfo(info.Current().line));
+	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
 
 	if (NodePtr cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
@@ -120,7 +120,7 @@ bool LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, P
 }
 
 bool LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
-	info.scope = info.scope->AddScope(info.GetFileInfo(info.Current().line));
+	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
 
 	if (NodePtr cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
@@ -164,7 +164,7 @@ bool LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value
 }
 
 bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
-	info.scope = info.scope->AddScope(info.GetFileInfo(info.Current().line));
+	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
 
 	if (NodePtr init = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
 		info.statementNumber++;
@@ -193,7 +193,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 			}
 
 			if (node) {
-				Pointer<ForConditionNode> fcn = new ForConditionNode(info.scope->AbsoluteName(), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				Pointer<ForConditionNode> fcn = new ForConditionNode(info.scope, info.GetFileInfo(info.Current(-1).line));
 				fcn->loopInit = init;
 				fcn->conditionOperator = op;
 				fcn->loopCondition = node;
@@ -273,7 +273,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 }
 
 void LoopParser::ParseNone(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const UInt index) {
-	info.scope = info.scope->AddScope(info.GetFileInfo(info.Current().line));
+	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
 
 	info.scopeCount++;
 	ls.statements = StatementParser::ParseMultiple(info);
