@@ -22,7 +22,7 @@ FunctionSymbol::~FunctionSymbol() {
 
 TypeSymbol* FunctionSymbol::ReturnType(const UInt index) {
 	if (index >= returnValues.Size()) return nullptr;
-	return SymbolTable::Find<TypeSymbol>(returnValues[index], Parent()->AbsoluteName(), file);
+	return SymbolTable::Find<TypeSymbol>(returnValues[index], AbsoluteName(), file);
 }
 
 TypeSymbol* FunctionSymbol::ArgumentType(const UInt index) {
@@ -65,16 +65,27 @@ TypeSymbol* FunctionSymbol::TemplateArgument(const UInt index) {
 
 FunctionSymbol* FunctionSymbol::AddOverload(FunctionSymbol* const overload) {
 	overload->parent = this;
+	overload->name = Scope("");
+
+	List<ScopeList> args;
+	args.Add(ScopeList().Add(Scope(String::ToString(overloads.Size()))));
+	overload->name.arguments = args;
+
 	overloads.Add(overload);
 	return overload;
 }
 
 Symbol* FunctionSymbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+	static const Regex numReg = Regex("^%d+$");
+
 	if (index >= scopeList.Size()) return this;
 	const Scope& scope = scopeList[index];
 
 	if (scope.name.Size() == 0 && scope.arguments) {
-		for (FunctionSymbol* const overload : overloads) {
+		if (scope.arguments.Get().Size() == 1 && numReg.Match(scope.arguments.Get()[0][0].name)) {
+			return overloads[scope.arguments.Get()[0][0].name.ToUInt()]->Find(scopeList, index + 1, file);
+		}
+		else for (FunctionSymbol* const overload : overloads) {
 			if (overload->Name() == scope) {
 				return overload->Find(scopeList, index + 1, file);
 			}
@@ -86,39 +97,6 @@ Symbol* FunctionSymbol::Find(const ScopeList& scopeList, const UInt index, const
 
 	FindError(scopeList, index, file);
 	return nullptr;
-}
-
-Scope FunctionSymbol::Name() {
-	if (!overloads.IsEmpty()) {
-		return name;
-	}
-	else {
-		Scope name = this->name;
-
-		if (!templateArguments.IsEmpty()) {
-			name.types = templateArguments;
-		}
-		
-		if (symbolNode) {
-			name.arguments = arguments;
-			return name;
-		}
-		else {
-			List<ScopeList> args;
-
-			for (UInt i = 0; i < arguments.Size(); i++) {
-				if (TypeSymbol* const type = ArgumentType(i)) {
-					args.Add(type->AbsoluteName());
-				}
-				else {
-					args.Add(ScopeList::undefined);
-				}
-			}
-
-			name.arguments = args;
-			return name;
-		}
-	}
 }
 
 FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {

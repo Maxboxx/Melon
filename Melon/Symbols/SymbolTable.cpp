@@ -102,7 +102,7 @@ Symbol* SymbolTable::Find(ScopeList name, ScopeList scope, const FileInfo& file,
 			Symbol* const s = FindInNamespaces(list, file);
 
 			if (Symbol* const sym = s->Contains(name)) {
-				if (ignoreOrder || sym->file.statement < file.statement) {
+				if (ignoreOrder || sym->file.statement < file.statement || sym->Is<TemplateSymbol>()) {
 					return sym;
 				}
 			}
@@ -180,7 +180,7 @@ Symbol* SymbolTable::FindInNamespaces(const ScopeList& name, const FileInfo& fil
 	return nullptr;
 }
 
-void SymbolTable::SpecializeTemplate(const ScopeList& name, const ScopeList& scope, const FileInfo& file) {
+void SymbolTable::SpecializeTemplate(const ScopeList& name, Symbol* const scope, const FileInfo& file) {
 	TemplateInfo info;
 	info.name  = name;
 	info.scope = scope;

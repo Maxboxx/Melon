@@ -57,8 +57,7 @@ namespace Melon {
 			Boxx::List<ScopeList> returnValues;
 
 			///T Arguments
-			/// Argument names if the function uses a <code>Node</code>
-			/// Argument types if the function uses a <code>SymbolNode</code>
+			/// Argument names
 			Boxx::List<ScopeList> arguments;
 
 			///T Node
@@ -75,7 +74,6 @@ namespace Melon {
 			/// Used for type conversions
 			bool isExplicit = false;
 
-			virtual Scope Name() override;
 			virtual FunctionSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 		protected:

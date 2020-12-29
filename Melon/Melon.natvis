@@ -211,6 +211,7 @@
 		<Expand>
 			<Item Name="symbols">symbols</Item>
 			<Item Name="variants">templateVariants</Item>
+			<Item Name="templates">templateArguments</Item>
 		</Expand>
 	</Type>
 

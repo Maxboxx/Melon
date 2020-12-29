@@ -34,7 +34,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 				optionalScope.types.Get().Add(ScopeList().Add((Scope)first));
 				first = optionalScope;
 
-				SymbolTable::SpecializeTemplate(ScopeList().Add((Scope)first), info.scope->AbsoluteName(), info.GetFileInfo(info.Current(-1).line));
+				SymbolTable::SpecializeTemplate(ScopeList().Add((Scope)first), info.scope, info.GetFileInfo(info.Current(-1).line));
 			}
 		}
 
@@ -48,7 +48,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 				type = type.Add((Scope)scope);
 
 				if (scope.Get().types) {
-					SymbolTable::SpecializeTemplate(type, info.scope->AbsoluteName(), info.GetFileInfo(info.Current(-1).line));
+					SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfo(info.Current(-1).line));
 				}
 
 				while (!info.EndOfFile() && (info.Current().type == TokenType::Question || info.Current().type == TokenType::DoubleQuestion)) {
@@ -61,7 +61,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 						optionalScope.types.Get().Add(ScopeList().Add(type));
 						type = ScopeList().Add(optionalScope);
 
-						SymbolTable::SpecializeTemplate(ScopeList().Add(type), info.scope->AbsoluteName(), info.GetFileInfo(info.Current(-1).line));
+						SymbolTable::SpecializeTemplate(ScopeList().Add(type), info.scope, info.GetFileInfo(info.Current(-1).line));
 					}
 				}
 			}
@@ -105,7 +105,7 @@ Optional<Scope> TypeParser::ParseScope(ParsingInfo& info) {
 	if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
 		scope.types = templateArgs;
 
-		SymbolTable::SpecializeTemplate(ScopeList().Add(scope), info.scope->AbsoluteName(), info.GetFileInfo(info.Current(-1).line));
+		SymbolTable::SpecializeTemplate(ScopeList().Add(scope), info.scope, info.GetFileInfo(info.Current(-1).line));
 	}
 
 	return scope;

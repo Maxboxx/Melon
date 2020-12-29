@@ -23,6 +23,9 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 	const UInt startLine = info.Current().line;
 
 	// TODO: More accurate lines
+	MapSymbol* const temp = info.scope;
+	FunctionSymbol* funcSym = new FunctionSymbol(info.GetFileInfo(startLine));
+	info.scope = funcSym;
 
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, parent == nullptr)) {
 		const FunctionHead funcHead = (FunctionHead)fh;
@@ -40,7 +43,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 			functionParent = parentSym->AddSymbol(funcHead.name, new FunctionSymbol(info.GetFileInfo(startLine)))->Cast<FunctionSymbol>();
 		}
 
-		FunctionSymbol* const funcSym = functionParent->AddOverload(new FunctionSymbol(info.GetFileInfo(startLine)));
+		funcSym = functionParent->AddOverload(funcSym);
 		funcSym->returnValues = funcHead.returnTypes;
 		funcSym->attributes   = funcHead.attributes;
 
@@ -66,9 +69,6 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		info.loops = 0;
 		info.scopeCount = 0;
 		bool single = info.Current().type == TokenType::Arrow;
-
-		MapSymbol* const temp = info.scope;
-		info.scope = funcSym;
 
 		if (single) {
 			info.index++;
@@ -102,6 +102,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		return en;
 	}
 
+	info.scope = temp;
 	info.index = startIndex;
 	return nullptr;
 }

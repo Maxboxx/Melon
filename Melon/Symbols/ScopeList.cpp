@@ -216,8 +216,8 @@ bool Scope::operator==(const Scope& scope) const {
 	}
 
 	if (arguments) {
-		const List<ScopeList> arguments1 = types.Get();
-		const List<ScopeList> arguments2 = scope.types.Get();
+		const List<ScopeList> arguments1 = arguments.Get();
+		const List<ScopeList> arguments2 = scope.arguments.Get();
 
 		if (arguments1.Size() != arguments2.Size()) return false;
 
@@ -353,6 +353,36 @@ String ScopeList::ToSimpleString() const {
 
 UInt ScopeList::Size() const {
 	 return scopes.Size();
+}
+
+ScopeList ScopeList::Split() const {
+	ScopeList list;
+	list.absolute = absolute;
+
+	for (Boxx::UInt i = 0; i < Size(); i++) {
+		Scope scope = scopes[i].Copy();
+
+		if (scope.name.Size() > 0 && (scope.types || scope.arguments)) {
+			list = list.Add(Scope(scope.name));
+			scope.name = "";
+		}
+		
+		if (scope.types) {
+			for (ScopeList& type : scope.types.Get()) {
+				type = type.Split();
+			}
+		}
+
+		if (scope.arguments) {
+			for (ScopeList& arg : scope.arguments.Get()) {
+				arg = arg.Split();
+			}
+		}
+
+		list = list.Add(scope);
+	}
+
+	return list;
 }
 
 Scope ScopeList::operator[](const Boxx::UInt i) const {

@@ -199,6 +199,10 @@ namespace Melon {
 			///R Boxx::UInt: The size of the list
 			Boxx::UInt Size() const;
 
+			///T Split
+			/// Split up scopes for use in searches
+			ScopeList Split() const;
+
 			///H Operators
 
 			///T Index operator

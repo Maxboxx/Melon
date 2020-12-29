@@ -113,7 +113,7 @@ namespace Melon {
 			///T Specialize Template
 			/// Specializes a template symbol
 			/// The symbols are specialized during include scan
-			static void SpecializeTemplate(const ScopeList& name, const ScopeList& scope, const FileInfo& file); 
+			static void SpecializeTemplate(const ScopeList& name, Symbol* const scope, const FileInfo& file); 
 
 			///T Basic types
 			///M
@@ -145,7 +145,8 @@ namespace Melon {
 			friend Melon::Nodes::RootNode;
 
 			struct TemplateInfo {
-				ScopeList name, scope;
+				ScopeList name;
+				Symbol* scope;
 				FileInfo file;
 			};
 

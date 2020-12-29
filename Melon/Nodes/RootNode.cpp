@@ -166,7 +166,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 
 		for (; templateIndex < SymbolTable::templateSymbols.Size(); templateIndex++) {
 			SymbolTable::TemplateInfo info = SymbolTable::templateSymbols[templateIndex];
-			AddTemplateSpecialization(info.name, info.scope, info.file, false);
+			AddTemplateSpecialization(info.name, info.scope->AbsoluteName(), info.file, false);
 		}
 	}
 	while (
@@ -203,6 +203,8 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 	Symbol* const s = templateInfo.value1->SpecializeTemplate(templateTypes, this);
 
 	if (StructSymbol* const sym = s->Cast<StructSymbol>()) {
+		templateInfo.value1->Parent()->Cast<TemplateTypeSymbol>()->AddTemplateVariant(sym);
+
 		Pointer<StructNode> sn = new StructNode(SymbolTable::FindAbsolute(ScopeList(true), file), file);
 		sn->name = sym->Parent()->Name();
 
