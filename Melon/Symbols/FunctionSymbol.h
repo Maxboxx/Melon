@@ -80,6 +80,7 @@ namespace Melon {
 			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
 
 		private:
+			friend TypeSymbol;
 			Boxx::List<FunctionSymbol*> overloads;
 		};
 	}

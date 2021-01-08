@@ -106,6 +106,30 @@ namespace Melon {
 			static T* Contains(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 			///M
 
+			///T Find Operator Function
+			/// Finds the operator function to use for the specified types
+			///A op: The operator name
+			///A type1: The type of the first operand
+			///A type2: The type of the second operand
+			///R FunctionSymbol*: The operator function to use 
+			static FunctionSymbol* FindOperator(const Scope& op, TypeSymbol* const type1, TypeSymbol* const type2, const FileInfo& file);
+
+			///T Find Implicit Conversion
+			/// Finds the implicit conversion operator for the specified types.
+			///A from: The type to convert from.
+			///A to:   The type to convert to.
+			///R FunctionSymbol*: The conversion operator.
+			/// nullptr if the operator was not found.
+			static FunctionSymbol* FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file);
+
+			///T Find Explicit Conversion
+			/// Finds the explicit conversion operator for the specified types.
+			///A from: The type to convert from.
+			///A to:   The type to convert to.
+			///R FunctionSymbol*: The conversion operator.
+			/// nullptr if the operator was not found.
+			static FunctionSymbol* FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file);
+
 			///T Setup
 			/// Adds basic types to the symbol table
 			static void Setup();

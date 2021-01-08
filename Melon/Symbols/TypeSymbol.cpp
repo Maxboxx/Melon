@@ -1,5 +1,7 @@
 #include "TypeSymbol.h"
 
+#include "FunctionSymbol.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -19,4 +21,56 @@ UInt TypeSymbol::Size() const {
 
 UInt TypeSymbol::MemorySize() const {
 	return size;
+}
+
+FunctionSymbol* TypeSymbol::ImplicitConversionTo(TypeSymbol* const type) {
+	FunctionSymbol* const as = Contains<FunctionSymbol>(Scope::As);
+
+	if (as == nullptr) return nullptr;
+
+	for (FunctionSymbol* const op : as->overloads) {
+		if (!op->isExplicit && op->ReturnType(0) == type && op->ArgumentType(0) == this) {
+			return op;
+		}
+	}
+
+	return nullptr;
+}
+
+FunctionSymbol* TypeSymbol::ExplicitConversionTo(TypeSymbol* const type) {
+	FunctionSymbol* const as = Contains<FunctionSymbol>(Scope::As);
+
+	if (as == nullptr) return nullptr;
+
+	for (FunctionSymbol* const op : as->overloads) {
+		if (op->ReturnType(0) == type && op->ArgumentType(0) == this) {
+			return op;
+		}
+	}
+
+	return nullptr;
+}
+
+
+FunctionSymbol* TypeSymbol::ImplicitConversionFrom(TypeSymbol* const type) {
+	Scope as = Scope::As;
+	as.arguments = List<ScopeList>();
+	as.arguments.Get().Add(type->AbsoluteName());
+
+	FunctionSymbol* const op = Contains<FunctionSymbol>(as);
+
+	if (op == nullptr || op->isExplicit) {
+		return nullptr;
+	}
+	else {
+		return op;
+	}
+}
+
+FunctionSymbol* TypeSymbol::ExplicitConversionFrom(TypeSymbol* const type) {
+	Scope as = Scope::As;
+	as.arguments = List<ScopeList>();
+	as.arguments.Get().Add(type->AbsoluteName());
+
+	return Contains<FunctionSymbol>(as);
 }

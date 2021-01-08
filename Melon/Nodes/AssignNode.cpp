@@ -154,9 +154,7 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 	for (const ScopeList& type : types) {
 		if (type == ScopeList::Discard) continue;
 
-		while (true) {
-			Symbol* s = SymbolTable::Find(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
-
+		while (Symbol* s = SymbolTable::Find(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates)) {
 			bool done = true;
 
 			for (UInt i = 1; i < type.Size(); i++) {

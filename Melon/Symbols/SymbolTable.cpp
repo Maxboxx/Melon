@@ -180,6 +180,32 @@ Symbol* SymbolTable::FindInNamespaces(const ScopeList& name, const FileInfo& fil
 	return nullptr;
 }
 
+FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file) {
+	if (FunctionSymbol* const op = from->ImplicitConversionTo(to)) {
+		return op;
+	}
+
+	if (FunctionSymbol* const op = to->ImplicitConversionFrom(from)) {
+		return op;
+	}
+
+	// TODO: error
+	return nullptr;
+}
+
+FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file) {
+	if (FunctionSymbol* const op = from->ExplicitConversionTo(to)) {
+		return op;
+	}
+
+	if (FunctionSymbol* const op = to->ExplicitConversionFrom(from)) {
+		return op;
+	}
+
+	// TODO: error
+	return nullptr;
+}
+
 void SymbolTable::SpecializeTemplate(const ScopeList& name, Symbol* const scope, const FileInfo& file) {
 	TemplateInfo info;
 	info.name  = name;
