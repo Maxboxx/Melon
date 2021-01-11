@@ -81,6 +81,7 @@ namespace Melon {
 
 		private:
 			friend TypeSymbol;
+			friend SymbolTable;
 			Boxx::List<FunctionSymbol*> overloads;
 		};
 	}

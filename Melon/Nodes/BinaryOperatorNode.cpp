@@ -6,6 +6,9 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -24,20 +27,17 @@ BinaryOperatorNode::~BinaryOperatorNode() {
 }
 
 TypeSymbol* BinaryOperatorNode::Type() const {
-	/* TODO: node
-	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	FunctionSymbol* const s = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	if (s.type != SymbolType::None && !s.returnValues.IsEmpty()) {
-		const Symbols s2 = Symbols::FindNearest(s.scope.Pop(), s.returnValues[0], file);
-
-		if (s2.type == SymbolType::Template) {
-			return s2.varType;
-		}
-		else if (s2.type != SymbolType::None) {
-			return s2.scope;
+	if (!s->returnValues.IsEmpty()) {
+		if (TypeSymbol* const s2 = s->ReturnType(0)) {
+			if (TemplateSymbol* const t = s2->Cast<TemplateSymbol>()) {
+				return t->Type();
+			}
+			
+			return s2;
 		}
 	}
-	*/
 
 	return nullptr;
 }

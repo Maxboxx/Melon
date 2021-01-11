@@ -1,5 +1,7 @@
 #include "TemplateSymbol.h"
 
+#include "SymbolTable.h"
+
 #include "Melon/Nodes/RootNode.h"
 
 using namespace Boxx;
@@ -17,7 +19,7 @@ TemplateSymbol::~TemplateSymbol() {
 }
 
 TypeSymbol* TemplateSymbol::Type() {
-	return nullptr;
+	return SymbolTable::ContainsAbsolute<TypeSymbol>(type);
 }
 
 TemplateSymbol* TemplateSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
