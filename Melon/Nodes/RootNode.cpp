@@ -252,7 +252,7 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 			bool match = true;
 
 			for (UInt i = 0; i < templateArgs.Size(); i++) {
-				Symbol* const symArg = variant->TemplateArgument(i);
+				TypeSymbol* const symArg = variant->TemplateArgument(i);
 
 				if (symArg->Is<TemplateSymbol>()) continue;
 				if (symArg->AbsoluteName() == templateArgs[i]) continue;

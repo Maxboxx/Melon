@@ -67,12 +67,20 @@ Symbol* SymbolTable::ContainsAbsolute(const ScopeList& name) {
 	return symbols->Symbol::Contains(name);
 }
 
+Symbol* SymbolTable::Contains(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options) {
+	return Contains(ScopeList().Add(name), scope, file, options);
+}
+
 Symbol* SymbolTable::Contains(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options) {
 	ErrorLog::AddMarker();
 	Symbol* const sym = Find(name, scope, file, options);
 	ErrorLog::Revert();
 
 	return sym;
+}
+
+Symbol* SymbolTable::Find(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options) {
+	return Find(ScopeList().Add(name), scope, file, options);
 }
 
 Symbol* SymbolTable::Find(ScopeList name, ScopeList scope, const FileInfo& file, const SearchOptions options) {

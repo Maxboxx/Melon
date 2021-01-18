@@ -7,6 +7,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/StructSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -25,51 +27,52 @@ CallNode::~CallNode() {
 
 }
 
-Symbols CallNode::GetFunc() const {
-	List<Symbol*> argTypes;
+FunctionSymbol* CallNode::GetFunc() const {
+	List<TypeSymbol*> argTypes;
 
 	for (NodePtr node : args) {
 		argTypes.Add(node->Type());
 	}
 
-	/* TODO: node
-	Symbols s;
-
-	UInt errorCount = ErrorLog::ErrorCount();
-
-	ScopeList type = this->node->Type();
-
-	if (errorCount < ErrorLog::ErrorCount()) {
-		return Symbols();
-	}
+	FunctionSymbol* s = nullptr;
 
 	if (op) {
-		s = Symbols::FindFunction(type, argTypes, file);
+		// TODO: fix
+		//s = SymbolTable::FindFunction(type, argTypes, file);
 	}
 	else if (IsInit()) {
-		s = Symbols::FindMethod(type.Add(Scope::Init).Add(Scope::Call), argTypes, this->node->file);
+		// TODO: fix
+		//s = Symbols::FindMethod(type.Add(Scope::Init).Add(Scope::Call), argTypes, this->node->file);
 	}
 	else if (!isMethod) {
-		s = Symbols::FindFunction(type.Add(Scope::Call), argTypes, this->node->file);
+		if (FunctionSymbol* const f = this->node->GetSymbol()->Cast<FunctionSymbol>()) {
+			s = f->FindOverload(argTypes, this->node->file);
+
+			if ((s->attributes & FunctionAttributes::Static) == FunctionAttributes::None) {
+				s = nullptr;
+			}
+		}
 	}
 	else {
-		s = Symbols::FindMethod(type.Add(methodName).Add(Scope::Call), argTypes, this->node->file);
+		// TODO: fix
+		//s = Symbols::FindMethod(type.Add(methodName).Add(Scope::Call), argTypes, this->node->file);
 	}
 
-	if ((IsInit() && s.type == SymbolType::Method) || (isMethod ? s.type == SymbolType::Method : s.type == SymbolType::Function)) {
+	if (s) {
 		return s;
 	}
 
 	List<String> argStr;
 
-	for (const ScopeList& type : argTypes) {
-		argStr.Add(type.ToString());
+	if (FunctionSymbol* const f = this->node->GetSymbol()->Cast<FunctionSymbol>()) {
+		for (TypeSymbol* const type : argTypes) {
+			argStr.Add(type->AbsoluteName().ToString());
+		}
+
+		ErrorLog::Error(SymbolError(SymbolError::Function(f->AbsoluteName().ToString(), argStr), file));
 	}
 
-	ErrorLog::Error(SymbolError(SymbolError::Function(type.ToString(), argStr), file));
-	*/
-
-	return Symbols::Symbols();
+	return nullptr;
 }
 
 bool CallNode::IsSelfPassing() const {
@@ -78,13 +81,11 @@ bool CallNode::IsSelfPassing() const {
 }
 
 bool CallNode::IsInit() const {
-	/* TODO: node
-	Symbols s = node->GetSymbol();
+	Symbol* const s = node->GetSymbol();
 
-	if (s.type == SymbolType::Struct) {
+	if (s->Is<StructSymbol>()) {
 		return !isMethod;
 	}
-	*/
 
 	return false;
 }
@@ -94,38 +95,27 @@ TypeSymbol* CallNode::Type() const {
 }
 
 List<TypeSymbol*> CallNode::Types() const {
-	/* TODO: node
-	Symbols s = GetFunc();
+	FunctionSymbol* const f = GetFunc();
 
-	List<ScopeList> types;
+	List<TypeSymbol*> types;
 
-	if (s.type == SymbolType::None) {
-		types.Add(ScopeList::undefined);
+	if (f == nullptr) {
+		types.Add(nullptr);
 		return types;
 	}
 
 	if (IsInit()) {
 		types.Add(node->Type());
 	}
-	else for (const ScopeList& type : s.returnValues) {
-		const Symbols s2 = Symbols::FindNearestInNamespace(s.scope.Pop(), type, node->file);
-
-		if (s2.type != SymbolType::None) {
-			types.Add(s2.scope);
-		}
-		else {
-			types.Add(ScopeList::undefined);
-		}
+	else for (UInt i = 0; i < f->returnValues.Size(); i++) {
+		types.Add(f->ReturnType(i));
 	}
 
 	if (types.IsEmpty()) {
-		types.Add(ScopeList::undefined);
+		types.Add(nullptr);
 	}
 
 	return types;
-	*/
-
-	return List<TypeSymbol*>();
 }
 
 CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
@@ -382,6 +372,8 @@ void CallNode::IncludeScan(ParsingInfo& info) {
 	for (NodePtr arg : args) {
 		arg->IncludeScan(info);
 	}
+
+	GetFunc();
 }
 
 Set<ScanType> CallNode::Scan(ScanInfoStack& info) {

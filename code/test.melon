@@ -35,7 +35,6 @@ struct Compare<A>
 	end
 end
 
-
 Value<byte>: a = Compare<byte>.min<short, int>(Value<short>(1), Value<int>(2))
 
 Value<ushort>: b = Compare<ushort>.max<ulong, byte>(Value<ulong>(3), Value<byte>(4))

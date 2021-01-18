@@ -4,6 +4,9 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -39,19 +42,17 @@ TypeSymbol* NameNode::Type() const {
 }
 
 Symbol* NameNode::GetSymbol() const {
-	/* TODO: node
-	ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
 	Scope s = name.Copy();
 
 	if (s.types) {
 		for (ScopeList& type : s.types.Get()) {
-			Symbols sym = Symbols::FindNearestInNamespace(replacedScope, type, file);
+			TypeSymbol* const sym = SymbolTable::Find<TypeSymbol>(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 			
-			if (sym.type == SymbolType::Template) {
-				type = sym.varType;
+			if (sym->Is<TemplateSymbol>()) {
+				type = sym->Type()->AbsoluteName();
 			}
 			else {
-				type = sym.scope;
+				type = sym->AbsoluteName();
 			}
 		}
 	}
@@ -59,18 +60,25 @@ Symbol* NameNode::GetSymbol() const {
 	Scope noTemplateScope = s.Copy();
 	noTemplateScope.types = nullptr;
 
-	Symbols sym = Symbols::FindNearestInNamespace(replacedScope, noTemplateScope, file);
+	Symbol* const sym = SymbolTable::Find(noTemplateScope, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
-	if (sym.type == SymbolType::Template) {
-		ScopeList type = sym.varType;
+	if (sym->Is<TemplateSymbol>()) {
+		ScopeList type = sym->Type()->AbsoluteName();
 		type[type.Size() - 1].types = s.types;
-		return Symbols::Find(type, file);
+		return SymbolTable::FindAbsolute(type, file);
 	}
 
-	return Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, ScopeList().Add(s), file), file);
-	*/;
-
-	return nullptr;
+	if (sym->Is<FunctionSymbol>()) {
+		return sym;
+	}
+	else if (s.types) {
+		Scope scope = s.Copy();
+		scope.name  = "";
+		return sym->Find(scope, file);
+	}
+	else {
+		return sym;
+	}
 }
 
 CompiledNode NameNode::Compile(CompileInfo& info) {

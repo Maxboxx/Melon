@@ -11,7 +11,7 @@ namespace Melon {
 		public:
 
 			///T Boolean
-			bool boolean;
+			bool boolean = false;
 
 			///T Constructor
 			BooleanNode(const FileInfo& file);

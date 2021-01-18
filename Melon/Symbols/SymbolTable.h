@@ -72,7 +72,8 @@ namespace Melon {
 			///A scope: The scope to find the symbol from
 			///A file: Information about the file to search from
 			///A options: Search options to use for finding the symbol
-			static Symbol* Find(ScopeList name, ScopeList scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
+			static Symbol* Find(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
+			static Symbol* Find(ScopeList    name,       ScopeList  scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 
 			///T Contains
 			/// Checks if a symbol of a specific name exists in the table
@@ -81,6 +82,7 @@ namespace Melon {
 			///A file: Information about the file to search from
 			///A options: Search options to use for finding the symbol
 			///R Symbol*: The symbol if it exists or <code>nullptr</code> if it does not
+			static Symbol* Contains(const Scope&     name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 			static Symbol* Contains(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 
 			///T Find
@@ -90,6 +92,8 @@ namespace Melon {
 			///A file: Information about the file to search from
 			///A options: Search options to use for finding the symbol
 			///M
+			template <class T>
+			static T* Find(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 			template <class T>
 			static T* Find(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 			///M
@@ -102,6 +106,8 @@ namespace Melon {
 			///A options: Search options to use for finding the symbol
 			///R T*: The symbol if it exists or <code>nullptr</code> if it does not
 			///M
+			template <class T>
+			static T* Contains(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 			template <class T>
 			static T* Contains(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 			///M
@@ -210,6 +216,11 @@ namespace Melon {
 		}
 
 		template <class T>
+		inline T* SymbolTable::Find(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options) {
+			return SymbolTable::Find<T>(ScopeList().Add(name), scope, file, options);
+		}
+
+		template <class T>
 		inline T* SymbolTable::Find(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options) {
 			if (Symbol* const sym = Find(name, scope, file, options)) {
 				return sym->Cast<T>();
@@ -217,6 +228,11 @@ namespace Melon {
 			else {
 				return nullptr;
 			}
+		}
+
+		template <class T>
+		inline T* SymbolTable::Contains(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options) {
+			return SymbolTable::Contains<T>(ScopeList().Add(name), scope, file, options);
 		}
 
 		template <class T>

@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 namespace Melon {
 	namespace Nodes {
 		///B CallNode
@@ -40,7 +42,7 @@ namespace Melon {
 
 			///T Get function
 			/// Finds the function to call
-			Symbols::Symbols GetFunc() const;
+			Symbols::FunctionSymbol* GetFunc() const;
 
 			///T Is function
 			/// Checks if the node to call is a function

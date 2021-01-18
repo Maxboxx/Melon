@@ -69,7 +69,7 @@ Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) {
 		bool createAssign = true;
 
 		if (Pointer<CallNode> call = loopStep.Cast<CallNode>()) {
-			createAssign = !call->GetFunc().returnValues.IsEmpty();
+			createAssign = !call->GetFunc()->returnValues.IsEmpty();
 		}
 
 		if (createAssign) {

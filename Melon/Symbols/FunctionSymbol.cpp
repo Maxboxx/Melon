@@ -3,8 +3,11 @@
 #include "SymbolTable.h"
 #include "VariableSymbol.h"
 #include "TypeSymbol.h"
+#include "TemplateSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
+
+#include "Boxx/ReplacementMap.h"
 
 using namespace Boxx;
 
@@ -63,6 +66,14 @@ TypeSymbol* FunctionSymbol::TemplateArgument(const UInt index) {
 	}
 }
 
+UInt FunctionSymbol::RequiredArguments() const {
+	return arguments.Size();
+}
+
+UInt FunctionSymbol::RequiredTemplateArguments() const {
+	return templateArguments.Size();
+}
+
 FunctionSymbol* FunctionSymbol::AddOverload(FunctionSymbol* const overload) {
 	overload->parent = this;
 	overload->name = Scope("");
@@ -97,6 +108,147 @@ Symbol* FunctionSymbol::Find(const ScopeList& scopeList, const UInt index, const
 
 	FindError(scopeList, index, file);
 	return nullptr;
+}
+
+FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
+	return nullptr;
+}
+
+FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+	return nullptr;
+}
+
+FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
+	return nullptr;
+}
+
+FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+	return nullptr;
+}
+
+Tuple<List<TypeSymbol*>, List<TypeSymbol*>> FunctionSymbol::FindTemplateArguments(FunctionSymbol* const func, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+	ReplacementMap<TypeSymbol*> templateMap;
+
+	for (UInt i = 0; i < func->templateArguments.Size(); i++) {
+		if (i < templateArgs.Size()) {
+			templateMap.Add(func->TemplateArgument(i), templateArgs[i]);
+		}
+	}
+
+	return {};
+}
+
+FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overloads, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+	FunctionSymbol* best = nullptr;
+
+	UInt bestNum    = 0;
+	bool isTemplate = false;
+	bool isAmbig    = false;
+
+	for (FunctionSymbol* const overload : overloads) {
+		bool perfect = true;
+		bool match   = true;
+
+		Tuple<List<TypeSymbol*>, List<TypeSymbol*>> specialized = FindTemplateArguments(overload, templateArgs, args, file);
+
+		for (UInt i = 0; i < args.Size(); i++) {
+			TypeSymbol* const arg = overload->ArgumentType(i);
+
+			if (arg != args[i]) {
+				perfect = false;
+
+				if (!arg->ImplicitConversionFrom(args[i])) {
+					match = false;
+					break;
+				}
+			}
+		}
+
+		if (perfect) return overload;
+
+		if (match) {
+			if (best) {
+				// TODO: error
+				return nullptr;
+			}
+
+			best = overload;
+		}
+	}
+
+	// TODO: error
+	return nullptr;
+}
+
+FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, const bool isStatic, const FileInfo& file) {
+	List<FunctionSymbol*> matches;
+
+	for (FunctionSymbol* const overload : overloads) {
+		if (((overload->attributes & FunctionAttributes::Static) != FunctionAttributes::None) != isStatic) continue;
+		if (overload->RequiredArguments() > args.Size()) continue;
+		if (overload->arguments.Size() < args.Size()) continue;
+
+		bool match = true;
+		UInt num = 0;
+
+		for (UInt i = 0; i < args.Size(); i++) {
+			TypeSymbol* const arg = overload->ArgumentType(i);
+
+			if (arg != args[i]) {
+				match = false;
+				break;
+			}
+		}
+
+		if (match) {
+			matches.Add(overload);
+		}
+	}
+
+	return FindOverload(matches, List<TypeSymbol*>(), args, file);
+}
+
+FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const bool isStatic, const FileInfo& file) {
+	UInt bestNum = 0;
+	bool ambig = false;
+
+	List<FunctionSymbol*> matches;
+
+	for (FunctionSymbol* const overload : overloads) {
+		if (((overload->attributes & FunctionAttributes::Static) != FunctionAttributes::None) != isStatic) continue;
+		if (overload->RequiredArguments() > args.Size()) continue;
+		if (overload->arguments.Size() < args.Size()) continue;
+		if (overload->RequiredTemplateArguments() > templateArgs.Size()) continue;
+		if (overload->templateArguments.Size() < templateArgs.Size()) continue;
+
+		bool match = true;
+		UInt num = 0;
+
+		for (UInt i = 0; i < templateArgs.Size(); i++) {
+			TypeSymbol* const arg = overload->TemplateArgument(i);
+
+			if (!arg->Is<TemplateSymbol>()) {
+				if (arg != templateArgs[i]) {
+					match = false;
+					break;
+				}
+				else {
+					num++;
+				}
+			}
+		}
+
+		if (match && num >= bestNum) {
+			if (num > bestNum) {
+				bestNum = num;
+				matches.Clear();
+			}
+
+			matches.Add(overload);
+		}
+	}
+
+	return FindOverload(matches, templateArgs, args, file);
 }
 
 FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
