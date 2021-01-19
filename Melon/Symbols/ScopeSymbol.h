@@ -23,7 +23,7 @@ namespace Melon {
 			virtual ScopeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 		protected:
-			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
+			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
 
 			void AddScope(ScopeSymbol* const scope);
 

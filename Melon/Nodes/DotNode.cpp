@@ -5,6 +5,13 @@
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
 
+#include "Melon/Symbols/ValueSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/NamespaceSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
+
 #include "Kiwi/Kiwi.h"
 
 using namespace Boxx;
@@ -23,55 +30,49 @@ DotNode::~DotNode() {
 }
 
 TypeSymbol* DotNode::Type() const {
-	/* TODO: node
-	const Symbols s = GetSymbol();
+	Symbol* const s = GetSymbol();
 
-	if (s.type == SymbolType::Value || s.type == SymbolType::Variable || s.type == SymbolType::Template) {
-		return s.varType;
+	if (s == nullptr) return nullptr;
+
+	if (s->Is<ValueSymbol>() || s->Is<VariableSymbol>() || s->Is<TemplateSymbol>()) {
+		return s->Type();
 	}
-	else if (s.type != SymbolType::None) {
-		return s.scope;
+	else if (TypeSymbol* const t = s->Cast<TypeSymbol>()) {
+		return t;
 	}
-	*/
 
 	return nullptr;
 }
 
 Symbol* DotNode::GetSymbol() const {
-	UInt errorCount = ErrorLog::ErrorCount();
+	Symbol* const nodeSym = node->GetSymbol();
 
-	/* TODO: node
-	Symbols nodeSymbol = node->GetSymbol();
-
-	if (errorCount < ErrorLog::ErrorCount()) {
-		return Symbols();
+	if (nodeSym == nullptr) {
+		return nullptr;
 	}
 
-	if (nodeSymbol.type == SymbolType::Variable) {
-		Symbols s = Symbols::Find(node->Type(), file);
+	if (nodeSym->Is<VariableSymbol>()) {
+		TypeSymbol* const type = nodeSym->Type();
 
-		if (s.type == SymbolType::Struct) {
-			if (s.type != SymbolType::None && s.Contains(name)) {
-				const Symbols s2 = s.Get(name, file);
-
-				if (s2.type != SymbolType::None) {
-					return Symbols::FindNearest(s2.scope, s2.varType, file);
-				}
-			}
+		if (StructSymbol* const s = type->Cast<StructSymbol>()) {
+			return s->Find(name, file);
 		}
 	}
 	else {
-		if (nodeSymbol.type != SymbolType::None && name.types && !nodeSymbol.Contains(name)) {
-			Symbols::TemplateSymbol ts;
-			ts.type = nodeSymbol.scope.Add(name);
-			ts.scope = scope;
-			ts.file = file;
-			Node::root->AddTemplateSpecialization(ts);
+		if (name.types) {
+			if (Symbol* const s = nodeSym->Contains(Scope(name.name))) {
+				if (s->Is<FunctionSymbol>()) {
+					return s;
+				}
+			}
+
+			if (!nodeSym->Contains(name)) {
+				Node::root->AddTemplateSpecialization(nodeSym->AbsoluteName().Add(name), scope->AbsoluteName(), file);
+			}
 		}
 
-		return nodeSymbol.Get(name, file);
+		return nodeSym->Find(name, file);
 	}
-	*/
 
 	return nullptr;
 }
@@ -109,13 +110,13 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 void DotNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 	
-	/* TODO: node
-	Symbols s = node->GetSymbol();
+	Symbol* const s = node->GetSymbol();
 
-	if (s.type == SymbolType::Namespace && !s.Contains(name)) {
-		IncludeParser::ParseInclude(s.scope.Add(name), info);
+	if (!name.types) {
+		if (s->Is<NamespaceSymbol>() && !s->Contains(name)) {
+			IncludeParser::ParseInclude(s->AbsoluteName().Add(name), info);
+		}
 	}
-	*/
 }
 
 Set<ScanType> DotNode::Scan(ScanInfoStack& info) {

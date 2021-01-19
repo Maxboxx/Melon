@@ -19,7 +19,12 @@ TemplateSymbol::~TemplateSymbol() {
 }
 
 TypeSymbol* TemplateSymbol::Type() {
-	return SymbolTable::ContainsAbsolute<TypeSymbol>(type);
+	if (type.Size() > 0) {
+		return SymbolTable::ContainsAbsolute<TypeSymbol>(type);
+	}
+	else {
+		return this;
+	}
 }
 
 TemplateSymbol* TemplateSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {

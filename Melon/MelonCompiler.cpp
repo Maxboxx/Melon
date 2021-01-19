@@ -187,9 +187,9 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			throw CompileError("", FileInfo());
 		}
 
-		//ErrorLog::AddMarker();
+		ErrorLog::AddMarker();
 		info.root.IncludeScan(info);
-		//ErrorLog::Revert();
+		ErrorLog::Revert();
 
 		/*
 		info.root.parsingInfo = &info;

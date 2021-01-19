@@ -99,7 +99,7 @@ namespace Melon {
 			virtual FunctionSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 		protected:
-			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
+			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
 
 			Boxx::Tuple<Boxx::List<TypeSymbol*>, Boxx::List<TypeSymbol*>> FindTemplateArgument(FunctionSymbol* const func, TypeSymbol* const templateArg, TypeSymbol* const arg, const FileInfo& file);
 			Boxx::Tuple<Boxx::List<TypeSymbol*>, Boxx::List<TypeSymbol*>> FindTemplateArguments(FunctionSymbol* const func, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);

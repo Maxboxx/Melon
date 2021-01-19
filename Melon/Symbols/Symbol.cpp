@@ -41,7 +41,7 @@ Symbol* Symbol::Find(const Scope& scope, const FileInfo& file) {
 }
 
 Symbol* Symbol::Find(const ScopeList& scopeList, const FileInfo& file) {
-	return Find(scopeList.Split(), 0, file);
+	return FindSymbol(scopeList.Split(), 0, file);
 }
 
 Symbol* Symbol::Contains(const Scope& scope) {
@@ -50,13 +50,13 @@ Symbol* Symbol::Contains(const Scope& scope) {
 
 Symbol* Symbol::Contains(const ScopeList& scopeList) {
 	ErrorLog::AddMarker();
-	Symbol* const symbol = Find(scopeList.Split(), 0, FileInfo());
+	Symbol* const symbol = FindSymbol(scopeList.Split(), 0, FileInfo());
 	ErrorLog::Revert();
 
 	return symbol;
 }
 
-Symbol* Symbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* Symbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
 	if (index >= scopeList.Size()) return this;
 	FindError(scopeList, index, file);
 	return nullptr;

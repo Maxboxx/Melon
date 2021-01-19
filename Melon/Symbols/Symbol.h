@@ -110,7 +110,7 @@ namespace Melon {
 			}
 
 		protected:
-			virtual Symbol* Find(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
+			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
 
 			void FindError(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
 
@@ -160,7 +160,7 @@ namespace Melon {
 		template <class T>
 		inline T* Symbol::Contains(const ScopeList& scopeList) {
 			ErrorLog::AddMarker();
-			Symbol* const sym = Find(scopeList, 0, FileInfo());
+			Symbol* const sym = FindSymbol(scopeList, 0, FileInfo());
 			ErrorLog::Revert();
 
 			if (sym) {

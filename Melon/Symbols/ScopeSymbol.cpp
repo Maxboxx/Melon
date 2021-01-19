@@ -40,7 +40,7 @@ void ScopeSymbol::AddScope(ScopeSymbol* const scope) {
 	scopes.Add(scope);
 }
 
-Symbol* ScopeSymbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* ScopeSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
 	static const Regex numReg = Regex("^%d+$");
 
 	if (index >= scopeList.Size()) return this;
@@ -49,11 +49,11 @@ Symbol* ScopeSymbol::Find(const ScopeList& scopeList, const UInt index, const Fi
 		const UInt i = scopeList[index].name.ToUInt();
 
 		if (i < scopes.Size()) {
-			return scopes[i]->Find(scopeList, index + 1, file);
+			return scopes[i]->FindSymbol(scopeList, index + 1, file);
 		}
 	}
 	else {
-		return MapSymbol::Find(scopeList, index, file);
+		return MapSymbol::FindSymbol(scopeList, index, file);
 	}
 
 	FindError(scopeList, index, file);

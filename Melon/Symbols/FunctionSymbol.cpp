@@ -86,7 +86,7 @@ FunctionSymbol* FunctionSymbol::AddOverload(FunctionSymbol* const overload) {
 	return overload;
 }
 
-Symbol* FunctionSymbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* FunctionSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
 	static const Regex numReg = Regex("^%d+$");
 
 	if (index >= scopeList.Size()) return this;
@@ -94,16 +94,16 @@ Symbol* FunctionSymbol::Find(const ScopeList& scopeList, const UInt index, const
 
 	if (scope.name.Size() == 0 && scope.arguments) {
 		if (scope.arguments.Get().Size() == 1 && numReg.Match(scope.arguments.Get()[0][0].name)) {
-			return overloads[scope.arguments.Get()[0][0].name.ToUInt()]->Find(scopeList, index + 1, file);
+			return overloads[scope.arguments.Get()[0][0].name.ToUInt()]->FindSymbol(scopeList, index + 1, file);
 		}
 		else for (FunctionSymbol* const overload : overloads) {
 			if (overload->Name() == scope) {
-				return overload->Find(scopeList, index + 1, file);
+				return overload->FindSymbol(scopeList, index + 1, file);
 			}
 		}
 	}
 	else {
-		return MapSymbol::Find(scopeList, index, file);
+		return MapSymbol::FindSymbol(scopeList, index, file);
 	}
 
 	FindError(scopeList, index, file);

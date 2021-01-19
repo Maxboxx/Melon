@@ -62,7 +62,7 @@ Scope TemplateTypeSymbol::Name() {
 	}
 }
 
-Symbol* TemplateTypeSymbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* TemplateTypeSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
 	if (index >= scopeList.Size()) return this;
 
 	const Scope& scope = scopeList[index];
@@ -83,7 +83,7 @@ Symbol* TemplateTypeSymbol::Find(const ScopeList& scopeList, const UInt index, c
 			}
 
 			if (match) {
-				return variant->Find(scopeList, index + 1, file);
+				return variant->FindSymbol(scopeList, index + 1, file);
 			}
 		}
 
@@ -91,6 +91,6 @@ Symbol* TemplateTypeSymbol::Find(const ScopeList& scopeList, const UInt index, c
 		return nullptr;
 	}
 	else {
-		return TypeSymbol::Find(scopeList, index, file);
+		return TypeSymbol::FindSymbol(scopeList, index, file);
 	}
 }

@@ -23,22 +23,16 @@ NameNode::~NameNode() {
 }
 
 TypeSymbol* NameNode::Type() const {
-	/* TODO: node
-	Symbols s = GetSymbol();
+	Symbol* const s = GetSymbol();
 
-	if (s.type == SymbolType::Scope || s.type == SymbolType::Namespace || s.type == SymbolType::Struct || s.type == SymbolType::Enum) {
-		return s.scope;
+	if (s == nullptr) return nullptr;
+
+	if (TypeSymbol* const t = s->Cast<TypeSymbol>()) {
+		return t;
 	}
-	else if (s.type != SymbolType::None) {
-		const Symbols s2 = s.GetType(file);
-
-		if (s2.type != SymbolType::None) {
-			return s2.scope;
-		}
+	else {
+		return s->Type();
 	}
-	*/
-
-	return nullptr;
 }
 
 Symbol* NameNode::GetSymbol() const {

@@ -24,14 +24,14 @@ MapSymbol::~MapSymbol() {
 	}
 }
 
-Symbol* MapSymbol::Find(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* MapSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
 	if (index >= scopeList.Size()) return this;
 
 	const Scope& scope = scopeList[index];
 	Symbol* sym = nullptr;
 
 	if (symbols.Contains(scope, sym)) {
-		return sym->Find(scopeList, index + 1, file);
+		return sym->FindSymbol(scopeList, index + 1, file);
 	}
 	else {
 		FindError(scopeList, index, file);
