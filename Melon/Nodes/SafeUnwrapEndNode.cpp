@@ -1,6 +1,7 @@
 #include "SafeUnwrapEndNode.h"
 
 #include "MemoryNode.h"
+#include "RootNode.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -30,11 +31,7 @@ TypeSymbol* SafeUnwrapEndNode::Type() const  {
 	scope.types = List<ScopeList>();
 	scope.types.Get().Add(node->Type()->AbsoluteName());
 
-	/* TODO: node
-	return Symbols::Find(ScopeList().Add(scope), file).scope;
-	*/
-
-	return nullptr;
+	return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList().Add(scope), file);
 }
 
 CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
@@ -98,13 +95,7 @@ void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	type.types = List<ScopeList>();
 	type.types.Get().Add(nodeType);
 
-	/* TODO: node
-	Symbols::TemplateSymbol ts;
-	ts.type = ScopeList().Add(type);
-	ts.scope = scope;
-	ts.file = file;
-	Symbols::templateSymbols.Add(ts);
-	*/
+	Node::root->AddTemplateSpecialization(ScopeList(true).Add(type), scope->AbsoluteName(), file);
 }
 
 Set<ScanType> SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {

@@ -1,4 +1,4 @@
-#include "CustomInitNode.h"
+#include "ObjectInitNode.h"
 
 #include "MemoryNode.h"
 #include "TypeNode.h"
@@ -15,19 +15,27 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CustomInitNode::CustomInitNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+ObjectInitNode::ObjectInitNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
-CustomInitNode::~CustomInitNode() {
+ObjectInitNode::~ObjectInitNode() {
 
 }
 
-TypeSymbol* CustomInitNode::Type() const {
-	return node->Type();
+TypeSymbol* ObjectInitNode::Type() const {
+	Symbol* const sym = node->GetSymbol();
+
+	if (sym == nullptr) return nullptr;
+
+	if (TypeSymbol* const t = sym->Cast<TypeSymbol>()) {
+		return t;
+	}
+
+	return nullptr;
 }
 
-CompiledNode CustomInitNode::Compile(CompileInfo& info) {
+CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
 	CompiledNode c = node->Compile(info);
 	/* TODO: node
 	Symbols s = Symbols::Find(Type(), file);
@@ -61,7 +69,7 @@ CompiledNode CustomInitNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-void CustomInitNode::IncludeScan(ParsingInfo& info) {
+void ObjectInitNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 
 	for (NodePtr expression : expressions) {
@@ -69,7 +77,7 @@ void CustomInitNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
+Set<ScanType> ObjectInitNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = node->Scan(info);
 
 	/* TODO: node
@@ -116,7 +124,7 @@ Set<ScanType> CustomInitNode::Scan(ScanInfoStack& info) {
 	return scanSet;
 }
 
-ScopeList CustomInitNode::FindSideEffectScope(const bool assign) {
+ScopeList ObjectInitNode::FindSideEffectScope(const bool assign) {
 	ScopeList list = node->GetSideEffectScope(assign);
 
 	for (NodePtr expr : expressions) {
@@ -126,7 +134,7 @@ ScopeList CustomInitNode::FindSideEffectScope(const bool assign) {
 	return list;
 }
 
-NodePtr CustomInitNode::Optimize(OptimizeInfo& info) {
+NodePtr ObjectInitNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 
 	for (NodePtr expr : expressions) {
@@ -136,7 +144,7 @@ NodePtr CustomInitNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-StringBuilder CustomInitNode::ToMelon(const UInt indent) const {
+StringBuilder ObjectInitNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = node->ToMelon(indent);
 
 	if (vars.IsEmpty()) {

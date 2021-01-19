@@ -305,7 +305,7 @@ Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 	info.Get().useFunction = false;
 
 	for (const NodePtr& node : funcs) {
-		if (!info.usedFunctions.Contains(node.Cast<FunctionNode>()->s.scope)) {
+		if (!info.usedFunctions.Contains(node.Cast<FunctionNode>()->sym)) {
 			node.Cast<FunctionNode>()->isUsed = false;
 
 			for (const ScanType type : node->Scan(info)) {
@@ -338,7 +338,7 @@ NodePtr RootNode::Optimize(OptimizeInfo& info) {
 		funcs = List<NodePtr>(info.usedFunctions.Size());
 
 		for (const NodePtr& func : functions) {
-			if (info.usedFunctions.Contains(func.Cast<FunctionNode>()->s.scope)) {
+			if (info.usedFunctions.Contains(func.Cast<FunctionNode>()->sym)) {
 				funcs.Add(func);
 			}
 		}

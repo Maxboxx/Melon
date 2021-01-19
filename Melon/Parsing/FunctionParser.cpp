@@ -84,6 +84,8 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 			func->node = StatementParser::ParseMultiple(info);
 		}
 
+		func->sym = funcSym;
+
 		info.loops = loops;
 		info.scopeCount = scopeCount;
 

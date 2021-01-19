@@ -3,6 +3,8 @@
 #include "CallNode.h"
 #include "TypeNode.h"
 
+#include "Melon/Symbols/TemplateSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -21,21 +23,15 @@ ConvertNode::~ConvertNode() {
 }
 
 TypeSymbol* ConvertNode::Type() const {
-	/* TODO: node
-	Symbols s = Symbols::FindNearestInNamespace(scope, type, file);
+	TypeSymbol* const s = SymbolTable::Find<TypeSymbol>(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
-	if (s.type == SymbolType::Template) {
-		return s.varType;
-	}
-	else if (s.type != SymbolType::None) {
-		return s.scope;
-	}
-	else {
-		return ScopeList::undefined;
-	}
-	*/
+	if (s == nullptr) return nullptr;
 
-	return nullptr;
+	if (s->Is<TemplateSymbol>()) {
+		return s->Type();
+	}
+	
+	return s;
 }
 
 CompiledNode ConvertNode::Compile(CompileInfo& info) {

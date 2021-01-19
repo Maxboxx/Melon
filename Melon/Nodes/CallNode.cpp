@@ -3,13 +3,15 @@
 #include "RefNode.h"
 #include "MemoryNode.h"
 #include "TypeNode.h"
-#include "CustomInitNode.h"
+#include "ObjectInitNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/StructSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
+
+#include "NewVariableNode.h"
 
 using namespace Boxx;
 using namespace Kiwi;

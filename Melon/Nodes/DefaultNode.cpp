@@ -21,12 +21,24 @@ DefaultNode::~DefaultNode() {
 }
 
 TypeSymbol* DefaultNode::Type() const {
-	TypeSymbol* type = node1->Type();
-	/* TODO: node
-	type = Symbols::Find(type, file).Get(Scope::Value, file).varType;
+	TypeSymbol* const type1 = node1->Type();
 
-	if (!Symbols::HasImplicitConversion(node2->Type(), type)) ErrorLog::Error(TypeError(TypeError::DefaultType, file));
-	*/
+	// TODO: error?
+	if (type1 == nullptr) return nullptr;
+
+	Symbol* const value = type1->Contains(Scope::Value);
+
+	// TODO: error?
+	if (value == nullptr) return nullptr;
+
+	TypeSymbol* const type = value->Type();
+
+	// TODO: error?
+	if (type == nullptr) return nullptr;
+
+	if (node2->Type()->ImplicitConversionTo(type)) {
+		ErrorLog::Error(TypeError(TypeError::DefaultType, file));
+	}
 
 	return type;
 }

@@ -8,7 +8,7 @@
 #include "CallParser.h"
 #include "MethodCallParser.h"
 #include "DotParser.h"
-#include "CustomInitParser.h"
+#include "ObjectInitParser.h"
 #include "TypeParser.h"
 #include "AsParser.h"
 
@@ -17,7 +17,7 @@
 #include "Melon/Nodes/LogicNode.h"
 #include "Melon/Nodes/CallNode.h"
 #include "Melon/Nodes/DotNode.h"
-#include "Melon/Nodes/CustomInitNode.h"
+#include "Melon/Nodes/ObjectInitNode.h"
 #include "Melon/Nodes/NameNode.h"
 #include "Melon/Nodes/NilNode.h"
 #include "Melon/Nodes/DefaultNode.h"
@@ -345,8 +345,8 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 				continue;
 			}
 
-			if (NodePtr dot = CustomInitParser::Parse(info)) {
-				dot.Cast<CustomInitNode>()->node = node;
+			if (NodePtr dot = ObjectInitParser::Parse(info)) {
+				dot.Cast<ObjectInitNode>()->node = node;
 				node = dot;
 				continue;
 			}

@@ -4,6 +4,8 @@
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
+#include "Melon/Symbols/TemplateSymbol.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -25,33 +27,17 @@ bool FunctionNode::IsScope() const {
 }
 
 bool FunctionNode::IsNotSpecialized() const {
-	/* TODO: node
-	Symbols sym = Symbols::Find(ScopeList().Add(s.scope[0]), file);
-
-	for (UInt i = 0; i < s.scope.Size(); i++) {
-		if (i > 0) {
-			sym = sym.Get(s.scope[i], file);
-		}
-
-		if (!sym.templateArgs.IsEmpty()) {
-			for (const ScopeList& type : sym.templateArgs) {
-				if (Symbols::Contains(type)) {
-					if (Symbols::Find(type, file).type == SymbolType::Template) {
-						return true;
-					}
-				}
-			}
+	for (UInt i = 0; i < sym->templateArguments.Size(); i++) {
+		if (sym->TemplateArgument(i)->Is<TemplateSymbol>()) {
+			return true;
 		}
 	}
-	*/
 
 	return false;
 }
 
 void FunctionNode::SetTemplateValues() const {
-	/* TODO: node
-	Symbols::SetTemplateValues(func, file);
-	*/
+	//sym->SetTemplateTypes();
 }
 
 CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
@@ -61,7 +47,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 	CompiledNode c;
 
 	Instruction func = Instruction(InstructionType::Function);
-	func.instructionName = this->func.ToString();
+	func.instructionName = this->sym->AbsoluteName().ToString();
 	c.instructions.Add(func);
 
 	UInt funcSize = node->GetSize();
@@ -175,7 +161,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	}
 	*/
 
-	for (const SymbolAttribute attr : s.attributes) {
+	/*for (const SymbolAttribute attr : sym.attributes) {
 		switch (attr) {
 			case SymbolAttribute::Debug:    sb += "debug "; break;
 			case SymbolAttribute::Override: sb += "override "; break;
@@ -186,31 +172,27 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	
 	sb += "function ";
 
-	const bool isOperator = s.scope.Last().name != Scope::Call.name;
+	const bool isOperator = sym.scope.Last().name != Scope::Call.name;
 
 	if (isOperator) {
 		sb += "operator ";
 	}
 
-	for (UInt i = 0; i < s.returnValues.Size(); i++) {
+	for (UInt i = 0; i < sym.returnValues.Size(); i++) {
 		if (i > 0) sb += ", ";
 
-		/* TODO: node
 		Symbols sym = Symbols::FindNearestInNamespace(s.scope.Pop(), s.returnValues[i], file);
 		sb += sym.scope.ToSimpleString();
-		*/
 	}
 
-	if (!s.returnValues.IsEmpty()) {
+	if (!sym.returnValues.IsEmpty()) {
 		sb += ": ";
 	}
 
 	if (isOperator) {
-		/* TODO: node
 		Scope scope = func.Last();
 		scope.variant = nullptr;
 		sb += scope.ToSimpleString();
-		*/
 	}
 	else {
 		sb += func.Pop().Last().ToSimpleString();
@@ -218,12 +200,11 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 
 	sb += "(";
 
-	const UInt start = (s.type == SymbolType::Method || (!argNames.IsEmpty() && argNames[0] == Scope::Self)) ? 1 : 0;
+	const UInt start = (sym.type == SymbolType::Method || (!argNames.IsEmpty() && argNames[0] == Scope::Self)) ? 1 : 0;
 
 	for (UInt i = start; i < argNames.Size(); i++) {
 		if (i > start) sb += ", ";
 
-		/* TODO: node
 		sb += s.Get(argNames[i], file).varType.ToSimpleString();
 		sb += ": ";
 
@@ -234,7 +215,6 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 				case SymbolAttribute::Ref:   sb += "ref "; break;
 			}
 		}
-		*/
 
 		sb += argNames[i].ToSimpleString();
 	}
@@ -245,6 +225,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	sb += "\n";
 	sb += String('\t').Repeat(indent);
 	sb += "end";
+	*/
 
 	return sb;
 }

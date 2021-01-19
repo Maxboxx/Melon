@@ -6,6 +6,9 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/TemplateSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -29,20 +32,17 @@ TypeSymbol* UnaryOperatorNode::Type() const {
 
 	TypeSymbol* const type = node->Type();
 
-	/* TODO: node
-	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);
+	FunctionSymbol* const s = type->Find<FunctionSymbol>(op, file);
 
-	if (s.type != SymbolType::None && !s.returnValues.IsEmpty()) {
-		const Symbols s2 = Symbols::FindNearest(s.scope.Pop(), s.returnValues[0], file);
+	if (s && !s->returnValues.IsEmpty()) {
+		TypeSymbol* const s2 = s->ReturnType(0);
 
-		if (s2.type == SymbolType::Template) {
-			return s2.varType;
+		if (s2 && s2->Is<TemplateSymbol>()) {
+			return s2->Type();
 		}
-		else if (s2.type != SymbolType::None) {
-			return s2.scope;
-		}
+		
+		return s2;
 	}
-	*/
 
 	return nullptr;
 }

@@ -19,16 +19,16 @@ IntegerNode::~IntegerNode() {
 TypeSymbol* IntegerNode::Type() const {
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::UByte, file);
+			return (TypeSymbol*)SymbolTable::UByte;
 		}
 		else if ((ULong)number <= Math::UShortMax()) {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::UShort, file);
+			return (TypeSymbol*)SymbolTable::UShort;
 		}
 		else if ((ULong)number <= Math::UIntMax()) {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::UInt, file);
+			return (TypeSymbol*)SymbolTable::UInt;
 		}
 		else if ((ULong)number <= Math::ULongMax()) {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::ULong, file);
+			return (TypeSymbol*)SymbolTable::ULong;
 		}
 		else {
 			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Huge, file);
@@ -36,16 +36,16 @@ TypeSymbol* IntegerNode::Type() const {
 	}
 	else {
 		if (number >= Math::ByteMin()) {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Byte, file);
+			return (TypeSymbol*)SymbolTable::Byte;
 		}
 		else if (number >= Math::ShortMin()) {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Short, file);
+			return (TypeSymbol*)SymbolTable::Short;
 		}
 		else if (number >= Math::IntMin()) {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Int, file);
+			return (TypeSymbol*)SymbolTable::Int;
 		}
 		else if (number >= Math::LongMin()) {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Long, file);
+			return (TypeSymbol*)SymbolTable::Long;
 		}
 		else {
 			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Huge, file);

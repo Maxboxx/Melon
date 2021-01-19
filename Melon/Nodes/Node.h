@@ -19,6 +19,7 @@
 #include "Melon/Symbols/Symbols.h"
 #include "Melon/Symbols/SymbolTable.h"
 #include "Melon/Symbols/TypeSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
@@ -175,9 +176,9 @@ namespace Melon {
 			ScanInfo& Get() {return stack.Peek();}
 			void Set(const ScanInfo& info) {stack.Set(info);}
 
-			Boxx::Set<Symbols::ScopeList> usedVariables;
-			Boxx::Set<Symbols::ScopeList> usedTypes;
-			Boxx::Set<Symbols::ScopeList> usedFunctions;
+			Boxx::Set<Symbols::VariableSymbol*> usedVariables;
+			Boxx::Set<Symbols::TypeSymbol*> usedTypes;
+			Boxx::Set<Symbols::FunctionSymbol*> usedFunctions;
 
 			Boxx::Collection<NodePtr> functions;
 
@@ -189,9 +190,9 @@ namespace Melon {
 		struct OptimizeInfo {
 			bool optimized = false;
 
-			Boxx::Set<Symbols::ScopeList> usedVariables;
-			Boxx::Set<Symbols::ScopeList> usedTypes;
-			Boxx::Set<Symbols::ScopeList> usedFunctions;
+			Boxx::Set<Symbols::VariableSymbol*> usedVariables;
+			Boxx::Set<Symbols::TypeSymbol*> usedTypes;
+			Boxx::Set<Symbols::FunctionSymbol*> usedFunctions;
 		};
 
 		///B Node

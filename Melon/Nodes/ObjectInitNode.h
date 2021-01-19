@@ -5,9 +5,9 @@
 namespace Melon {
 	namespace Nodes {
 
-		///B CustomInitNode
-		/// Node for custom init on struct
-		class CustomInitNode : public Node {
+		///B ObjectInitNode
+		/// Node for object init
+		class ObjectInitNode : public Node {
 		public:
 
 			///T Node
@@ -21,8 +21,8 @@ namespace Melon {
 			/// The expressions to assign to the variables
 			Boxx::List<NodePtr> expressions;
 
-			CustomInitNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~CustomInitNode();
+			ObjectInitNode(Symbols::Symbol* const scope, const FileInfo& file);
+			~ObjectInitNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;

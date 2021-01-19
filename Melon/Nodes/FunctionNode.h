@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 namespace Melon {
 	namespace Nodes {
 
@@ -14,13 +16,9 @@ namespace Melon {
 			/// The function body
 			NodePtr node;
 
-			///T Function
-			/// Absolute name of the function
-			Symbols::ScopeList func;
-
 			///T Symbol
 			/// The function symbol
-			Symbols::Symbols s;
+			Symbols::FunctionSymbol* sym;
 
 			///T Argument names
 			Boxx::List<Symbols::Scope> argNames;

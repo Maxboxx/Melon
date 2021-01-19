@@ -4,7 +4,7 @@
 
 namespace Melon {
 	namespace Parsing {
-		class CustomInitParser {
+		class ObjectInitParser {
 		public:
 			static Nodes::NodePtr Parse(ParsingInfo& info);
 		};
