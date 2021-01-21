@@ -183,14 +183,12 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
+void AssignNode::Scan(ScanInfoStack& info) {
 	info.Get().assign = true;
 
 	UInt errorCount = ErrorLog::ErrorCount();
 
-	Set<ScanType> scanSet;
-
-	List<Pair<ScopeList, NodePtr>> values;// = Values();
+	List<Pair<TypeSymbol*, NodePtr>> values = Values();
 
 	bool errors = errorCount < ErrorLog::ErrorCount();
 
@@ -200,53 +198,47 @@ Set<ScanType> AssignNode::Scan(ScanInfoStack& info) {
 		NodePtr node = vars[i];
 		node->Type();
 
-		//if (types[i] == ScopeList::Discard && node->GetSymbol().attributes.Contains(SymbolAttribute::Const)) {
-		//	ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
-		//}
+		VariableSymbol* var = nullptr;
+		
+		if (Symbol* const sym = node->GetSymbol()) {
+			var = sym->Cast<VariableSymbol>();
+		}
 
-		//if (types[i] != ScopeList::Discard && !node.Is<NameNode>()) {
-			for (const ScanType type : node->Scan(info)) {
-				scanSet.Add(type);
+		if (types[i] == ScopeList::Discard && var && (var->attributes & VariableAttributes::Const) != VariableAttributes::None) {
+			ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
+		}
 
-				/* TODO: node
-				if (type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-					ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-				}
-				*/
+		if (types[i] != ScopeList::Discard && !node.Is<NameNode>()) {
+			node->Scan(info);
+
+			if (info.Get().selfUse && !info.Get().type->IsInitialized()) {
+				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
-		//}
+		}
 
 		if (info.Get().init) {
 			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 				if (nn->name == Scope::Self) {
-					/* TODO: node
-					Symbols::Find(nn->Type(), file).AssignAll();
-					scanSet.Remove(ScanType::Self);
-					*/
+					info.Get().type->CompleteInit();
+					info.Get().selfUse = false;
 				}
 			}
 		}
 
 		if (!errors) {
-			ScanAssignment(node, new TypeNode(values[i].key), info, node->file);
+			ScanAssignment(node, new TypeNode(values[i].key->AbsoluteName()), info, node->file);
 		}
 	}
 
 	info.Get().assign = false;
 
 	for (const NodePtr& node : this->values) {
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
+		node->Scan(info);
 
-			/* TODO: node
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-			}
-			*/
+		if (info.Get().init && info.Get().selfUse && !info.Get().type->IsInitialized()) {
+			ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 		}
 	}
-
-	return scanSet;
 }
 
 ScopeList AssignNode::FindSideEffectScope(const bool assign) {

@@ -37,3 +37,31 @@ StructSymbol* StructSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>
 
 	return sym;
 }
+
+bool StructSymbol::IsInitialized() {
+	for (const Scope& name : members) {
+		if (VariableSymbol* const var = Find<VariableSymbol>(name, file)) {
+			if (!var->isAssigned) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+void StructSymbol::PrepareInit() {
+	for (const Scope& name : members) {
+		if (VariableSymbol* const var = Find<VariableSymbol>(name, file)) {
+			var->isAssigned = false;
+		}
+	}
+}
+
+void StructSymbol::CompleteInit() {
+	for (const Scope& name : members) {
+		if (VariableSymbol* const var = Find<VariableSymbol>(name, file)) {
+			var->isAssigned = true;
+		}
+	}
+}

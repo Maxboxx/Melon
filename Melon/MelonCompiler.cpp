@@ -189,9 +189,8 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		ErrorLog::AddMarker();
 		info.root.IncludeScan(info);
-		//ErrorLog::Revert();
+		ErrorLog::Revert();
 
-		/*
 		info.root.parsingInfo = &info;
 
 		Node::root = &info.root;
@@ -222,6 +221,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			}
 		}
 
+		/*
 		List<OptimizerInstruction> instructions = info.root.Compile(scanInfo.usedVariables);
 
 		if (ErrorLog::HasError()) {

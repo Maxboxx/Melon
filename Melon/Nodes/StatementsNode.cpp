@@ -63,16 +63,12 @@ void StatementsNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> StatementsNode::Scan(ScanInfoStack& info) {
+void StatementsNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
 	for (const NodePtr& node : statements) {
-		for (const ScanType& type : node->Scan(info)) {
-			scanSet.Add(type);
-		}
+		node->Scan(info);
 	}
-
-	return scanSet;
 }
 
 ScopeList StatementsNode::FindSideEffectScope(const bool assign) {

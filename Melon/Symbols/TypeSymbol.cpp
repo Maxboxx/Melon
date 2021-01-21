@@ -94,3 +94,15 @@ FunctionSymbol* TypeSymbol::FindMethod(const Scope& name, const List<TypeSymbol*
 FunctionSymbol* TypeSymbol::FindUnaryOperator(const Scope& name, const FileInfo& file) {
 	return nullptr;
 }
+
+bool TypeSymbol::IsInitialized() {
+	return true;
+}
+
+void TypeSymbol::PrepareInit() {
+	
+}
+
+void TypeSymbol::CompleteInit() {
+
+}

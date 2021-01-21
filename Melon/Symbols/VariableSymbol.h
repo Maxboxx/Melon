@@ -30,6 +30,10 @@ namespace Melon {
 			///T Attributes
 			VariableAttributes attributes = VariableAttributes::None;
 
+			///T Is Assigned
+			/// Whether or not the variable has been assigned
+			bool isAssigned = false;
+
 			VariableSymbol(const FileInfo& file);
 			~VariableSymbol();
 

@@ -101,8 +101,8 @@ void FunctionNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 }
 
-Set<ScanType> FunctionNode::Scan(ScanInfoStack& info) {
-	if (IsNotSpecialized()) return Set<ScanType>();
+void FunctionNode::Scan(ScanInfoStack& info) {
+	if (IsNotSpecialized()) return;
 	SetTemplateValues();
 
 	info.Push();

@@ -96,9 +96,7 @@ void ReturnNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
-
+void ReturnNode::Scan(ScanInfoStack& info) {
 	if (info.Get().scopeInfo.CanContinue()) {
 		info.Get().scopeInfo.hasReturned = true;
 	}
@@ -106,9 +104,7 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 	info.Get().scopeInfo.willNotReturn = false;
 
 	for (const NodePtr& node : nodes) {
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
-		}
+		node->Scan(info);
 	}
 
 	/* TODO: node
@@ -130,8 +126,6 @@ Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
 		ScanAssignment(new TypeNode(types[i].scope), nodes[i], info, nodes[i]->file);
 	}
 	*/
-
-	return scanSet;
 }
 
 ScopeList ReturnNode::FindSideEffectScope(const bool assign) {

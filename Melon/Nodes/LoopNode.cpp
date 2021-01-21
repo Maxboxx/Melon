@@ -627,9 +627,7 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	info.scopeInfo = loopInfo.scope;
 }
 
-Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
-
+void LoopNode::Scan(ScanInfoStack& info) {
 	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	LoopScanInfo loopInfo = ScanSetup(info.Get());
 	info.Get().scopeInfo.ExitScope();
@@ -676,8 +674,6 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	ScanCleanup(loopInfo, info.Get());
 	info.Get().scopeInfo.ExitScope();
-
-	return scanSet;
 }
 
 ScopeList LoopNode::FindSideEffectScope(const bool assign) {

@@ -77,8 +77,8 @@ void ObjectInitNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> ObjectInitNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = node->Scan(info);
+void ObjectInitNode::Scan(ScanInfoStack& info) {
+	node->Scan(info);
 
 	/* TODO: node
 	Symbols s = Symbols::Find(Type(), file);
@@ -120,8 +120,6 @@ Set<ScanType> ObjectInitNode::Scan(ScanInfoStack& info) {
 		}
 	}
 	*/
-
-	return scanSet;
 }
 
 ScopeList ObjectInitNode::FindSideEffectScope(const bool assign) {

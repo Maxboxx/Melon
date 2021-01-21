@@ -43,8 +43,8 @@ List<TypeSymbol*> Node::Types() const {
 	return types;
 }
 
-Set<ScanType> Node::Scan(ScanInfoStack& info) {
-	return Set<ScanType>();
+void Node::Scan(ScanInfoStack& info) {
+	
 }
 
 bool Node::HasSideEffects() {

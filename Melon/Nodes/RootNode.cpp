@@ -272,15 +272,11 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 	return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, templateArgs);
 }
 
-Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
-
+void RootNode::Scan(ScanInfoStack& info) {
 	info.Get().useFunction = true;
 
 	for (const NodePtr& node : nodes) {
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
-		}
+		node->Scan(info);
 	}
 
 	while (!info.functions.IsEmpty()) {
@@ -290,10 +286,7 @@ Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 		for (const NodePtr& func : functions) {
 			if (func) {
 				func.Cast<FunctionNode>()->isUsed = true;
-
-				for (const ScanType type : func->Scan(info)) {
-					scanSet.Add(type);
-				}
+				func->Scan(info);
 			}
 			else {
 				// TODO: Remove
@@ -307,14 +300,9 @@ Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 	for (const NodePtr& node : funcs) {
 		if (!info.usedFunctions.Contains(node.Cast<FunctionNode>()->sym)) {
 			node.Cast<FunctionNode>()->isUsed = false;
-
-			for (const ScanType type : node->Scan(info)) {
-				scanSet.Add(type);
-			}
+			node->Scan(info);
 		}
 	}
-
-	return scanSet;
 }
 
 ScanInfoStack RootNode::Scan() {

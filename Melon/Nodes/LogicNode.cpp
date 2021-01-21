@@ -159,8 +159,8 @@ CompiledNode LogicNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = node1->Scan(info);
+void LogicNode::Scan(ScanInfoStack& info) {
+	node1->Scan(info);
 
 	/* TODO: node
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
@@ -193,8 +193,6 @@ Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
 		scanSet.Add(type);
 	}
 	*/
-
-	return scanSet;
 }
 
 ScopeList LogicNode::FindSideEffectScope(const bool assign) {

@@ -116,9 +116,7 @@ void RepeatNode::IncludeScan(ParsingInfo& info) {
 	condition->IncludeScan(info);
 }
 
-Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet;
-
+void RepeatNode::Scan(ScanInfoStack& info) {
 	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
 	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Loop);
 
@@ -142,7 +140,6 @@ Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
 
 	info.Get().scopeInfo.ExitScope();
 	info.Get().scopeInfo = ScopeInfo::WeakBranchUnion(scopeInfo, info.Get().scopeInfo);
-	return scanSet;
 }
 
 ScopeList RepeatNode::FindSideEffectScope(const bool assign) {

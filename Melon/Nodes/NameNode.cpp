@@ -98,9 +98,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
-
+void NameNode::Scan(ScanInfoStack& info) {
 	/* TODO: node
 	Symbols s = GetSymbol();
 
@@ -111,8 +109,6 @@ Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
 		info.usedVariables.Add(s.scope);
 	}
 	*/
-
-	return scanSet;
 }
 
 ScopeList NameNode::FindSideEffectScope(const bool assign) {

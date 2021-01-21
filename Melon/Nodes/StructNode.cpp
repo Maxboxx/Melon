@@ -50,7 +50,7 @@ ScopeList StructNode::FindSideEffectScope(const bool assign) {
 	return scope->AbsoluteName();
 }
 
-Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
+void StructNode::Scan(ScanInfoStack& info) {
 	/* TODO: node
 	Symbols& s = Symbols::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
 	s.size = 0;
@@ -67,8 +67,6 @@ Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
 		}
 	}
 	*/
-
-	return Set<ScanType>();
 }
 
 StringBuilder StructNode::ToMelon(const UInt indent) const {

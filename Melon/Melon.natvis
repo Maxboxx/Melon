@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="Melon::FileInfo">
+		<DisplayString>{filename.str, sb}:{line}</DisplayString>
+	</Type>
+	
 	<Type Name="Melon::Symbols::Scope">
 		<DisplayString Condition="!types.hasValue &amp;&amp; !arguments.hasValue">{name.str, sb}</DisplayString>
 

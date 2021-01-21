@@ -80,8 +80,8 @@ void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
 	node2->IncludeScan(info);
 }
 
-Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = node1->Scan(info);
+void BinaryOperatorNode::Scan(ScanInfoStack& info) {
+	node1->Scan(info);
 
 	/* TODO: node
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
@@ -98,8 +98,6 @@ Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {
 
 	Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 	*/
-
-	return scanSet;
 }
 
 ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {

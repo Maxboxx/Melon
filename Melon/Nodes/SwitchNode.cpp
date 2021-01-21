@@ -307,8 +307,8 @@ void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	}
 }
 
-Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = match->Scan(info);
+void SwitchNode::Scan(ScanInfoStack& info) {
+	match->Scan(info);
 
 	/* TODO: node
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
@@ -381,8 +381,6 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 		}
 	}
 	*/
-
-	return scanSet;
 }
 
 ScopeList SwitchNode::FindSideEffectScope(const bool assign) {

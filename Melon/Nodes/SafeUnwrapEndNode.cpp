@@ -98,7 +98,7 @@ void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	Node::root->AddTemplateSpecialization(ScopeList(true).Add(type), scope->AbsoluteName(), file);
 }
 
-Set<ScanType> SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {
+void SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {
 	return node->Scan(info);
 }
 

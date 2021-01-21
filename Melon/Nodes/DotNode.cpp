@@ -119,16 +119,16 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
+void DotNode::Scan(ScanInfoStack& info) {
 	bool assign = info.Get().assign;
 	info.Get().assign = false;
 
 	UInt errorCount = ErrorLog::ErrorCount();
 
-	Set<ScanType> scanSet = node->Scan(info);
+	node->Scan(info);
 
 	if (errorCount < ErrorLog::ErrorCount()) {
-		return scanSet;
+		return;
 	}
 
 	Symbol* const type = node->Type();
@@ -182,8 +182,6 @@ Set<ScanType> DotNode::Scan(ScanInfoStack& info) {
 		scanSet.Remove(ScanType::Self);
 	}
 	*/
-
-	return scanSet;
 }
 
 ScopeList DotNode::FindSideEffectScope(const bool assign) {

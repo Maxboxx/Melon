@@ -31,39 +31,27 @@ void ForConditionNode::IncludeScan(ParsingInfo& info) {
 
 }
 
-Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = loopInit->Scan(info);
-
-	for (const ScanType type : loopCondition->Scan(info)) {
-		scanSet.Add(type);
-	}
+void ForConditionNode::Scan(ScanInfoStack& info) {
+	loopInit->Scan(info);
+	loopCondition->Scan(info);
 
 	if (loopCondition.Cast<AssignNode>() != nullptr) {
-		for (const ScanType type : loopCondition->Scan(info)) {
-			scanSet.Add(type);
-		}
+		loopCondition->Scan(info);
 	}
 	else {
 		if (loopCondition->Type()->AbsoluteName() != ScopeList::Bool) {
 			Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(loopCondition->scope, Scope::Less, loopCondition->file);
 			comp->node1 = loopInit.Cast<AssignNode>()->vars[0];
 			comp->node2 = loopCondition;
-
-			for (const ScanType type : comp->Scan(info)) {
-				scanSet.Add(type);
-			}
+			comp->Scan(info);
 		}
 		else {
-			for (const ScanType type : loopCondition->Scan(info)) {
-				scanSet.Add(type);
-			}
+			loopCondition->Scan(info);
 		}
 	}
 
 	if (loopStep.Cast<AssignNode>() != nullptr) {
-		for (const ScanType type : loopStep->Scan(info)) {
-			scanSet.Add(type);
-		}
+		loopStep->Scan(info);
 	}
 	else {
 		bool createAssign = true;
@@ -81,19 +69,12 @@ Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) {
 			add->node2 = loopStep;
 
 			assign->values.Add(add);
-
-			for (const ScanType type : assign->Scan(info)) {
-				scanSet.Add(type);
-			}
+			assign->Scan(info);
 		}
 		else {
-			for (const ScanType type : loopStep->Scan(info)) {
-				scanSet.Add(type);
-			}
+			loopStep->Scan(info);
 		}
 	}
-
-	return scanSet;
 }
 
 ScopeList ForConditionNode::FindSideEffectScope(const bool assign) {

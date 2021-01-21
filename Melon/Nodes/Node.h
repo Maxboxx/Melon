@@ -146,7 +146,7 @@ namespace Melon {
 
 		///B ScanType
 		/// The different things to scan for in a node
-		enum class ScanType : Boxx::UByte {
+		enum class [[deprecated]] ScanType : Boxx::UByte {
 			///T Self
 			/// Used if self is used
 			Self
@@ -158,7 +158,10 @@ namespace Melon {
 			bool init = false;
 			bool assign = false;
 			bool useFunction = true;
-			Symbols::Symbols symbol;
+
+			bool selfUse = false;
+			Symbols::TypeSymbol* type = nullptr;
+
 			FileInfo file;
 			
 			ScopeInfo scopeInfo;
@@ -256,7 +259,7 @@ namespace Melon {
 
 			///T Scan
 			/// Scans the node for potential errors
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info);
+			virtual void Scan(ScanInfoStack& info);
 
 			///T Has Side Effects
 			/// Checks if the node has side effects outside of the specified scope

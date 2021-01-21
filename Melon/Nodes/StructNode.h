@@ -31,7 +31,7 @@ namespace Melon {
 			bool IsRecursive(const Symbols::Symbols& symbol) const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
+			virtual void Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

@@ -55,6 +55,18 @@ namespace Melon {
 			///T Find Unary Operator
 			/// Finds a unary operator of the current type
 			FunctionSymbol* FindUnaryOperator(const Scope& name, const FileInfo& file);
+
+			///T Is Initialized
+			/// Checks if the type has been initialized
+			virtual bool IsInitialized();
+
+			///T Prepare Initialization
+			/// Prepares the initialization for the scan step
+			virtual void PrepareInit();
+
+			///T Complete Initialization
+			/// Completes the initialization for the scan step
+			virtual void CompleteInit();
 			
 			virtual TypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 

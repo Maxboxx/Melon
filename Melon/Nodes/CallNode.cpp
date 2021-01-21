@@ -383,8 +383,8 @@ void CallNode::IncludeScan(ParsingInfo& info) {
 	GetFunc();
 }
 
-Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = node->Scan(info);
+void CallNode::Scan(ScanInfoStack& info) {
+	node->Scan(info);
 
 	/* TODO: node
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
@@ -439,8 +439,6 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 		ScanAssignment(new TypeNode(type.scope), arg, info, node->file);
 	}
 	*/
-
-	return scanSet;
 }
 
 NodePtr CallNode::Optimize(OptimizeInfo& info) {

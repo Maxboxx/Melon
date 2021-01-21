@@ -107,9 +107,7 @@ void IfExprNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
-
+void IfExprNode::Scan(ScanInfoStack& info) {
 	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
 
 	Pointer<TypeNode> type = new TypeNode(Type()->AbsoluteName());
@@ -141,7 +139,6 @@ Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
 	*/
 
 	info.Get().scopeInfo = scopeInfo;
-	return scanSet;
 }
 
 ScopeList IfExprNode::FindSideEffectScope(const bool assign) {

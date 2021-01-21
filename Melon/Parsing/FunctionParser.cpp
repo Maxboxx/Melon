@@ -58,7 +58,9 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		}
 
 		if (funcHead.isMethod) {
-			VariableSymbol* const var = new VariableSymbol(info.GetFileInfo(startLine));
+			FileInfo file = info.GetFileInfo(startLine);
+			file.statement = 0;
+			VariableSymbol* const var = new VariableSymbol(file);
 			var->type = parent->AbsoluteName();
 
 			if (parent->Is<StructSymbol>()) {

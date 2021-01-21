@@ -39,7 +39,7 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-Set<ScanType> BreakNode::Scan(ScanInfoStack& info) {
+void BreakNode::Scan(ScanInfoStack& info) {
 	if (!scopeWise) {
 		if (info.Get().scopeInfo.CanContinue()) {
 			if (!isBreak) {
@@ -58,8 +58,6 @@ Set<ScanType> BreakNode::Scan(ScanInfoStack& info) {
 
 		info.Get().scopeInfo.maxScopeBreakCount = Math::Max(info.Get().scopeInfo.maxScopeBreakCount, loops);
 	}
-
-	return Set<ScanType>();
 };
 
 StringBuilder BreakNode::ToMelon(const UInt indent) const {
