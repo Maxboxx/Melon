@@ -189,7 +189,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		ErrorLog::AddMarker();
 		info.root.IncludeScan(info);
-		ErrorLog::Revert();
+		//ErrorLog::Revert();
 
 		/*
 		info.root.parsingInfo = &info;

@@ -32,7 +32,7 @@ TypeSymbol* UnaryOperatorNode::Type() const {
 
 	TypeSymbol* const type = node->Type();
 
-	FunctionSymbol* const s = type->Find<FunctionSymbol>(op, file);
+	FunctionSymbol* const s = type->FindUnaryOperator(op, file);
 
 	if (s && !s->returnValues.IsEmpty()) {
 		TypeSymbol* const s2 = s->ReturnType(0);

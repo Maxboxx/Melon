@@ -10,6 +10,8 @@
 
 #include "Melon/Symbols/MapSymbol.h";
 #include "Melon/Symbols/TemplateSymbol.h";
+#include "Melon/Symbols/StructSymbol.h";
+#include "Melon/Symbols/EnumSymbol.h";
 
 using namespace Boxx;
 
@@ -53,6 +55,21 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 			}
 
 			funcSym->templateArguments.Add(arg);
+		}
+
+		if (funcHead.isMethod) {
+			VariableSymbol* const var = new VariableSymbol(info.GetFileInfo(startLine));
+			var->type = parent->AbsoluteName();
+
+			if (parent->Is<StructSymbol>()) {
+				var->attributes = VariableAttributes::Ref;
+			}
+			else if (parent->Is<EnumSymbol>()) {
+				var->attributes = VariableAttributes::Ref;
+			}
+
+			funcSym->AddSymbol(Scope::Self, var);
+			funcSym->arguments.Add(ScopeList().Add(Scope::Self));
 		}
 
 		for (const Argument& arg : funcHead.arguments) {

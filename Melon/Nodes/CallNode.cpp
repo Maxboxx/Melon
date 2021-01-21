@@ -37,27 +37,32 @@ FunctionSymbol* CallNode::GetFunc() const {
 	}
 
 	FunctionSymbol* s = nullptr;
-
+	
 	if (op) {
-		// TODO: fix
-		//s = SymbolTable::FindFunction(type, argTypes, file);
-	}
-	else if (IsInit()) {
-		// TODO: fix
-		//s = Symbols::FindMethod(type.Add(Scope::Init).Add(Scope::Call), argTypes, this->node->file);
-	}
-	else if (!isMethod) {
-		if (FunctionSymbol* const f = this->node->GetSymbol()->Cast<FunctionSymbol>()) {
-			s = f->FindOverload(argTypes, this->node->file);
-
-			if ((s->attributes & FunctionAttributes::Static) == FunctionAttributes::None) {
-				s = nullptr;
+		if (TypeSymbol* const t = node->Type()) {
+			if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Scope::Call, node->file)) {
+				s = f->FindMethodOverload(argTypes, node->file);
 			}
 		}
 	}
+	else if (IsInit()) {
+		if (TypeSymbol* const t = node->GetSymbol()->Cast<TypeSymbol>()) {
+			if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Scope::Init, node->file)) {
+				s = f->FindMethodOverload(argTypes, node->file);
+			}
+		}
+	}
+	else if (!isMethod) {
+		if (FunctionSymbol* const f = node->GetSymbol()->Cast<FunctionSymbol>()) {
+			s = f->FindStaticOverload(argTypes, node->file);
+		}
+	}
 	else {
-		// TODO: fix
-		//s = Symbols::FindMethod(type.Add(methodName).Add(Scope::Call), argTypes, this->node->file);
+		if (TypeSymbol* const t = node->Type()) {
+			if (FunctionSymbol* const f = t->Find<FunctionSymbol>(methodName, node->file)) {
+				s = f->FindMethodOverload(argTypes, node->file);
+			}
+		}
 	}
 
 	if (s) {
@@ -66,7 +71,7 @@ FunctionSymbol* CallNode::GetFunc() const {
 
 	List<String> argStr;
 
-	if (FunctionSymbol* const f = this->node->GetSymbol()->Cast<FunctionSymbol>()) {
+	if (FunctionSymbol* const f = node->GetSymbol()->Cast<FunctionSymbol>()) {
 		for (TypeSymbol* const type : argTypes) {
 			argStr.Add(type->AbsoluteName().ToString());
 		}

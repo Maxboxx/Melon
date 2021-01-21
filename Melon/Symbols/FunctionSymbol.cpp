@@ -118,6 +118,14 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateAr
 	return nullptr;
 }
 
+FunctionSymbol* FunctionSymbol::FindStaticOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
+	return nullptr;
+}
+
+FunctionSymbol* FunctionSymbol::FindStaticOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+	return nullptr;
+}
+
 FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
 	return nullptr;
 }

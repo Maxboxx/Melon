@@ -74,3 +74,23 @@ FunctionSymbol* TypeSymbol::ExplicitConversionFrom(TypeSymbol* const type) {
 
 	return Contains<FunctionSymbol>(as);
 }
+
+FunctionSymbol* TypeSymbol::FindMethod(const Scope& name, const List<TypeSymbol*>& args, const FileInfo& file) {
+	if (FunctionSymbol* const f = Find<FunctionSymbol>(name, file)) {
+		return f->FindMethodOverload(args, file);
+	}
+
+	return nullptr;
+}
+
+FunctionSymbol* TypeSymbol::FindMethod(const Scope& name, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+	if (FunctionSymbol* const f = Find<FunctionSymbol>(name, file)) {
+		return f->FindMethodOverload(templateArgs, args, file);
+	}
+
+	return nullptr;
+}
+
+FunctionSymbol* TypeSymbol::FindUnaryOperator(const Scope& name, const FileInfo& file) {
+	return nullptr;
+}

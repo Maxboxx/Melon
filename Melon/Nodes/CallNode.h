@@ -29,7 +29,7 @@ namespace Melon {
 			///T Method Name
 			Symbols::Scope methodName;
 
-			///T Operator
+			///T Call Operator
 			bool op = false;
 
 			///T Statement

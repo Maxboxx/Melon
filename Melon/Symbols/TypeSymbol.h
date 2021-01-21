@@ -45,6 +45,17 @@ namespace Melon {
 			/// nullptr if a conversion operator was not found.
 			FunctionSymbol* ExplicitConversionFrom(TypeSymbol* const type);
 
+			///T Find Method
+			/// Finds a method of the current type
+			///M
+			FunctionSymbol* FindMethod(const Scope& name, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindMethod(const Scope& name, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			///M
+
+			///T Find Unary Operator
+			/// Finds a unary operator of the current type
+			FunctionSymbol* FindUnaryOperator(const Scope& name, const FileInfo& file);
+			
 			virtual TypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 
 		protected:

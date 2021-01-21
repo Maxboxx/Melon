@@ -65,6 +65,13 @@ namespace Melon {
 			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 			///M
 
+			///T Find Static Overload
+			/// Finds the best match for a static function overload
+			///M
+			FunctionSymbol* FindStaticOverload(const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindStaticOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			///M
+
 			///T Find Method Overload
 			/// Finds the best match for a method overload
 			///M
