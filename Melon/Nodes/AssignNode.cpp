@@ -184,7 +184,7 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 }
 
 void AssignNode::Scan(ScanInfoStack& info) {
-	info.Get().assign = true;
+	info.Assign(true);
 
 	UInt errorCount = ErrorLog::ErrorCount();
 
@@ -211,16 +211,16 @@ void AssignNode::Scan(ScanInfoStack& info) {
 		if (types[i] != ScopeList::Discard && !node.Is<NameNode>()) {
 			node->Scan(info);
 
-			if (info.Get().selfUse && !info.Get().type->IsInitialized()) {
+			if (/*info.Get().selfUse &&*/ !info.Type()->IsInitialized()) {
 				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 			}
 		}
 
-		if (info.Get().init) {
+		if (info.Init()) {
 			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 				if (nn->name == Scope::Self) {
-					info.Get().type->CompleteInit();
-					info.Get().selfUse = false;
+					info.Type()->CompleteInit();
+					//info.Get().selfUse = false;
 				}
 			}
 		}
@@ -230,12 +230,12 @@ void AssignNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	info.Get().assign = false;
+	info.Assign(false);
 
 	for (const NodePtr& node : this->values) {
 		node->Scan(info);
 
-		if (info.Get().init && info.Get().selfUse && !info.Get().type->IsInitialized()) {
+		if (info.Init() /*&& info.Get().selfUse*/ && !info.Type()->IsInitialized()) {
 			ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 		}
 	}

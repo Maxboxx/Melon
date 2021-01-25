@@ -386,7 +386,7 @@ void CallNode::IncludeScan(ParsingInfo& info) {
 void CallNode::Scan(ScanInfoStack& info) {
 	node->Scan(info);
 
-	/* TODO: node
+	/*
 	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
 	}

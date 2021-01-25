@@ -83,21 +83,17 @@ void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
 void BinaryOperatorNode::Scan(ScanInfoStack& info) {
 	node1->Scan(info);
 
-	/* TODO: node
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
+	if (info.Init() && /*info.Get().selfUse &&*/ !info.Type()->IsInitialized()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
 	}
 
-	for (const ScanType type : node2->Scan(info)) {
-		scanSet.Add(type);
+	node2->Scan(info);
 
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
-		}
+	if (info.Init() && /*info.Get().selfUse &&*/ !info.Type()->IsInitialized()) {
+		ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
 	}
 
-	Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
-	*/
+	SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 }
 
 ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {

@@ -13,7 +13,13 @@
 
 #include "Kiwi/Kiwi.h"
 
-#include "ScopeInfo.h"
+#include "Structs/CompiledNode.h"
+#include "Structs/CompileInfo.h"
+#include "Structs/OptimizeInfo.h"
+#include "Structs/ScanInfo.h"
+#include "Structs/ScanInfoStack.h"
+#include "Structs/ScopeInfo.h"
+#include "Structs/StackPtr.h"
 
 #include "Melon/Symbols/ScopeList.h"
 #include "Melon/Symbols/Symbols.h"
@@ -34,168 +40,12 @@ namespace Melon {
 		///T NodePtr
 		typedef Boxx::Pointer<class Node> NodePtr;
 
-		///B CompiledNode
-		/// Contains info about a compiled node
-		struct CompiledNode {
-			///T Instructions
-			/// All instructions for the node
-			Boxx::List<Optimizing::OptimizerInstruction> instructions;
-
-			///T Argument
-			/// The argument to use if the node returns something
-			Kiwi::Argument argument;
-
-			///T Size
-			/// The size in bytes of the returned value;
-			Boxx::UByte size;
-
-			///T Add instruction
-			/// Adds a list of instructions to the instruction list
-			void AddInstructions(const Boxx::List<Optimizing::OptimizerInstruction>& instructions);
-		};
-
-		///B StackPtr
-		/// Contains information about the stack pointer
-		struct StackPtr {
-			///H Members
-
-			///T Stack frame
-			Boxx::UInt frame = 0;
-
-			///T Stack top
-			Boxx::Long top = 0;
-
-			///T Pointer size
-			static const Boxx::UByte ptrSize = 8;
-
-			///H Methods
-
-			///T Push
-			///A bytes: The number of bytes to push on the stack
-			void Push(const Boxx::UInt bytes) {
-				top += bytes;
-			}
-
-			///T Pop
-			///A bytes: The number of bytes to pop from stack
-			void Pop(const Boxx::UInt bytes) {
-				top -= bytes;
-			}
-
-			///T Push frame
-			///A bytes: The number of bytes to push on the stack frame
-			void PushFrame(const Boxx::UInt bytes) {
-				frame += bytes;
-			}
-
-			///T Pop frame
-			///A bytes: The number of bytes to pop from the stack frame
-			void PopFrame(const Boxx::UInt bytes) {
-				frame -= bytes;
-			}
-
-			///T Push Expression
-			/// Pushes the top of the stack and also pushes the frame if it runs out of space
-			void PushExpr(const Boxx::UInt bytes, CompiledNode& cn) {
-				top += bytes;
-
-				if (top > frame) {
-					cn.instructions.Add(Kiwi::Instruction(Kiwi::InstructionType::Push, top - frame));
-					frame = top;
-				}
-			}
-
-			///T Pop Expression
-			/// Pops the frame back to a previous position
-			void PopExpr(const Boxx::UInt frame, CompiledNode& cn) {
-				if (this->frame > frame) {
-					cn.instructions.Add(Kiwi::Instruction(Kiwi::InstructionType::Pop, this->frame - frame));
-				}
-
-				this->frame = frame;
-			}
-
-			///T Offset
-			/// Gets the offset between the top and frame
-			Boxx::Long Offset() const {
-				return frame - top;
-			}
-
-			///T Offset
-			/// Gets the offset between <code>index</code> and frame
-			Boxx::Long Offset(const Boxx::Long index) const {
-				return frame - index;
-			}
-		};
-
-		///B CompileInfo
-		/// Contains info about the compiliation
-		struct CompileInfo {
-			///T Next free label index
-			Boxx::UInt label = 0;
-
-			///T Stack
-			StackPtr stack;
-
-			///T Next free register index
-			Boxx::UByte index = 0;
-
-			///T Important stack values
-			bool important = false;
-		};
-
 		///B ScanType
 		/// The different things to scan for in a node
 		enum class [[deprecated]] ScanType : Boxx::UByte {
 			///T Self
 			/// Used if self is used
 			Self
-		};
-
-		///B ScanInfo
-		/// Used for info when scanning
-		struct ScanInfo {
-			bool init = false;
-			bool assign = false;
-			bool useFunction = true;
-
-			bool selfUse = false;
-			Symbols::TypeSymbol* type = nullptr;
-
-			FileInfo file;
-			
-			ScopeInfo scopeInfo;
-		};
-
-		///B ScanInfoStack
-		class ScanInfoStack {
-		public:
-			ScanInfoStack() {
-				stack.Push(ScanInfo());
-			}
-
-			void Pop() {stack.Pop();}
-			void Push() {stack.Push(stack.Peek());}
-			ScanInfo& Get() {return stack.Peek();}
-			void Set(const ScanInfo& info) {stack.Set(info);}
-
-			Boxx::Set<Symbols::VariableSymbol*> usedVariables;
-			Boxx::Set<Symbols::TypeSymbol*> usedTypes;
-			Boxx::Set<Symbols::FunctionSymbol*> usedFunctions;
-
-			Boxx::Collection<NodePtr> functions;
-
-		private:
-			Boxx::Stack<ScanInfo> stack;
-		};
-
-		///B OptimizeInfo
-		struct OptimizeInfo {
-			bool optimized = false;
-
-			Boxx::Set<Symbols::VariableSymbol*> usedVariables;
-			Boxx::Set<Symbols::TypeSymbol*> usedTypes;
-			Boxx::Set<Symbols::FunctionSymbol*> usedFunctions;
 		};
 
 		///B Node
