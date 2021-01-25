@@ -147,7 +147,7 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-void NewVariableNode::Scan(ScanInfoStack& info) {
+ScanResult NewVariableNode::Scan(ScanInfoStack& info) {
 	/* TODO: node
 	Symbols::Find(Type(), file);
 
@@ -161,6 +161,8 @@ void NewVariableNode::Scan(ScanInfoStack& info) {
 		Symbols::FindInNamespace(scope.Add(names[i]), file);
 	}
 	*/
+
+	return ScanResult();
 }
 
 StringBuilder NewVariableNode::ToMelon(const UInt indent) const {

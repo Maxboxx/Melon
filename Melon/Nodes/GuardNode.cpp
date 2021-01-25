@@ -109,7 +109,7 @@ void GuardNode::IncludeScan(ParsingInfo& info) {
 	continue_->IncludeScan(info);
 }
 
-void GuardNode::Scan(ScanInfoStack& info) {
+ScanResult GuardNode::Scan(ScanInfoStack& info) {
 	cond->Scan(info);
 
 	/* TODO: node
@@ -145,6 +145,8 @@ void GuardNode::Scan(ScanInfoStack& info) {
 
 	info.Get().scopeInfo = ScopeInfo::BranchIntersection(elseScope, info.Get().scopeInfo);
 	*/
+
+	return ScanResult();
 }
 
 ScopeList GuardNode::FindSideEffectScope(const bool assign) {

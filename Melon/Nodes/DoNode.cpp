@@ -83,10 +83,11 @@ void DoNode::IncludeScan(ParsingInfo& info) {
 	nodes->IncludeScan(info);
 }
 
-void DoNode::Scan(ScanInfoStack& info) {
+ScanResult DoNode::Scan(ScanInfoStack& info) {
 	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	nodes->Scan(info);
 	info.Get().scopeInfo.ExitScope();
+	return ScanResult();
 }
 
 ScopeList DoNode::FindSideEffectScope(const bool assign) {

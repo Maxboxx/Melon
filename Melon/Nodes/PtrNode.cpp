@@ -46,7 +46,7 @@ void PtrNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 }
 
-void PtrNode::Scan(ScanInfoStack& info) {
+ScanResult PtrNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
 }
 

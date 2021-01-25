@@ -383,7 +383,7 @@ void CallNode::IncludeScan(ParsingInfo& info) {
 	GetFunc();
 }
 
-void CallNode::Scan(ScanInfoStack& info) {
+ScanResult CallNode::Scan(ScanInfoStack& info) {
 	node->Scan(info);
 
 	/*
@@ -439,6 +439,8 @@ void CallNode::Scan(ScanInfoStack& info) {
 		ScanAssignment(new TypeNode(type.scope), arg, info, node->file);
 	}
 	*/
+
+	return ScanResult();
 }
 
 NodePtr CallNode::Optimize(OptimizeInfo& info) {

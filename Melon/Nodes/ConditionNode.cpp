@@ -86,7 +86,7 @@ void ConditionNode::IncludeScan(ParsingInfo& info) {
 	cond->IncludeScan(info);
 }
 
-void ConditionNode::Scan(ScanInfoStack& info) {
+ScanResult ConditionNode::Scan(ScanInfoStack& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		NodePtr tempValue = assign->values[0];
 

@@ -26,12 +26,14 @@ CompiledNode ContinueNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-void ContinueNode::Scan(ScanInfoStack& info) {
+ScanResult ContinueNode::Scan(ScanInfoStack& info) {
 	if (info.Get().scopeInfo.CanContinue()) {
 		info.Get().scopeInfo.loopBreakCount = Math::Max(info.Get().scopeInfo.loopBreakCount, loops);
 	}
 
 	info.Get().scopeInfo.maxLoopBreakCount = Math::Max(info.Get().scopeInfo.maxLoopBreakCount, loops);
+
+	return ScanResult();
 };
 
 StringBuilder ContinueNode::ToMelon(const UInt indent) const {

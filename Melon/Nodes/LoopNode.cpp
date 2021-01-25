@@ -535,7 +535,7 @@ LoopNode::LoopScanInfo LoopNode::ScanSetup(ScanInfo& info) const {
 	return loopInfo;
 }
 
-void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
+ScanResult LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
 	/* TODO: node
 	if (loopInfo.init) {
 		if (!segment.also) {
@@ -557,9 +557,11 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 	else {
 		info.scopeInfo = loopInfo.mainSegment.CopyBranch();
 	}
+
+	return ScanResult();
 }
 
-void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const {
+ScanResult LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	/* TODO: node
 	if (info.init) {
 		info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
@@ -576,9 +578,11 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 	else {
 		loopInfo.mainSegment = info.scopeInfo;
 	}
+
+	return ScanResult();
 }
 
-void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
+ScanResult LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
 	/* TODO: node
 	if (info.init) {
 		info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
@@ -591,9 +595,11 @@ void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const Lo
 	else {
 		loopInfo.elseSegments.Add(info.scopeInfo);
 	}
+
+	return ScanResult();
 }
 
-void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
+ScanResult LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	if (!loopInfo.alsoSegments.IsEmpty()) {
 		if (loopInfo.willASegmentRun) { 
 			loopInfo.scope = loopInfo.alsoSegments[0];
@@ -625,9 +631,11 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	}
 
 	info.scopeInfo = loopInfo.scope;
+
+	return ScanResult();
 }
 
-void LoopNode::Scan(ScanInfoStack& info) {
+ScanResult LoopNode::Scan(ScanInfoStack& info) {
 	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	LoopScanInfo loopInfo = ScanSetup(info.Get());
 	info.Get().scopeInfo.ExitScope();
@@ -674,6 +682,8 @@ void LoopNode::Scan(ScanInfoStack& info) {
 	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	ScanCleanup(loopInfo, info.Get());
 	info.Get().scopeInfo.ExitScope();
+
+	return ScanResult();
 }
 
 ScopeList LoopNode::FindSideEffectScope(const bool assign) {

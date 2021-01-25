@@ -96,7 +96,7 @@ void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 }
 
-void UnaryOperatorNode::Scan(ScanInfoStack& info) {
+ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	node->Scan(info);
 
 	if (op == Scope::Unwrap) {
@@ -116,6 +116,8 @@ void UnaryOperatorNode::Scan(ScanInfoStack& info) {
 
 	Symbols::FindFunction(type.Add(op), args, file);
 	*/
+
+	return ScanResult();
 }
 
 ScopeList UnaryOperatorNode::FindSideEffectScope(const bool assign) {

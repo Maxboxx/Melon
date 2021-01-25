@@ -48,22 +48,22 @@ namespace Melon {
 
 			///T Scan Pre Contents
 			/// A switch scan performed before the scan of the case content
-			void ScanPreContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
+			ScanResult ScanPreContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
 
 			///T Scan Post Contents
 			/// A switch scan performed after the scan of the case content
-			void ScanPostContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
+			ScanResult ScanPostContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
 
 			///T Scan Cleanup
 			/// Cleanup for the switch scan info
-			void ScanCleanup(SwitchScanInfo& loopInfo, ScanInfo& info) const;
+			ScanResult ScanCleanup(SwitchScanInfo& loopInfo, ScanInfo& info) const;
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual void Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 

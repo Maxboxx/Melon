@@ -96,7 +96,7 @@ void ReturnNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-void ReturnNode::Scan(ScanInfoStack& info) {
+ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 	if (info.Get().scopeInfo.CanContinue()) {
 		info.Get().scopeInfo.hasReturned = true;
 	}
@@ -126,6 +126,8 @@ void ReturnNode::Scan(ScanInfoStack& info) {
 		ScanAssignment(new TypeNode(types[i].scope), nodes[i], info, nodes[i]->file);
 	}
 	*/
+
+	return ScanResult();
 }
 
 ScopeList ReturnNode::FindSideEffectScope(const bool assign) {

@@ -272,7 +272,7 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 	return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, templateArgs);
 }
 
-void RootNode::Scan(ScanInfoStack& info) {
+ScanResult RootNode::Scan(ScanInfoStack& info) {
 	info.Get().useFunction = true;
 
 	for (const NodePtr& node : nodes) {
@@ -303,6 +303,8 @@ void RootNode::Scan(ScanInfoStack& info) {
 			node->Scan(info);
 		}
 	}
+
+	return ScanResult();
 }
 
 ScanInfoStack RootNode::Scan() {

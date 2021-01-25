@@ -77,25 +77,25 @@ namespace Melon {
 				
 			///T Scan First Post Contents
 			/// A loop scan performed on the first segment
-			void ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const;
+			ScanResult ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const;
 
 			///T Scan Pre Contents
 			/// A loop scan performed before the scan of the loop segment content
-			void ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
+			ScanResult ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
 
 			///T Scan Post Contents
 			/// A loop scan performed after the scan of the loop segment content
-			void ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
+			ScanResult ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
 
 			///T Scan Cleanup
 			/// Cleanup for the loop scan info
-			void ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const;
+			ScanResult ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const;
 
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual void Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 

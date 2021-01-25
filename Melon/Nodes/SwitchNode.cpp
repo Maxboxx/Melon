@@ -249,7 +249,7 @@ SwitchNode::SwitchScanInfo SwitchNode::ScanSetup(ScanInfo& info) const {
 	return switchInfo;
 }
 
-void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+ScanResult SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
 		if (switchInfo.init) {
 			info.init = true;
@@ -263,9 +263,11 @@ void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) con
 
 		info.scopeInfo = switchInfo.scope.CopyBranch();
 	}
+
+	return ScanResult();
 }
 
-void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+ScanResult SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
 		/* TODO: node
 		if (switchInfo.init) {
@@ -275,9 +277,11 @@ void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) co
 
 		switchInfo.cases.Add(info.scopeInfo);
 	}
+
+	return ScanResult();
 }
 
-void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+ScanResult SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
 		for (UInt i = 0; i < switchInfo.cases.Size(); i++) {
 			if (i == 0) {
@@ -305,9 +309,11 @@ void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 
 		info.scopeInfo = switchInfo.scope;
 	}
+
+	return ScanResult();
 }
 
-void SwitchNode::Scan(ScanInfoStack& info) {
+ScanResult SwitchNode::Scan(ScanInfoStack& info) {
 	match->Scan(info);
 
 	/* TODO: node
@@ -381,6 +387,8 @@ void SwitchNode::Scan(ScanInfoStack& info) {
 		}
 	}
 	*/
+
+	return ScanResult();
 }
 
 ScopeList SwitchNode::FindSideEffectScope(const bool assign) {

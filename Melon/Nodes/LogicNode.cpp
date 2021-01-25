@@ -159,7 +159,7 @@ CompiledNode LogicNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-void LogicNode::Scan(ScanInfoStack& info) {
+ScanResult LogicNode::Scan(ScanInfoStack& info) {
 	node1->Scan(info);
 
 	/* TODO: node
@@ -193,6 +193,8 @@ void LogicNode::Scan(ScanInfoStack& info) {
 		scanSet.Add(type);
 	}
 	*/
+
+	return ScanResult();
 }
 
 ScopeList LogicNode::FindSideEffectScope(const bool assign) {

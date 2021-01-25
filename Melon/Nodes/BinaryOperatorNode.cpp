@@ -80,20 +80,16 @@ void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
 	node2->IncludeScan(info);
 }
 
-void BinaryOperatorNode::Scan(ScanInfoStack& info) {
-	node1->Scan(info);
+ScanResult BinaryOperatorNode::Scan(ScanInfoStack& info) {
+	ScanResult result1 = node1->Scan(info);
+	result1.SelfUseCheck(info, node1->file);
 
-	if (info.Init() && /*info.Get().selfUse &&*/ !info.Type()->IsInitialized()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
-	}
-
-	node2->Scan(info);
-
-	if (info.Init() && /*info.Get().selfUse &&*/ !info.Type()->IsInitialized()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
-	}
+	ScanResult result2 = node2->Scan(info);
+	result2.SelfUseCheck(info, node2->file);
 
 	SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+
+	return result1 | result2;
 }
 
 ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {

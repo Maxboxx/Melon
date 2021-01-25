@@ -29,7 +29,7 @@ namespace Melon {
 			~BreakNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual void Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 			static Boxx::String abortInstName;

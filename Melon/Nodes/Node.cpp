@@ -37,8 +37,8 @@ List<TypeSymbol*> Node::Types() const {
 	return types;
 }
 
-void Node::Scan(ScanInfoStack& info) {
-	
+ScanResult Node::Scan(ScanInfoStack& info) {
+	return ScanResult();
 }
 
 bool Node::HasSideEffects() {
@@ -121,13 +121,15 @@ Long Node::GetImmediate() const {
 	return 0;
 }
 
-void Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
+ScanResult Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
 	List<Symbol*> args;
 	args.Add(value->Type());
 
 	/* TODO: node
 	Symbols::FindFunction(var->Type().Add(Scope::Assign), args, file);
 	*/
+
+	return ScanResult();
 }
 
 CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file) {

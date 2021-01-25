@@ -183,7 +183,8 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-void AssignNode::Scan(ScanInfoStack& info) {
+ScanResult AssignNode::Scan(ScanInfoStack& info) {
+	ScanResult result;
 	info.Assign(true);
 
 	UInt errorCount = ErrorLog::ErrorCount();
@@ -209,18 +210,16 @@ void AssignNode::Scan(ScanInfoStack& info) {
 		}
 
 		if (types[i] != ScopeList::Discard && !node.Is<NameNode>()) {
-			node->Scan(info);
-
-			if (/*info.Get().selfUse &&*/ !info.Type()->IsInitialized()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-			}
+			ScanResult r = node->Scan(info);
+			r.SelfUseCheck(info, node->file);
+			result |= r;
 		}
 
 		if (info.Init()) {
 			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 				if (nn->name == Scope::Self) {
 					info.Type()->CompleteInit();
-					//info.Get().selfUse = false;
+					result.selfUsed = false;
 				}
 			}
 		}
@@ -233,12 +232,12 @@ void AssignNode::Scan(ScanInfoStack& info) {
 	info.Assign(false);
 
 	for (const NodePtr& node : this->values) {
-		node->Scan(info);
-
-		if (info.Init() /*&& info.Get().selfUse*/ && !info.Type()->IsInitialized()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-		}
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 	}
+
+	return result;
 }
 
 ScopeList AssignNode::FindSideEffectScope(const bool assign) {

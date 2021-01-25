@@ -101,8 +101,8 @@ void FunctionNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 }
 
-void FunctionNode::Scan(ScanInfoStack& info) {
-	if (IsNotSpecialized()) return;
+ScanResult FunctionNode::Scan(ScanInfoStack& info) {
+	if (IsNotSpecialized()) return ScanResult();
 	SetTemplateValues();
 
 	info.Push();
@@ -142,6 +142,8 @@ void FunctionNode::Scan(ScanInfoStack& info) {
 	info.Pop();
 	return scanSet;
 	*/
+
+	return ScanResult();
 }
 
 NodePtr FunctionNode::Optimize(OptimizeInfo& info) {

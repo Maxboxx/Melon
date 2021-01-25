@@ -119,7 +119,7 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-void DotNode::Scan(ScanInfoStack& info) {
+ScanResult DotNode::Scan(ScanInfoStack& info) {
 	bool assign = info.Get().assign;
 	info.Get().assign = false;
 
@@ -128,7 +128,7 @@ void DotNode::Scan(ScanInfoStack& info) {
 	node->Scan(info);
 
 	if (errorCount < ErrorLog::ErrorCount()) {
-		return;
+		return ScanResult();
 	}
 
 	Symbol* const type = node->Type();
@@ -182,6 +182,8 @@ void DotNode::Scan(ScanInfoStack& info) {
 		scanSet.Remove(ScanType::Self);
 	}
 	*/
+
+	return ScanResult();
 }
 
 ScopeList DotNode::FindSideEffectScope(const bool assign) {

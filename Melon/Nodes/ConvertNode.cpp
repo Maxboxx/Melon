@@ -68,7 +68,7 @@ void ConvertNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 }
 
-void ConvertNode::Scan(ScanInfoStack& info) {
+ScanResult ConvertNode::Scan(ScanInfoStack& info) {
 	Symbol* convertType = Type();
 
 	/* TODO: node

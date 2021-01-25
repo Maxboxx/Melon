@@ -18,6 +18,7 @@
 #include "Structs/OptimizeInfo.h"
 #include "Structs/ScanInfo.h"
 #include "Structs/ScanInfoStack.h"
+#include "Structs/ScanResult.h"
 #include "Structs/ScopeInfo.h"
 #include "Structs/StackPtr.h"
 
@@ -109,7 +110,7 @@ namespace Melon {
 
 			///T Scan
 			/// Scans the node for potential errors
-			virtual void Scan(ScanInfoStack& info);
+			virtual ScanResult Scan(ScanInfoStack& info);
 
 			///T Has Side Effects
 			/// Checks if the node has side effects outside of the specified scope
@@ -140,7 +141,7 @@ namespace Melon {
 			
 			///T Scan Assignment
 			/// Scans an assignment
-			static void ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file);
+			static ScanResult ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file);
 
 			///T Compile Assignment
 			/// Compiles an assignment

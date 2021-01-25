@@ -31,7 +31,7 @@ void ForConditionNode::IncludeScan(ParsingInfo& info) {
 
 }
 
-void ForConditionNode::Scan(ScanInfoStack& info) {
+ScanResult ForConditionNode::Scan(ScanInfoStack& info) {
 	loopInit->Scan(info);
 	loopCondition->Scan(info);
 
@@ -75,6 +75,8 @@ void ForConditionNode::Scan(ScanInfoStack& info) {
 			loopStep->Scan(info);
 		}
 	}
+
+	return ScanResult();
 }
 
 ScopeList ForConditionNode::FindSideEffectScope(const bool assign) {

@@ -77,7 +77,7 @@ void ObjectInitNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-void ObjectInitNode::Scan(ScanInfoStack& info) {
+ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 	node->Scan(info);
 
 	/* TODO: node
@@ -120,6 +120,8 @@ void ObjectInitNode::Scan(ScanInfoStack& info) {
 		}
 	}
 	*/
+
+	return ScanResult();
 }
 
 ScopeList ObjectInitNode::FindSideEffectScope(const bool assign) {

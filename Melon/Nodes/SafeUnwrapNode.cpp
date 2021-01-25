@@ -46,7 +46,7 @@ void SafeUnwrapNode::IncludeScan(ParsingInfo& info)  {
 	node->IncludeScan(info);
 }
 
-void SafeUnwrapNode::Scan(ScanInfoStack& info)  {
+ScanResult SafeUnwrapNode::Scan(ScanInfoStack& info)  {
 	return node->Scan(info);
 }
 

@@ -96,7 +96,7 @@ void DefaultNode::IncludeScan(ParsingInfo& info) {
 	node2->IncludeScan(info);
 }
 
-void DefaultNode::Scan(ScanInfoStack& info) {
+ScanResult DefaultNode::Scan(ScanInfoStack& info) {
 	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
 
 	/* TODO: node
@@ -122,6 +122,7 @@ void DefaultNode::Scan(ScanInfoStack& info) {
 	*/
 
 	info.Get().scopeInfo = scopeInfo;
+	return ScanResult();
 }
 
 ScopeList DefaultNode::FindSideEffectScope(const bool assign) {
