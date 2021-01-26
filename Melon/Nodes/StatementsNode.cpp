@@ -66,11 +66,15 @@ void StatementsNode::IncludeScan(ParsingInfo& info) {
 ScanResult StatementsNode::Scan(ScanInfoStack& info) {
 	Set<ScanType> scanSet = Set<ScanType>();
 
+	ScanResult result;
+
 	for (const NodePtr& node : statements) {
-		node->Scan(info);
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 	}
 
-	return ScanResult();
+	return result;
 }
 
 ScopeList StatementsNode::FindSideEffectScope(const bool assign) {

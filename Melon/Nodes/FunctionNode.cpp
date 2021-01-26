@@ -37,7 +37,17 @@ bool FunctionNode::IsNotSpecialized() const {
 }
 
 void FunctionNode::SetTemplateValues() const {
-	//sym->SetTemplateTypes();
+	if (FunctionSymbol* const f = scope->Cast<FunctionSymbol>()) {
+		for (UInt i = 0; i < f->templateArguments.Size(); i++) {
+			if (TypeSymbol* const type = f->TemplateArgument(i)) {
+				if (TemplateSymbol* const arg = type->Cast<TemplateSymbol>()) {
+					if (TypeSymbol* const t = sym->TemplateArgument(i)) {
+						arg->type = t->AbsoluteName();
+					}
+				}
+			}
+		}
+	}
 }
 
 CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
@@ -106,44 +116,41 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 	SetTemplateValues();
 
 	info.Push();
+	
+	info.ScopeInfo().type = ScopeInfo::ScopeType::Function;
+	info.ScopeInfo().Reset();
+	info.File(file);
 
-	/* TODO: node
-	Symbols::Find(this->func, file);
-	info.Get().scopeInfo.type = ScopeInfo::ScopeType::Function;
-	info.Get().scopeInfo.Reset();
-	info.Get().file = file;
-
-	if (func.Pop().Last() == Scope::Init) {
-		info.Get().init = true;
-		info.Get().symbol = Symbols::Find(func.Pop().Pop(), file);
-		info.Get().symbol.ClearAssign();
+	if (sym->AbsoluteName().Pop().Last() == Scope::Init) {
+		info.Init(true);
+		info.Type(sym->Parent()->Parent<TypeSymbol>());
+		info.Type()->PrepareInit();
 	}
 
-	Set<ScanType> scanSet = node->Scan(info);
+	ScanResult result = node->Scan(info);
 
-	if (info.Get().init && !info.Get().symbol.IsAssigned()) {
-		for (const Scope& var : info.Get().symbol.GetUnassignedVars()) {
+	if (info.Init() && !info.Type()->IsInitialized()) {
+		for (const Scope& var : info.Type()->UnassignedMembers()) {
 			ErrorLog::Error(CompileError(CompileError::VarNotInitStart + var.ToString() + CompileError::VarNotInitEnd, file));
 		}
 	}
 
-	for (const ScopeList& sl : s.arguments) {
-		Symbols s = Symbols::FindNearestInNamespace(scope, sl, file);
+	for (UInt i = 0; i < sym->arguments.Size(); i++) {
+		VariableSymbol* const arg = sym->Argument(i);
 
-		if (s.type != SymbolType::None && s.attributes.Contains(SymbolAttribute::Ref)) {
-			info.usedVariables.Add(s.scope);
+		if (arg && (arg->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+			info.usedVariables.Add(arg);
 		}
 	}
 
-	if (!info.Get().scopeInfo.hasReturned && !s.returnValues.IsEmpty()) {
-		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(s), file));
+	if (!info.ScopeInfo().hasReturned && !sym->returnValues.IsEmpty()) {
+		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(sym), file));
 	}
 
 	info.Pop();
-	return scanSet;
-	*/
 
-	return ScanResult();
+	result.selfUsed = false;
+	return result;
 }
 
 NodePtr FunctionNode::Optimize(OptimizeInfo& info) {

@@ -1,5 +1,7 @@
 #include "ForConditionNode.h"
 
+#include "Boxx/Error.h"
+
 #include "AssignNode.h"
 #include "CallNode.h"
 #include "BinaryOperatorNode.h"
@@ -24,59 +26,56 @@ UInt ForConditionNode::GetSize() const {
 }
 
 CompiledNode ForConditionNode::Compile(CompileInfo& info) {
-	return CompiledNode();
+	throw NotSupportedError("ForConditionNodes can not compile themselves");
 }
 
 void ForConditionNode::IncludeScan(ParsingInfo& info) {
+	loopInit->IncludeScan(info);
+	loopCondition->IncludeScan(info);
 
+	if (loopStep) loopStep->IncludeScan(info);
 }
 
 ScanResult ForConditionNode::Scan(ScanInfoStack& info) {
-	loopInit->Scan(info);
-	loopCondition->Scan(info);
+	ScanResult result = loopInit->Scan(info);
+	result.SelfUseCheck(info, loopInit->file);
 
-	if (loopCondition.Cast<AssignNode>() != nullptr) {
-		loopCondition->Scan(info);
+	if (!conditionOperator) {
+		ScanResult r = loopCondition->Scan(info);
+		r.SelfUseCheck(info, loopCondition->file);
+		result |= r;
 	}
 	else {
-		if (loopCondition->Type()->AbsoluteName() != ScopeList::Bool) {
-			Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(loopCondition->scope, Scope::Less, loopCondition->file);
-			comp->node1 = loopInit.Cast<AssignNode>()->vars[0];
-			comp->node2 = loopCondition;
-			comp->Scan(info);
-		}
-		else {
-			loopCondition->Scan(info);
-		}
+		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(loopCondition->scope, (Scope)conditionOperator, loopCondition->file);
+		op->node1 = loopInit.Cast<AssignNode>()->vars[0];
+		op->node2 = loopCondition;
+
+		ScanResult r = op->Scan(info);
+		r.SelfUseCheck(info, loopCondition->file);
+		result |= r;
 	}
 
-	if (loopStep.Cast<AssignNode>() != nullptr) {
-		loopStep->Scan(info);
+	if (!stepOperator) {
+		ScanResult r = loopStep->Scan(info);
+		r.SelfUseCheck(info, loopStep->file);
+		result |= r;
 	}
 	else {
-		bool createAssign = true;
+		Pointer<AssignNode> assign = new AssignNode(loopStep->scope, loopStep->file);
+		assign->vars.Add(loopInit.Cast<AssignNode>()->vars[0]);
 
-		if (Pointer<CallNode> call = loopStep.Cast<CallNode>()) {
-			createAssign = !call->GetFunc()->returnValues.IsEmpty();
-		}
+		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(loopStep->scope, (Scope)stepOperator, loopStep->file);
+		op->node1 = assign->vars[0];
+		op->node2 = loopStep;
 
-		if (createAssign) {
-			Pointer<AssignNode> assign = new AssignNode(loopStep->scope, loopStep->file);
-			assign->vars.Add(loopInit.Cast<AssignNode>()->vars[0]);
+		assign->values.Add(op);
 
-			Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(loopStep->scope, Scope::Add, loopStep->file);
-			add->node1 = assign->vars[0];
-			add->node2 = loopStep;
-
-			assign->values.Add(add);
-			assign->Scan(info);
-		}
-		else {
-			loopStep->Scan(info);
-		}
+		ScanResult r = assign->Scan(info);
+		r.SelfUseCheck(info, loopStep->file);
+		result |= r;
 	}
 
-	return ScanResult();
+	return result;
 }
 
 ScopeList ForConditionNode::FindSideEffectScope(const bool assign) {

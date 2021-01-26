@@ -384,45 +384,42 @@ void CallNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult CallNode::Scan(ScanInfoStack& info) {
-	node->Scan(info);
+	ScanResult result = node->Scan(info);
+	result.SelfUseCheck(info, node->file);
 
-	/*
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-	}
+	FunctionSymbol* const func = GetFunc();
 
-	Symbols s = GetFunc();
-
-	if (info.Get().useFunction) {
-		if (!info.usedFunctions.Contains(s.scope)) {
-			info.usedFunctions.Add(s.scope);
-			info.functions.Add(s.node);
+	if (info.UseFunction()) {
+		if (!info.usedFunctions.Contains(func)) {
+			info.usedFunctions.Add(func);
+			info.functions.Add(func->node);
 		}
 	}
 
 	for (UInt i = 0; i < args.Size(); i++) {
-		if (s.names.Size() > i && !Symbols::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		VariableSymbol* const arg = func->Argument(i);
+
+		if (arg && (arg->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
 			if (noRefs[i]) {
 				ErrorLog::Error(CompileError(CompileError::InvalidNoRef, args[i]->file));
 			}
 		}
 
-		for (const ScanType type : args[i]->Scan(info)) {
-			scanSet.Add(type);
-
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, args[i]->file));
-			}
-		}
+		ScanResult r = args[i]->Scan(info);
+		r.SelfUseCheck(info, args[i]->file);
+		result |= r;
 	}
 
-	for (UInt u = 0; u < s.arguments.Size(); u++) {
-		Int i = IsInit() ? u - 1 : u;
-		Symbols type = Symbols::FindNearestInNamespace(s.symbolNamespace, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
-		Symbols::Find(s.scope.Add(s.names[u]), node->file);
-		NodePtr arg;
+	const bool init = IsInit();
 
+	for (UInt u = 0; u < func->arguments.Size(); u++) {
+		Int i = init ? u - 1 : u;
+
+		TypeSymbol* const type = func->ArgumentType(u);
+		
 		if (i < 0) continue;
+
+		NodePtr arg;
 
 		if (IsSelfPassing()) {
 			if (i == 0) {
@@ -436,11 +433,12 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 			arg = this->args[i];
 		}
 
-		ScanAssignment(new TypeNode(type.scope), arg, info, node->file);
+		if (type) {
+			ScanAssignment(new TypeNode(type->AbsoluteName()), arg, info, node->file);
+		}
 	}
-	*/
 
-	return ScanResult();
+	return result;
 }
 
 NodePtr CallNode::Optimize(OptimizeInfo& info) {

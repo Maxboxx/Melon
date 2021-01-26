@@ -14,6 +14,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -309,7 +311,7 @@ void LoopNode::CompileForSegment(CompiledNode& compiled, CompileInfo& info, Segm
 }
 
 void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
-	bool isLast = IsSegmentLast(segmentInfo.index);
+	const bool isLast = IsSegmentLast(segmentInfo.index);
 
 	const UInt frame = info.stack.frame;
 
@@ -526,30 +528,30 @@ LoopNode::LoopScanInfo LoopNode::ScanSetup(ScanInfo& info) const {
 
 	loopInfo.scope = info.scopeInfo.CopyBranch();
 
-	/* TODO: node
 	if (loopInfo.init) {
-		loopInfo.scope.unassigned = info.symbol.GetUnassignedVarsSet();
+		loopInfo.scope.unassigned = info.type->UnassignedMembers();
 	}
-	*/
 
 	return loopInfo;
 }
 
-ScanResult LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
-	/* TODO: node
+void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
 	if (loopInfo.init) {
 		if (!segment.also) {
 			for (const Scope& var : loopInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = false;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = false;
+				}
 			}
 		}
 		else {
 			for (const Scope& var : loopInfo.mainSegment.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = false;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = false;
+				}
 			}
 		}
 	}
-	*/
 
 	if (!segment.also) {
 		info.scopeInfo = loopInfo.scope.CopyBranch();
@@ -557,16 +559,12 @@ ScanResult LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, con
 	else {
 		info.scopeInfo = loopInfo.mainSegment.CopyBranch();
 	}
-
-	return ScanResult();
 }
 
-ScanResult LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const {
-	/* TODO: node
+void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	if (info.init) {
-		info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
+		info.scopeInfo.unassigned = info.type->UnassignedMembers();
 	}
-	*/
 
 	if (segments[0].IsLoop()) {
 		loopInfo.mainSegment = ScopeInfo::WeakBranchUnion(loopInfo.scope, info.scopeInfo);
@@ -578,16 +576,12 @@ ScanResult LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& inf
 	else {
 		loopInfo.mainSegment = info.scopeInfo;
 	}
-
-	return ScanResult();
 }
 
-ScanResult LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
-	/* TODO: node
+void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
 	if (info.init) {
-		info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
+		info.scopeInfo.unassigned = info.type->UnassignedMembers();
 	}
-	*/
 
 	if (segment.also) {
 		loopInfo.alsoSegments.Add(info.scopeInfo);
@@ -595,11 +589,9 @@ ScanResult LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, co
 	else {
 		loopInfo.elseSegments.Add(info.scopeInfo);
 	}
-
-	return ScanResult();
 }
 
-ScanResult LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
+void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	if (!loopInfo.alsoSegments.IsEmpty()) {
 		if (loopInfo.willASegmentRun) { 
 			loopInfo.scope = loopInfo.alsoSegments[0];
@@ -631,41 +623,32 @@ ScanResult LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	}
 
 	info.scopeInfo = loopInfo.scope;
-
-	return ScanResult();
 }
 
 ScanResult LoopNode::Scan(ScanInfoStack& info) {
-	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
+	ScanResult result;
+
+	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
 	LoopScanInfo loopInfo = ScanSetup(info.Get());
-	info.Get().scopeInfo.ExitScope();
+	info.ScopeInfo().ExitScope();
 
 	for (UInt i = 0; i < segments.Size(); i++) {
-		info.Get().scopeInfo.EnterScope(segments[i].IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
+		info.ScopeInfo().EnterScope(segments[i].IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
 		ScanPreContents(loopInfo, info.Get(), segments[i]);
 
-		/* TODO: node
 		if (segments[i].type != LoopType::None) {
-			for (const ScanType type : segments[i].condition->Scan(info)) {
-				scanSet.Add(type);
-
-				if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-					ErrorLog::Error(CompileError(CompileError::SelfInit, segments[i].condition->file));
-				}
-			}
+			ScanResult r = segments[i].condition->Scan(info);
+			r.SelfUseCheck(info, segments[i].condition->file);
+			result |= r;
 		}
 
-		for (const ScanType type : segments[i].statements->Scan(info)) {
-			scanSet.Add(type);
-
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, segments[i].statements->file));
-			}
-		}
+		ScanResult r = segments[i].statements->Scan(info);
+		r.SelfUseCheck(info, segments[i].statements->file);
+		result |= r;
 
 		if (segments[i].IsLoop()) {
-			info.Get().scopeInfo.loopBreakCount  = loopInfo.scope.loopBreakCount;
-			info.Get().scopeInfo.scopeBreakCount = loopInfo.scope.scopeBreakCount;
+			info.ScopeInfo().loopBreakCount  = loopInfo.scope.loopBreakCount;
+			info.ScopeInfo().scopeBreakCount = loopInfo.scope.scopeBreakCount;
 		}
 
 		if (i == 0) {
@@ -675,15 +658,14 @@ ScanResult LoopNode::Scan(ScanInfoStack& info) {
 			ScanPostContents(loopInfo, info.Get(), segments[i]);
 		}
 
-		info.Get().scopeInfo.ExitScope();
-		*/
+		info.ScopeInfo().ExitScope();
 	}
 
-	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
+	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
 	ScanCleanup(loopInfo, info.Get());
-	info.Get().scopeInfo.ExitScope();
+	info.ScopeInfo().ExitScope();
 
-	return ScanResult();
+	return result;
 }
 
 ScopeList LoopNode::FindSideEffectScope(const bool assign) {

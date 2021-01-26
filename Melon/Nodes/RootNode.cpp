@@ -273,7 +273,7 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 }
 
 ScanResult RootNode::Scan(ScanInfoStack& info) {
-	info.Get().useFunction = true;
+	info.UseFunction(true);
 
 	for (const NodePtr& node : nodes) {
 		node->Scan(info);
@@ -295,7 +295,7 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	info.Get().useFunction = false;
+	info.UseFunction(false);
 
 	for (const NodePtr& node : funcs) {
 		if (!info.usedFunctions.Contains(node.Cast<FunctionNode>()->sym)) {

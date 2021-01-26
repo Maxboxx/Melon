@@ -117,31 +117,19 @@ void RepeatNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult RepeatNode::Scan(ScanInfoStack& info) {
-	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
-	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Loop);
+	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
+	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Loop);
 
-	/* TODO: node
-	for (const ScanType type : content->Scan(info)) {
-		scanSet.Add(type);
+	ScanResult result1 = content->Scan(info);
+	result1.SelfUseCheck(info, content->file);
 
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, content->file));
-		}
-	}
+	ScanResult result2 = condition->Scan(info);
+	result2.SelfUseCheck(info, condition->file);
 
-	for (const ScanType type : condition->Scan(info)) {
-		scanSet.Add(type);
+	info.ScopeInfo().ExitScope();
+	info.ScopeInfo(ScopeInfo::WeakBranchUnion(scopeInfo, info.ScopeInfo()));
 
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, condition->file));
-		}
-	}
-	*/
-
-	info.Get().scopeInfo.ExitScope();
-	info.Get().scopeInfo = ScopeInfo::WeakBranchUnion(scopeInfo, info.Get().scopeInfo);
-
-	return ScanResult();
+	return result1 | result2;
 }
 
 ScopeList RepeatNode::FindSideEffectScope(const bool assign) {

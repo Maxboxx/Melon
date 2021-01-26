@@ -13,6 +13,9 @@
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -110,43 +113,48 @@ void GuardNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult GuardNode::Scan(ScanInfoStack& info) {
-	cond->Scan(info);
+	ScanResult result = cond->Scan(info);
+	result.SelfUseCheck(info, cond->file);
+	
+	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
 
-	/* TODO: node
-	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
-	if (info.Get().init) scopeInfo.unassigned = info.Get().symbol.GetUnassignedVarsSet();
-
-	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
-
-	if (else_) for (const ScanType type : else_->Scan(info)) {
-		scanSet.Add(type);
-
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, else_->file));
-		}
+	if (info.Init()) {
+		scopeInfo.unassigned = info.Type()->UnassignedMembers();
 	}
 
-	info.Get().scopeInfo.ExitScope();
+	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
 
-	ScopeInfo elseScope = info.Get().scopeInfo.CopyBranch();
-	if (info.Get().init) elseScope.unassigned = info.Get().symbol.GetUnassignedVarsSet();
+	if (else_) {
+		ScanResult r = else_->Scan(info);
+		r.SelfUseCheck(info, else_->file);
+		result |= r;
+	}
+
+	info.ScopeInfo().ExitScope();
+
+	ScopeInfo elseScope = info.ScopeInfo().CopyBranch();
+
+	if (info.Init()) {
+		elseScope.unassigned = info.Type()->UnassignedMembers();
+	}
 
 	AddScopeBreak(info);
 
 	for (const Scope& var : scopeInfo.unassigned) {
-		info.Get().symbol.Get(var, file).isAssigned = false;
+		if (VariableSymbol* const v = info.Type()->Find<VariableSymbol>(var, file)) {
+			v->isAssigned = false;
+		}
 	}
 	
-	info.Get().scopeInfo = scopeInfo;
+	info.ScopeInfo(scopeInfo);
 
-	for (const ScanType type : continue_->Scan(info)) {
-		scanSet.Add(type);
-	}
+	ScanResult r = continue_->Scan(info);
+	r.SelfUseCheck(info, continue_->file);
+	result |= r;
 
-	info.Get().scopeInfo = ScopeInfo::BranchIntersection(elseScope, info.Get().scopeInfo);
-	*/
+	info.ScopeInfo(ScopeInfo::BranchIntersection(elseScope, info.ScopeInfo()));
 
-	return ScanResult();
+	return result;
 }
 
 ScopeList GuardNode::FindSideEffectScope(const bool assign) {
@@ -201,8 +209,8 @@ NodePtr GuardNode::Optimize(OptimizeInfo& info) {
 }
 
 void GuardNode::AddScopeBreak(ScanInfoStack& info) {
-	if (info.Get().scopeInfo.CanContinue()) {
-		switch (info.Get().scopeInfo.type) {
+	if (info.ScopeInfo().CanContinue()) {
+		switch (info.ScopeInfo().type) {
 			case ScopeInfo::ScopeType::Scope: {
 				Pointer<BreakNode> bn = new BreakNode(scope, file);
 				bn->isBreak = true;
@@ -210,7 +218,7 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 				bn->scopeWise = true;
 				end = bn;
 
-				info.Get().scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info.Get().scopeInfo.maxScopeBreakCount);
+				info.ScopeInfo().maxScopeBreakCount = Math::Max(bn->loops, info.ScopeInfo().maxScopeBreakCount);
 				break;
 			}
 
@@ -219,28 +227,39 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 				cn->loops = 1;
 				end = cn;
 
-				info.Get().scopeInfo.maxLoopBreakCount = Math::Max(cn->loops, info.Get().scopeInfo.maxLoopBreakCount);
+				info.ScopeInfo().maxLoopBreakCount = Math::Max(cn->loops, info.ScopeInfo().maxLoopBreakCount);
 				break;
 			}
 
 			case ScopeInfo::ScopeType::Function: {
-				/* TODO: node
-				Symbols func = Symbols::FindCurrentFunction(scope, file);
+				FunctionSymbol* func = nullptr;
+				Symbol* sym = scope;
 
-				if (func.returnValues.Size() == 0 && !info.Get().scopeInfo.hasReturned) {
-					end = new ReturnNode(scope, file);
+				while (sym) {
+					if (func = sym->Cast<FunctionSymbol>()) {
+						break;
+					}
+					else {
+						sym = sym->Parent();
+					}
 				}
-				else if (!info.Get().scopeInfo.hasReturned) {
-					ErrorLog::Error(CompileError("guard must return from function", file));
+
+				if (func) {
+					if (func->returnValues.IsEmpty() && !info.ScopeInfo().hasReturned) {
+						end = new ReturnNode(scope, file);
+					}
+					else if (!info.ScopeInfo().hasReturned) {
+						// TODO: error
+						ErrorLog::Error(CompileError("guard must return from function", file));
+					}
 				}
 
-				info.Get().scopeInfo.willNotReturn = false;
-				*/
-
+				info.ScopeInfo().willNotReturn = false;
 				break;
 			}
 
 			case ScopeInfo::ScopeType::Main: {
+				// TODO: error
 				ErrorLog::Error(CompileError("guard statements in main scope are not supported yet", file));
 				break;
 			}

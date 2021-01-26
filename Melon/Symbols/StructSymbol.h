@@ -16,9 +16,14 @@ namespace Melon {
 			virtual bool IsInitialized() override;
 			virtual void PrepareInit() override;
 			virtual void CompleteInit() override;
+			virtual Boxx::Set<Scope> UnassignedMembers() override;
+			virtual void UpdateSize() override;
 
 			///T Non static members
 			Boxx::Collection<Scope> members;
+
+			///T Is Recursive
+			bool isRecursive = false;
 		};
 	}
 }

@@ -26,11 +26,7 @@ TypeSymbol* MemoryNode::Type() const {
 CompiledNode MemoryNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = mem;
-
-	/* TODO: node
-	c.size = Symbols::Find(type, file).size;
-	*/
-
+	c.size = SymbolTable::FindAbsolute<TypeSymbol>(type, file)->Size();
 	return c;
 }
 

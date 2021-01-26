@@ -48,15 +48,15 @@ namespace Melon {
 
 			///T Scan Pre Contents
 			/// A switch scan performed before the scan of the case content
-			ScanResult ScanPreContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
+			void ScanPreContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
 
 			///T Scan Post Contents
 			/// A switch scan performed after the scan of the case content
-			ScanResult ScanPostContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
+			void ScanPostContents(SwitchScanInfo& loopInfo, ScanInfo& info) const;
 
 			///T Scan Cleanup
 			/// Cleanup for the switch scan info
-			ScanResult ScanCleanup(SwitchScanInfo& loopInfo, ScanInfo& info) const;
+			void ScanCleanup(SwitchScanInfo& loopInfo, ScanInfo& info) const;
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::UInt GetSize() const override;

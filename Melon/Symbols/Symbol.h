@@ -109,6 +109,10 @@ namespace Melon {
 				return dynamic_cast<T*>(this);
 			}
 
+			///T File
+			/// Gets the file info of the symbol
+			FileInfo File() const;
+
 		protected:
 			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
 

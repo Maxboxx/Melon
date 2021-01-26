@@ -99,18 +99,17 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 }
 
 ScanResult NameNode::Scan(ScanInfoStack& info) {
-	/* TODO: node
-	Symbols s = GetSymbol();
+	ScanResult result;
+	Symbol* const s = GetSymbol();
 
 	if (name == Scope::Self) {
-		scanSet.Add(ScanType::Self);
+		result.selfUsed = true;
 	}
-	else if (s.type == SymbolType::Variable) {
-		info.usedVariables.Add(s.scope);
+	else if (VariableSymbol* const var = s->Cast<VariableSymbol>()) {
+		info.usedVariables.Add(var);
 	}
-	*/
 
-	return ScanResult();
+	return result;
 }
 
 ScopeList NameNode::FindSideEffectScope(const bool assign) {

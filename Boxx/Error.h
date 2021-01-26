@@ -24,12 +24,32 @@ namespace Boxx {
 		virtual String Name() const;
 	};
 
+	///B NotImplementedError
+	/// Thrown if something has not been implemented yet
+	class NotImplementedError : public Error {
+	public:
+		NotImplementedError() : Error() {}
+		NotImplementedError(const char* const msg) : Error(msg) {}
+
+		virtual String Name() const override;
+	};
+
+	///B NotSupportedError
+	/// Thrown if there is no implementation available
+	class NotSupportedError : public Error {
+	public:
+		NotSupportedError() : Error() {}
+		NotSupportedError(const char* const msg) : Error(msg) {}
+
+		virtual String Name() const override;
+	};
+
 	///B SystemNotSupportedError
 	/// Thrown if the current operating system is not supported
-	class SystemNotSupportedError : public Error {
+	class SystemNotSupportedError : public NotSupportedError {
 	public:
-		SystemNotSupportedError() : Error() {}
-		SystemNotSupportedError(const char* const msg) : Error(msg) {}
+		SystemNotSupportedError() : NotSupportedError() {}
+		SystemNotSupportedError(const char* const msg) : NotSupportedError(msg) {}
 
 		virtual String Name() const override;
 	};

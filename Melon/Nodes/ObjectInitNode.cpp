@@ -5,6 +5,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/StructSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -78,15 +80,31 @@ void ObjectInitNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
-	node->Scan(info);
+	ScanResult result = node->Scan(info);
+	result.SelfUseCheck(info, node->file);
+	
+	TypeSymbol* const type = Type();
 
-	/* TODO: node
-	Symbols s = Symbols::Find(Type(), file);
+	if (type == nullptr) return result;
 
-	if (s.type == SymbolType::None) return scanSet;
+	if (StructSymbol* const s = type->Cast<StructSymbol>()) {
+		for (const Scope& member : s->members) {
+			bool found = false;
 
-	for (const Scope& var : s.GetUnassignedVars(vars)) {
-		ErrorLog::Error(CompileError(CompileError::VarNotCustomInitStart + var.ToString() + CompileError::VarNotCustomInitEnd, file));
+			for (const Scope& var : vars) {
+				if (var == member) {
+					found = true;
+					break;
+				}
+			}
+
+			if (found) continue;
+
+			ErrorLog::Error(CompileError(CompileError::VarNotCustomInitStart + member.ToString() + CompileError::VarNotCustomInitEnd, file));
+		}
+	}
+	else {
+		ErrorLog::Error(CompileError(CompileError::InvalidCustomInit, file));
 	}
 
 	for (UInt i = 0; i < vars.Size(); i++) {
@@ -96,32 +114,19 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 			}
 		}
 
-		Symbols v = s.Get(vars[i], file);
-		Symbols varType = v.GetType(file);
+		VariableSymbol* const v = type->Find<VariableSymbol>(vars[i], file);
+		TypeSymbol* const varType = v->Type();
 
-		ScanAssignment(new TypeNode(varType.scope), expressions[i], info, expressions[i]->file);
-
-		if (s.type != SymbolType::Struct) {
-			ErrorLog::Error(CompileError(CompileError::InvalidCustomInit, file));
-		}
-	}
-
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
+		ScanAssignment(new TypeNode(varType->AbsoluteName()), expressions[i], info, expressions[i]->file);
 	}
 
 	for (const NodePtr& node : expressions) {
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
-
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-			}
-		}
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 	}
-	*/
 
-	return ScanResult();
+	return result;
 }
 
 ScopeList ObjectInitNode::FindSideEffectScope(const bool assign) {

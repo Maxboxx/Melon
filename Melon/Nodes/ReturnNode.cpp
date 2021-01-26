@@ -7,6 +7,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -25,23 +27,18 @@ ReturnNode::~ReturnNode() {
 
 }
 
-List<Symbols> ReturnNode::GetTypes() const {
-	List<Symbols::Symbols> types;
+FunctionSymbol* ReturnNode::GetFunc() const {
+	return SymbolTable::Find<FunctionSymbol>(func, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+}
 
-	/* TODO: node
-	Symbols s = Symbols::Find(Symbols::ReplaceTemplates(func, file), file);
-	
-	for (ScopeList type : s.returnValues) {
-		Symbols sym = Symbols::FindNearestInNamespace(Symbols::ReplaceTemplates(s.scope.Pop(), file), type, file);
+List<TypeSymbol*> ReturnNode::GetTypes() const {
+	List<TypeSymbol*> types;
 
-		if (sym.type == SymbolType::Template) {
-			types.Add(Symbols::Find(sym.varType, file));
-		}
-		else {
-			types.Add(sym);
+	if (FunctionSymbol* const f = GetFunc()) {
+		for (UInt i = 0; i < f->returnValues.Size(); i++) {
+			types.Add(f->ReturnType(i));
 		}
 	}
-	*/
 
 	return types;
 }
@@ -97,37 +94,39 @@ void ReturnNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult ReturnNode::Scan(ScanInfoStack& info) {
-	if (info.Get().scopeInfo.CanContinue()) {
-		info.Get().scopeInfo.hasReturned = true;
+	if (info.ScopeInfo().CanContinue()) {
+		info.ScopeInfo().hasReturned = true;
 	}
 
-	info.Get().scopeInfo.willNotReturn = false;
+	info.ScopeInfo().willNotReturn = false;
+
+	ScanResult result;
 
 	for (const NodePtr& node : nodes) {
-		node->Scan(info);
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 	}
 
-	/* TODO: node
-	Symbols s = Symbols::Find(Symbols::ReplaceTemplates(func, file), file);
+	FunctionSymbol* const f = GetFunc();
 
-	if (s.returnValues.Size() != nodes.Size()) {
-		ErrorLog::Error(CompileError(CompileError::Return(s.returnValues.Size(), nodes.Size()), file));
+	if (f == nullptr) return result;
+
+	if (f->returnValues.Size() != nodes.Size()) {
+		ErrorLog::Error(CompileError(CompileError::Return(f->returnValues.Size(), nodes.Size()), file));
 	}
 
-	List<Symbols> types = GetTypes();
-
-	for (UInt i = 0; i < s.arguments.Size(); i++) {
-		Symbols::FindNearestInNamespace(s.scope.Pop(), s.arguments[i], file);
-		Symbols::Find(s.scope.Add(s.names[i]), file);
-	}
+	List<TypeSymbol*> types = GetTypes();
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
 		if (i >= types.Size()) break;
-		ScanAssignment(new TypeNode(types[i].scope), nodes[i], info, nodes[i]->file);
-	}
-	*/
 
-	return ScanResult();
+		if (types[i]) {
+			ScanAssignment(new TypeNode(types[i]->AbsoluteName()), nodes[i], info, nodes[i]->file);
+		}
+	}
+
+	return result;
 }
 
 ScopeList ReturnNode::FindSideEffectScope(const bool assign) {

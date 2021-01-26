@@ -97,32 +97,23 @@ void DefaultNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult DefaultNode::Scan(ScanInfoStack& info) {
-	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
+	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
 
-	/* TODO: node
-	for (const ScanType type : node1->Scan(info)) {
-		scanSet.Add(type);
+	ScanResult result1 = node1->Scan(info);
+	result1.SelfUseCheck(info, node1->file);
 
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
-		}
+	ScanResult result2 = node2->Scan(info);
+	result2.SelfUseCheck(info, node2->file);
+
+	TypeSymbol* const type = Type();
+	
+	if (type) {
+		ScanAssignment(new TypeNode(type->AbsoluteName()), node2, info, file);
 	}
 
-	for (const ScanType type : node2->Scan(info)) {
-		scanSet.Add(type);
+	info.ScopeInfo(scopeInfo);
 
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
-		}
-	}
-
-	Symbols::Find(Type(), file);
-	ScanAssignment(new TypeNode(Type()), new TypeNode(Symbols::Find(node1->Type(), node1->file).Get(Scope::Value, node1->file).varType), info, file);
-	ScanAssignment(new TypeNode(Type()), node2, info, file);
-	*/
-
-	info.Get().scopeInfo = scopeInfo;
-	return ScanResult();
+	return result1 | result2;
 }
 
 ScopeList DefaultNode::FindSideEffectScope(const bool assign) {

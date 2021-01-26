@@ -65,3 +65,33 @@ void StructSymbol::CompleteInit() {
 		}
 	}
 }
+
+Set<Scope> StructSymbol::UnassignedMembers() {
+	Set<Scope> vars;
+
+	for (const Scope& member : members) {
+		if (VariableSymbol* const var = Find<VariableSymbol>(member, file)) {
+			if (!var->isAssigned) {
+				vars.Add(member);
+			}
+		}
+	}
+
+	return vars;
+}
+
+void StructSymbol::UpdateSize() {
+	size = 0;
+
+	for (const Scope& name : members) {
+		if (VariableSymbol* const var = Find<VariableSymbol>(name, file)) {
+			if (TypeSymbol* const type = var->Type()) {
+				if (type->Size() == 0) {
+					type->UpdateSize();
+				}
+
+				size += type->Size();
+			}
+		}
+	}
+}

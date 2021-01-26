@@ -77,19 +77,19 @@ namespace Melon {
 				
 			///T Scan First Post Contents
 			/// A loop scan performed on the first segment
-			ScanResult ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const;
+			void ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const;
 
 			///T Scan Pre Contents
 			/// A loop scan performed before the scan of the loop segment content
-			ScanResult ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
+			void ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
 
 			///T Scan Post Contents
 			/// A loop scan performed after the scan of the loop segment content
-			ScanResult ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
+			void ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
 
 			///T Scan Cleanup
 			/// Cleanup for the loop scan info
-			ScanResult ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const;
+			void ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const;
 
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;

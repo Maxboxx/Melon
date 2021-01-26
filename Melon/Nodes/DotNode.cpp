@@ -120,70 +120,60 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult DotNode::Scan(ScanInfoStack& info) {
-	bool assign = info.Get().assign;
-	info.Get().assign = false;
+	const bool assign = info.Assign();
+	info.Assign(false);
 
-	UInt errorCount = ErrorLog::ErrorCount();
+	ScanResult result = node->Scan(info);
 
-	node->Scan(info);
+	TypeSymbol* const type = node->Type();
+	if (type == nullptr) return result;
 
-	if (errorCount < ErrorLog::ErrorCount()) {
-		return ScanResult();
+	Symbol* const sym = type->Find(name, file);
+	if (sym == nullptr) return result;
+
+	if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
+		if ((var->attributes & VariableAttributes::Static) != VariableAttributes::None) {
+			info.usedVariables.Add(var);
+		}
 	}
 
-	Symbol* const type = node->Type();
+	info.Assign(assign);
 
-	/* TODO: node
-	Symbols var = Symbols::Find(type.Add(name), file);
-
-	if (var.type == SymbolType::Variable && var.attributes.Contains(SymbolAttribute::Static)) {
-		info.usedVariables.Add(var.scope);
-	}
-
-	info.Get().assign = assign;
-
-	if (info.Get().assign) {
+	if (info.Assign()) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
-				const ScopeList scope = type.Add(name);
-				Symbols& s = Symbols::Find(scope.Pop(), file).Get(scope.Last(), file);
+				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
+					if (info.ScopeInfo().WillContinue()) {
+						var->isAssigned = true;
+					}
 
-				if (s.type == SymbolType::Variable) {
-					if (info.Get().scopeInfo.WillContinue()) s.isAssigned = true;
-
-					scanSet.Remove(ScanType::Self);
-
-					if (Symbols::Find(scope.Pop(), file).IsAssigned()) {
-						info.Get().init = false;
+					if (info.Type()->IsInitialized()) {
+						info.Init(false);
 					}
 				}
 
-				scanSet.Remove(ScanType::Self);
+				result.selfUsed = false;
 			}
 		}
 	}
-	else if (info.Get().init) {
+	else if (info.Init()) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
-				const ScopeList scope = type.Add(name);
-				Symbols& s = Symbols::Find(scope.Pop(), file).Get(scope.Last(), file);
-
-				if (s.type == SymbolType::Variable) {
-					if (!s.isAssigned) {
+				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
+					if (!var->isAssigned) {
 						ErrorLog::Error(CompileError(CompileError::SelfVarUseStart + name.ToString() + CompileError::SelfVarUseEnd, file));
 					}
 				}
 
-				scanSet.Remove(ScanType::Self);
+				result.selfUsed = false;
 			}
 		}
 	}
 	else {
-		scanSet.Remove(ScanType::Self);
+		result.selfUsed = false;
 	}
-	*/
 
-	return ScanResult();
+	return result;
 }
 
 ScopeList DotNode::FindSideEffectScope(const bool assign) {

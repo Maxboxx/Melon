@@ -1,5 +1,8 @@
 #include "NewVariableNode.h"
 
+#include "Melon/Symbols/NamespaceSymbol.h"
+#include "Melon/Symbols/TemplateSymbol.h"
+
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
 
@@ -19,26 +22,20 @@ NewVariableNode::~NewVariableNode() {
 }
 
 TypeSymbol* NewVariableNode::GetType(const UInt index) const {
-	/* TODO: node
-	ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
-
 	ScopeList type = types[types.Size() > 1 ? index : 0];
 
 	if (type == ScopeList::Discard) {
-		return ScopeList::Discard;
+		return nullptr;
 	}
 
-	Symbols s = Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, type, file), file);
+	TypeSymbol* const sym = SymbolTable::Find<TypeSymbol>(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
-	if (s.type == SymbolType::Template) {
-		return s.varType;
+	if (TemplateSymbol* const t = sym->Cast<TemplateSymbol>()) {
+		return t->Type();
 	}
 	else {
-		return s.scope;
+		return sym;
 	}
-	*/
-
-	return nullptr;
 }
 
 TypeSymbol* NewVariableNode::Type() const {
@@ -120,47 +117,37 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 	for (const ScopeList& type : types) {
 		if (type == ScopeList::Discard) continue;
 
-		/* TODO: node
 		while (true) {
-			ScopeList replacedScope = Symbols::ReplaceTemplates(scope, file);
-
-			Symbols s = Symbols::FindNearestInNamespace(replacedScope, Symbols::ReplaceNearestTemplates(replacedScope, type, file), file);
+			Symbol* s = SymbolTable::Find(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 			bool done = true;
 
 			for (UInt i = 1; i < type.Size(); i++) {
-				if (s.type == SymbolType::Namespace) {
-					if (!s.Contains(type[i])) {
-						IncludeParser::ParseInclude(s.scope.Add(type[i]), info);
+				if (s->Is<NamespaceSymbol>()) {
+					if (!s->Contains(type[i])) {
+						IncludeParser::ParseInclude(s->AbsoluteName().Add(type[i]), info);
 						done = false;
 						break;
 					}
 					else {
-						s = s.Get(type[i], FileInfo());
+						s = s->Find(type[i], FileInfo());
 					}
 				}
 			}
 
 			if (done) break;
 		}
-		*/
 	}
 }
 
 ScanResult NewVariableNode::Scan(ScanInfoStack& info) {
-	/* TODO: node
-	Symbols::Find(Type(), file);
-
 	for (UInt i = 0; i < types.Size(); i++) {
 		GetType(i);
 	}
 
 	for (UInt i = 0; i < names.Size(); i++) {
-		if (GetType(i) == ScopeList::Discard) continue;
-
-		Symbols::FindInNamespace(scope.Add(names[i]), file);
+		scope->Find(names[i], file);
 	}
-	*/
 
 	return ScanResult();
 }

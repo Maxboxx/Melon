@@ -106,3 +106,11 @@ void TypeSymbol::PrepareInit() {
 void TypeSymbol::CompleteInit() {
 
 }
+
+Set<Scope> TypeSymbol::UnassignedMembers() {
+	return Set<Scope>();
+}
+
+void TypeSymbol::UpdateSize() {
+
+}

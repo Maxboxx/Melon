@@ -4,6 +4,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -23,19 +25,22 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-bool StructNode::IsRecursive(const Symbols::Symbols& symbol) const {
-	if (symbol.type != SymbolType::Struct) return false;
-	if (symbol.isRecursive) return false;
-
-	/* TODO: node
-	if (symbol.scope == this->symbol.scope) return true;
+bool StructNode::IsRecursive(StructSymbol* const symbol) const {
+	if (symbol == nullptr) return false;
+	if (symbol->isRecursive) return false;
+	if (symbol == this->symbol) return true;
 	
-	for (const Scope& name : symbol.names) {
-		if (IsRecursive(symbol.Get(name, file).GetType(file))) {
-			return true;
+	for (const Scope& name : symbol->members) {
+		if (VariableSymbol* const var = symbol->Find<VariableSymbol>(name, file)) {
+			if (TypeSymbol* const type = var->Type()) {
+				if (StructSymbol* const s = type->Cast<StructSymbol>()) {
+					if (IsRecursive(s)) {
+						return true;
+					}
+				}
+			}
 		}
 	}
-	*/
 
 	return false;
 }
@@ -51,22 +56,18 @@ ScopeList StructNode::FindSideEffectScope(const bool assign) {
 }
 
 ScanResult StructNode::Scan(ScanInfoStack& info) {
-	/* TODO: node
-	Symbols& s = Symbols::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
-	s.size = 0;
+	symbol->UpdateSize();
 
-	for (const Scope& var : vars) {
-		Symbols& v = Symbols::Find(symbol.scope, file).Get(var, file);
-		v.offset = s.size;
-		s.size += s.Get(var, file).GetType(file).size;
-
-		// TODO: error line
-		if (IsRecursive(v.GetType(file))) {
-			s.isRecursive = true;
-			ErrorLog::Error(SymbolError(SymbolError::RecursiveStruct(this->name.ToString()), file));
+	for (const Scope& var : symbol->members) {
+		if (VariableSymbol* const member = symbol->Find<VariableSymbol>(var, file)) {
+			if (TypeSymbol* const type = member->Type()) {
+				if (IsRecursive(type->Cast<StructSymbol>())) {
+					symbol->isRecursive = true;
+					ErrorLog::Error(SymbolError(SymbolError::RecursiveStruct(this->name.ToString()), member->File()));
+				}
+			}
 		}
 	}
-	*/
 
 	return ScanResult();
 }

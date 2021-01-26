@@ -89,23 +89,20 @@ void ConditionNode::IncludeScan(ParsingInfo& info) {
 ScanResult ConditionNode::Scan(ScanInfoStack& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		NodePtr tempValue = assign->values[0];
+		
+		TypeSymbol* const type = assign->values[0]->Type();
 
-		/* TODO: node
-		Symbols s = Symbols::Find(assign->values[0]->Type(), file);
-
-		if (s.scope.Size() > 0 && s.scope[0].name == Scope::Optional.name) {
-			Pointer<TypeNode> value = new TypeNode(s.Get(Scope::Value, file).varType);
+		if (type && type->AbsoluteName()[0].name == Scope::Optional.name) {
+			Pointer<TypeNode> value = new TypeNode(type->Find(Scope::Value, file)->Type()->AbsoluteName());
 			assign->values[0] = value;
 		}
 		else {
-			ErrorLog::Error(TypeError(TypeError::ConditionAssignment(tempValue->Type().ToString()), tempValue->file));
+			ErrorLog::Error(TypeError(TypeError::ConditionAssignment(tempValue->Type()->AbsoluteName().ToString()), tempValue->file));
 		}
 
-		Set<ScanType> scanSet = Set<ScanType>::Union(cond->Scan(info), tempValue->Scan(info));
-
+		ScanResult result = cond->Scan(info) | tempValue->Scan(info);
 		assign->values[0] = tempValue;
-		return scanSet;
-		*/
+		return result;
 	}
 	else {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);

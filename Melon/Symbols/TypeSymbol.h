@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Boxx/Set.h"
+
 #include "MapSymbol.h"
 
 namespace Melon {
@@ -67,6 +69,15 @@ namespace Melon {
 			///T Complete Initialization
 			/// Completes the initialization for the scan step
 			virtual void CompleteInit();
+
+			///T Unassigned Members
+			/// Get all unassigned members
+			virtual Boxx::Set<Scope> UnassignedMembers();
+
+			///T Update Size
+			/// Calculates the size of the struct and updates the internal value
+			virtual void UpdateSize();
+
 			
 			virtual TypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 

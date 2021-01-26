@@ -42,7 +42,7 @@ namespace Melon {
 			FileInfo File() const {return stack.Peek().file;}
 			void File(const FileInfo file) {stack.Peek().file = file;}
 
-			ScopeInfo ScopeInfo() const {return stack.Peek().scopeInfo;}
+			ScopeInfo& ScopeInfo() {return stack.Peek().scopeInfo;}
 			void ScopeInfo(const Nodes::ScopeInfo info) {stack.Peek().scopeInfo = info;}
 
 			Boxx::Set<Symbols::VariableSymbol*> usedVariables;

@@ -65,3 +65,7 @@ Symbol* Symbol::FindSymbol(const ScopeList& scopeList, const UInt index, const F
 void Symbol::FindError(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
 	ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + scopeList[index].ToString() + SymbolError::NotFoundEnd, file));
 }
+
+FileInfo Symbol::File() const {
+	return file;
+}

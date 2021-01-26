@@ -19,7 +19,7 @@
 	}
 	
 	optimizing: {
-		ast:  0
+		ast:  false
 		kiwi: true
 	}
 }

@@ -239,49 +239,41 @@ SwitchNode::SwitchScanInfo SwitchNode::ScanSetup(ScanInfo& info) const {
 		switchInfo.willACaseRun = def != nullptr;
 		switchInfo.scope = info.scopeInfo.CopyBranch();
 
-		/* TODO: node
 		if (switchInfo.init) {
-			switchInfo.scope.unassigned = info.symbol.GetUnassignedVarsSet();
+			switchInfo.scope.unassigned = info.type->UnassignedMembers();
 		}
-		*/
 	}
 
 	return switchInfo;
 }
 
-ScanResult SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
 		if (switchInfo.init) {
 			info.init = true;
 
-			/* TODO: node
 			for (const Scope& var : switchInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = false;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = false;
+				}
 			}
-			*/
 		}
 
 		info.scopeInfo = switchInfo.scope.CopyBranch();
 	}
-
-	return ScanResult();
 }
 
-ScanResult SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
-		/* TODO: node
 		if (switchInfo.init) {
-			info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
+			info.scopeInfo.unassigned = info.type->UnassignedMembers();
 		}
-		*/
 
 		switchInfo.cases.Add(info.scopeInfo);
 	}
-
-	return ScanResult();
 }
 
-ScanResult SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
 		for (UInt i = 0; i < switchInfo.cases.Size(); i++) {
 			if (i == 0) {
@@ -295,59 +287,52 @@ ScanResult SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) c
 			}
 		}
 
-		/* TODO: node
 		if (switchInfo.init) {
 			for (const Scope& var : switchInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = true;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = true;
+				}
 			}
 
 			for (const Scope& var : switchInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = false;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = false;
+				}
 			}
 		}
-		*/
 
 		info.scopeInfo = switchInfo.scope;
 	}
-
-	return ScanResult();
 }
 
 ScanResult SwitchNode::Scan(ScanInfoStack& info) {
-	match->Scan(info);
+	ScanResult result = match->Scan(info);
+	result.SelfUseCheck(info, match->file);
 
-	/* TODO: node
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, match->file));
+	TypeSymbol* const type = Type();
+	TypeSymbol* const matchType = match->Type();
+	
+	if (matchType) {
+		ScanAssignment(new TypeNode(matchType->AbsoluteName()), new TypeNode(matchType->AbsoluteName()), info, match->file);
 	}
-
-	if (expr) {
-		Symbols::Find(Type(), file);
-	}
-
-	Symbols::Find(this->match->Type(), this->match->file);
-
-	List<ScopeList> args;
-	args.Add(this->match->Type());
-	Symbols::FindFunction(this->match->Type().Add(Scope::Assign), args, this->match->file);
 
 	SwitchScanInfo switchInfo = ScanSetup(info.Get());
 
-	Pointer<TypeNode> type = new TypeNode(Type());
+	Pointer<TypeNode> typeNode = nullptr;
+
+	if (type) {
+		typeNode = new TypeNode(type->AbsoluteName());
+	}
 
 	for (const NodePtr& node : nodes) {
 		ScanPreContents(switchInfo, info.Get());
 
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-			}
-		}
-
-		if (expr) {
-			ScanAssignment(type, node, info, node->file);
+		if (expr && typeNode) {
+			ScanAssignment(typeNode, node, info, node->file);
 		}
 
 		ScanPostContents(switchInfo, info.Get());
@@ -356,16 +341,12 @@ ScanResult SwitchNode::Scan(ScanInfoStack& info) {
 	if (def) {
 		ScanPreContents(switchInfo, info.Get());
 
-		for (const ScanType type : def->Scan(info)) {
-			scanSet.Add(type);
+		ScanResult r = def->Scan(info);
+		r.SelfUseCheck(info, def->file);
+		result |= r;
 
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, def->file));
-			}
-		}
-
-		if (expr) {
-			ScanAssignment(type, def, info, def->file);
+		if (expr && typeNode) {
+			ScanAssignment(typeNode, def, info, def->file);
 		}
 
 		ScanPostContents(switchInfo, info.Get());
@@ -375,20 +356,15 @@ ScanResult SwitchNode::Scan(ScanInfoStack& info) {
 
 	for (const List<NodePtr>& nodeList : cases) {
 		for (const NodePtr& node : nodeList) {
-			for (const ScanType type : node->Scan(info)) {
-				scanSet.Add(type);
+			ScanResult r = node->Scan(info);
+			r.SelfUseCheck(info, node->file);
+			result |= r;
 
-				if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-					ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-				}
-			}
-
-			Symbols::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file);
+			SymbolTable::FindOperator(Scope::Equal, matchType, node->Type(), node->file);
 		}
 	}
-	*/
 
-	return ScanResult();
+	return result;
 }
 
 ScopeList SwitchNode::FindSideEffectScope(const bool assign) {

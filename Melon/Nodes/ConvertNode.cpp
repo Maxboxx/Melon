@@ -69,12 +69,11 @@ void ConvertNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult ConvertNode::Scan(ScanInfoStack& info) {
-	Symbol* convertType = Type();
+	TypeSymbol* const convertType = Type();
 
-	/* TODO: node
 	if (node->Type() == convertType) return node->Scan(info);
-	Symbols::FindExplicitConversion(node->Type(), convertType, file);
-	*/
+
+	SymbolTable::FindExplicitConversion(node->Type(), convertType, file);
 
 	return node->Scan(info);
 }

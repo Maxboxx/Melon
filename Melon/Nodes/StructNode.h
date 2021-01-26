@@ -28,7 +28,7 @@ namespace Melon {
 
 			///T Is Recursive
 			/// Checks if the struct is recursive in the specified symbol
-			bool IsRecursive(const Symbols::Symbols& symbol) const;
+			bool IsRecursive(Symbols::StructSymbol* const symbol) const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;

@@ -160,41 +160,27 @@ CompiledNode LogicNode::Compile(CompileInfo& info) {
 }
 
 ScanResult LogicNode::Scan(ScanInfoStack& info) {
-	node1->Scan(info);
+	ScanResult result1 = node1->Scan(info);
+	result1.SelfUseCheck(info, node1->file);
 
-	/* TODO: node
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
-	}
-
-	for (const ScanType type : node2->Scan(info)) {
-		scanSet.Add(type);
-
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
-		}
-	}
+	ScanResult result2 = node2->Scan(info);
+	result2.SelfUseCheck(info, node2->file);
 
 	Pointer<ConvertNode> convert1 = new ConvertNode(node1->scope, node1->file);
 	convert1->node = node1;
 	convert1->type = ScopeList::Bool;
 	convert1->isExplicit = true;
 
-	for (const ScanType type : convert1->Scan(info)) {
-		scanSet.Add(type);
-	}
+	ScanResult result3 = convert1->Scan(info);
 
 	Pointer<ConvertNode> convert2 = new ConvertNode(node2->scope, node2->file);
 	convert2->node = node2;
 	convert2->type = ScopeList::Bool;
 	convert2->isExplicit = true;
 
-	for (const ScanType type : convert2->Scan(info)) {
-		scanSet.Add(type);
-	}
-	*/
+	ScanResult result4 = convert2->Scan(info);
 
-	return ScanResult();
+	return result1 | result2 | result3 | result4;
 }
 
 ScopeList LogicNode::FindSideEffectScope(const bool assign) {

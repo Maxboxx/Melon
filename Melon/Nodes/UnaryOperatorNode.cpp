@@ -48,11 +48,11 @@ TypeSymbol* UnaryOperatorNode::Type() const {
 }
 
 Symbol* UnaryOperatorNode::GetSymbol() const {
-	/* TODO: node
 	if (op == Scope::Unwrap) {
-		return Symbols::Find(node->Type(), file).Get(Scope::Value, file);
+		if (TypeSymbol* const type = node->Type()) {
+			return type->Find<VariableSymbol>(Scope::Value, file);
+		}
 	}
-	*/
 
 	return nullptr;
 }
@@ -97,27 +97,19 @@ void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
-	node->Scan(info);
+	ScanResult result = node->Scan(info);
+	result.SelfUseCheck(info, node->file);
 
 	if (op == Scope::Unwrap) {
 		// TODO: fix
 		ErrorLog::Warning(WarningError("unwrap operator does not work properly for nil values", file));
 	}
 
-	/* TODO: node
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
+	if (TypeSymbol* const type = node->Type()) {
+		type->FindUnaryOperator(op, file);
 	}
 
-	List<ScopeList> args;
-	args.Add(node->Type());
-
-	const ScopeList type = node->Type();
-
-	Symbols::FindFunction(type.Add(op), args, file);
-	*/
-
-	return ScanResult();
+	return result;
 }
 
 ScopeList UnaryOperatorNode::FindSideEffectScope(const bool assign) {
