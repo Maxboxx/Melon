@@ -28,7 +28,14 @@ StructSymbol* StructSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>
 	}
 
 	for (UInt i = 0; i < templateArguments.Size(); i++) {
-		sym->templateArguments.Add(replacement.GetValue(TemplateArgument(i))->AbsoluteName());
+		TypeSymbol* const type = TemplateArgument(i);
+
+		if (templateArguments[i].IsTemplate() && type == replacement.GetValue(type)) {
+			sym->templateArguments.Add(templateArguments[i]);
+		}
+		else {
+			sym->templateArguments.Add(ReplaceTypeScope(type, replacement, file));
+		}
 	}
 
 	for (TemplateTypeSymbol* const s : templateVariants) {

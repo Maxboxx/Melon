@@ -16,12 +16,8 @@ namespace Melon {
 			/// The function body
 			NodePtr node;
 
-			///T Symbol
-			/// The function symbol
+			///T Func
 			Symbols::FunctionSymbol* sym;
-
-			///T Argument names
-			Boxx::List<Symbols::Scope> argNames;
 
 			///T Is used
 			bool isUsed = true;

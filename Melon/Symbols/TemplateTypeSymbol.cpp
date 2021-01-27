@@ -116,7 +116,7 @@ Symbol* TemplateTypeSymbol::FindSymbol(const ScopeList& scopeList, const UInt in
 				return variant->FindSymbol(scopeList, index + 1, file);
 			}
 		}
-
+		
 		FindError(scopeList, index, file);
 		return nullptr;
 	}

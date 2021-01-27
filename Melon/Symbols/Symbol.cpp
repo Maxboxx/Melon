@@ -1,6 +1,8 @@
 #include "Symbol.h"
 
 #include "SymbolTable.h"
+#include "TypeSymbol.h"
+#include "TemplateSymbol.h"
 
 using namespace Boxx;
 
@@ -68,4 +70,27 @@ void Symbol::FindError(const ScopeList& scopeList, const UInt index, const FileI
 
 FileInfo Symbol::File() const {
 	return file;
+}
+
+TypeSymbol* Symbol::ReplaceType(TypeSymbol* const type, const ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file) {
+	return SymbolTable::FindAbsolute<TypeSymbol>(ReplaceTypeScope(type, replacement, file), file);
+}
+
+ScopeList Symbol::ReplaceTypeScope(TypeSymbol* const type, const ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file) {
+	Map<TemplateSymbol*, ScopeList> templateTypes;
+
+	for (const Pair<TypeSymbol*, TypeSymbol*>& pair : replacement) {
+		if (TemplateSymbol* const t = pair.key->Cast<TemplateSymbol>()) {
+			templateTypes.Add(t, t->type);
+			t->type = pair.value->AbsoluteName();
+		}
+	}
+
+	ScopeList scope = SymbolTable::ReplaceTemplatesAbsolute(type->AbsoluteName(), file);
+
+	for (const Pair<TemplateSymbol*, ScopeList>& pair : templateTypes) {
+		pair.key->type = pair.value;
+	}
+
+	return scope;
 }

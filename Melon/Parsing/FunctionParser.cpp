@@ -104,6 +104,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		}
 
 		func->sym = funcSym;
+		funcSym->node = func;
 
 		info.loops = loops;
 		info.scopeCount = scopeCount;
@@ -445,7 +446,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 
 	FunctionHead funcHead;
 	funcHead.attributes = ParseAttributes(info, isPlain);
-	funcHead.isMethod   = !isPlain || (funcHead.attributes & FunctionAttributes::Static) == FunctionAttributes::None;
+	funcHead.isMethod   = !isPlain && (funcHead.attributes & FunctionAttributes::Static) == FunctionAttributes::None;
 
 	if (info.Current().type != TokenType::Function) {
 		if (funcHead.attributes != FunctionAttributes::None) {

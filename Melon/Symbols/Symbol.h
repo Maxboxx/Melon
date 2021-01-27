@@ -114,6 +114,9 @@ namespace Melon {
 			FileInfo File() const;
 
 		protected:
+			static TypeSymbol* ReplaceType(TypeSymbol* const type, const Boxx::ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file);
+			static ScopeList ReplaceTypeScope(TypeSymbol* const type, const Boxx::ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file);
+
 			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
 
 			void FindError(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);

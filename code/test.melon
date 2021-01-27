@@ -35,10 +35,9 @@ struct Compare<A>
 	end
 end
 
+Value<byte>: a = Compare<byte>.min(Value<short>(1), Value<int>(2))
 
-Value<byte>: a = Compare<byte>.min<short, int>(Value<short>(1), Value<int>(2))
+Value<ushort>: b = Compare<ushort>.max(Value<ulong>(3), Value<byte>(4))
 
-Value<ushort>: b = Compare<ushort>.max<ulong, byte>(Value<ulong>(3), Value<byte>(4))
-
-Value<int>: c = Compare<int>.clamp<ubyte, long, ushort>(Value<ubyte>(5), Value<long>(6), Value<ushort>(7))
+Value<int>: c = Compare<int>.clamp(Value<ubyte>(5), Value<long>(6), Value<ushort>(7))
 

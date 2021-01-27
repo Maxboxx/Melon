@@ -57,7 +57,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 	CompiledNode c;
 
 	Instruction func = Instruction(InstructionType::Function);
-	func.instructionName = this->sym->AbsoluteName().ToString();
+	func.instructionName = sym->AbsoluteName().ToString();
 	c.instructions.Add(func);
 
 	UInt funcSize = node->GetSize();
@@ -105,6 +105,14 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 }
 
 void FunctionNode::IncludeScan(ParsingInfo& info) {
+	for (UInt i = 0; i < sym->arguments.Size(); i++) {
+		if (VariableSymbol* const arg = sym->Argument(i)) {
+			if (!arg->Type()) {
+				Node::root->AddTemplateSpecialization(arg->type, arg->Parent()->AbsoluteName(), arg->File());
+			}
+		}
+	}
+
 	if (IsNotSpecialized()) return;
 	SetTemplateValues();
 

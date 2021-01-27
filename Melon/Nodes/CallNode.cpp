@@ -388,6 +388,7 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 	result.SelfUseCheck(info, node->file);
 
 	FunctionSymbol* const func = GetFunc();
+	if (func == nullptr) return ScanResult();
 
 	if (info.UseFunction()) {
 		if (!info.usedFunctions.Contains(func)) {

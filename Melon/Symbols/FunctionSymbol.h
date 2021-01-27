@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Boxx/Pointer.h"
+#include "Boxx/Optional.h"
 
 #include "ScopeSymbol.h"
 
@@ -111,8 +112,8 @@ namespace Melon {
 			Boxx::Tuple<Boxx::List<TypeSymbol*>, Boxx::List<ScopeList>> FindTemplateArguments(FunctionSymbol* const func, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 			
 			FunctionSymbol* FindOverload(const Boxx::List<FunctionSymbol*>& overloads, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
-			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& args, const bool isStatic, const FileInfo& file);
-			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const bool isStatic, const FileInfo& file);
+			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file);
+			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file);
 
 		private:
 			friend TypeSymbol;

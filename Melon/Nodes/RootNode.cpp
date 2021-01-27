@@ -237,9 +237,9 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 		type = SymbolTable::Find(type, scope, file)->AbsoluteName();
 	}
 
-	Scope last = Scope(name.Last().name);
+	ScopeList list = name.Last().name.Size() == 0 ? name.Pop() : name.Pop().Add(Scope(name.Last().name));
 
-	TemplateTypeSymbol* const sym = SymbolTable::Find<TemplateTypeSymbol>(name.Pop().Add(last), scope, file);
+	TemplateTypeSymbol* const sym = SymbolTable::Find<TemplateTypeSymbol>(list, scope, file);
 
 	if (sym == nullptr) {
 		return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, templateArgs);

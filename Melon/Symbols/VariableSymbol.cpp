@@ -23,29 +23,12 @@ VariableSymbol::~VariableSymbol() {
 }
 
 TypeSymbol* VariableSymbol::Type() {
-	return SymbolTable::Find<TypeSymbol>(type, Parent()->AbsoluteName(), file);
+	return SymbolTable::Find<TypeSymbol>(type, Parent()->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 }
 
 VariableSymbol* VariableSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
 	VariableSymbol* const sym = new VariableSymbol(file);
 	sym->attributes = attributes;
-
-	Map<TemplateSymbol*, ScopeList> templateTypes;
-
-	for (const Pair<TypeSymbol*, TypeSymbol*>& pair : replacement) {
-		if (TemplateSymbol* const type = pair.key->Cast<TemplateSymbol>()) {
-			templateTypes.Add(type, type->type);
-			type->type = pair.value->AbsoluteName();
-		}
-	}
-
-	if (TypeSymbol* const type = Type()) {
-		sym->type = SymbolTable::ReplaceTemplatesAbsolute(type->AbsoluteName(), file);
-	}
-
-	for (const Pair<TemplateSymbol*, ScopeList>& pair : templateTypes) {
-		pair.key->type = pair.value;
-	}
-
+	sym->type = ReplaceTypeScope(Type(), replacement, file);
 	return sym;
 }

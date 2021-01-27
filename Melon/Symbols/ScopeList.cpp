@@ -385,6 +385,10 @@ ScopeList ScopeList::Split() const {
 	return list;
 }
 
+bool ScopeList::IsTemplate() const {
+	return scopes.Size() > 0 && scopes[0] == Scope();
+}
+
 Scope ScopeList::operator[](const Boxx::UInt i) const {
 	return scopes[i];
 }

@@ -203,6 +203,10 @@ namespace Melon {
 			/// Split up scopes for use in searches
 			ScopeList Split() const;
 
+			///T Is Template
+			/// Checks if the scope is a relative template argument
+			bool IsTemplate() const;
+
 			///H Operators
 
 			///T Index operator

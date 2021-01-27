@@ -233,6 +233,8 @@ FunctionSymbol* SymbolTable::FindOperator(const Scope& op, TypeSymbol* const typ
 }
 
 FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file) {
+	if (!from || !to) return nullptr;
+
 	if (FunctionSymbol* const op = from->ImplicitConversionTo(to)) {
 		return op;
 	}
@@ -246,6 +248,8 @@ FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, Type
 }
 
 FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file) {
+	if (!from || !to) return nullptr;
+
 	if (FunctionSymbol* const op = from->ExplicitConversionTo(to)) {
 		return op;
 	}
@@ -347,6 +351,14 @@ ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& 
 			for (ScopeList& type : typeScope[i].types.Get()) {
 				if (Symbol* const sym = Find(type, scope, file)) {
 					type = ReplaceTemplatesAbsolute(sym->AbsoluteName(), file);
+
+					if (TemplateSymbol* const t = ContainsAbsolute<TemplateSymbol>(type)) {
+						if (TypeSymbol* const templateType = t->Type()) {
+							if (!templateType->Is<TemplateSymbol>()) {
+								type = templateType->AbsoluteName();
+							}
+						}
+					}
 				}
 			}
 		}

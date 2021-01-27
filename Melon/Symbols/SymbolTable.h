@@ -175,6 +175,7 @@ namespace Melon {
 			static void SetupOptional();
 
 			friend Melon::Nodes::RootNode;
+			friend Symbol;
 			friend FunctionSymbol;
 			friend VariableSymbol;
 
