@@ -1,6 +1,7 @@
 #include "TemplateTypeSymbol.h"
 
 #include "SymbolTable.h"
+#include "TemplateSymbol.h"
 
 using namespace Boxx;
 
@@ -34,6 +35,35 @@ TypeSymbol* TemplateTypeSymbol::TemplateArgument(const UInt index) {
 	else {
 		return SymbolTable::FindAbsolute<TypeSymbol>(arg, file);
 	}
+}
+
+bool TemplateTypeSymbol::CanBeDeduced(TemplateTypeSymbol* const type) {
+	if (Parent() != type->Parent()) return false;
+	if (templateArguments.Size() != type->templateArguments.Size()) return false;
+
+	for (UInt i = 0; i < templateArguments.Size(); i++) {
+		TypeSymbol* const arg1 = TemplateArgument(i);
+		TypeSymbol* const arg2 = type->TemplateArgument(i);
+		
+		if (!arg1 || !arg2) return false;
+		if (arg1->Is<TemplateSymbol>()) continue;
+
+		if (TemplateTypeSymbol* const template1 = arg1->Cast<TemplateTypeSymbol>()) {
+			if (TemplateTypeSymbol* const template2 = arg2->Cast<TemplateTypeSymbol>()) {
+				if (!template1->CanBeDeduced(template2)) {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
+		}
+		else if (arg1 != arg2) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 Scope TemplateTypeSymbol::Name() {

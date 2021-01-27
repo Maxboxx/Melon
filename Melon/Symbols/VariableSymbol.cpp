@@ -2,8 +2,11 @@
 
 #include "SymbolTable.h"
 #include "TypeSymbol.h"
+#include "TemplateSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
+
+#include "Boxx/Map.h"
 
 using namespace Boxx;
 
@@ -26,6 +29,23 @@ TypeSymbol* VariableSymbol::Type() {
 VariableSymbol* VariableSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
 	VariableSymbol* const sym = new VariableSymbol(file);
 	sym->attributes = attributes;
-	sym->type = replacement.GetValue(Type())->AbsoluteName();
+
+	Map<TemplateSymbol*, ScopeList> templateTypes;
+
+	for (const Pair<TypeSymbol*, TypeSymbol*>& pair : replacement) {
+		if (TemplateSymbol* const type = pair.key->Cast<TemplateSymbol>()) {
+			templateTypes.Add(type, type->type);
+			type->type = pair.value->AbsoluteName();
+		}
+	}
+
+	if (TypeSymbol* const type = Type()) {
+		sym->type = SymbolTable::ReplaceTemplatesAbsolute(type->AbsoluteName(), file);
+	}
+
+	for (const Pair<TemplateSymbol*, ScopeList>& pair : templateTypes) {
+		pair.key->type = pair.value;
+	}
+
 	return sym;
 }

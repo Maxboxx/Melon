@@ -108,8 +108,8 @@ namespace Melon {
 		protected:
 			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
 
-			Boxx::Tuple<Boxx::List<TypeSymbol*>, Boxx::List<TypeSymbol*>> FindTemplateArgument(FunctionSymbol* const func, TypeSymbol* const templateArg, TypeSymbol* const arg, const FileInfo& file);
-			Boxx::Tuple<Boxx::List<TypeSymbol*>, Boxx::List<TypeSymbol*>> FindTemplateArguments(FunctionSymbol* const func, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			Boxx::Tuple<Boxx::List<TypeSymbol*>, Boxx::List<ScopeList>> FindTemplateArguments(FunctionSymbol* const func, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			
 			FunctionSymbol* FindOverload(const Boxx::List<FunctionSymbol*>& overloads, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& args, const bool isStatic, const FileInfo& file);
 			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const bool isStatic, const FileInfo& file);

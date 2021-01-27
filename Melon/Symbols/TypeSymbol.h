@@ -1,12 +1,15 @@
 #pragma once
 
 #include "Boxx/Set.h"
+#include "Boxx/Map.h"
 
 #include "MapSymbol.h"
 
 namespace Melon {
 	namespace Symbols {
 		class FunctionSymbol;
+		class TemplateSymbol;
+		class TemplateTypeSymbol;
 
 		///B TypeSymbol
 		/// A symbol for a type
@@ -78,10 +81,16 @@ namespace Melon {
 			/// Calculates the size of the struct and updates the internal value
 			virtual void UpdateSize();
 
+			///T Deduce Templates
+			/// Uses the specified type to deduce the template values of the current type
+			///R Map<TemplateSymbol*, TypeSymbol*>: A map containing the deduced template types.
+			Boxx::Map<TemplateSymbol*, TypeSymbol*> DeduceTemplates(TypeSymbol* const type);
 			
 			virtual TypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 
 		protected:
+			static void DeduceTemplates(TemplateTypeSymbol* const type1, TemplateTypeSymbol* const type2, Boxx::Map<TemplateSymbol*, TypeSymbol*>& templateMap);
+
 			Boxx::UInt size;
 		};
 	}

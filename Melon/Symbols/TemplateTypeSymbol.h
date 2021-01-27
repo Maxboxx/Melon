@@ -23,6 +23,10 @@ namespace Melon {
 			/// Get the template argument at the specified index
 			TypeSymbol* TemplateArgument(const Boxx::UInt index);
 
+			///T Can Be Deduced
+			/// Checks if template arguments of the current type can be deduced by the specified type
+			bool CanBeDeduced(TemplateTypeSymbol* const type);
+
 			Boxx::List<ScopeList> templateArguments;
 
 			virtual Scope Name() override;

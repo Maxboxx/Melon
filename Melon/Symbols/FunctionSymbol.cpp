@@ -4,10 +4,12 @@
 #include "VariableSymbol.h"
 #include "TypeSymbol.h"
 #include "TemplateSymbol.h"
+#include "TemplateTypeSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
 
 #include "Boxx/ReplacementMap.h"
+#include "Boxx/Map.h"
 
 using namespace Boxx;
 
@@ -111,39 +113,112 @@ Symbol* FunctionSymbol::FindSymbol(const ScopeList& scopeList, const UInt index,
 }
 
 FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
-	return nullptr;
+	throw NotImplementedError("FunctionSymbol::FindOverload is not implemented");
 }
 
 FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
-	return nullptr;
+	throw NotImplementedError("FunctionSymbol::FindOverload is not implemented");
 }
 
 FunctionSymbol* FunctionSymbol::FindStaticOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
-	return nullptr;
+	throw NotImplementedError("FunctionSymbol::FindStaticOverload is not implemented");
 }
 
 FunctionSymbol* FunctionSymbol::FindStaticOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
-	return nullptr;
+	throw NotImplementedError("FunctionSymbol::FindStaticOverload is not implemented");
 }
 
 FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
-	return nullptr;
+	List<TypeSymbol*> argList = args.Copy();
+	argList.Insert(0, Parent<TypeSymbol>());
+	return FindOverload(argList, false, file);
 }
 
 FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
-	return nullptr;
+	throw NotImplementedError("FunctionSymbol::FindMethodOverload is not implemented");
 }
 
-Tuple<List<TypeSymbol*>, List<TypeSymbol*>> FunctionSymbol::FindTemplateArguments(FunctionSymbol* const func, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
-	ReplacementMap<TypeSymbol*> templateMap;
+Tuple<List<TypeSymbol*>, List<ScopeList>> FunctionSymbol::FindTemplateArguments(FunctionSymbol* const func, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+	Map<TemplateSymbol*, TypeSymbol*> templateMap;
+	Map<TemplateSymbol*, ScopeList> templateTypes;
 
 	for (UInt i = 0; i < func->templateArguments.Size(); i++) {
-		if (i < templateArgs.Size()) {
-			templateMap.Add(func->TemplateArgument(i), templateArgs[i]);
+		TypeSymbol* const type = func->TemplateArgument(i);
+		if (!type) return Tuple<List<TypeSymbol*>, List<ScopeList>>();
+
+		if (TemplateSymbol* const templateType = type->Cast<TemplateSymbol>()) {
+			templateTypes.Add(templateType, templateType->type);
+
+			if (i < templateArgs.Size()) {
+				templateMap.Add(templateType, templateArgs[i]);
+			}
 		}
 	}
 
-	return {};
+	for (UInt i = 0; i < func->arguments.Size(); i++) {
+		if (i >= args.Size()) continue;
+
+		if (TypeSymbol* const arg = func->ArgumentType(i)) {
+			if (!templateTypes.IsEmpty()) {
+				for (const Pair<TemplateSymbol*, TypeSymbol*>& pair : arg->DeduceTemplates(args[i])) {
+					TypeSymbol* t = nullptr;
+
+					if (templateMap.Contains(pair.key, t)) {
+						if (t != pair.value) {
+							templateMap[pair.key] = nullptr;
+						}
+					}
+					else if (templateTypes.Contains(pair.key)) {
+						templateMap.Add(pair);
+					}
+				}
+			}
+		}
+		else {
+			return Tuple<List<TypeSymbol*>, List<ScopeList>>();
+		}
+	}
+
+	for (const Pair<TemplateSymbol*, TypeSymbol*>& pair : templateMap) {
+		if (pair.value == nullptr) {
+			return Tuple<List<TypeSymbol*>, List<ScopeList>>();
+		}
+	}
+
+	Tuple<List<TypeSymbol*>, List<ScopeList>> types;
+
+	for (UInt i = 0; i < func->templateArguments.Size(); i++) {
+		TypeSymbol* const type = func->TemplateArgument(i);
+
+		if (TemplateSymbol* const templateType = type->Cast<TemplateSymbol>()) {
+			TypeSymbol* t = nullptr;
+			
+			if (templateMap.Contains(templateType, t)) {
+				types.value1.Add(t);
+			}
+			else {
+				return Tuple<List<TypeSymbol*>, List<ScopeList>>();
+			}
+		}
+		else {
+			types.value1.Add(type);
+		}
+	}
+
+	for (const Pair<TemplateSymbol*, TypeSymbol*>& pair : templateMap) {
+		pair.key->type = pair.value->AbsoluteName();
+	}
+
+	for (UInt i = 0; i < func->arguments.Size(); i++) {
+		TypeSymbol* const arg = func->ArgumentType(i);
+		types.value2.Add(SymbolTable::ReplaceTemplatesAbsolute(arg->AbsoluteName(), file));
+	}
+
+	for (const Pair<TemplateSymbol*, ScopeList>& pair : templateTypes) {
+		pair.key->type = pair.value;
+	}
+
+	return types;
 }
 
 FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overloads, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
@@ -157,7 +232,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 		bool perfect = true;
 		bool match   = true;
 
-		Tuple<List<TypeSymbol*>, List<TypeSymbol*>> specialized = FindTemplateArguments(overload, templateArgs, args, file);
+		Tuple<List<TypeSymbol*>, List<ScopeList>> specialized = FindTemplateArguments(overload, templateArgs, args, file);
 
 		for (UInt i = 0; i < args.Size(); i++) {
 			TypeSymbol* const arg = overload->ArgumentType(i);
@@ -197,12 +272,19 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, cons
 		if (overload->arguments.Size() < args.Size()) continue;
 
 		bool match = true;
-		UInt num = 0;
 
 		for (UInt i = 0; i < args.Size(); i++) {
 			TypeSymbol* const arg = overload->ArgumentType(i);
 
-			if (arg != args[i]) {
+			if (arg->Is<TemplateSymbol>()) continue;
+
+			if (TemplateTypeSymbol* const template1 = arg->Cast<TemplateTypeSymbol>()) {
+				if (TemplateTypeSymbol* const template2 = args[i]->Cast<TemplateTypeSymbol>()) {
+					if (template1->CanBeDeduced(template2)) continue;
+				}
+			}
+
+			if (arg->ImplicitConversionFrom(args[i])) {
 				match = false;
 				break;
 			}

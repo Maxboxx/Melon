@@ -80,6 +80,16 @@ namespace Boxx {
 		bool operator!=(const ReplacementMap<T>& map) const;
 		///M
 
+		///H Iterators
+
+		///T Iterator
+		/// Iterates over all key-value pairs in the map
+		///S for (Pair<T, T> pair : map)
+		Pair<T, T>* begin();
+		const Pair<T, T>* begin() const;
+		Pair<T, T>* end();
+		const Pair<T, T>* end() const;
+
 	private:
 		Map<T, T> map;
 	};
@@ -190,5 +200,25 @@ namespace Boxx {
 	template <class T>
 	inline bool ReplacementMap<T>::operator!=(const ReplacementMap<T>& map) const {
 		return this->map != std::move(map.map);
+	}
+
+	template <class T>
+	inline Pair<T, T>* ReplacementMap<T>::begin() {
+		return map.begin();
+	}
+
+	template <class T>
+	inline const Pair<T, T>* ReplacementMap<T>::begin() const {
+		return map.begin();
+	}
+
+	template <class T>
+	inline Pair<T, T>* ReplacementMap<T>::end() {
+		return map.end();
+	}
+
+	template <class T>
+	inline const Pair<T, T>* ReplacementMap<T>::end() const {
+		return map.end();
 	}
 }

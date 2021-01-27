@@ -12,6 +12,8 @@ namespace Melon {
 
 	namespace Symbols {
 		class IntegerSymbol;
+		class VariableSymbol;
+		class FunctionSymbol;
 
 		///B SymbolTable
 		/// A table containing all symbols
@@ -173,6 +175,8 @@ namespace Melon {
 			static void SetupOptional();
 
 			friend Melon::Nodes::RootNode;
+			friend FunctionSymbol;
+			friend VariableSymbol;
 
 			struct TemplateInfo {
 				ScopeList name;

@@ -279,15 +279,17 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 
 			if (i < name.Size() - 1) {
 				if (TemplateSymbol* const t = s->Contains<TemplateSymbol>(name[i + 1])) {
-					if (t->type != t->AbsoluteName()) {
-						list = ReplaceTemplatesAbsolute(t->type, file);
-					}
-					else {
-						list = t->type;
-					}
+					if (TypeSymbol* const type = t->Type()) {
+						if (type != t) {
+							list = ReplaceTemplatesAbsolute(type->AbsoluteName(), file);
+						}
+						else {
+							list = type->AbsoluteName();
+						}
 
-					i++;
-					continue;
+						i++;
+						continue;
+					}
 				}
 			}
 
@@ -302,7 +304,21 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 
 			if (templateArgs) {
 				for (const ScopeList& arg : templateArgs.Get()) {
-					args.Add(ReplaceTemplatesAbsolute(arg, file));
+					if (arg.Size() > 0 && arg[0] == Scope()) {
+						if (TemplateSymbol* const t = s->Contains<TemplateSymbol>(arg[1])) {
+							if (TypeSymbol* const type = t->Type()) {
+								if (type != t) {
+									args.Add(ReplaceTemplatesAbsolute(list.Add(scope).Add(arg[1]), file));
+									continue;
+								}
+							}
+						}
+
+						args.Add(arg);
+					}
+					else {
+						args.Add(ReplaceTemplatesAbsolute(arg, file));
+					}
 				}
 
 				Scope newScope = scope.Copy();
