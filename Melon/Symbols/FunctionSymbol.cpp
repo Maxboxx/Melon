@@ -387,6 +387,45 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateAr
 	return FindOverload(matches, templateArgs, args, file);
 }
 
+bool FunctionSymbol::IsNotSpecialized() {
+	for (UInt i = 0; i < templateArguments.Size(); i++) {
+		if (TypeSymbol* const type = TemplateArgument(i)) {
+			if (type->Is<TemplateSymbol>()) {
+				return true;
+			}
+		}
+	}
+
+	return Symbol::IsNotSpecialized();
+}
+
+void FunctionSymbol::SetTemplateValues(Symbol* const symbol) {
+	FunctionSymbol* const sym = symbol->Cast<FunctionSymbol>();
+
+	if (!sym) {
+		// TODO: error?
+		return;
+	}
+
+	if (templateArguments.Size() != sym->templateArguments.Size()) {
+		// TODO: error?
+		return;
+	}
+
+	for (UInt i = 0; i < templateArguments.Size(); i++) {
+		TypeSymbol* const type1 = TemplateArgument(i);
+		TypeSymbol* const type2 = sym->TemplateArgument(i);
+
+		if (type1 && type2) {
+			if (TemplateSymbol* const t = type1->Cast<TemplateSymbol>()) {
+				t->type = type2->AbsoluteName();
+			}
+		}
+	}
+
+	Symbol::SetTemplateValues(symbol);
+}
+
 FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
 	FunctionSymbol* const sym = new FunctionSymbol(file);
 	sym->arguments  = arguments.Copy();

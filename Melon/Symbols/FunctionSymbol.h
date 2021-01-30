@@ -104,6 +104,8 @@ namespace Melon {
 			/// Used for type conversions
 			bool isExplicit = false;
 
+			virtual bool IsNotSpecialized() override;
+			virtual void SetTemplateValues(Symbol* const symbol) override;
 			virtual FunctionSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 		protected:

@@ -92,6 +92,45 @@ Scope TemplateTypeSymbol::Name() {
 	}
 }
 
+bool TemplateTypeSymbol::IsNotSpecialized() {
+	for (UInt i = 0; i < templateArguments.Size(); i++) {
+		if (TypeSymbol* const type = TemplateArgument(i)) {
+			if (type->Is<TemplateSymbol>()) {
+				return true;
+			}
+		}
+	}
+
+	return Symbol::IsNotSpecialized();
+}
+
+void TemplateTypeSymbol::SetTemplateValues(Symbol* const symbol) {
+	TemplateTypeSymbol* const sym = symbol->Cast<TemplateTypeSymbol>();
+
+	if (!sym) {
+		// TODO: error?
+		return;
+	}
+
+	if (templateArguments.Size() != sym->templateArguments.Size()) {
+		// TODO: error?
+		return;
+	}
+
+	for (UInt i = 0; i < templateArguments.Size(); i++) {
+		TypeSymbol* const type1 = TemplateArgument(i);
+		TypeSymbol* const type2 = sym->TemplateArgument(i);
+
+		if (type1 && type2) {
+			if (TemplateSymbol* const t = type1->Cast<TemplateSymbol>()) {
+				t->type = type2->AbsoluteName();
+			}
+		}
+	}
+
+	Symbol::SetTemplateValues(symbol);
+}
+
 Symbol* TemplateTypeSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
 	if (index >= scopeList.Size()) return this;
 

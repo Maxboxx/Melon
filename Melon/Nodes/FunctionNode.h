@@ -25,14 +25,6 @@ namespace Melon {
 			FunctionNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~FunctionNode();
 
-			///T Is Not Specialized
-			/// Checks if the function is a template function and has not been specialized
-			bool IsNotSpecialized() const;
-
-			///T Specialize Templates
-			/// Specialize the values of templates
-			void SetTemplateValues() const;
-
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

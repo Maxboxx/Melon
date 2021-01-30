@@ -209,11 +209,9 @@ ScanResult AssignNode::Scan(ScanInfoStack& info) {
 			ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
 		}
 
-		if (types[i] != ScopeList::Discard && !node.Is<NameNode>()) {
-			ScanResult r = node->Scan(info);
-			r.SelfUseCheck(info, node->file);
-			result |= r;
-		}
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 
 		if (info.Init()) {
 			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {

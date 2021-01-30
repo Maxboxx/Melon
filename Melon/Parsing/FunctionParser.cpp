@@ -75,7 +75,9 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		}
 
 		for (const Argument& arg : funcHead.arguments) {
-			VariableSymbol* const var = new VariableSymbol(info.GetFileInfo(startLine));
+			FileInfo file = info.GetFileInfo(startLine);
+			file.statement = 0;
+			VariableSymbol* const var = new VariableSymbol(file);
 			var->type = arg.type;
 			var->attributes = arg.attributes;
 			funcSym->AddSymbol(arg.name, var);

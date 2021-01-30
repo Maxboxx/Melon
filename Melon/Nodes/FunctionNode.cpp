@@ -26,33 +26,9 @@ bool FunctionNode::IsScope() const {
 	return true;
 }
 
-bool FunctionNode::IsNotSpecialized() const {
-	for (UInt i = 0; i < sym->templateArguments.Size(); i++) {
-		if (sym->TemplateArgument(i)->Is<TemplateSymbol>()) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-void FunctionNode::SetTemplateValues() const {
-	if (FunctionSymbol* const f = scope->Cast<FunctionSymbol>()) {
-		for (UInt i = 0; i < f->templateArguments.Size(); i++) {
-			if (TypeSymbol* const type = f->TemplateArgument(i)) {
-				if (TemplateSymbol* const arg = type->Cast<TemplateSymbol>()) {
-					if (TypeSymbol* const t = sym->TemplateArgument(i)) {
-						arg->type = t->AbsoluteName();
-					}
-				}
-			}
-		}
-	}
-}
-
 CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
-	if (IsNotSpecialized()) return CompiledNode();
-	SetTemplateValues();
+	if (sym->IsNotSpecialized()) return CompiledNode();
+	scope->SetTemplateValues(sym);
 
 	CompiledNode c;
 
@@ -113,15 +89,15 @@ void FunctionNode::IncludeScan(ParsingInfo& info) {
 		}
 	}
 
-	if (IsNotSpecialized()) return;
-	SetTemplateValues();
+	if (sym->IsNotSpecialized()) return;
+	scope->SetTemplateValues(sym);
 
 	node->IncludeScan(info);
 }
 
 ScanResult FunctionNode::Scan(ScanInfoStack& info) {
-	if (IsNotSpecialized()) return ScanResult();
-	SetTemplateValues();
+	if (sym->IsNotSpecialized()) return ScanResult();
+	scope->SetTemplateValues(sym);
 
 	info.Push();
 	

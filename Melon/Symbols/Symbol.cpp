@@ -94,3 +94,18 @@ ScopeList Symbol::ReplaceTypeScope(TypeSymbol* const type, const ReplacementMap<
 
 	return scope;
 }
+
+bool Symbol::IsNotSpecialized() {
+	return parent ? parent->IsNotSpecialized() : false;
+}
+
+void Symbol::SetTemplateValues(Symbol* const symbol) {
+	if (parent) {
+		if (symbol->parent) {
+			parent->SetTemplateValues(symbol->parent);
+		}
+		else {
+			// TODO: error
+		}
+	}
+}

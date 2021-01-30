@@ -349,13 +349,27 @@ ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& 
 	for (Boxx::UInt i = 0; i < typeScope.Size(); i++) {
 		if (typeScope[i].types) {
 			for (ScopeList& type : typeScope[i].types.Get()) {
-				if (Symbol* const sym = Find(type, scope, file)) {
-					type = ReplaceTemplatesAbsolute(sym->AbsoluteName(), file);
+				ScopeList temp = type;
 
-					if (TemplateSymbol* const t = ContainsAbsolute<TemplateSymbol>(type)) {
-						if (TypeSymbol* const templateType = t->Type()) {
-							if (!templateType->Is<TemplateSymbol>()) {
-								type = templateType->AbsoluteName();
+				if (temp.IsTemplate()) {
+					temp = typeScope;
+
+					while (temp.Size() > i + 1) {
+						temp = temp.Pop();
+					}
+
+					temp = temp.Add(type[1]);
+				}
+
+				if (Symbol* const sym = Find(temp, scope, file)) {
+					ScopeList absolute = ReplaceTemplatesAbsolute(sym->AbsoluteName(), file);
+					
+					if (temp != absolute) {
+						if (TemplateSymbol* const t = ContainsAbsolute<TemplateSymbol>(type)) {
+							if (TypeSymbol* const templateType = t->Type()) {
+								if (!templateType->Is<TemplateSymbol>()) {
+									type = templateType->AbsoluteName();
+								}
 							}
 						}
 					}

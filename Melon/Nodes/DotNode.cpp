@@ -124,6 +124,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	info.Assign(false);
 
 	ScanResult result = node->Scan(info);
+	info.Assign(assign);
 
 	TypeSymbol* const type = node->Type();
 	if (type == nullptr) return result;
@@ -136,8 +137,6 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 			info.usedVariables.Add(var);
 		}
 	}
-
-	info.Assign(assign);
 
 	if (info.Assign()) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {

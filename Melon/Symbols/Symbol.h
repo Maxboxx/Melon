@@ -55,6 +55,15 @@ namespace Melon {
 			/// Specializes a template symbol
 			virtual Symbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) = 0;
 
+			///T Is Not Specialized
+			/// Checks if the symbol or any of its parents has template arguments that have not been specialized
+			virtual bool IsNotSpecialized();
+
+			///T Set Template Values
+			/// Sets the template types of the symbol to the types of the specified symbol
+			/// The supplied symbol has to be a specialization of the current symbol
+			virtual void SetTemplateValues(Symbol* const symbol);
+
 			///T Find
 			/// Finds a specific symbol
 			/// Returns <code>nullptr</code> if a symbol was not found

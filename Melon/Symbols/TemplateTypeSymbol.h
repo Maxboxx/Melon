@@ -30,6 +30,8 @@ namespace Melon {
 			Boxx::List<ScopeList> templateArguments;
 
 			virtual Scope Name() override;
+			virtual bool IsNotSpecialized() override;
+			virtual void SetTemplateValues(Symbol* const symbol) override;
 			virtual TemplateTypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 
 		protected:

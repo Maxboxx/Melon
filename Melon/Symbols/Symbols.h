@@ -27,7 +27,7 @@ namespace Melon {
 		}
 
 		///B SymbolType
-		enum class SymbolType : Boxx::UByte {
+		enum class [[deprecated]] SymbolType : Boxx::UByte {
 			///T Values
 			///M
 			None,
@@ -47,7 +47,7 @@ namespace Melon {
 		};
 
 		///T Symbol attribute
-		enum class SymbolAttribute : Boxx::UByte {
+		enum class [[deprecated]] SymbolAttribute : Boxx::UByte {
 			// Variable attributes
 			Const,
 			Ref,
@@ -62,7 +62,7 @@ namespace Melon {
 
 		///B Symbol
 		/// Class for symbols
-		class Symbols {
+		class [[deprecated]] Symbols {
 		public:
 			///H Members
 
