@@ -130,6 +130,7 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 	Pointer<StructNode> sn = new StructNode(info.scope, info.GetFileInfo(structLine));
 	sn->name = structName;
 	sn->symbol = sym;
+	sym->node = sn;
 
 	return sn;
 }

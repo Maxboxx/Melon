@@ -140,7 +140,16 @@ void TypeSymbol::DeduceTemplates(TemplateTypeSymbol* const type1, TemplateTypeSy
 		TypeSymbol* const arg2 = type2->TemplateArgument(i);
 
 		if (TemplateSymbol* const arg = arg1->Cast<TemplateSymbol>()) {
-			templateMap.Add(arg, arg2);
+			TypeSymbol* t = nullptr;
+
+			if (templateMap.Contains(arg, t)) {
+				if (t != arg2) {
+					templateMap[arg] = nullptr;
+				}
+			}
+			else {
+				templateMap.Add(arg, arg2);
+			}
 		}
 		else if (arg1->Is<TemplateTypeSymbol>() && arg2->Is<TemplateTypeSymbol>()) {
 			for (const Pair<TemplateSymbol*, TypeSymbol*>& pair : arg1->DeduceTemplates(arg2)) {

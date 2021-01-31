@@ -156,12 +156,12 @@ String Scope::ToSimpleString() const {
 
 		for (const ScopeList& scopes : types.Get()) {
 			if (!first) {
-				scope += ",";
+				scope += ", ";
 			}
 
 			first = false;
 
-			scope += scopes.ToString();
+			scope += scopes.ToSimpleString();
 		}
 
 		scope += ">";
@@ -174,12 +174,12 @@ String Scope::ToSimpleString() const {
 
 		for (const ScopeList& scopes : arguments.Get()) {
 			if (!first) {
-				scope += ",";
+				scope += ", ";
 			}
 
 			first = false;
 
-			scope += scopes.ToString();
+			scope += scopes.ToSimpleString();
 		}
 
 		scope += ")";
@@ -338,13 +338,18 @@ String ScopeList::ToString() const {
 }
 
 String ScopeList::ToSimpleString() const {
+	if (IsTemplate()) return scopes[1].ToSimpleString();
+
 	ScopeList list = *this;
 	Boxx::UInt start = 0;
 
 	String str = "";
 
 	for (Boxx::UInt i = start; i < list.Size(); i++) {
-		if (i > start) str += ".";
+		if (i > start && list[i].name.Size() > 0) {
+			str += ".";
+		}
+
 		str += list[i].ToSimpleString();
 	}
 

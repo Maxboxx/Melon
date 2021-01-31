@@ -13,6 +13,7 @@
 
 #include "NewVariableNode.h"
 #include "NameNode.h"
+#include "DotNode.h"
 
 #include "Boxx/Optional.h"
 
@@ -39,6 +40,9 @@ FunctionSymbol* CallNode::GetFunc() const {
 	Scope name;
 
 	if (Pointer<NameNode> nn = node.Cast<NameNode>()) {
+		name = nn->name;
+	}
+	else if (Pointer<DotNode> nn = node.Cast<DotNode>()) {
 		name = nn->name;
 	}
 	else if (isMethod) {
@@ -513,6 +517,12 @@ NodePtr CallNode::Optimize(OptimizeInfo& info) {
 
 StringBuilder CallNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = node->ToMelon(indent);
+
+	if (isMethod) {
+		sb += ":";
+		sb += methodName.ToSimpleString();
+	}
+
 	sb += "(";
 
 	for (UInt i = 0; i < args.Size(); i++) {

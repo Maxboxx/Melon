@@ -3,6 +3,10 @@
 #include "Symbol.h"
 
 namespace Melon {
+	namespace Nodes {
+		class StructNode;
+	}
+
 	namespace Symbols {
 		///B MapSymbol
 		/// Contains a map of all sub symbols of the symbol
@@ -24,6 +28,8 @@ namespace Melon {
 
 		protected:
 			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
+
+			friend Melon::Nodes::StructNode;
 
 			Boxx::Map<Scope, Symbol*> symbols;
 		};

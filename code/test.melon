@@ -1,43 +1,53 @@
 
-struct Value<A>
-	A: value
-	
-	function init(A: value) -> self.value = value
-	function      A:  get() -> return  self.value
+struct Pair<A, B>
+	A: value1
+	B: value2
 end
 
+struct Tuple<A, B, C>
+	A: value1
+	B: value2
+	C: value3
+end
 
-struct Compare<A>
-	static function Value<A>: min<B, C>(Value<B>: value1, Value<C>: value2)
-		return if value1:get() < value2:get() then
-			Value<A>(value1:get())
-		else
-			Value<A>(value2:get())
-		end
-	end
-	
-	static function Value<A>: max<B, C>(Value<B>: value1, Value<C>: value2)
-		return if value1:get() > value2:get() then
-			Value<A>(value1:get())
-		else
-			Value<A>(value2:get())
-		end
-	end
-	
-	static function Value<A>: clamp<B, C, D>(Value<B>: value, Value<C>: min, Value<D>: max)
-		return if value:get() < min:get() then
-			Value<A>(min:get())
-		elseif value:get() > max:get() then
-			Value<A>(max:get())
-		else
-			Value<A>(value:get())
-		end
+struct Compare
+	static function B: min<A, B, C>(Pair<A, Tuple<B, Pair<C, B>, A>>: pair, Tuple<Pair<A, A>, B, Pair<C, Tuple<C, A, C>>>: tuple)
+		return pair.value2.value1
 	end
 end
 
-Value<byte>: a = Compare<byte>.min(Value<short>(1), Value<int>(2))
-
-Value<ushort>: b = Compare<ushort>.max(Value<ulong>(3), Value<byte>(4))
-
-Value<int>: c = Compare<int>.clamp(Value<ubyte>(5), Value<long>(6), Value<ushort>(7))
-
+int: i = Compare.min(
+	Pair<short, Tuple<int, Pair<long, int>, short>> {
+		value1 = 1,
+		
+		value2 = Tuple<int, Pair<long, int>, short> {
+			value1 = 2,
+			
+			value2 = Pair<long, int> {
+				value1 = 3,
+				value2 = 4
+			},
+			
+			value3 = 5
+		}
+	},
+	
+	Tuple<Pair<short, short>, int, Pair<long, Tuple<long, short, long>>> {
+		value1 = Pair<short, short> {
+			value1 = 1,
+			value2 = 2
+		},
+		
+		value2 = 3,
+		
+		value3 = Pair<long, Tuple<long, short, long>> {
+			value1 = 4,
+			
+			value2 = Tuple<long, short, long> {
+				value1 = 5,
+				value2 = 6,
+				value3 = 7
+			}
+		}
+	}
+)

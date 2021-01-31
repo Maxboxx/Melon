@@ -10,6 +10,7 @@
 namespace Melon {
 	namespace Nodes {
 		class Node;
+		class StructNode;
 	}
 
 	namespace Symbols {
@@ -104,6 +105,9 @@ namespace Melon {
 			/// Used for type conversions
 			bool isExplicit = false;
 
+			///T Is Operator
+			bool isOperator = false;
+
 			virtual bool IsNotSpecialized() override;
 			virtual void SetTemplateValues(Symbol* const symbol) override;
 			virtual FunctionSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
@@ -120,6 +124,7 @@ namespace Melon {
 		private:
 			friend TypeSymbol;
 			friend SymbolTable;
+			friend Melon::Nodes::StructNode;
 			Boxx::List<FunctionSymbol*> overloads;
 		};
 	}

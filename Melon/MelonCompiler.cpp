@@ -229,6 +229,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		}
 
 		List<Instruction> optimizedInstructions = KiwiOptimizer::Optimize(instructions, compOptions.kiwiOptimizationPasses);
+		*/
 
 		if (compOptions.outputMelon) {
 			info.root.ToMelonFiles(compOptions);
@@ -236,6 +237,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		// ------------- Kiwi ---------------
 
+		/*
 		if (compOptions.outputKiwi) {
 			KiwiLang::WriteToFile(compOptions.outputDirectory + compOptions.outputName + ".kiwi", ErrorLog::logger, optimizedInstructions);
 		}

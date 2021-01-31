@@ -96,7 +96,9 @@ Symbol* SymbolTable::Find(ScopeList name, ScopeList scope, const FileInfo& file,
 	for (Boxx::UInt i = 0; i < name.Size(); i++) {
 		if (name[i].types) {
 			for (ScopeList& type : name[i].types.Get()) {
-				type = Find(type, scope, file)->AbsoluteName();
+				if (Symbol* const s = Find(type, scope, file)) {
+					type = s->AbsoluteName();
+				}
 			}
 		}
 	}
@@ -371,12 +373,15 @@ ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& 
 					ScopeList absolute = ReplaceTemplatesAbsolute(sym->AbsoluteName(), file);
 					
 					if (temp != absolute) {
-						if (TemplateSymbol* const t = ContainsAbsolute<TemplateSymbol>(type)) {
+						if (TemplateSymbol* const t = Contains<TemplateSymbol>(type, scope, file)) {
 							if (TypeSymbol* const templateType = t->Type()) {
 								if (!templateType->Is<TemplateSymbol>()) {
 									type = templateType->AbsoluteName();
 								}
 							}
+						}
+						else {
+							type = absolute;
 						}
 					}
 				}

@@ -41,7 +41,8 @@ Symbol* NameNode::GetSymbol() const {
 	if (s.types) {
 		for (ScopeList& type : s.types.Get()) {
 			TypeSymbol* const sym = SymbolTable::Find<TypeSymbol>(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
-			
+			if (!sym) continue;
+
 			if (sym->Is<TemplateSymbol>()) {
 				type = sym->Type()->AbsoluteName();
 			}
@@ -130,5 +131,5 @@ ScopeList NameNode::FindSideEffectScope(const bool assign) {
 }
 
 StringBuilder NameNode::ToMelon(const UInt indent) const {
-	return name.ToString();
+	return name.ToSimpleString();
 }

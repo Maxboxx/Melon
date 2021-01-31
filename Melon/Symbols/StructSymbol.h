@@ -3,6 +3,10 @@
 #include "TemplateTypeSymbol.h"
 
 namespace Melon {
+	namespace Nodes {
+		class Node;
+	}
+
 	namespace Symbols {
 		///B StructSymbol
 		/// Contains information about a struct
@@ -20,10 +24,13 @@ namespace Melon {
 			virtual void UpdateSize() override;
 
 			///T Non static members
-			Boxx::Collection<Scope> members;
+			Boxx::List<Scope> members;
 
 			///T Is Recursive
 			bool isRecursive = false;
+
+			///T Node
+			Boxx::Pointer<Melon::Nodes::Node> node = nullptr;
 		};
 	}
 }

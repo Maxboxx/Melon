@@ -165,16 +165,11 @@ StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (i > 0) sb += ", ";
 
-		/* TODO: node
-		Symbols var = Symbols::FindInNamespace(scope.Add(names[i]), file);
+		VariableSymbol* const var = SymbolTable::Find<VariableSymbol>(names[i], scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
-		for (const SymbolAttribute attr : var.attributes) {
-			switch (attr) {
-				case SymbolAttribute::Const: sb += "const "; break;
-				case SymbolAttribute::Copy:  sb += "copy "; break;
-			}
+		if ((var->attributes & VariableAttributes::Const) != VariableAttributes::None) {
+			sb += "const ";
 		}
-		*/
 
 		sb += names[i].ToSimpleString();
 	}

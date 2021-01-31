@@ -1,5 +1,8 @@
 #include "EnumNode.h"
 
+#include "Melon/Symbols/EnumSymbol.h"
+#include "Melon/Symbols/ValueSymbol.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -29,9 +32,7 @@ StringBuilder EnumNode::ToMelon(const UInt indent) const {
 		sb += tabs;
 		sb += values[i].ToString();
 		sb += " = ";
-		/* TODO: node
-		sb += String::ToString(symbol.Get(values[i], file).value);
-		*/
+		sb += String::ToString(symbol->Find<ValueSymbol>(values[i], file)->value);
 		sb += i != values.Size() - 1 ? ",\n" : "\n";
 	}
 

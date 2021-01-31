@@ -129,8 +129,12 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	TypeSymbol* const type = node->Type();
 	if (type == nullptr) return result;
 
-	Symbol* const sym = type->Find(name, file);
+	Symbol* sym = type->Find(Scope(name.name), file);
 	if (sym == nullptr) return result;
+
+	if (!sym->Is<FunctionSymbol>()) {
+		sym = type->Find(name, file);
+	}
 
 	if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 		if ((var->attributes & VariableAttributes::Static) != VariableAttributes::None) {
@@ -192,6 +196,6 @@ NodePtr DotNode::Optimize(OptimizeInfo& info) {
 StringBuilder DotNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = node->ToMelon(indent);
 	sb += ".";
-	sb += name.ToString();
+	sb += name.ToSimpleString();
 	return sb;
 }

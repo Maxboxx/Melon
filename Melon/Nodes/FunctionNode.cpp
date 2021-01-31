@@ -5,6 +5,7 @@
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
 #include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -146,70 +147,75 @@ NodePtr FunctionNode::Optimize(OptimizeInfo& info) {
 StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "";
 
-	/* TODO: node
-	for (const ScopeList& arg : Symbols::Find(s.scope, file).templateArgs) {
-		if (Symbols::Find(arg, file).type == SymbolType::Template) {
-			return "";
-		}
+	if ((sym->attributes & FunctionAttributes::Debug) != FunctionAttributes::None) {
+		sb += "debug ";
 	}
-	*/
 
-	/*for (const SymbolAttribute attr : sym.attributes) {
-		switch (attr) {
-			case SymbolAttribute::Debug:    sb += "debug "; break;
-			case SymbolAttribute::Override: sb += "override "; break;
-			case SymbolAttribute::Required: sb += "required "; break;
-			case SymbolAttribute::Static:   sb += "static "; break;
-		}
+	if ((sym->attributes & FunctionAttributes::Static) != FunctionAttributes::None) {
+		sb += "static ";
+	}
+
+	if ((sym->attributes & FunctionAttributes::Override) != FunctionAttributes::None) {
+		sb += "override ";
+	}
+
+	if ((sym->attributes & FunctionAttributes::Partial) != FunctionAttributes::None) {
+		sb += "partial ";
+	}
+
+	if ((sym->attributes & FunctionAttributes::Required) != FunctionAttributes::None) {
+		sb += "required ";
 	}
 	
 	sb += "function ";
 
-	const bool isOperator = sym.scope.Last().name != Scope::Call.name;
-
-	if (isOperator) {
+	if (sym->isOperator) {
 		sb += "operator ";
 	}
 
-	for (UInt i = 0; i < sym.returnValues.Size(); i++) {
+	for (UInt i = 0; i < sym->returnValues.Size(); i++) {
 		if (i > 0) sb += ", ";
-
-		Symbols sym = Symbols::FindNearestInNamespace(s.scope.Pop(), s.returnValues[i], file);
-		sb += sym.scope.ToSimpleString();
+		sb += sym->returnValues[i].ToSimpleString();
 	}
 
-	if (!sym.returnValues.IsEmpty()) {
+	if (!sym->returnValues.IsEmpty()) {
 		sb += ": ";
 	}
 
-	if (isOperator) {
-		Scope scope = func.Last();
-		scope.variant = nullptr;
-		sb += scope.ToSimpleString();
-	}
-	else {
-		sb += func.Pop().Last().ToSimpleString();
+	sb += sym->Parent()->Name().ToSimpleString();
+
+	if (!sym->templateArguments.IsEmpty()) {
+		sb += "<";
+
+		for (UInt i = 0; i < sym->templateArguments.Size(); i++) {
+			if (i > 0) sb += ", ";
+			sb += sym->templateArguments[i].ToSimpleString();
+		}
+
+		sb += ">";
 	}
 
 	sb += "(";
 
-	const UInt start = (sym.type == SymbolType::Method || (!argNames.IsEmpty() && argNames[0] == Scope::Self)) ? 1 : 0;
+	const UInt start = (!sym->arguments.IsEmpty() && sym->arguments[0][0] == Scope::Self) ? 1 : 0;
 
-	for (UInt i = start; i < argNames.Size(); i++) {
+	for (UInt i = start; i < sym->arguments.Size(); i++) {
 		if (i > start) sb += ", ";
 
-		sb += s.Get(argNames[i], file).varType.ToSimpleString();
+		VariableSymbol* const arg = sym->Argument(i);
+
+		sb += arg->type.ToSimpleString();
 		sb += ": ";
 
-		for (const SymbolAttribute attr : s.Get(argNames[i], file).attributes) {
-			switch (attr) {
-				case SymbolAttribute::Const: sb += "const "; break;
-				case SymbolAttribute::Copy:  sb += "copy "; break;
-				case SymbolAttribute::Ref:   sb += "ref "; break;
-			}
+		if ((arg->attributes & VariableAttributes::Const) != VariableAttributes::None) {
+			sb += "const ";
 		}
 
-		sb += argNames[i].ToSimpleString();
+		if ((arg->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+			sb += "ref ";
+		}
+
+		sb += sym->arguments[i].ToSimpleString();
 	}
 
 	sb += ")\n";
@@ -218,7 +224,6 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	sb += "\n";
 	sb += String('\t').Repeat(indent);
 	sb += "end";
-	*/
 
 	return sb;
 }

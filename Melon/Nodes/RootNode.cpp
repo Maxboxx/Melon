@@ -126,6 +126,11 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 	Collection<UInt> failedFuncs;
 
 	do {
+		for (; templateIndex < SymbolTable::templateSymbols.Size(); templateIndex++) {
+			SymbolTable::TemplateInfo info = SymbolTable::templateSymbols[templateIndex];
+			AddTemplateSpecialization(info.name, info.scope->AbsoluteName(), info.file, false);
+		}
+
 		for (UInt i = 0; i < failedNodes.Size();) {
 			try {
 				nodes[failedNodes[i]]->IncludeScan(info);
@@ -163,11 +168,6 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 				failedFuncs.Add(nodeIndex);
 			}
 		}
-
-		for (; templateIndex < SymbolTable::templateSymbols.Size(); templateIndex++) {
-			SymbolTable::TemplateInfo info = SymbolTable::templateSymbols[templateIndex];
-			AddTemplateSpecialization(info.name, info.scope->AbsoluteName(), info.file, false);
-		}
 	}
 	while (
 		nodeIndex < nodes.Size() ||
@@ -195,7 +195,9 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 	for (UInt i = 0; i < templateInfo.value2.Size(); i++) {
 		if (TypeSymbol* const type = templateInfo.value1->TemplateArgument(i)) {
 			if (type->Is<TemplateSymbol>()) {
-				templateTypes.Add(type, SymbolTable::FindAbsolute<TypeSymbol>(templateInfo.value2[i], file));
+				if (TypeSymbol* const t = SymbolTable::FindAbsolute<TypeSymbol>(templateInfo.value2[i], file)) {
+					templateTypes.Add(type, t);
+				}
 			}
 		}
 	}
@@ -204,6 +206,7 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 
 	if (StructSymbol* const sym = s->Cast<StructSymbol>()) {
 		templateInfo.value1->Parent()->Cast<TemplateTypeSymbol>()->AddTemplateVariant(sym);
+		sym->templateParent = templateInfo.value1;
 
 		Pointer<StructNode> sn = new StructNode(SymbolTable::FindAbsolute(ScopeList(true), file), file);
 		sn->name = sym->Parent()->Name();
@@ -217,6 +220,7 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 		sn->name.types = templateArgs;
 
 		sn->symbol = sym;
+		sym->node = sn;
 
 		for (const Scope& var : sym->members) {
 			sn->vars.Add(var);
@@ -234,7 +238,12 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 	List<ScopeList> templateArgs = name.Last().types.Get().Copy();
 
 	for (ScopeList& type : templateArgs) {
-		type = SymbolTable::Find(type, scope, file)->AbsoluteName();
+		if (Symbol* const s = SymbolTable::Find(type, scope, file)) {
+			type = s->AbsoluteName();
+		}
+		else {
+			return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, List<ScopeList>());
+		}
 	}
 
 	ScopeList list = name.Last().name.Size() == 0 ? name.Pop() : name.Pop().Add(Scope(name.Last().name));
@@ -405,8 +414,12 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 			if (sb.Size() > 0) sb += "\n";
 		}
 
-		sb += node->ToMelon(0);
-		sb += "\n";
+		StringBuilder s = node->ToMelon(0);
+
+		if (s.Size() > 0) {
+			sb += s;
+			sb += "\n";
+		}
 	}
 
 	if (writeToFile) {

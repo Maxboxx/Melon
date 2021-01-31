@@ -5,6 +5,7 @@
 namespace Melon {
 	namespace Nodes {
 		class RootNode;
+		class StructNode;
 	}
 
 	namespace Symbols {
@@ -38,8 +39,11 @@ namespace Melon {
 			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
 
 			friend Melon::Nodes::RootNode;
+			friend Melon::Nodes::StructNode;
 
 			Boxx::List<TemplateTypeSymbol*> templateVariants;
+
+			TemplateTypeSymbol* templateParent = nullptr;
 		};
 	}
 }
