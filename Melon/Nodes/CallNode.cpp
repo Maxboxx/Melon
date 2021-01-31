@@ -12,6 +12,9 @@
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 #include "NewVariableNode.h"
+#include "NameNode.h"
+
+#include "Boxx/Optional.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -31,17 +34,63 @@ CallNode::~CallNode() {
 
 FunctionSymbol* CallNode::GetFunc() const {
 	List<TypeSymbol*> argTypes;
+	Optional<List<TypeSymbol*>> templateArgs = nullptr;
+
+	Scope name;
+
+	if (Pointer<NameNode> nn = node.Cast<NameNode>()) {
+		name = nn->name;
+	}
+	else if (isMethod) {
+		name = methodName;
+	}
+
+	if (name.types) {
+		List<TypeSymbol*> args;
+		bool found = true;
+
+		for (const ScopeList& s : name.types.Get()) {
+			TypeSymbol* const t = SymbolTable::Find<TypeSymbol>(s, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+
+			if (t) {
+				args.Add(t);
+			}
+			else {
+				found = false;
+			}
+		}
+
+		if (!found) {
+			return nullptr;
+		}
+
+		templateArgs = args;
+	}
+
+	bool found = true;
 
 	for (NodePtr node : args) {
-		argTypes.Add(node->Type());
+		if (TypeSymbol* const type = node->Type()) {
+			argTypes.Add(type);
+		}
+		else {
+			found = false;
+		}
 	}
+
+	if (!found) return nullptr;
 
 	FunctionSymbol* s = nullptr;
 	
 	if (op) {
 		if (TypeSymbol* const t = node->Type()) {
 			if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Scope::Call, node->file)) {
-				s = f->FindMethodOverload(argTypes, node->file);
+				if (templateArgs) {
+					s = f->FindMethodOverload(templateArgs.Get(), argTypes, node->file);
+				}
+				else {
+					s = f->FindMethodOverload(argTypes, node->file);
+				}
 			}
 		}
 	}
@@ -54,13 +103,23 @@ FunctionSymbol* CallNode::GetFunc() const {
 	}
 	else if (!isMethod) {
 		if (FunctionSymbol* const f = node->GetSymbol()->Cast<FunctionSymbol>()) {
-			s = f->FindStaticOverload(argTypes, node->file);
+			if (templateArgs) {
+				s = f->FindStaticOverload(templateArgs.Get(), argTypes, node->file);
+			}
+			else {
+				s = f->FindStaticOverload(argTypes, node->file);
+			}
 		}
 	}
 	else {
 		if (TypeSymbol* const t = node->Type()) {
 			if (FunctionSymbol* const f = t->Find<FunctionSymbol>(methodName, node->file)) {
-				s = f->FindMethodOverload(argTypes, node->file);
+				if (templateArgs) {
+					s = f->FindMethodOverload(templateArgs.Get(), argTypes, node->file);
+				}
+				else {
+					s = f->FindMethodOverload(argTypes, node->file);
+				}
 			}
 		}
 	}
