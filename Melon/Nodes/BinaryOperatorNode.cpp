@@ -29,7 +29,7 @@ BinaryOperatorNode::~BinaryOperatorNode() {
 TypeSymbol* BinaryOperatorNode::Type() const {
 	FunctionSymbol* const s = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	if (!s->returnValues.IsEmpty()) {
+	if (s && !s->returnValues.IsEmpty()) {
 		if (TypeSymbol* const s2 = s->ReturnType(0)) {
 			if (TemplateSymbol* const t = s2->Cast<TemplateSymbol>()) {
 				return t->Type();

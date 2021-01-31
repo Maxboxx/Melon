@@ -29,6 +29,11 @@ TypeSymbol* TemplateSymbol::Type() {
 
 TemplateSymbol* TemplateSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
 	TemplateSymbol* const sym = new TemplateSymbol(file);
-	sym->type = replacement.GetValue(this)->AbsoluteName();
+	TypeSymbol* const type = replacement.GetValue(this);
+
+	if (type != this) {
+		sym->type = type->AbsoluteName();
+	}
+
 	return sym;
 }

@@ -61,11 +61,11 @@ TypeSymbol* FunctionSymbol::TemplateArgument(const UInt index) {
 
 	ScopeList arg = templateArguments[index];
 
-	if (arg[0] == Scope("")) {
+	if (arg.IsTemplate()) {
 		return Symbol::Find<TypeSymbol>(arg[1], file);
 	}
 	else {
-		return SymbolTable::FindAbsolute<TypeSymbol>(arg, file);
+		return SymbolTable::Find<TypeSymbol>(arg, Parent()->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 	}
 }
 
@@ -226,9 +226,11 @@ Tuple<List<TypeSymbol*>, List<ScopeList>> FunctionSymbol::FindTemplateArguments(
 FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overloads, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
 	FunctionSymbol* best = nullptr;
 
-	UInt bestNum    = 0;
+	UInt bestNum    = Math::UIntMax();
 	bool isTemplate = true;
 	bool isAmbig    = false;
+
+	ReplacementMap<TypeSymbol*> replacement;
 
 	for (FunctionSymbol* const overload : overloads) {
 		bool perfect = true;
@@ -259,10 +261,10 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 			}
 		}
 
-		if (perfect) return overload;
-
 		if (match) {
 			if (overload->templateArguments.IsEmpty()) {
+				if (perfect) return overload;
+
 				if (isTemplate) {
 					best = overload;
 					isTemplate = false;
@@ -275,7 +277,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 			else if (isTemplate) {
 				UInt num = 0;
 
-				for (UInt i = 0; i < templateArgs.Size(); i++) {
+				for (UInt i = 0; i < overload->templateArguments.Size(); i++) {
 					TypeSymbol* const type = overload->TemplateArgument(i);
 					
 					if (type->Is<TemplateSymbol>()) {
@@ -283,10 +285,20 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 					}
 				}
 
+				if (perfect && num == 0) return overload;
+
 				if (num < bestNum) {
 					best = overload;
 					bestNum = num;
 					isAmbig = false;
+
+					for (UInt i = 0; i < overload->templateArguments.Size(); i++) {
+						TypeSymbol* const type = overload->TemplateArgument(i);
+
+						if (type->Is<TemplateSymbol>()) {
+							replacement.Add(type, specialized.value1[i]);
+						}
+					}
 				}
 				else if (num == bestNum) {
 					isAmbig = true;
@@ -303,8 +315,11 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 		// TODO: error
 		return nullptr;
 	}
-	else {
+	else if (!isTemplate || bestNum == 0) {
 		return best;
+	}
+	else {
+		return best->Parent<FunctionSymbol>()->AddOverload(best->SpecializeTemplate(replacement, Node::root));
 	}
 }
 

@@ -340,6 +340,12 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 		list = list.Add(scope);
 	}
 
+	if (TemplateSymbol* const type = FindAbsolute<TemplateSymbol>(list, file)) {
+		if (TypeSymbol* const t = type->Type()) {
+			return t->AbsoluteName();
+		}
+	}
+
 	return list;
 }
 
@@ -513,19 +519,19 @@ void SymbolTable::SetupIntegers() {
 				const bool sign = integer.value < 0 || integer2.value < 0;
 
 				if (Instruction::IsComp(op.value))
-					binOp->returnValues.Add(ScopeList::Bool);
+					binOp1->returnValues.Add(ScopeList::Bool);
 				else {
 					const ScopeList name = v1 > v2 ? integer.key : integer2.key;
 
 					if (sign && name[0].name[0] == 'u')
-						binOp->returnValues.Add(ScopeList(true).Add(Scope(name[0].name.Sub(1))));
+						binOp1->returnValues.Add(ScopeList(true).Add(Scope(name[0].name.Sub(1))));
 					else
-						binOp->returnValues.Add(name);
+						binOp1->returnValues.Add(name);
 				}
 
-				binOp->arguments.Add(integer.key);
-				binOp->arguments.Add(integer2.key);
-				binOp->symbolNode = new IntegerBinaryOperatorNode(
+				binOp1->arguments.Add(integer.key);
+				binOp1->arguments.Add(integer2.key);
+				binOp1->symbolNode = new IntegerBinaryOperatorNode(
 					v1 > v2 ? v1 : v2,
 					sign,
 					op.value
