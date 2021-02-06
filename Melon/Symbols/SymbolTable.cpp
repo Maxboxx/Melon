@@ -193,6 +193,7 @@ Symbol* SymbolTable::FindInNamespaces(const ScopeList& name, const FileInfo& fil
 FunctionSymbol* SymbolTable::FindOperator(const Scope& op, TypeSymbol* const type1, TypeSymbol* const type2, const FileInfo& file) {
 	FunctionSymbol* const f1 = type1->Contains<FunctionSymbol>(op);
 	FunctionSymbol* f = nullptr;
+	bool isAmbig = false;
 
 	if (f1) for (FunctionSymbol* const overload : f1->overloads) {
 		if (overload->ArgumentType(0) != type1) continue;
@@ -202,17 +203,22 @@ FunctionSymbol* SymbolTable::FindOperator(const Scope& op, TypeSymbol* const typ
 		
 		if (type2->ImplicitConversionTo(arg)) {
 			if (f) {
-				// TODO: ambig error
-				return nullptr;
+				isAmbig = true;
 			}
 
 			f = overload;
 		}
 	}
 
+	if (isAmbig) {
+		// TODO: Ambig error
+		return nullptr;
+	}
+
 	if (f) return f;
 
 	FunctionSymbol* const f2 = type2->Contains<FunctionSymbol>(op);
+	isAmbig = false;
 
 	if (f2) for (FunctionSymbol* const overload : f2->overloads) {
 		if (overload->ArgumentType(1) != type2) continue;
@@ -222,13 +228,19 @@ FunctionSymbol* SymbolTable::FindOperator(const Scope& op, TypeSymbol* const typ
 
 		if (type1->ImplicitConversionTo(arg)) {
 			if (f) {
-				// TODO: ambig error
-				return nullptr;
+				isAmbig = true;
 			}
 
 			f = overload;
 		}
 	}
+
+	if (isAmbig) {
+		// TODO: Ambig error
+		return nullptr;
+	}
+
+	if (f) return f;
 	
 	// TODO: error
 	return nullptr;

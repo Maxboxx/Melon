@@ -6,6 +6,7 @@
 
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/NamespaceSymbol.h"
 
 using namespace Boxx;
 
@@ -47,11 +48,9 @@ bool StructNode::IsRecursive(StructSymbol* const symbol) const {
 }
 
 ScopeList StructNode::FindSideEffectScope(const bool assign) {
-	/* TODO: node
-	if (Symbols::Find(scope, file).type == SymbolType::Namespace) {
+	if (scope->Is<NamespaceSymbol>()) {
 		return ScopeList().Add(Scope::Global);
 	}
-	*/
 
 	return scope->AbsoluteName();
 }

@@ -6,6 +6,7 @@
 
 #include "Melon/Symbols/TemplateSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -115,16 +116,14 @@ ScanResult NameNode::Scan(ScanInfoStack& info) {
 
 ScopeList NameNode::FindSideEffectScope(const bool assign) {
 	if (assign) {
-		/* TODO: node
-		Symbols s = GetSymbol();
+		Symbol* const s = GetSymbol();
 
-		if (s.IsArgument() && s.attributes.Contains(SymbolAttribute::Ref)) {
-			return s.scope.Pop().Pop();
+		if (s->Is<VariableSymbol>() && (s->Cast<VariableSymbol>()->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+			return s->Parent()->Parent()->AbsoluteName();
 		}
 		else {
-			return s.scope.Pop();
+			return s->Parent()->AbsoluteName();
 		}
-		*/
 	}
 
 	return scope->AbsoluteName();

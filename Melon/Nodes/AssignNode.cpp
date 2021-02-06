@@ -263,13 +263,13 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 			continue;
 		}
 
-		/* TODO: node
-		if (vars[i]->GetSymbol().IsVariable() && !vars[i]->HasSideEffects(scope) && !info.usedVariables.Contains(vars[i]->GetSymbol().scope)) {
-			vars[i] = new DiscardNode(vars[i]->scope, vars[i]->file);
-			info.optimized = true;
-			removed = true;
+		if (Symbol* const sym = vars[i]->GetSymbol()) {
+			if (sym->Is<VariableSymbol>() && !vars[i]->HasSideEffects(scope->AbsoluteName()) && !info.usedVariables.Contains(sym->Cast<VariableSymbol>())) {
+				vars[i] = new DiscardNode(vars[i]->scope, vars[i]->file);
+				info.optimized = true;
+				removed = true;
+			}
 		}
-		*/
 	}
 
 	if (removed) for (UInt i = values.Size(); i > 0;) {

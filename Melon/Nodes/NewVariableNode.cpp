@@ -65,14 +65,12 @@ UInt NewVariableNode::GetSize() const {
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (names[i] == ScopeList::Discard.Last()) continue;
 
-		/* TODO: node
-		if (attributes[i].Contains(SymbolAttribute::Ref)) {
+		if ((attributes[i] & VariableAttributes::Ref) != VariableAttributes::None) {
 			size += StackPtr::ptrSize;
 		}
 		else {
-			size += Symbols::Find(GetType(i), file).size;
+			size += GetType(i)->Size();
 		}
-		*/
 	}
 
 	return size;

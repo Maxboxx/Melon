@@ -93,17 +93,15 @@ ScanResult BinaryOperatorNode::Scan(ScanInfoStack& info) {
 }
 
 ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
-	/* TODO: node
-	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	FunctionSymbol* const f = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	if (s.symbolNode) {
+	if (f->symbolNode) {
 		return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
 	}
 	else {
 		// TODO: Check operator function
 		return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
 	}
-	*/
 
 	return ScopeList();
 }
