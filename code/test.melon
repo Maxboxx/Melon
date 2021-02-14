@@ -51,4 +51,3 @@ int: i = Compare.min(
 		}
 	}
 )
-

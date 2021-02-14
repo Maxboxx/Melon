@@ -221,7 +221,6 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			}
 		}
 
-		/*
 		List<OptimizerInstruction> instructions = info.root.Compile(scanInfo.usedVariables);
 
 		if (ErrorLog::HasError()) {
@@ -229,7 +228,6 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		}
 
 		List<Instruction> optimizedInstructions = KiwiOptimizer::Optimize(instructions, compOptions.kiwiOptimizationPasses);
-		*/
 
 		if (compOptions.outputMelon) {
 			info.root.ToMelonFiles(compOptions);
@@ -237,7 +235,6 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		// ------------- Kiwi ---------------
 
-		/*
 		if (compOptions.outputKiwi) {
 			KiwiLang::WriteToFile(compOptions.outputDirectory + compOptions.outputName + ".kiwi", ErrorLog::logger, optimizedInstructions);
 		}
@@ -269,7 +266,6 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		}
 
 		if (error) throw CompileError("", FileInfo());
-		*/
 
 		ErrorLog::Success(PlainError("compilation successful"));
 		ErrorLog::LogErrors();

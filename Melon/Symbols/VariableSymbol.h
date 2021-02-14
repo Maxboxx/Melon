@@ -34,6 +34,9 @@ namespace Melon {
 			/// Whether or not the variable has been assigned
 			bool isAssigned = false;
 
+			///T Stack Index
+			Boxx::UInt stackIndex = 0;
+
 			VariableSymbol(const FileInfo& file);
 			~VariableSymbol();
 

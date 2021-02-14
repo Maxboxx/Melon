@@ -40,7 +40,7 @@ namespace Melon {
 
 			///T Compile
 			/// Returns the instruction list from <code>Node::Compile()</code>
-			Boxx::List<Optimizing::OptimizerInstruction> Compile(const Boxx::Set<Symbols::ScopeList>& usedVariables);
+			Boxx::List<Optimizing::OptimizerInstruction> Compile(const Boxx::Set<Symbols::VariableSymbol*>& usedVariables);
 
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
@@ -53,10 +53,6 @@ namespace Melon {
 			///T Scan
 			/// Used for scanning for errors
 			ScanInfoStack Scan();
-
-			///T ToString
-			/// Converts the result from <code>ToMango()</code> to a string
-			Boxx::String ToString() const;
 
 			///T To Melon Files
 			/// Writes the optimized code to melon files

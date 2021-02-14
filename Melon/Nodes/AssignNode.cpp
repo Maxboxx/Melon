@@ -81,23 +81,22 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 	UInt varSize = 0;
 
-	/* TODO: node
 	for (UInt i = 0; i < vars.Size(); i++) {
 		if (types[i] == ScopeList::Discard || vars[i].Is<DiscardNode>()) continue;
+		VariableSymbol* const var = vars[i]->GetSymbol()->Cast<VariableSymbol>();
 
-		if (vars[i]->GetSymbol().attributes.Contains(SymbolAttribute::Ref)) {
+		if ((var->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
 			varSize += info.stack.ptrSize;
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			UInt size = Symbols::Find(vars[i]->Type(), file).size;
+			UInt size = vars[i]->Type()->Size();
 			varSize += size;
 			info.stack.Push(size);
 		}
 
-		Symbols::Find(Symbols::ReplaceTemplates(scope, file), file).Get(vars[i].Cast<NameNode>()->name, file).stackIndex = info.stack.top;
+		var->stackIndex = info.stack.top;
 	}
-	*/
 
 	List<Pair<TypeSymbol*, NodePtr>> values = Values();
 	List<UInt> returnOffsets;
@@ -118,14 +117,12 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			}
 
 			if (i + 1 >= this->values.Size()) {
-				/* TODO: node
-				UInt size = info.stack.top + Symbols::Find(values[i].key, values[i].value->file).size;
+				UInt size = info.stack.top + values[i].key->Size();
 
 				for (UInt u = i + 1; u < values.Size(); u++) {
-					size += Symbols::Find(values[u].key, values[i].value->file).size;
+					size += values[u].key->Size();
 					returnOffsets.Add(size);
 				}
-				*/
 			}
 			else {
 				info.stack.PopExpr(frame, c);
@@ -133,7 +130,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 		}
 		else if (!vars[i].Is<DiscardNode>()) {
 			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
-			//sn->type = values[i].key;
+			sn->type = values[i].key->AbsoluteName();
 
 			info.important = true;
 			c.AddInstructions(CompileAssignment(vars[i], sn, info, vars[i]->file).instructions);

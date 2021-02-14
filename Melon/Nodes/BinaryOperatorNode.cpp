@@ -50,29 +50,24 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 	List<NodePtr> nodes;
 	nodes.Add(node1);
 	nodes.Add(node2);
+	
+	FunctionSymbol* const func = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	/* TODO: node
-	Symbols s = Symbols::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	if (!func) return CompiledNode();
 
-	if (s.type == SymbolType::None) return CompiledNode();
-
-	if (s.symbolNode) {
-		return s.symbolNode->Compile(nodes, info);
+	if (func->symbolNode) {
+		return func->symbolNode->Compile(nodes, info);
 	}
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;
 		cn->isMethod = false;
-		Scope sc = s.scope.Last();
-		sc.variant = nullptr;
-		Pointer<TypeNode> tn = new TypeNode(s.scope.Pop().Add(sc));
+
+		Pointer<TypeNode> tn = new TypeNode(func->Parent()->Parent()->AbsoluteName());
 		cn->node = tn;
 		cn->op = true;
 		return cn->Compile(info);
 	}
-	*/
-
-	return CompiledNode();
 }
 
 void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {

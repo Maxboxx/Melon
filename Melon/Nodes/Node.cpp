@@ -5,6 +5,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 #include "Boxx/Math.h"
@@ -122,39 +124,42 @@ Long Node::GetImmediate() const {
 }
 
 ScanResult Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
-	List<Symbol*> args;
+	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
-	/* TODO: node
-	Symbols::FindFunction(var->Type().Add(Scope::Assign), args, file);
-	*/
+	if (TypeSymbol* const type = var->Type()) {
+		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Scope::Assign, file)) {
+			func->FindOverload(args, file);
+		}
+	}
 
 	return ScanResult();
 }
 
 CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file) {
-	List<Symbol*> args;
+	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
-	/* TODO: node
-	Symbols assign = Symbols::FindFunction(var->Type().Add(Scope::Assign), args, file);
+	FunctionSymbol* assign = nullptr;
 
-	if (assign.type != SymbolType::None) {
+	if (TypeSymbol* const type = var->Type()) {
+		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Scope::Assign, file)) {
+			assign = func->FindOverload(args, file);
+		}
+	}
+
+	if (assign) {
 		List<NodePtr> nodes;
 		nodes.Add(var);
 
 		Pointer<ConvertNode> cn = new ConvertNode(value->scope, value->file);
 		cn->isExplicit = false;
 		cn->node = value;
-		cn->type = assign.arguments[0];
+		cn->type = assign->ArgumentType(0)->AbsoluteName();
 		nodes.Add(cn);
 
-		return assign.symbolNode->Compile(nodes, info);
+		return assign->symbolNode->Compile(nodes, info);
 	}
-	else {
-		return CompiledNode();
-	}
-	*/
 
 	return CompiledNode();
 }
