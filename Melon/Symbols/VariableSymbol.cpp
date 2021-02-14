@@ -22,6 +22,10 @@ VariableSymbol::~VariableSymbol() {
 	
 }
 
+bool VariableSymbol::HasAttribute(const VariableAttributes attribute) {
+	return (this->attributes & attribute) != VariableAttributes::None;
+}
+
 TypeSymbol* VariableSymbol::Type() {
 	return SymbolTable::Find<TypeSymbol>(type, Parent()->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 }

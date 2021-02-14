@@ -38,6 +38,10 @@ namespace Melon {
 			T* Parent() const;
 			///M
 
+			///T Parent Type
+			/// Gets the parent type of the symbol
+			TypeSymbol* ParentType() const;
+
 			///T Name
 			/// Gets the name of the symbol
 			virtual Scope Name();

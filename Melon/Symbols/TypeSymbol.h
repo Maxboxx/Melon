@@ -61,6 +61,10 @@ namespace Melon {
 			/// Finds a unary operator of the current type
 			FunctionSymbol* FindUnaryOperator(const Scope& name, const FileInfo& file);
 
+			///T Is Of Type
+			/// Checks if the type is or inherits from the specified type
+			virtual bool IsOfType(TypeSymbol* const type);
+
 			///T Is Initialized
 			/// Checks if the type has been initialized
 			virtual bool IsInitialized();
@@ -78,7 +82,7 @@ namespace Melon {
 			virtual Boxx::Set<Scope> UnassignedMembers();
 
 			///T Update Size
-			/// Calculates the size of the struct and updates the internal value
+			/// Calculates the size of the type and updates the internal value
 			virtual void UpdateSize();
 
 			///T Deduce Templates
@@ -89,6 +93,8 @@ namespace Melon {
 			virtual TypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 
 		protected:
+			friend TemplateSymbol;
+
 			static void DeduceTemplates(TemplateTypeSymbol* const type1, TemplateTypeSymbol* const type2, Boxx::Map<TemplateSymbol*, TypeSymbol*>& templateMap);
 
 			Boxx::UInt size;

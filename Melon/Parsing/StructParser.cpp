@@ -67,8 +67,9 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	}
 
 	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo(info.Current().line));
-	assign->arguments.Add(sn->symbol->AbsoluteName());
-	assign->symbolNode = new StructAssignNode();
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo(info.Current().line)));
+	assign1->arguments.Add(sn->symbol->AbsoluteName());
+	assign1->symbolNode = new StructAssignNode();
 	sn->symbol->AddSymbol(Scope::Assign, assign);
 
 	info.index++;

@@ -34,10 +34,7 @@ TypeSymbol* IfExprNode::Type() const {
 
 CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
-
-	/* TODO: node
-	cn.size = Symbols::Find(Type(), file).size;
-	*/
+	cn.size = Type()->Size();
 
 	List<UInt> jumps;
 
@@ -90,10 +87,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 	cn.instructions.Add(Instruction::Label(info.label++));
 
-	/* TODO: node
-	info.stack.Pop(Symbols::Find(Type(), file).size);
-	*/
-
+	info.stack.Pop(Type()->Size());
 	return cn;
 }
 

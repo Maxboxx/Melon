@@ -49,8 +49,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 
 	List<UInt> jumps;
 
-	/* TODO: node
-	info.stack.PushExpr(Symbols::Find(Type(), file).size, cn);
+	info.stack.PushExpr(Type()->Size(), cn);
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	CompiledNode c1 = node1->Compile(info);
@@ -65,12 +64,12 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(eq);
 
 	Pointer<MemoryNode> sn1 = new MemoryNode(cn.argument.mem);
-	sn1->type = Type();
+	sn1->type = Type()->AbsoluteName();
 
 	Pointer<MemoryNode> sn2 = new MemoryNode(c1.argument.mem);
 	sn2->mem.offset++;
 
-	sn2->type = Symbols::Find(node1->Type(), file).Get(Scope::Value, file).varType;
+	sn2->type = node1->Type()->Find<VariableSymbol>(Scope::Value, file)->Type()->AbsoluteName();
 
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
 
@@ -85,8 +84,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(Instruction::Label(info.label));
 	cn.instructions[jmp].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 
-	info.stack.Pop(Symbols::Find(Type(), file).size);
-	*/
+	info.stack.Pop(Type()->Size());
 
 	return cn;
 }

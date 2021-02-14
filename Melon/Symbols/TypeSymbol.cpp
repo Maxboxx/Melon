@@ -97,6 +97,10 @@ FunctionSymbol* TypeSymbol::FindUnaryOperator(const Scope& name, const FileInfo&
 	return nullptr;
 }
 
+bool TypeSymbol::IsOfType(TypeSymbol* const type) {
+	return this == type;
+}
+
 bool TypeSymbol::IsInitialized() {
 	return true;
 }

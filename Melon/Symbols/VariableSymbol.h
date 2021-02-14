@@ -35,10 +35,13 @@ namespace Melon {
 			bool isAssigned = false;
 
 			///T Stack Index
+			/// Offset for member variables
 			Boxx::UInt stackIndex = 0;
 
 			VariableSymbol(const FileInfo& file);
 			~VariableSymbol();
+
+			bool HasAttribute(const VariableAttributes attribute);
 
 			virtual TypeSymbol* Type() override;
 			virtual VariableSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;

@@ -189,8 +189,8 @@ List<TypeSymbol*> CallNode::Types() const {
 }
 
 CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
-	/* TODO: node
-	Symbols s = GetFunc();
+	FunctionSymbol* const func = GetFunc();
+	const bool isInit = IsInit();
 
 	StackPtr stack = info.stack;
 	Int retSize = 0;
@@ -199,20 +199,21 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	CompiledNode c;
 
 	// Calculate return size
-	for (const ScopeList& type : s.returnValues)
-		retSize += Symbols::FindNearestInNamespace(s.scope.Pop(), type, FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+	for (UInt i = 0; i < func->returnValues.Size(); i++) {
+		retSize += func->ReturnType(i)->Size();
+	}
 
-	if (IsInit()) retSize = Symbols::Find(Type(), node->file).size;
+	if (isInit) retSize = Type()->Size();
 
 	// Calculate arg size
-	for (UInt u = 0; u < s.arguments.Size(); u++) {
-		Symbols type = Symbols::FindNearestInNamespace(scope, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
-
-		if (Symbols::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
-			argSize += info.stack.ptrSize;
-		}
-		else {
-			argSize += type.size;
+	for (UInt i = 0; i < func->arguments.Size(); i++) {
+		if (VariableSymbol* const arg = func->Argument(i)) {
+			if (arg->HasAttribute(VariableAttributes::Ref)) {
+				argSize += info.stack.ptrSize;
+			}
+			else {
+				argSize += arg->Type()->Size();
+			}
 		}
 	}
 
@@ -226,17 +227,17 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		memoryOffsets.Add(0);
 		assignFirst.Add(false);
 
-		if (Symbols::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (func->Argument(isInit ? i + 1 : i)->HasAttribute(VariableAttributes::Ref)) {
 			StackPtr stack = infoCpy.stack;
 			CompiledNode n = args[i]->Compile(infoCpy);
 
 			if (
 				n.argument.type != ArgumentType::Memory || 
 				(n.argument.mem.memptr.IsLeft() && n.argument.mem.memptr.GetLeft().type == RegisterType::Stack && stack.Offset(n.argument.mem.offset) >= stack.top) ||
-				!Symbols::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file) ||
+				!args[i]->Type()->IsOfType(func->ArgumentType(i)) ||
 				noRefs[i]
 			) {
-				if (!noRefs[i] && !args[i]->IsImmediate() && !args[i].Is<CustomInitNode>()) {
+				if (!noRefs[i] && !args[i]->IsImmediate() && !args[i].Is<ObjectInitNode>()) {
 					bool error = true;
 
 					if (Pointer<CallNode> call = args[i].Cast<CallNode>()) {
@@ -244,13 +245,13 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 					}
 
 					if (error) {
-						ErrorLog::Warning(WarningError(WarningError::NoRefArg(s.scope.ToString(), i), args[i]->file));
+						ErrorLog::Warning(WarningError(WarningError::NoRefArg(func->AbsoluteName().ToString(), i), args[i]->file));
 					}
 				}
 
 				assignFirst[assignFirst.Size() - 1] = true;
 
-				tempSize += Symbols::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).GetType(node->file).size;
+				tempSize += func->ArgumentType(isInit ? i + 1 : i)->Size();
 				memoryOffsets[memoryOffsets.Size() - 1] = tempSize;
 			}
 		}
@@ -288,10 +289,10 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	}
 
 	// Calculate compile arguments
-	for (UInt u = 0; u < s.arguments.Size(); u++) {
-		Symbols type = Symbols::FindNearestInNamespace(scope, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
+	for (UInt u = 0; u < func->arguments.Size(); u++) {
+		TypeSymbol* const type = func->ArgumentType(u);
 
-		if (Symbols::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (func->Argument(u)->HasAttribute(VariableAttributes::Ref)) {
 			NodePtr r = nullptr;
 			Int i = IsInit() ? u - 1 : u;
 			bool isCompiled = false;
@@ -308,7 +309,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 				else {
 					if (assignFirst[i - 1]) {
 						Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)tempStack + memoryOffsets[i - 1]));
-						sn->type = type.scope;
+						sn->type = type->AbsoluteName();
 
 						UInt top = info.stack.top;
 						c.AddInstructions(CompileAssignment(sn, args[i - 1], info, args[i - 1]->file).instructions);
@@ -324,7 +325,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 			else {
 				if (assignFirst[i]) {
 					Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)tempStack + memoryOffsets[i]));
-					sn->type = type.scope;
+					sn->type = type->AbsoluteName();
 
 					StackPtr stack = info.stack;
 					c.AddInstructions(CompileAssignment(sn, args[i], info, args[i]->file).instructions);
@@ -373,12 +374,12 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		else {
 			Int i = IsInit() ? u - 1 : u;
 
-			stackIndex -= type.size;
+			stackIndex -= type->Size();
 
 			Pointer<MemoryNode> sn = new MemoryNode(stackIndex);
-			sn->type = type.scope;
+			sn->type = type->AbsoluteName();
 
-			info.stack.Push(type.size);
+			info.stack.Push(type->Size());
 
 			UInt frame = info.stack.frame;
 
@@ -393,8 +394,8 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		}
 	}
 
-	if (!s.returnValues.IsEmpty()) {
-		c.size = Symbols::FindNearestInNamespace(s.symbolNamespace, s.returnValues[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+	if (!func->returnValues.IsEmpty()) {
+		c.size = func->ReturnType(0)->Size();
 	}
 	else {
 		c.size = info.stack.ptrSize;
@@ -403,7 +404,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	info.stack.PopExpr(frame, c);
 
 	Instruction inst = Instruction(InstructionType::Call);
-	inst.arguments.Add(Argument(ArgumentType::Name, s.scope.ToString()));
+	inst.arguments.Add(Argument(ArgumentType::Name, func->AbsoluteName().ToString()));
 	c.instructions.Add(inst);
 
 	if (isStatement) {
@@ -423,7 +424,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 			retSize = 0;
 		}
 		else {
-			retSize -= Symbols::FindNearestInNamespace(s.scope.Pop(), s.returnValues[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+			retSize -= func->ReturnType(0)->Size();
 		}
 
 		c.argument = Argument(MemoryLocation(info.stack.Offset() + retSize));
@@ -431,9 +432,6 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		info.stack.top = stack.top;
 		return c;
 	}
-	*/
-
-	return CompiledNode();
 }
 
 void CallNode::IncludeScan(ParsingInfo& info) {

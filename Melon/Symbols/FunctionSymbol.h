@@ -112,6 +112,8 @@ namespace Melon {
 			virtual void SetTemplateValues(Symbol* const symbol) override;
 			virtual FunctionSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
+			FunctionSymbol* replace = nullptr;
+
 		protected:
 			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
 

@@ -11,6 +11,7 @@
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/NamespaceSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/EnumSymbol.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -78,33 +79,27 @@ Symbol* DotNode::GetSymbol() const {
 }
 
 CompiledNode DotNode::Compile(CompileInfo& info) {
-	Symbol* const type = node->Type();
+	TypeSymbol* const type = node->Type();
 
-	/* TODO: node
-	Symbols s = Symbols::Find(type, file);
 	CompiledNode c = node->Compile(info);
 
-	if (s.type == SymbolType::Struct || s.type == SymbolType::Type) {
-		Symbols var = s.Get(name, file);
-		Symbols varType = var.GetType(file);
+	if (type->Is<EnumSymbol>()) {
+		c.argument = Argument(type->Find<ValueSymbol>(name, file)->value);
+		c.size = type->Size();
+	}
+	else {
+		VariableSymbol* const var = type->Find<VariableSymbol>(name, file);
 
-		if (var.attributes.Contains(SymbolAttribute::Static)) {
+		if (var->HasAttribute(VariableAttributes::Static)) {
 			c.argument = MemoryLocation(0);
-			c.argument.mem.memptr = var.scope.ToString();
+			c.argument.mem.memptr = var->AbsoluteName().ToString();
 		}
 
-		c.argument.mem.offset += var.offset;
-		c.size = varType.size;
-	}
-	else if (s.type == SymbolType::Enum) {
-		c.argument = Argument(s.Get(name, file).stackIndex);
-		c.size = s.size;
+		c.argument.mem.offset += var->stackIndex;
+		c.size = var->Type()->Size();
 	}
 
 	return c;
-	*/
-
-	return CompiledNode();
 }
 
 void DotNode::IncludeScan(ParsingInfo& info) {

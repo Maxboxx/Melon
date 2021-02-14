@@ -51,18 +51,17 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 
 	Long size = info.stack.ptrSize;
 
-	/* TODO: node
-	for (Int i = s.arguments.Size() - 1; i >= 0; i--) {
-		s.Get(argNames[i], file).stackIndex = -size;
+	for (Long i = sym->arguments.Size() - 1; i >= 0; i--) {
+		VariableSymbol* const arg = sym->Argument(i);
+		arg->stackIndex = -size;
 
-		if (s.Get(argNames[i], file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (arg->HasAttribute(VariableAttributes::Ref)) {
 			size += info.stack.ptrSize;
 		}
 		else {
-			size += Symbols::FindNearestInNamespace(scope, s.arguments[i], file).size;
+			size += arg->Type()->Size();
 		}
 	}
-	*/
 
 	c.AddInstructions(node->Compile(info).instructions);
 

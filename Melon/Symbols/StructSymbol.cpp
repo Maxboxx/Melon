@@ -97,6 +97,7 @@ void StructSymbol::UpdateSize() {
 					type->UpdateSize();
 				}
 
+				var->stackIndex = size;
 				size += type->Size();
 			}
 		}

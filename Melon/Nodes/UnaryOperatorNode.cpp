@@ -68,28 +68,24 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 	List<Symbol*> args;
 	args.Add(node->Type());
 
-	Symbol* const type = node->Type();
+	TypeSymbol* const type = node->Type();
 
-	/* TODO: node
-	const Symbols s = Symbols::FindFunction(type.Add(op), args, file);
+	FunctionSymbol* const func = type->FindUnaryOperator(op, file);
 
-	if (s.symbolNode) {
-		return s.symbolNode->Compile(nodes, info);
+	if (func->symbolNode) {
+		return func->symbolNode->Compile(nodes, info);
 	}
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;
 		cn->isMethod = false;
-		Scope sc = s.scope.Last();
-		sc.variant = nullptr;
-		Pointer<TypeNode> tn = new TypeNode(s.scope.Pop().Add(sc));
+
+		Pointer<TypeNode> tn = new TypeNode(func->ParentType()->AbsoluteName());
 		cn->node = tn;
 		cn->op = true;
+
 		return cn->Compile(info);
 	}
-	*/
-
-	return CompiledNode();
 }
 
 void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {

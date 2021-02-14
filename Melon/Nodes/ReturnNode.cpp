@@ -44,41 +44,38 @@ List<TypeSymbol*> ReturnNode::GetTypes() const {
 }
 
 CompiledNode ReturnNode::Compile(CompileInfo& info) {
-	/* TODO: node
-	Symbols s = Symbols::Find(Symbols::ReplaceTemplates(func, file), file);
+	FunctionSymbol* const f = GetFunc();
+	if (!f) return CompiledNode();
 
 	UInt stackOffset = info.stack.ptrSize + info.stack.frame;
-	List<Symbols> types = GetTypes();
+	List<TypeSymbol*> types = GetTypes();
 
-	for (const Symbols& sym : types) {
-		stackOffset += sym.size;
+	for (TypeSymbol* const type : types) {
+		stackOffset += type->Size();
 	}
 
-	for (UInt i = 0; i < s.arguments.Size(); i++) {
-		Symbols sym = Symbols::FindNearestInNamespace(s.scope.Pop(), s.arguments[i], file);
+	for (UInt i = 0; i < f->arguments.Size(); i++) {
+		VariableSymbol* const var = f->Argument(i);
 
-		if (Symbols::Find(s.scope.Add(s.names[i]), file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (var->HasAttribute(VariableAttributes::Ref)) {
 			stackOffset += info.stack.ptrSize;
 		}
 		else {
-			stackOffset += sym.size;
+			stackOffset += var->Type()->Size();
 		}
 	}
-	*/
 
 	CompiledNode c;
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
-		/* TODO: node
-		stackOffset -= types[i].size;
+		stackOffset -= types[i]->Size();
 
 		Pointer<MemoryNode> sn = new MemoryNode(stackOffset);
-		sn->type = types[i].scope;
+		sn->type = types[i]->AbsoluteName();
 
 		info.important = true;
 		c.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
 		info.important = false;
-		*/
 	}
 
 	info.stack.PopExpr(0, c);

@@ -39,15 +39,14 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		CompiledNode c = assign->values[0]->Compile(info);
 
-		/* TODO: node
-		Symbols s = Symbols::Find(assign->values[0]->Type(), file);
+		TypeSymbol* const type = assign->values[0]->Type();
 		Argument argCopy = c.argument;
 		argCopy.mem.offset++;
 
 		NodePtr tempValue = assign->values[0];
 
 		Pointer<ArgumentNode> value = new ArgumentNode(argCopy);
-		value->type = s.Get(Scope::Value, file).varType;
+		value->type = type->Find<VariableSymbol>(Scope::Value, file)->Type()->AbsoluteName();
 		assign->values[0] = value;
 
 		OptimizerInstruction mov = Instruction(InstructionType::Mov, 1);
@@ -71,7 +70,6 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 		c.instructions.Add(Instruction::Label(info.label++));
 
 		return c;
-		*/
 	}
 	else {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);

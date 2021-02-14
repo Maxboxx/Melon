@@ -8,6 +8,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -59,16 +61,13 @@ bool SwitchNode::IsScope() const {
 CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
-	/* TODO: node
-	if (this->expr) 
-		cn.size = Symbols::Find(Type(), file).size;
+	if (this->expr) {
+		cn.size = Type()->Size();
+	}
 
-	info.stack.PushExpr(Symbols::Find(this->match->Type(), this->match->file).size, cn);
+	info.stack.PushExpr(this->match->Type()->Size(), cn);
 	Pointer<MemoryNode> matchStack = new MemoryNode(info.stack.Offset());
-	matchStack->type = this->match->Type();
-
-	List<ScopeList> args;
-	args.Add(this->match->Type());
+	matchStack->type = this->match->Type()->AbsoluteName();
 
 	const UInt frame = info.stack.frame;
 	cn.AddInstructions(CompileAssignment(matchStack, this->match, info, this->match->file).instructions);
@@ -86,7 +85,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 			nodeArgs.Add(matchStack);
 			nodeArgs.Add(node);
 
-			CompiledNode comp = Symbols::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file).symbolNode->Compile(nodeArgs, info);
+			CompiledNode comp = SymbolTable::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file)->symbolNode->Compile(nodeArgs, info);
 			cn.AddInstructions(comp.instructions);
 
 			Instruction eq = Instruction(InstructionType::Ne, 1);
@@ -104,19 +103,20 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 		info.stack.PopExpr(frame, cn);
 	}
 
-	info.stack.Pop(Symbols::Find(this->match->Type(), this->match->file).size);
+	info.stack.Pop(this->match->Type()->Size());
 
 	Instruction defJmp = Instruction(InstructionType::Jmp, 0);
 	defaultJump = cn.instructions.Size();
 	cn.instructions.Add(defJmp);
 
-	if (expr)
-		info.stack.PushExpr(Symbols::Find(Type(), file).size, cn);
+	if (expr) {
+		info.stack.PushExpr(Type()->Size(), cn);
+	}
 
 	Argument result = Argument(MemoryLocation(info.stack.Offset()));
 
 	Pointer<MemoryNode> sn = new MemoryNode(result.mem.offset);
-	sn->type = Type();
+	sn->type = Type()->AbsoluteName();
 
 	for (NodePtr expr : nodes) {
 		cn.instructions.Add(Instruction::Label(info.label));
@@ -210,9 +210,8 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 
 	if (expr) {
 		cn.argument = result;
-		info.stack.Pop(Symbols::Find(Type(), file).size);
+		info.stack.Pop(Type()->Size());
 	}
-	*/
 
 	return cn;
 }

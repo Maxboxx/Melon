@@ -35,33 +35,31 @@ TypeSymbol* ConvertNode::Type() const {
 }
 
 CompiledNode ConvertNode::Compile(CompileInfo& info) {
-	Symbol* convertType = Type();
+	TypeSymbol* const convertType = Type();
 
 	if (node->Type() == convertType) return node->Compile(info);
 
-	/* TODO: node
-	Symbols convert = Symbols::FindExplicitConversion(node->Type(), convertType, file);
+	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(node->Type(), convertType, file);
 
-	if (convert.type == SymbolType::None) return CompiledNode();
+	if (!convert) return CompiledNode();
 
 	List<NodePtr> nodes;
 	nodes.Add(node);
 
-	if (convert.symbolNode) {
-		return convert.symbolNode->Compile(nodes, info);
+	if (convert->symbolNode) {
+		return convert->symbolNode->Compile(nodes, info);
 	}
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;
 		cn->isMethod = false;
-		Scope sc = convert.scope.Last();
-		sc.variant = nullptr;
-		Pointer<TypeNode> tn = new TypeNode(convert.scope.Pop().Add(sc));
+
+		Pointer<TypeNode> tn = new TypeNode(convert->ParentType()->AbsoluteName());
 		cn->node = tn;
 		cn->op = true;
+
 		return cn->Compile(info);
 	}
-	*/
 }
 
 void ConvertNode::IncludeScan(ParsingInfo& info) {

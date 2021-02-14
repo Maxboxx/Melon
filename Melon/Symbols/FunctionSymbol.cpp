@@ -416,6 +416,7 @@ bool FunctionSymbol::IsNotSpecialized() {
 
 void FunctionSymbol::SetTemplateValues(Symbol* const symbol) {
 	FunctionSymbol* const sym = symbol->Cast<FunctionSymbol>();
+	replace = sym;
 
 	if (!sym) {
 		// TODO: error?
@@ -470,6 +471,12 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 			}
 			else {
 				sym->templateArguments.Add(ReplaceTypeScope(type, replacement, file));
+			}
+		}
+
+		if (symbolNode) {
+			for (UInt i = 0; i < arguments.Size(); i++) {
+				sym->arguments[i] = ReplaceTypeScope(ArgumentType(i), replacement, file);
 			}
 		}
 

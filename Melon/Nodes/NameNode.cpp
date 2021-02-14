@@ -80,10 +80,11 @@ Symbol* NameNode::GetSymbol() const {
 CompiledNode NameNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
-	/* TODO: node
-	Symbols s = GetSymbol();
+	VariableSymbol* const sym = GetSymbol()->Cast<VariableSymbol>();
 
-	if (!ignoreRef && s.attributes.Contains(SymbolAttribute::Ref)) {
+	if (!sym) return cn;
+
+	if (!ignoreRef && sym->HasAttribute(VariableAttributes::Ref)) {
 		Pointer<NameNode> name = new NameNode(scope, file);
 		name->name = this->name;
 		name->ignoreRef = true;
@@ -91,11 +92,10 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 		return ptr->Compile(info);
 	}
 	else {
-		cn.argument = Argument(MemoryLocation(info.stack.Offset(s.stackIndex)));
+		cn.argument = Argument(MemoryLocation(info.stack.Offset(sym->stackIndex)));
 	}
 
-	cn.size = s.GetType(file).size;
-	*/
+	cn.size = sym->Type()->Size();
 
 	return cn;
 }

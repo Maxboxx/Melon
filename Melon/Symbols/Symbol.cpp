@@ -21,6 +21,16 @@ Symbol* Symbol::Parent() const {
 	return parent;
 }
 
+TypeSymbol* Symbol::ParentType() const {
+	if (parent == nullptr) return nullptr;
+
+	if (TypeSymbol* const type = parent->Cast<TypeSymbol>()) {
+		return type;
+	}
+
+	return parent->ParentType();
+}
+
 Scope Symbol::Name() {
 	return name;
 }

@@ -50,9 +50,7 @@ List<ScopeList> NewVariableNode::GetVariables() const {
 			vars.Add(ScopeList::Discard);
 		}
 		else {
-			/* TODO: node
-			vars.Add(Symbols::FindInNamespace(scope.Add(n), file).scope);
-			*/
+			vars.Add(scope->Find(n, file)->AbsoluteName());
 		}
 	}
 
@@ -78,35 +76,35 @@ UInt NewVariableNode::GetSize() const {
 
 CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurate error lines
 	CompiledNode cn;
-	/* TODO: node
-	cn.size = Symbols::Find(Type(), file).size;
+	cn.size = Type()->Size();
 
-	if (GetType(0) != ScopeList::Discard) {
-		if (attributes[0].Contains(SymbolAttribute::Ref)) {
+	if (GetType(0) != nullptr) {
+		if ((attributes[0] & VariableAttributes::Ref) != VariableAttributes::None) {
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			info.stack.Push(Symbols::Find(GetType(0), file).size);
+			info.stack.Push(GetType(0)->Size());
 		}
 
-		Symbols::Find(Symbols::ReplaceTemplates(scope, file), file).Get(names[0], file).stackIndex = info.stack.top;
+		VariableSymbol* const var = SymbolTable::Find<VariableSymbol>(names[0], scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+		var->stackIndex = info.stack.top;
 	}
 
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	for (UInt i = 1; i < names.Size(); i++) {
-		if (GetType(i) == ScopeList::Discard) continue;
+		if (GetType(i) == nullptr) continue;
 
-		if (attributes[i].Contains(SymbolAttribute::Ref)) {
+		if ((attributes[i] & VariableAttributes::Ref) != VariableAttributes::None) {
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			info.stack.Push(Symbols::Find(GetType(i), file).size);
+			info.stack.Push(GetType(i)->Size());
 		}
 
-		Symbols::Find(Symbols::ReplaceTemplates(scope, file), file).Get(names[i], file).stackIndex = info.stack.top;
+		VariableSymbol* const var = SymbolTable::Find<VariableSymbol>(names[i], scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+		var->stackIndex = info.stack.top;
 	}
-	*/
 
 	return cn;
 }

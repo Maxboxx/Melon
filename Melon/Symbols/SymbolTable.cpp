@@ -290,7 +290,7 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 
 	for (Boxx::UInt i = 0; i < name.Size(); i++) {
 		Scope scope = name[i].Copy();
-
+		
 		if (scope.types) {
 			Symbol* const s = FindAbsolute(list.Add(scope), FileInfo());
 			List<ScopeList> args;
@@ -340,6 +340,7 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 				}
 
 				Scope newScope = scope.Copy();
+
 				newScope.types = args;
 
 				if (Symbol* const sym = ContainsAbsolute(list.Add(newScope))) {
@@ -348,6 +349,13 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 				else {
 					scope = newScope;
 				}
+			}
+		}
+		else if (scope.arguments) {
+			FunctionSymbol* const s = FindAbsolute<FunctionSymbol>(list.Add(scope), FileInfo());
+
+			if (s && s->replace) {
+				scope.arguments = s->replace->AbsoluteName().Last().arguments;
 			}
 		}
 
@@ -381,7 +389,7 @@ ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& 
 					temp = temp.Add(type[1]);
 				}
 
-				if (Symbol* const sym = Find(temp, scope, file)) {
+				if (Symbol* const sym = Find(temp, scope, file, SymbolTable::SearchOptions::ReplaceTemplates)) {
 					ScopeList absolute = ReplaceTemplatesAbsolute(sym->AbsoluteName(), file);
 					
 					if (temp != absolute) {
@@ -396,6 +404,19 @@ ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& 
 							type = absolute;
 						}
 					}
+				}
+			}
+		}
+		else if (typeScope[i].arguments) {
+			ScopeList list;
+
+			for (Boxx::UInt u = 0; u < i; u++) {
+				list = list.Add(typeScope[u]);
+			}
+
+			if (FunctionSymbol* const s = Find<FunctionSymbol>(list.Add(typeScope[i]), scope, file)) {
+				if (s && s->replace) {
+					typeScope[i].arguments = s->replace->AbsoluteName().Last().arguments;
 				}
 			}
 		}

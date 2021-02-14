@@ -39,23 +39,21 @@ TypeSymbol* ObjectInitNode::Type() const {
 
 CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
 	CompiledNode c = node->Compile(info);
-	/* TODO: node
-	Symbols s = Symbols::Find(Type(), file);
+	
+	TypeSymbol* const type = Type();
 
-	UInt offset = s.size;
+	UInt offset = type->Size();
 
-	info.stack.PushExpr(s.size, c);
+	info.stack.PushExpr(offset, c);
 
 	UInt index = info.index;
 
 	for (UInt i = 0; i < vars.Size(); i++) {
-		Symbols v = s.Get(vars[i], file);
-		Symbols varType = v.GetType(file);
-		const ScopeList type = varType.scope;
+		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
 
-		if (s.type == SymbolType::Struct) {
-			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset() + v.offset);
-			sn->type = type;
+		if (type->Is<StructSymbol>()) {
+			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset() + var->stackIndex);
+			sn->type = var->Type()->AbsoluteName();
 
 			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->file).instructions);
 		}
@@ -64,11 +62,8 @@ CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
 	}
 
 	c.argument = Argument(MemoryLocation(info.stack.Offset()));
-	info.stack.Pop(s.size);
+	info.stack.Pop(type->Size());
 	return c;
-	*/
-
-	return CompiledNode();
 }
 
 void ObjectInitNode::IncludeScan(ParsingInfo& info) {
