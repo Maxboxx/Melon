@@ -1,7 +1,9 @@
 #include "StructAssignNode.h"
 
 #include "Melon/Symbols/ScopeList.h"
-#include "Melon/Symbols/Symbols.h"
+#include "Melon/Symbols/TypeSymbol.h"
+#include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Nodes/MemoryNode.h"
 
@@ -24,40 +26,24 @@ CompiledNode StructAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compile
 	c1.AddInstructions(c2.instructions);
 	c1.argument = OffsetArgument(c1.argument, frame, info);
 
-	Symbol* const type = nodes[0]->Type();
+	StructSymbol* const type = nodes[0]->Type()->Cast<StructSymbol>();
 
-	/* TODO: node
-	Symbols s = Symbols::Find(type, nodes[0]->file);
+	for (UInt i = 0; i < type->members.Size(); i++) {
+		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], nodes[0]->file);
 
-	for (UInt i = 0; i < s.names.Size(); i++) {
-		Symbols argSym = s.Get(s.names[i], nodes[0]->file);
-		Symbols argType = argSym.GetType(nodes[0]->file);
+		Pointer<MemoryNode> mn1 = new MemoryNode(c1.argument.mem);
+		mn1->mem.offset += member->stackIndex;
+		mn1->type = member->Type()->AbsoluteName();
 
-		const ScopeList typeName = argType.scope;
-
-		List<ScopeList> typeArgs;
-		typeArgs.Add(typeName);
-		Symbols argAssign = Symbols::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
-
-		List<NodePtr> args;
-		Pointer<MemoryNode> sn1 = new MemoryNode(c1.argument.mem);
-		sn1->mem.offset += argSym.offset;
-		sn1->type = typeName;
-
-		Pointer<MemoryNode> sn2 = new MemoryNode(c2.argument.mem);
-		sn2->mem.offset += argSym.offset;
-		sn2->type = typeName;
-
-		args.Add(sn1);
-		args.Add(sn2);
+		Pointer<MemoryNode> mn2 = new MemoryNode(c2.argument.mem);
+		mn2->mem.offset += member->stackIndex;
+		mn2->type = member->Type()->AbsoluteName();
 
 		info.important = important;
-		c1.AddInstructions(argAssign.symbolNode->Compile(args, info).instructions);
+		c1.AddInstructions(Node::CompileAssignment(mn1, mn2, info, nodes[1]->file).instructions);
 		info.important = false;
 	}
 
 	info.important = important;
-	*/
-
 	return c1;
 }

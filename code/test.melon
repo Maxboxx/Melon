@@ -16,11 +16,6 @@ struct Compare
 	end
 end
 
-byte: a = 1
-short: b = 2
-int: c = 3
-long: d = 4
-
 int: i = Compare.min(
 	Pair<short, Tuple<int, Pair<long, int>, short>> {
 		value1 = 1,

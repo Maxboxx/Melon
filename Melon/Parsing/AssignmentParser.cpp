@@ -99,7 +99,10 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 			info.index++;
 
 			if (name != ScopeList::Discard.Last()) {
-				Pointer<NameNode> nn = new NameNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+				FileInfo file = info.GetFileInfo(info.Current(-1).line);
+				file.statement++;
+
+				Pointer<NameNode> nn = new NameNode(info.scope, file);
 				nn->name = name;
 				assign->vars.Add(nn);
 			}
@@ -108,8 +111,6 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 			}
 
 			if (name == ScopeList::Discard.Last()) continue;
-
-			FileInfo file = info.GetFileInfo();
 
 			VariableSymbol* v = new VariableSymbol(info.GetFileInfo(info.Current(-1).line));
 			v->type = types[i];

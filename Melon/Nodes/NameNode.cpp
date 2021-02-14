@@ -107,8 +107,10 @@ ScanResult NameNode::Scan(ScanInfoStack& info) {
 	if (name == Scope::Self) {
 		result.selfUsed = true;
 	}
-	else if (VariableSymbol* const var = s->Cast<VariableSymbol>()) {
-		info.usedVariables.Add(var);
+	else if (!info.Assign()) {
+		if (VariableSymbol* const var = s->Cast<VariableSymbol>()) {
+			info.usedVariables.Add(var);
+		}
 	}
 
 	return result;

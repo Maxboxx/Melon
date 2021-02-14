@@ -23,7 +23,7 @@ ConvertNode::~ConvertNode() {
 }
 
 TypeSymbol* ConvertNode::Type() const {
-	TypeSymbol* const s = SymbolTable::Find<TypeSymbol>(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+	TypeSymbol* const s = SymbolTable::Find<TypeSymbol>(type, scope ? scope->AbsoluteName() : ScopeList(true), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 	if (s == nullptr) return nullptr;
 

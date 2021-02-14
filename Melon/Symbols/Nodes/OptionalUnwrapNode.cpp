@@ -1,7 +1,7 @@
 #include "OptionalUnwrapNode.h"
 
 #include "Melon/Symbols/ScopeList.h"
-#include "Melon/Symbols/Symbols.h"
+#include "Melon/Symbols/FunctionSymbol.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -15,18 +15,11 @@ using namespace Melon::Symbols::Nodes;
 CompiledNode OptionalUnwrapNode::Compile(const Boxx::List<NodePtr>& nodes, CompileInfo& info) const {
 	CompiledNode c = nodes[0]->Compile(info);
 
-	List<Symbol*> args;
-	args.Add(nodes[0]->Type());
+	FunctionSymbol* const func = nodes[0]->Type()->FindUnaryOperator(Scope::Unwrap, nodes[0]->file);
+	if (!func) return c;
 
-	/* TODO: node
-	Symbols s = Symbols::FindFunction(args[0].Add(Scope::Unwrap), args, nodes[0]->file);
-	if (s.type == SymbolType::None) return c;
-
-	Symbols r = Symbols::Find(s.returnValues[0], nodes[0]->file);
-	if (r.type == SymbolType::None) return c;
-	c.size = r.size;
+	c.size = func->ReturnType(0)->Size();
 	c.argument.mem.offset += 1;
-	*/
 
 	return c;
 }

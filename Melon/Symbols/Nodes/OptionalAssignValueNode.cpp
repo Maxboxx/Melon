@@ -1,7 +1,9 @@
 #include "OptionalAssignValueNode.h"
 
 #include "Melon/Symbols/ScopeList.h"
-#include "Melon/Symbols/Symbols.h"
+#include "Melon/Symbols/TypeSymbol.h"
+#include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Nodes/MemoryNode.h"
 #include "Melon/Nodes/BooleanNode.h"
@@ -21,50 +23,38 @@ CompiledNode OptionalAssignValueNode::Compile(const Boxx::List<NodePtr>& nodes, 
 
 	CompiledNode c1 = nodes[0]->Compile(info);
 
-	Symbol* const type = nodes[0]->Type();
-	const bool isNil = nodes[1]->Type() == SymbolTable::FindAbsolute(ScopeList::Nil, FileInfo());
+	StructSymbol* const type = nodes[0]->Type()->Cast<StructSymbol>();
+	const bool isNil = nodes[1]->Type() == SymbolTable::Nil;
 
-	/* TODO: node
-	Symbols s = Symbols::Find(type, nodes[0]->file);
 	UInt offset = 0;
 
-	for (UInt i = 0; i < s.names.Size(); i++) {
+	for (UInt i = 0; i < type->members.Size(); i++) {
 		if (i > 0 && isNil) break;
 
-		Symbols argSym = s.Get(s.names[i], nodes[0]->file);
-		Symbols argType = argSym.GetType(nodes[0]->file);
-
-		const ScopeList typeName = argType.scope;
-
-		List<ScopeList> typeArgs;
-		typeArgs.Add(typeName);
-		Symbols argAssign = Symbols::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
-
-		List<NodePtr> args;
+		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], nodes[0]->file);
 		
-		Pointer<MemoryNode> sn1 = new MemoryNode(c1.argument.mem);
-		sn1->mem.offset += offset;
-		sn1->type = typeName;
+		Pointer<MemoryNode> mn1 = new MemoryNode(c1.argument.mem);
+		mn1->mem.offset += offset;
+		mn1->type = member->Type()->AbsoluteName();
 		offset++;
 
-		args.Add(sn1);
+		NodePtr value;
 
 		if (i == 1) {
-			args.Add(nodes[1]);
+			value = nodes[1];
 		}
 		else {
 			Pointer<BooleanNode> bn = new BooleanNode(nodes[0]->file);
 			bn->boolean = !isNil;
-			args.Add(bn);
+			value = bn;
 		}
 
 		info.important = important;
-		c1.AddInstructions(argAssign.symbolNode->Compile(args, info).instructions);
+		c1.AddInstructions(Node::CompileAssignment(mn1, value, info, nodes[1]->file).instructions);
 		info.important = false;
 	}
 
 	info.important = important;
-	*/
 
 	return c1;
 }
