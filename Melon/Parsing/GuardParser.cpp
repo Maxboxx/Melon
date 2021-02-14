@@ -5,8 +5,6 @@
 
 #include "Melon/Nodes/GuardNode.h"
 
-#include "Melon/Symbols/Symbols.h"
-
 using namespace Boxx;
 
 using namespace Melon;

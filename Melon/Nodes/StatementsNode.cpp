@@ -64,8 +64,6 @@ void StatementsNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult StatementsNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
-
 	ScanResult result;
 
 	for (const NodePtr& node : statements) {

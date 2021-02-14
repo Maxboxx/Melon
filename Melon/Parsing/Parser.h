@@ -9,7 +9,6 @@
 #include "Melon/Errors.h"
 #include "Melon/MelonCompiler.h"
 
-#include "Melon/Symbols/Symbols.h"
 #include "Melon/Symbols/Symbol.h"
 #include "Melon/Symbols/ScopeSymbol.h"
 #include "Melon/Symbols/ScopeList.h"

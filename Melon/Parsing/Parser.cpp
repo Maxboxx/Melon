@@ -19,7 +19,6 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
-using namespace Melon::Symbols::Nodes;
 
 List<Melon::TokenPattern> Parser::patterns;
 

@@ -23,7 +23,6 @@
 #include "Structs/StackPtr.h"
 
 #include "Melon/Symbols/ScopeList.h"
-#include "Melon/Symbols/Symbols.h"
 #include "Melon/Symbols/SymbolTable.h"
 #include "Melon/Symbols/TypeSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
@@ -40,14 +39,6 @@ namespace Melon {
 
 		///T NodePtr
 		typedef Boxx::Pointer<class Node> NodePtr;
-
-		///B ScanType
-		/// The different things to scan for in a node
-		enum class [[deprecated]] ScanType : Boxx::UByte {
-			///T Self
-			/// Used if self is used
-			Self
-		};
 
 		///B Node
 		/// Base for all nodes
