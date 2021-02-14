@@ -19,7 +19,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StatementsNode::StatementsNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+StatementsNode::StatementsNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -63,20 +63,20 @@ void StatementsNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> StatementsNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
+ScanResult StatementsNode::Scan(ScanInfoStack& info) {
+	ScanResult result;
 
 	for (const NodePtr& node : statements) {
-		for (const ScanType& type : node->Scan(info)) {
-			scanSet.Add(type);
-		}
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 	}
 
-	return scanSet;
+	return result;
 }
 
 ScopeList StatementsNode::FindSideEffectScope(const bool assign) {
-	if (statements.IsEmpty()) return scope;
+	if (statements.IsEmpty()) return scope->AbsoluteName();
 
 	ScopeList list = statements[0]->GetSideEffectScope(assign);
 
@@ -111,15 +111,6 @@ NodePtr StatementsNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango StatementsNode::ToMango() const {
-	Mango m = Mango(MangoType::List);
-
-	for (NodePtr node : statements)
-		m.Add(node->ToMango());
-
-	return m;
 }
 
 StringBuilder StatementsNode::ToMelon(const UInt indent) const {

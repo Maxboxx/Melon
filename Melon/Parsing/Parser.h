@@ -9,7 +9,8 @@
 #include "Melon/Errors.h"
 #include "Melon/MelonCompiler.h"
 
-#include "Melon/Symbols/Symbols.h"
+#include "Melon/Symbols/Symbol.h"
+#include "Melon/Symbols/ScopeSymbol.h"
 #include "Melon/Symbols/ScopeList.h"
 
 #include "Melon/Nodes/Node.h"
@@ -32,10 +33,6 @@ namespace Melon {
 
 			///T Namespace
 			Symbols::ScopeList currentNamespace;
-
-			///T Scopes
-			/// Used to keep track of the current scope
-			Symbols::ScopeList scopes;
 
 			///T Tokens
 			/// The tokens to parse
@@ -68,6 +65,10 @@ namespace Melon {
 			/// Used to keep track of the statement number of symbols
 			Boxx::UInt statementNumber = 1;
 
+			///T Scope
+			/// The symbol for the current scope
+			Symbols::MapSymbol* scope;
+
 			///H Methods
 
 			///T Next
@@ -88,6 +89,13 @@ namespace Melon {
 			///M
 			Token Current();
 			Token Current(const Boxx::Int offset);
+			///M
+
+			///T Get File Info
+			/// Gets the file info from the current parsing info
+			///M
+			FileInfo GetFileInfo() const;
+			FileInfo GetFileInfo(const Boxx::UInt line) const;
 			///M
 		};
 

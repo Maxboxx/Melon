@@ -7,11 +7,11 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-MemoryNode::MemoryNode(const Boxx::Int offset) : Node(ScopeList(), FileInfo()) {
+MemoryNode::MemoryNode(const Boxx::Int offset) : Node(nullptr, FileInfo()) {
 	this->mem = MemoryLocation(offset);
 }
 
-MemoryNode::MemoryNode(const MemoryLocation& mem) : Node(ScopeList(), FileInfo()) {
+MemoryNode::MemoryNode(const MemoryLocation& mem) : Node(nullptr, FileInfo()) {
 	this->mem = mem;
 }
 
@@ -19,19 +19,15 @@ MemoryNode::~MemoryNode() {
 
 }
 
-ScopeList MemoryNode::Type() const {
-	return type;
+TypeSymbol* MemoryNode::Type() const {
+	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
 CompiledNode MemoryNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = mem;
-	c.size = Symbol::Find(type, file).size;
+	c.size = SymbolTable::FindAbsolute<TypeSymbol>(type, file)->Size();
 	return c;
-}
-
-Mango MemoryNode::ToMango() const {
-	return Mango();
 }
 
 StringBuilder MemoryNode::ToMelon(const UInt indent) const {

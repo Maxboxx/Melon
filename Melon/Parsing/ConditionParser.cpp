@@ -16,14 +16,14 @@ NodePtr ConditionParser::Parse(ParsingInfo& info, const bool includeAssign) {
 
 	if (includeAssign) {
 		if (NodePtr node = AssignmentParser::Parse(info, AssignmentParser::Flags::Single | AssignmentParser::Flags::MethodCall)) {
-			cond = new ConditionNode(info.scopes, node->file);
+			cond = new ConditionNode(info.scope, node->file);
 			cond->cond = node;
 			return cond;
 		}
 	}
 
 	if (NodePtr node = ExpressionParser::Parse(info)) {
-		cond = new ConditionNode(info.scopes, node->file);
+		cond = new ConditionNode(info.scope, node->file);
 		cond->cond = node;
 		return cond;
 	}

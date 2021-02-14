@@ -48,23 +48,23 @@ Optional<List<ScopeList>> TemplateParser::Parse(ParsingInfo& info) {
 	return types;
 }
 
-Optional<List<Scope>> TemplateParser::ParseDefine(ParsingInfo& info) {
+Optional<List<ScopeList>> TemplateParser::ParseDefine(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Less) return nullptr;
 
 	const UInt startIndex = info.index;
 	info.index++;
 
-	List<Scope> types;
+	List<ScopeList> types;
 
 	if (info.Current().type == TokenType::Name) {
-		types.Add(Scope(info.Current().value));
+		types.Add(ScopeList().Add(Scope("")).Add(Scope(info.Current().value)));
 		info.index++;
 
 		while (info.Current().type == TokenType::Comma) {
 			info.index++;
 
 			if (info.Current().type == TokenType::Name) {
-				types.Add(Scope(info.Current().value));
+				types.Add(ScopeList().Add(Scope("")).Add(Scope(info.Current().value)));
 				info.index++;
 			}
 			else {
@@ -74,7 +74,6 @@ Optional<List<Scope>> TemplateParser::ParseDefine(ParsingInfo& info) {
 	}
 
 	if (info.Current().type != TokenType::Greater) {
-		//ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'>'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		info.index = startIndex;
 		return nullptr;
 	}

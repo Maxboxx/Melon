@@ -1585,20 +1585,24 @@ namespace Kiwi {
 				case InstructionType::Byte: {
 					inst.instructionName = "byte";
 					inst.arguments[0].number &= Boxx::Math::UByteMax();
+					break;
 				}
 
 				case InstructionType::Short: {
 					inst.instructionName = "word";
 					inst.arguments[0].number &= Boxx::Math::UShortMax();
+					break;
 				}
 
 				case InstructionType::Int: {
 					inst.instructionName = "dword";
 					inst.arguments[0].number &= Boxx::Math::UIntMax();
+					break;
 				}
 
 				case InstructionType::Long: {
 					inst.instructionName = "qword";
+					break;
 				}
 			}
 

@@ -18,18 +18,21 @@ namespace Melon {
 			/// The absolute name of the function to return from
 			Symbols::ScopeList func;
 
-			ReturnNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			ReturnNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ReturnNode();
 
+			///T Get Function
+			/// Get the function for the return
+			Symbols::FunctionSymbol* GetFunc() const;
+
 			///T Get Types
-			/// Get the symbols of the return values
-			Boxx::List<Symbols::Symbol> GetTypes() const;
+			/// Get the symbols of the return value types
+			Boxx::List<Symbols::TypeSymbol*> GetTypes() const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

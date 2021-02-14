@@ -6,7 +6,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-DiscardNode::DiscardNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+DiscardNode::DiscardNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -14,16 +14,12 @@ DiscardNode::~DiscardNode() {
 
 }
 
-ScopeList DiscardNode::Type() const {
-	return ScopeList::undefined;
+TypeSymbol* DiscardNode::Type() const {
+	return nullptr;
 }
 
 CompiledNode DiscardNode::Compile(CompileInfo& info) {
 	return CompiledNode();
-}
-
-Mango DiscardNode::ToMango() const {
-	return Mango(String("_"));
 }
 
 StringBuilder DiscardNode::ToMelon(const Boxx::UInt indent) const {

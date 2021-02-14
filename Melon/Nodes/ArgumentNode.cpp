@@ -7,7 +7,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-ArgumentNode::ArgumentNode(const Argument& arg) : Node(ScopeList(), FileInfo()) {
+ArgumentNode::ArgumentNode(const Argument& arg) : Node(nullptr, FileInfo()) {
 	argument = arg;
 }
 
@@ -15,19 +15,15 @@ ArgumentNode::~ArgumentNode() {
 
 }
 
-ScopeList ArgumentNode::Type() const {
-	return type;
+TypeSymbol* ArgumentNode::Type() const {
+	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
 CompiledNode ArgumentNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = argument;
-	c.size = Symbol::Find(type, file).size;
+	c.size = Type()->Size();
 	return c;
-}
-
-Mango ArgumentNode::ToMango() const {
-	return Mango();
 }
 
 StringBuilder ArgumentNode::ToMelon(const UInt indent) const {

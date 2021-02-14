@@ -19,8 +19,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		return nullptr;
 	}
 
-	info.scopes = info.scopes.AddNext("switch");
-	Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
+	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
 
 	const UInt switchLine = info.Current().line;
 	info.index++;
@@ -31,19 +30,12 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("match expression", "'switch'", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
-	Pointer<SwitchNode> switchNode = new SwitchNode(info.scopes, FileInfo(info.filename, switchLine, info.statementNumber));
+	Pointer<SwitchNode> switchNode = new SwitchNode(info.scope, info.GetFileInfo(switchLine));
 	switchNode->expr = false;
 	switchNode->match = value;
 
 	while (info.Current().type == TokenType::Case || info.Current().type == TokenType::Default) {
-		if (info.Current().type == TokenType::Case) {
-			info.scopes = info.scopes.AddNext("case");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
-		}
-		else {
-			info.scopes = info.scopes.AddNext("default");
-			Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current().line, info.statementNumber));
-		}
+		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
 
 		bool isDefault = info.Current().type == TokenType::Default;
 		const UInt caseLine = info.Current().line;
@@ -116,7 +108,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			}
 		}
 
-		info.scopes = info.scopes.Pop();
+		info.scope = info.scope->Parent<ScopeSymbol>();
 	}
 
 	if (info.Current().type == TokenType::End) {
@@ -126,7 +118,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch statement", switchLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
-	info.scopes = info.scopes.Pop();
+	info.scope = info.scope->Parent<ScopeSymbol>();
 	info.statementNumber++;
 	return switchNode;
 }

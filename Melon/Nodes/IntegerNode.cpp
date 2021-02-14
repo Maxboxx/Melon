@@ -8,7 +8,7 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-IntegerNode::IntegerNode(const FileInfo& file) : Node(ScopeList(), file) {
+IntegerNode::IntegerNode(const FileInfo& file) : Node(nullptr, file) {
 
 }
 
@@ -16,39 +16,39 @@ IntegerNode::~IntegerNode() {
 
 }
 
-ScopeList IntegerNode::Type() const {
+TypeSymbol* IntegerNode::Type() const {
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {
-			return ScopeList::UByte;
+			return (TypeSymbol*)SymbolTable::UByte;
 		}
 		else if ((ULong)number <= Math::UShortMax()) {
-			return ScopeList::UShort;
+			return (TypeSymbol*)SymbolTable::UShort;
 		}
 		else if ((ULong)number <= Math::UIntMax()) {
-			return ScopeList::UInt;
+			return (TypeSymbol*)SymbolTable::UInt;
 		}
 		else if ((ULong)number <= Math::ULongMax()) {
-			return ScopeList::ULong;
+			return (TypeSymbol*)SymbolTable::ULong;
 		}
 		else {
-			return ScopeList::Huge;
+			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Huge, file);
 		}
 	}
 	else {
 		if (number >= Math::ByteMin()) {
-			return ScopeList::Byte;
+			return (TypeSymbol*)SymbolTable::Byte;
 		}
 		else if (number >= Math::ShortMin()) {
-			return ScopeList::Short;
+			return (TypeSymbol*)SymbolTable::Short;
 		}
 		else if (number >= Math::IntMin()) {
-			return ScopeList::Int;
+			return (TypeSymbol*)SymbolTable::Int;
 		}
 		else if (number >= Math::LongMin()) {
-			return ScopeList::Long;
+			return (TypeSymbol*)SymbolTable::Long;
 		}
 		else {
-			return ScopeList::Huge;
+			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Huge, file);
 		}
 	}
 }
@@ -95,10 +95,6 @@ CompiledNode IntegerNode::Compile(CompileInfo& info) {
 	}
 
 	return node;
-}
-
-Mango IntegerNode::ToMango() const {
-	return Mango(Type().ToString(), number);
 }
 
 StringBuilder IntegerNode::ToMelon(const UInt indent) const {

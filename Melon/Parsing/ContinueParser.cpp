@@ -12,7 +12,7 @@ NodePtr ContinueParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Continue) {
 		info.index++;
 
-		Pointer<ContinueNode> cn = new ContinueNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		Pointer<ContinueNode> cn = new ContinueNode(info.scope, info.GetFileInfo(info.Current(-1).line));
 		cn->loops = 1;
 
 		if (info.Current().type == TokenType::Integer) {

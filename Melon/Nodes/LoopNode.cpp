@@ -14,6 +14,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -22,7 +24,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-LoopNode::LoopNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+LoopNode::LoopNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -309,7 +311,7 @@ void LoopNode::CompileForSegment(CompiledNode& compiled, CompileInfo& info, Segm
 }
 
 void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
-	bool isLast = IsSegmentLast(segmentInfo.index);
+	const bool isLast = IsSegmentLast(segmentInfo.index);
 
 	const UInt frame = info.stack.frame;
 
@@ -527,7 +529,7 @@ LoopNode::LoopScanInfo LoopNode::ScanSetup(ScanInfo& info) const {
 	loopInfo.scope = info.scopeInfo.CopyBranch();
 
 	if (loopInfo.init) {
-		loopInfo.scope.unassigned = info.symbol.GetUnassignedVarsSet();
+		loopInfo.scope.unassigned = info.type->UnassignedMembers();
 	}
 
 	return loopInfo;
@@ -537,12 +539,16 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 	if (loopInfo.init) {
 		if (!segment.also) {
 			for (const Scope& var : loopInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = false;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = false;
+				}
 			}
 		}
 		else {
 			for (const Scope& var : loopInfo.mainSegment.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = false;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = false;
+				}
 			}
 		}
 	}
@@ -557,7 +563,7 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 
 void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	if (info.init) {
-		info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
+		info.scopeInfo.unassigned = info.type->UnassignedMembers();
 	}
 
 	if (segments[0].IsLoop()) {
@@ -574,7 +580,7 @@ void LoopNode::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) con
 
 void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
 	if (info.init) {
-		info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
+		info.scopeInfo.unassigned = info.type->UnassignedMembers();
 	}
 
 	if (segment.also) {
@@ -619,38 +625,30 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	info.scopeInfo = loopInfo.scope;
 }
 
-Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
+ScanResult LoopNode::Scan(ScanInfoStack& info) {
+	ScanResult result;
 
-	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
+	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
 	LoopScanInfo loopInfo = ScanSetup(info.Get());
-	info.Get().scopeInfo.ExitScope();
+	info.ScopeInfo().ExitScope();
 
 	for (UInt i = 0; i < segments.Size(); i++) {
-		info.Get().scopeInfo.EnterScope(segments[i].IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
+		info.ScopeInfo().EnterScope(segments[i].IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
 		ScanPreContents(loopInfo, info.Get(), segments[i]);
 
 		if (segments[i].type != LoopType::None) {
-			for (const ScanType type : segments[i].condition->Scan(info)) {
-				scanSet.Add(type);
-
-				if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-					ErrorLog::Error(CompileError(CompileError::SelfInit, segments[i].condition->file));
-				}
-			}
+			ScanResult r = segments[i].condition->Scan(info);
+			r.SelfUseCheck(info, segments[i].condition->file);
+			result |= r;
 		}
 
-		for (const ScanType type : segments[i].statements->Scan(info)) {
-			scanSet.Add(type);
-
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, segments[i].statements->file));
-			}
-		}
+		ScanResult r = segments[i].statements->Scan(info);
+		r.SelfUseCheck(info, segments[i].statements->file);
+		result |= r;
 
 		if (segments[i].IsLoop()) {
-			info.Get().scopeInfo.loopBreakCount  = loopInfo.scope.loopBreakCount;
-			info.Get().scopeInfo.scopeBreakCount = loopInfo.scope.scopeBreakCount;
+			info.ScopeInfo().loopBreakCount  = loopInfo.scope.loopBreakCount;
+			info.ScopeInfo().scopeBreakCount = loopInfo.scope.scopeBreakCount;
 		}
 
 		if (i == 0) {
@@ -660,14 +658,14 @@ Set<ScanType> LoopNode::Scan(ScanInfoStack& info) {
 			ScanPostContents(loopInfo, info.Get(), segments[i]);
 		}
 
-		info.Get().scopeInfo.ExitScope();
+		info.ScopeInfo().ExitScope();
 	}
 
-	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
+	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
 	ScanCleanup(loopInfo, info.Get());
-	info.Get().scopeInfo.ExitScope();
+	info.ScopeInfo().ExitScope();
 
-	return scanSet;
+	return result;
 }
 
 ScopeList LoopNode::FindSideEffectScope(const bool assign) {
@@ -781,40 +779,6 @@ NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango LoopNode::ToMango() const {
-	Mango mango = Mango("loop", MangoType::List);
-
-	for (UInt i = 0; i < segments.Size(); i++) {
-		String name = "";
-
-		if (segments[i].type == LoopType::If)
-			name = "if";
-		else if (segments[i].type == LoopType::While)
-			name = "while";
-		else if (segments[i].type == LoopType::For)
-			name = "for";
-
-		if (i > 0) {
-			if (segments[i].also)
-				name = "also" + name;
-			else
-				name = "else" + name;
-		}
-
-		Mango s = Mango(name, MangoType::Map);
-
-		if (segments[i].type == LoopType::If || segments[i].type == LoopType::While || segments[i].type == LoopType::For) {
-			s.Add("condition", segments[i].condition->ToMango());
-		}
-
-		s.Add("content", segments[i].statements->ToMango());
-
-		mango.Add(s);
-	}
-
-	return mango;
 }
 
 StringBuilder LoopNode::ToMelon(const UInt indent) const {

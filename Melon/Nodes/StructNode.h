@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/StructSymbol.h"
+
 namespace Melon {
 	namespace Nodes {
 
@@ -19,18 +21,17 @@ namespace Melon {
 			Boxx::List<Symbols::Scope> vars;
 
 			///T Symbol
-			Symbols::Symbol symbol;
+			Symbols::StructSymbol* symbol;
 
-			StructNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			StructNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~StructNode();
 
 			///T Is Recursive
 			/// Checks if the struct is recursive in the specified symbol
-			bool IsRecursive(const Symbols::Symbol& symbol) const;
+			bool IsRecursive(Symbols::StructSymbol* const symbol) const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
-			virtual Boxx::Mango ToMango() const override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

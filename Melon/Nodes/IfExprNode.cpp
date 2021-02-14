@@ -14,7 +14,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-IfExprNode::IfExprNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+IfExprNode::IfExprNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 	
 }
 
@@ -22,8 +22,8 @@ IfExprNode::~IfExprNode() {
 
 }
 
-ScopeList IfExprNode::Type() const {
-	ScopeList type = nodes[0]->Type();
+TypeSymbol* IfExprNode::Type() const {
+	TypeSymbol* type = nodes[0]->Type();
 
 	for (UInt i = 1; i < nodes.Size(); i++) {
 		if (type != nodes[i]->Type()) ErrorLog::Error(TypeError(TypeError::IfExprType, file));
@@ -34,7 +34,7 @@ ScopeList IfExprNode::Type() const {
 
 CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
-	cn.size = Symbol::Find(Type(), file).size;
+	cn.size = Type()->Size();
 
 	List<UInt> jumps;
 
@@ -44,7 +44,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	Pointer<StackNode> sn = new StackNode(info.stack.top);
-	sn->type = Type();
+	sn->type = Type()->AbsoluteName();
 
 	StackPtr stack = info.stack;
 
@@ -87,8 +87,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 	cn.instructions.Add(Instruction::Label(info.label++));
 
-	info.stack.Pop(Symbol::Find(Type(), file).size);
-
+	info.stack.Pop(Type()->Size());
 	return cn;
 }
 
@@ -102,39 +101,31 @@ void IfExprNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> IfExprNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
+ScanResult IfExprNode::Scan(ScanInfoStack& info) {
+	ScanResult result;
+	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
 
-	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
-
-	Pointer<TypeNode> type = new TypeNode(Type());
+	TypeSymbol* const t = Type();
+	Pointer<TypeNode> type = t ? new TypeNode(t->AbsoluteName()) : nullptr;
 
 	for (const NodePtr& node : nodes) {
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-			}
+		if (type) {
+			ScanAssignment(type, node, info, node->file);
 		}
-
-		ScanAssignment(type, node, info, node->file);
 	}
 
 	for (const NodePtr& node : conditions) {
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
-
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-			}
-		}
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 	}
 
-	Symbol::Find(Type(), file);
-
-	info.Get().scopeInfo = scopeInfo;
-	return scanSet;
+	info.ScopeInfo(scopeInfo);
+	return result;
 }
 
 ScopeList IfExprNode::FindSideEffectScope(const bool assign) {
@@ -183,7 +174,7 @@ NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 			Pointer<ConvertNode> cn = new ConvertNode(nodes[0]->scope, nodes[0]->file);
 			cn->isExplicit = true;
 			cn->node = nodes[0];
-			cn->type = Type();
+			cn->type = Type()->AbsoluteName();
 			info.optimized = true;
 			return cn;
 		}
@@ -194,28 +185,6 @@ NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango IfExprNode::ToMango() const {
-	Mango mango = Mango("ifexp", MangoType::List);
-
-	for (UInt i = 0; i < nodes.Size(); i++) {
-		Mango m = Mango(MangoType::Map);
-
-		if (i == 0) m.SetLabel("if");
-		else if (i < conditions.Size()) m.SetLabel("elseif");
-		else m.SetLabel("else");
-
-		if (i < conditions.Size()) {
-			m.Add("condition", conditions[i]->ToMango());
-		}
-
-		m.Add("expr", nodes[i]->ToMango());
-
-		mango.Add(m);
-	}
-
-	return mango;
 }
 
 StringBuilder IfExprNode::ToMelon(const UInt indent) const {

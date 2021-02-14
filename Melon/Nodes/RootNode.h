@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/TemplateTypeSymbol.h"
+
 namespace Melon {
 	struct CompilerOptions;
 
@@ -38,24 +40,19 @@ namespace Melon {
 
 			///T Compile
 			/// Returns the instruction list from <code>Node::Compile()</code>
-			Boxx::List<Optimizing::OptimizerInstruction> Compile(const Boxx::Set<Symbols::ScopeList>& usedVariables);
+			Boxx::List<Optimizing::OptimizerInstruction> Compile(const Boxx::Set<Symbols::VariableSymbol*>& usedVariables);
 
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 
 			///T Add Template Specialization
-			void AddTemplateSpecialization(const Symbols::Symbol::TemplateSymbol& templateSymbol, const bool scan = true);
+			void AddTemplateSpecialization(const Symbols::ScopeList& name, const Symbols::ScopeList& scope, const FileInfo& file, const bool scan = true);
 
 			///T Scan
 			/// Used for scanning for errors
 			ScanInfoStack Scan();
-
-			///T ToString
-			/// Converts the result from <code>ToMango()</code> to a string
-			Boxx::String ToString() const;
 
 			///T To Melon Files
 			/// Writes the optimized code to melon files
@@ -64,6 +61,8 @@ namespace Melon {
 			Parsing::ParsingInfo* parsingInfo = nullptr;
 
 		private:
+			Boxx::Tuple<Symbols::TemplateTypeSymbol*, Boxx::List<Symbols::ScopeList>> FindTemplateArgs(const Symbols::ScopeList& name, const Symbols::ScopeList& scope, const FileInfo& file);
+
 			Boxx::UInt nodeIndex = 0;
 			Boxx::UInt funcIndex = 0;
 			Boxx::UInt templateIndex = 0;

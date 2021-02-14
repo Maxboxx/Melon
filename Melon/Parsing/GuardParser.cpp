@@ -5,8 +5,6 @@
 
 #include "Melon/Nodes/GuardNode.h"
 
-#include "Melon/Symbols/Symbols.h"
-
 using namespace Boxx;
 
 using namespace Melon;
@@ -26,10 +24,9 @@ NodePtr GuardParser::Parse(ParsingInfo& info) {
 	info.index++;
 
 	if (NodePtr node = ConditionParser::Parse(info)) {
-		info.scopes = info.scopes.AddNext("guard");
-		Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, guardLine, info.statementNumber));
+		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(guardLine));
 
-		Pointer<GuardNode> gn = new GuardNode(info.scopes, FileInfo(info.filename, guardLine, info.statementNumber));
+		Pointer<GuardNode> gn = new GuardNode(info.scope, info.GetFileInfo(guardLine));
 		gn->cond = node;
 
 		if (info.Current().type == TokenType::Else) {
@@ -64,7 +61,7 @@ NodePtr GuardParser::Parse(ParsingInfo& info) {
 			info.scopeCount--;
 		}
 
-		info.scopes = info.scopes.Pop();
+		info.scope = info.scope->Parent<ScopeSymbol>();
 		info.statementNumber++;
 		return gn;
 	}

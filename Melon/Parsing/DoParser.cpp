@@ -16,10 +16,9 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 		UInt line = info.Current().line;
 		info.index++;
 
-		info.scopes = info.scopes.AddNext("do");
-		Symbol::Add(info.scopes, Symbol(SymbolType::Scope), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(line));
 
-		Pointer<DoNode> node = new DoNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		Pointer<DoNode> node = new DoNode(info.scope, info.GetFileInfo(line));
 
 		info.scopeCount++;
 
@@ -29,7 +28,7 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 			if (NodePtr statement = StatementParser::Parse(info)) {
 				node->nodes = statement;
 				info.scopeCount--;
-				info.scopes = info.scopes.Pop();
+				info.scope = info.scope->Parent<ScopeSymbol>();
 				info.statementNumber++;
 				return node;
 			}
@@ -48,7 +47,7 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 
 		info.index++;
 
-		info.scopes = info.scopes.Pop();
+		info.scope = info.scope->Parent<ScopeSymbol>();
 		info.statementNumber++;
 		return node;
 	}

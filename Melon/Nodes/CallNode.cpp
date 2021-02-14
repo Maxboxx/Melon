@@ -3,11 +3,19 @@
 #include "RefNode.h"
 #include "MemoryNode.h"
 #include "TypeNode.h"
-#include "CustomInitNode.h"
+#include "ObjectInitNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/StructSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
+
+#include "NewVariableNode.h"
+#include "NameNode.h"
+#include "DotNode.h"
+
+#include "Boxx/Optional.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -17,7 +25,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CallNode::CallNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+CallNode::CallNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -25,48 +33,116 @@ CallNode::~CallNode() {
 
 }
 
-Symbol CallNode::GetFunc() const {
-	List<ScopeList> argTypes;
+FunctionSymbol* CallNode::GetFunc() const {
+	List<TypeSymbol*> argTypes;
+	Optional<List<TypeSymbol*>> templateArgs = nullptr;
+
+	Scope name;
+
+	if (Pointer<NameNode> nn = node.Cast<NameNode>()) {
+		name = nn->name;
+	}
+	else if (Pointer<DotNode> nn = node.Cast<DotNode>()) {
+		name = nn->name;
+	}
+	else if (isMethod) {
+		name = methodName;
+	}
+
+	if (name.types) {
+		List<TypeSymbol*> args;
+		bool found = true;
+
+		for (const ScopeList& s : name.types.Get()) {
+			TypeSymbol* const t = SymbolTable::Find<TypeSymbol>(s, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+
+			if (t) {
+				args.Add(t);
+			}
+			else {
+				found = false;
+			}
+		}
+
+		if (!found) {
+			return nullptr;
+		}
+
+		templateArgs = args;
+	}
+
+	bool found = true;
 
 	for (NodePtr node : args) {
-		argTypes.Add(node->Type());
+		if (TypeSymbol* const type = node->Type()) {
+			argTypes.Add(type);
+		}
+		else {
+			found = false;
+		}
 	}
 
-	Symbol s;
+	if (!found) return nullptr;
 
-	UInt errorCount = ErrorLog::ErrorCount();
-
-	ScopeList type = this->node->Type();
-
-	if (errorCount < ErrorLog::ErrorCount()) {
-		return Symbol();
-	}
-
+	FunctionSymbol* s = nullptr;
+	
 	if (op) {
-		s = Symbol::FindFunction(type, argTypes, file);
+		if (TypeSymbol* const t = node->Type()) {
+			if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Scope::Call, node->file)) {
+				if (templateArgs) {
+					s = f->FindMethodOverload(templateArgs.Get(), argTypes, node->file);
+				}
+				else {
+					s = f->FindMethodOverload(argTypes, node->file);
+				}
+			}
+		}
 	}
 	else if (IsInit()) {
-		s = Symbol::FindMethod(type.Add(Scope::Init).Add(Scope::Call), argTypes, this->node->file);
+		if (TypeSymbol* const t = node->GetSymbol()->Cast<TypeSymbol>()) {
+			if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Scope::Init, node->file)) {
+				s = f->FindMethodOverload(argTypes, node->file);
+			}
+		}
 	}
 	else if (!isMethod) {
-		s = Symbol::FindFunction(type.Add(Scope::Call), argTypes, this->node->file);
+		if (FunctionSymbol* const f = node->GetSymbol()->Cast<FunctionSymbol>()) {
+			if (templateArgs) {
+				s = f->FindStaticOverload(templateArgs.Get(), argTypes, node->file);
+			}
+			else {
+				s = f->FindStaticOverload(argTypes, node->file);
+			}
+		}
 	}
 	else {
-		s = Symbol::FindMethod(type.Add(methodName).Add(Scope::Call), argTypes, this->node->file);
+		if (TypeSymbol* const t = node->Type()) {
+			if (FunctionSymbol* const f = t->Find<FunctionSymbol>(methodName, node->file)) {
+				if (templateArgs) {
+					s = f->FindMethodOverload(templateArgs.Get(), argTypes, node->file);
+				}
+				else {
+					s = f->FindMethodOverload(argTypes, node->file);
+				}
+			}
+		}
 	}
 
-	if ((IsInit() && s.type == SymbolType::Method) || (isMethod ? s.type == SymbolType::Method : s.type == SymbolType::Function)) {
+	if (s) {
 		return s;
 	}
 
 	List<String> argStr;
 
-	for (const ScopeList& type : argTypes) {
-		argStr.Add(type.ToString());
+	if (FunctionSymbol* const f = node->GetSymbol()->Cast<FunctionSymbol>()) {
+		for (TypeSymbol* const type : argTypes) {
+			argStr.Add(type->AbsoluteName().ToString());
+		}
+
+		ErrorLog::Error(SymbolError(SymbolError::Function(f->AbsoluteName().ToString(), argStr), file));
 	}
 
-	ErrorLog::Error(SymbolError(SymbolError::Function(type.ToString(), argStr), file));
-	return Symbol();
+	return nullptr;
 }
 
 bool CallNode::IsSelfPassing() const {
@@ -75,52 +151,46 @@ bool CallNode::IsSelfPassing() const {
 }
 
 bool CallNode::IsInit() const {
-	Symbol s = node->GetSymbol();
+	Symbol* const s = node->GetSymbol();
 
-	if (s.type == SymbolType::Struct) {
+	if (s->Is<StructSymbol>()) {
 		return !isMethod;
 	}
 
 	return false;
 }
 
-ScopeList CallNode::Type() const {
+TypeSymbol* CallNode::Type() const {
 	return Types()[0];
 }
 
-List<ScopeList> CallNode::Types() const {
-	Symbol s = GetFunc();
+List<TypeSymbol*> CallNode::Types() const {
+	FunctionSymbol* const f = GetFunc();
 
-	List<ScopeList> types;
+	List<TypeSymbol*> types;
 
-	if (s.type == SymbolType::None) {
-		types.Add(ScopeList::undefined);
+	if (f == nullptr) {
+		types.Add(nullptr);
 		return types;
 	}
 
 	if (IsInit()) {
 		types.Add(node->Type());
 	}
-	else for (const ScopeList& type : s.returnValues) {
-		const Symbol s2 = Symbol::FindNearestInNamespace(s.scope.Pop(), type, node->file);
-
-		if (s2.type != SymbolType::None) {
-			types.Add(s2.scope);
-		}
-		else {
-			types.Add(ScopeList::undefined);
-		}
+	else for (UInt i = 0; i < f->returnValues.Size(); i++) {
+		types.Add(f->ReturnType(i));
 	}
 
 	if (types.IsEmpty()) {
-		types.Add(ScopeList::undefined);
+		types.Add(nullptr);
 	}
 
 	return types;
 }
 
 CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
-	Symbol s = GetFunc();
+	FunctionSymbol* const func = GetFunc();
+	const bool isInit = IsInit();
 
 	StackPtr stack = info.stack;
 	Int retSize = 0;
@@ -129,20 +199,21 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	CompiledNode c;
 
 	// Calculate return size
-	for (const ScopeList& type : s.returnValues)
-		retSize += Symbol::FindNearestInNamespace(s.scope.Pop(), type, FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+	for (UInt i = 0; i < func->returnValues.Size(); i++) {
+		retSize += func->ReturnType(i)->Size();
+	}
 
-	if (IsInit()) retSize = Symbol::Find(Type(), node->file).size;
+	if (isInit) retSize = Type()->Size();
 
 	// Calculate arg size
-	for (UInt u = 0; u < s.arguments.Size(); u++) {
-		Symbol type = Symbol::FindNearestInNamespace(scope, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
-
-		if (Symbol::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
-			argSize += info.stack.ptrSize;
-		}
-		else {
-			argSize += type.size;
+	for (UInt i = 0; i < func->arguments.Size(); i++) {
+		if (VariableSymbol* const arg = func->Argument(i)) {
+			if (arg->HasAttribute(VariableAttributes::Ref)) {
+				argSize += info.stack.ptrSize;
+			}
+			else {
+				argSize += arg->Type()->Size();
+			}
 		}
 	}
 
@@ -156,17 +227,17 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		memoryOffsets.Add(0);
 		assignFirst.Add(false);
 
-		if (Symbol::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (func->Argument(isInit ? i + 1 : i)->HasAttribute(VariableAttributes::Ref)) {
 			StackPtr stack = infoCpy.stack;
 			CompiledNode n = args[i]->Compile(infoCpy);
 
 			if (
 				n.argument.type != ArgumentType::Memory || 
 				(n.argument.mem.memptr.IsLeft() && n.argument.mem.memptr.GetLeft().type == RegisterType::Stack && stack.Offset(n.argument.mem.offset) >= stack.top) ||
-				!Symbol::IsOfType(args[i]->Type(), s.arguments[i], args[i]->file) ||
+				!args[i]->Type()->IsOfType(func->ArgumentType(i)) ||
 				noRefs[i]
 			) {
-				if (!noRefs[i] && !args[i]->IsImmediate() && !args[i].Is<CustomInitNode>()) {
+				if (!noRefs[i] && !args[i]->IsImmediate() && !args[i].Is<ObjectInitNode>()) {
 					bool error = true;
 
 					if (Pointer<CallNode> call = args[i].Cast<CallNode>()) {
@@ -174,13 +245,13 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 					}
 
 					if (error) {
-						ErrorLog::Warning(WarningError(WarningError::NoRefArg(s.scope.ToString(), i), args[i]->file));
+						ErrorLog::Warning(WarningError(WarningError::NoRefArg(func->AbsoluteName().ToString(), i), args[i]->file));
 					}
 				}
 
 				assignFirst[assignFirst.Size() - 1] = true;
 
-				tempSize += Symbol::Find(s.scope.Add(s.names[IsInit() ? i + 1 : i]), node->file).GetType(node->file).size;
+				tempSize += func->ArgumentType(isInit ? i + 1 : i)->Size();
 				memoryOffsets[memoryOffsets.Size() - 1] = tempSize;
 			}
 		}
@@ -218,10 +289,10 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	}
 
 	// Calculate compile arguments
-	for (UInt u = 0; u < s.arguments.Size(); u++) {
-		Symbol type = Symbol::FindNearestInNamespace(scope, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
+	for (UInt u = 0; u < func->arguments.Size(); u++) {
+		TypeSymbol* const type = func->ArgumentType(u);
 
-		if (Symbol::Find(s.scope.Add(s.names[u]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (func->Argument(u)->HasAttribute(VariableAttributes::Ref)) {
 			NodePtr r = nullptr;
 			Int i = IsInit() ? u - 1 : u;
 			bool isCompiled = false;
@@ -238,7 +309,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 				else {
 					if (assignFirst[i - 1]) {
 						Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)tempStack + memoryOffsets[i - 1]));
-						sn->type = type.scope;
+						sn->type = type->AbsoluteName();
 
 						UInt top = info.stack.top;
 						c.AddInstructions(CompileAssignment(sn, args[i - 1], info, args[i - 1]->file).instructions);
@@ -254,7 +325,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 			else {
 				if (assignFirst[i]) {
 					Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)tempStack + memoryOffsets[i]));
-					sn->type = type.scope;
+					sn->type = type->AbsoluteName();
 
 					StackPtr stack = info.stack;
 					c.AddInstructions(CompileAssignment(sn, args[i], info, args[i]->file).instructions);
@@ -303,12 +374,12 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		else {
 			Int i = IsInit() ? u - 1 : u;
 
-			stackIndex -= type.size;
+			stackIndex -= type->Size();
 
 			Pointer<MemoryNode> sn = new MemoryNode(stackIndex);
-			sn->type = type.scope;
+			sn->type = type->AbsoluteName();
 
-			info.stack.Push(type.size);
+			info.stack.Push(type->Size());
 
 			UInt frame = info.stack.frame;
 
@@ -323,8 +394,8 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 		}
 	}
 
-	if (!s.returnValues.IsEmpty()) {
-		c.size = Symbol::FindNearestInNamespace(s.symbolNamespace, s.returnValues[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+	if (!func->returnValues.IsEmpty()) {
+		c.size = func->ReturnType(0)->Size();
 	}
 	else {
 		c.size = info.stack.ptrSize;
@@ -333,7 +404,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	info.stack.PopExpr(frame, c);
 
 	Instruction inst = Instruction(InstructionType::Call);
-	inst.arguments.Add(Argument(ArgumentType::Name, s.scope.ToString()));
+	inst.arguments.Add(Argument(ArgumentType::Name, func->AbsoluteName().ToString()));
 	c.instructions.Add(inst);
 
 	if (isStatement) {
@@ -353,7 +424,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 			retSize = 0;
 		}
 		else {
-			retSize -= Symbol::FindNearestInNamespace(s.scope.Pop(), s.returnValues[0], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces)).size;
+			retSize -= func->ReturnType(0)->Size();
 		}
 
 		c.argument = Argument(MemoryLocation(info.stack.Offset() + retSize));
@@ -369,47 +440,48 @@ void CallNode::IncludeScan(ParsingInfo& info) {
 	for (NodePtr arg : args) {
 		arg->IncludeScan(info);
 	}
+
+	GetFunc();
 }
 
-Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = node->Scan(info);
+ScanResult CallNode::Scan(ScanInfoStack& info) {
+	ScanResult result = node->Scan(info);
+	result.SelfUseCheck(info, node->file);
 
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-	}
+	FunctionSymbol* const func = GetFunc();
+	if (func == nullptr) return ScanResult();
 
-	Symbol s = GetFunc();
-
-	if (info.Get().useFunction) {
-		if (!info.usedFunctions.Contains(s.scope)) {
-			info.usedFunctions.Add(s.scope);
-			info.functions.Add(s.node);
+	if (info.UseFunction()) {
+		if (!info.usedFunctions.Contains(func)) {
+			info.usedFunctions.Add(func);
+			info.functions.Add(func->node);
 		}
 	}
 
 	for (UInt i = 0; i < args.Size(); i++) {
-		if (s.names.Size() > i && !Symbol::Find(s.scope.Add(s.names[i]), node->file).attributes.Contains(SymbolAttribute::Ref)) {
+		VariableSymbol* const arg = func->Argument(i);
+
+		if (arg && (arg->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
 			if (noRefs[i]) {
 				ErrorLog::Error(CompileError(CompileError::InvalidNoRef, args[i]->file));
 			}
 		}
 
-		for (const ScanType type : args[i]->Scan(info)) {
-			scanSet.Add(type);
-
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, args[i]->file));
-			}
-		}
+		ScanResult r = args[i]->Scan(info);
+		r.SelfUseCheck(info, args[i]->file);
+		result |= r;
 	}
 
-	for (UInt u = 0; u < s.arguments.Size(); u++) {
-		Int i = IsInit() ? u - 1 : u;
-		Symbol type = Symbol::FindNearestInNamespace(s.symbolNamespace, s.arguments[u], FileInfo(node->file.filename, node->file.line, s.statementNumber, s.symbolNamespace, s.includedNamespaces));
-		Symbol::Find(s.scope.Add(s.names[u]), node->file);
-		NodePtr arg;
+	const bool init = IsInit();
 
+	for (UInt u = 0; u < func->arguments.Size(); u++) {
+		Int i = init ? u - 1 : u;
+
+		TypeSymbol* const type = func->ArgumentType(u);
+		
 		if (i < 0) continue;
+
+		NodePtr arg;
 
 		if (IsSelfPassing()) {
 			if (i == 0) {
@@ -423,10 +495,12 @@ Set<ScanType> CallNode::Scan(ScanInfoStack& info) {
 			arg = this->args[i];
 		}
 
-		ScanAssignment(new TypeNode(type.scope), arg, info, node->file);
+		if (type) {
+			ScanAssignment(new TypeNode(type->AbsoluteName()), arg, info, node->file);
+		}
 	}
 
-	return scanSet;
+	return result;
 }
 
 NodePtr CallNode::Optimize(OptimizeInfo& info) {
@@ -439,22 +513,14 @@ NodePtr CallNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-Mango CallNode::ToMango() const {
-	Mango call = Mango(GetFunc().scope.ToString(), MangoType::Map);
-	call.Add("value", node->ToMango());
-
-	Mango args = Mango(MangoType::List);
-
-	for (NodePtr node : this->args)
-		args.Add(node->ToMango());
-
-	call.Add("args", args);
-
-	return call;
-}
-
 StringBuilder CallNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = node->ToMelon(indent);
+
+	if (isMethod) {
+		sb += ":";
+		sb += methodName.ToSimpleString();
+	}
+
 	sb += "(";
 
 	for (UInt i = 0; i < args.Size(); i++) {

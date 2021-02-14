@@ -1,6 +1,7 @@
 #include "SafeUnwrapEndNode.h"
 
 #include "MemoryNode.h"
+#include "RootNode.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -17,7 +18,7 @@ using namespace Melon::Optimizing;
 
 String SafeUnwrapEndNode::jumpInstName = "?jmp";
 
-SafeUnwrapEndNode::SafeUnwrapEndNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+SafeUnwrapEndNode::SafeUnwrapEndNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -25,12 +26,12 @@ SafeUnwrapEndNode::~SafeUnwrapEndNode() {
 
 }
 
-ScopeList SafeUnwrapEndNode::Type() const  {
+TypeSymbol* SafeUnwrapEndNode::Type() const  {
 	Scope scope = Scope::Optional;
 	scope.types = List<ScopeList>();
-	scope.types.Get().Add(node->Type());
+	scope.types.Get().Add(node->Type()->AbsoluteName());
 
-	return Symbol::Find(ScopeList().Add(scope), file).scope;
+	return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList().Add(scope), file);
 }
 
 CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
@@ -45,10 +46,10 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 	cn.instructions.Add(mov1);
 
 	Pointer<MemoryNode> sn1 = new MemoryNode(arg.mem.offset + 1);
-	sn1->type = node->Type();
+	sn1->type = node->Type()->AbsoluteName();
 
 	Pointer<MemoryNode> sn2 = new MemoryNode(cn.argument.mem);
-	sn2->type = node->Type();
+	sn2->type = node->Type()->AbsoluteName();
 
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
 
@@ -84,7 +85,7 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	node->IncludeScan(info);
 
-	const ScopeList nodeType = node->Type();
+	const ScopeList nodeType = node->Type()->AbsoluteName();
 
 	if (nodeType == ScopeList::undefined) {
 		throw IncludeScanError();
@@ -94,14 +95,10 @@ void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	type.types = List<ScopeList>();
 	type.types.Get().Add(nodeType);
 
-	Symbol::TemplateSymbol ts;
-	ts.type = ScopeList().Add(type);
-	ts.scope = scope;
-	ts.file = file;
-	Symbol::templateSymbols.Add(ts);
+	Node::root->AddTemplateSpecialization(ScopeList(true).Add(type), scope->AbsoluteName(), file);
 }
 
-Set<ScanType> SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {
+ScanResult SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {
 	return node->Scan(info);
 }
 
@@ -113,12 +110,6 @@ NodePtr SafeUnwrapEndNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 
 	return nullptr;
-}
-
-Mango SafeUnwrapEndNode::ToMango() const  {
-	Mango mango = Mango("?", MangoType::List);
-	mango.Add(node->ToMango());
-	return mango;
 }
 
 StringBuilder SafeUnwrapEndNode::ToMelon(const UInt indent) const  {

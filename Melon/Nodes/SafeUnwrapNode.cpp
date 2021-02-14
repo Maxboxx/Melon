@@ -12,7 +12,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-SafeUnwrapNode::SafeUnwrapNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+SafeUnwrapNode::SafeUnwrapNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -20,12 +20,12 @@ SafeUnwrapNode::~SafeUnwrapNode() {
 
 }
 
-ScopeList SafeUnwrapNode::Type() const  {
-	return Symbol::Find(node->Type(), file).Get(Scope::Value, file).varType;
+TypeSymbol* SafeUnwrapNode::Type() const  {
+	return node->Type()->Find(Scope::Value, file)->Type();
 }
 
-Symbol SafeUnwrapNode::GetSymbol() const  {
-	return Symbol::Find(Type(), file);
+Symbol* SafeUnwrapNode::GetSymbol() const {
+	return Type();
 }
 
 CompiledNode SafeUnwrapNode::Compile(CompileInfo& info)  {
@@ -46,7 +46,7 @@ void SafeUnwrapNode::IncludeScan(ParsingInfo& info)  {
 	node->IncludeScan(info);
 }
 
-Set<ScanType> SafeUnwrapNode::Scan(ScanInfoStack& info)  {
+ScanResult SafeUnwrapNode::Scan(ScanInfoStack& info)  {
 	return node->Scan(info);
 }
 
@@ -58,12 +58,6 @@ NodePtr SafeUnwrapNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr n = node->Optimize(info)) node = n;
 
 	return nullptr;
-}
-
-Mango SafeUnwrapNode::ToMango() const  {
-	Mango mango = Mango("?", MangoType::List);
-	mango.Add(node->ToMango());
-	return mango;
 }
 
 StringBuilder SafeUnwrapNode::ToMelon(const UInt indent) const  {

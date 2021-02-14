@@ -29,7 +29,7 @@ namespace Melon {
 			///T Default
 			NodePtr def;
 
-			SwitchNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			SwitchNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~SwitchNode();
 
 			struct SwitchScanInfo {
@@ -58,14 +58,13 @@ namespace Melon {
 			/// Cleanup for the switch scan info
 			void ScanCleanup(SwitchScanInfo& loopInfo, ScanInfo& info) const;
 
-			virtual Symbols::ScopeList Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

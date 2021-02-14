@@ -12,15 +12,15 @@ using namespace Melon::Parsing;
 RefNode::RefNode(const NodePtr& node) : Node(node->scope, node->file) {this->node = node;}
 RefNode::~RefNode() {}
 
-ScopeList RefNode::Type() const {
+TypeSymbol* RefNode::Type() const {
 	return node->Type();
 }
 
-Boxx::List<ScopeList> RefNode::Types() const {
+Boxx::List<TypeSymbol*> RefNode::Types() const {
 	return node->Types();
 }
 
-Symbol RefNode::GetSymbol() const {
+Symbol* RefNode::GetSymbol() const {
 	return node->GetSymbol();
 }
 
@@ -44,12 +44,8 @@ void RefNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 }
 
-Set<ScanType> RefNode::Scan(ScanInfoStack& info) {
+ScanResult RefNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
-}
-
-Mango RefNode::ToMango() const {
-	return node->ToMango();
 }
 
 StringBuilder RefNode::ToMelon(const UInt indent) const {

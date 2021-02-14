@@ -6,6 +6,9 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/TemplateSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -15,7 +18,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-UnaryOperatorNode::UnaryOperatorNode(const ScopeList& scope, const Scope& op, const FileInfo& file) : Node(scope, file) {
+UnaryOperatorNode::UnaryOperatorNode(Symbol* const scope, const Scope& op, const FileInfo& file) : Node(scope, file) {
 	this->op = op;
 }
 
@@ -23,33 +26,35 @@ UnaryOperatorNode::~UnaryOperatorNode() {
 
 }
 
-ScopeList UnaryOperatorNode::Type() const {
-	List<ScopeList> args;
+TypeSymbol* UnaryOperatorNode::Type() const {
+	List<TypeSymbol*> args;
 	args.Add(node->Type());
 
-	const ScopeList type = node->Type();
-	const Symbol s = Symbol::FindFunction(type.Add(op), args, file);
+	TypeSymbol* const type = node->Type();
 
-	if (s.type != SymbolType::None && !s.returnValues.IsEmpty()) {
-		const Symbol s2 = Symbol::FindNearest(s.scope.Pop(), s.returnValues[0], file);
+	FunctionSymbol* const s = type->FindUnaryOperator(op, file);
 
-		if (s2.type == SymbolType::Template) {
-			return s2.varType;
+	if (s && !s->returnValues.IsEmpty()) {
+		TypeSymbol* const s2 = s->ReturnType(0);
+
+		if (s2 && s2->Is<TemplateSymbol>()) {
+			return s2->Type();
 		}
-		else if (s2.type != SymbolType::None) {
-			return s2.scope;
-		}
+		
+		return s2;
 	}
 
-	return ScopeList::undefined;
+	return nullptr;
 }
 
-Symbol UnaryOperatorNode::GetSymbol() const {
+Symbol* UnaryOperatorNode::GetSymbol() const {
 	if (op == Scope::Unwrap) {
-		return Symbol::Find(node->Type(), file).Get(Scope::Value, file);
+		if (TypeSymbol* const type = node->Type()) {
+			return type->Find<VariableSymbol>(Scope::Value, file);
+		}
 	}
 
-	return Symbol();
+	return nullptr;
 }
 
 Scope UnaryOperatorNode::GetOperator() const {
@@ -60,24 +65,25 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 	List<NodePtr> nodes;
 	nodes.Add(node);
 
-	List<ScopeList> args;
+	List<Symbol*> args;
 	args.Add(node->Type());
 
-	const ScopeList type = node->Type();
-	const Symbol s = Symbol::FindFunction(type.Add(op), args, file);
+	TypeSymbol* const type = node->Type();
 
-	if (s.symbolNode) {
-		return s.symbolNode->Compile(nodes, info);
+	FunctionSymbol* const func = type->FindUnaryOperator(op, file);
+
+	if (func->symbolNode) {
+		return func->symbolNode->Compile(nodes, info);
 	}
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;
 		cn->isMethod = false;
-		Scope sc = s.scope.Last();
-		sc.variant = nullptr;
-		Pointer<TypeNode> tn = new TypeNode(s.scope.Pop().Add(sc));
+
+		Pointer<TypeNode> tn = new TypeNode(func->ParentType()->AbsoluteName());
 		cn->node = tn;
 		cn->op = true;
+
 		return cn->Compile(info);
 	}
 }
@@ -86,25 +92,20 @@ void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 }
 
-Set<ScanType> UnaryOperatorNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = node->Scan(info);
+ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
+	ScanResult result = node->Scan(info);
+	result.SelfUseCheck(info, node->file);
 
 	if (op == Scope::Unwrap) {
 		// TODO: fix
 		ErrorLog::Warning(WarningError("unwrap operator does not work properly for nil values", file));
 	}
 
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
+	if (TypeSymbol* const type = node->Type()) {
+		type->FindUnaryOperator(op, file);
 	}
 
-	List<ScopeList> args;
-	args.Add(node->Type());
-
-	const ScopeList type = node->Type();
-	Symbol::FindFunction(type.Add(op), args, file);
-
-	return scanSet;
+	return result;
 }
 
 ScopeList UnaryOperatorNode::FindSideEffectScope(const bool assign) {
@@ -126,18 +127,6 @@ NodePtr UnaryOperatorNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango UnaryOperatorNode::ToMango() const {
-	List<ScopeList> args;
-	args.Add(node->Type());
-
-	const ScopeList type = node->Type();
-	const Symbol s = Symbol::FindFunction(type.Add(op), args, file);
-
-	Mango mango = Mango(s.scope.ToString(), MangoType::List);
-	mango.Add(node->ToMango());
-	return mango;
 }
 
 StringBuilder UnaryOperatorNode::ToMelon(const UInt indent) const {

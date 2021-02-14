@@ -5,6 +5,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 #include "Boxx/Math.h"
@@ -18,13 +20,7 @@ using namespace Melon::Optimizing;
 
 RootNode* Node::root = nullptr;
 
-void CompiledNode::AddInstructions(const List<OptimizerInstruction>& instructions) {
-	for (const OptimizerInstruction& inst : instructions) {
-		this->instructions.Add(inst);
-	}
-}
-
-Node::Node(const ScopeList& scope, const FileInfo& file) {
+Node::Node(Symbol* const scope, const FileInfo& file) {
 	this->scope = scope;
 	this->file = file;
 }
@@ -33,22 +29,22 @@ Node::~Node() {
 
 }
 
-ScopeList Node::Type() const {
-	return ScopeList::undefined;
+TypeSymbol* Node::Type() const {
+	return nullptr;
 }
 
-List<ScopeList> Node::Types() const {
-	List<ScopeList> types;
+List<TypeSymbol*> Node::Types() const {
+	List<TypeSymbol*> types;
 	types.Add(Type());
 	return types;
 }
 
-Set<ScanType> Node::Scan(ScanInfoStack& info) {
-	return Set<ScanType>();
+ScanResult Node::Scan(ScanInfoStack& info) {
+	return ScanResult();
 }
 
 bool Node::HasSideEffects() {
-	return HasSideEffects(scope);
+	return HasSideEffects(scope->AbsoluteName());
 }
 
 bool Node::HasSideEffects(const ScopeList& scope) {
@@ -76,7 +72,7 @@ ScopeList Node::GetSideEffectScope(const bool assign) {
 }
 
 ScopeList Node::FindSideEffectScope(const bool assign) {
-	return scope;
+	return scope->AbsoluteName();
 }
 
 ScopeList Node::CombineSideEffects(const ScopeList& scope1, const ScopeList& scope2) {
@@ -87,7 +83,7 @@ ScopeList Node::CombineSideEffects(const ScopeList& scope1, const ScopeList& sco
 
 	for (UInt i = 0; i < len; i++) {
 		if (scope1[i] != scope2[i]) {
-			return true;
+			return ScopeList(true);
 		}
 	}
 
@@ -107,8 +103,8 @@ void Node::IncludeScan(ParsingInfo& info) {
 	
 }
 
-Symbol Node::GetSymbol() const {
-	return Symbol();
+Symbol* Node::GetSymbol() const {
+	return nullptr;
 }
 
 UInt Node::GetSize() const {
@@ -127,33 +123,45 @@ Long Node::GetImmediate() const {
 	return 0;
 }
 
-void Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
-	List<ScopeList> args;
+ScanResult Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
+	List<TypeSymbol*> args;
 	args.Add(value->Type());
-	Symbol::FindFunction(var->Type().Add(Scope::Assign), args, file);
+
+	if (TypeSymbol* const type = var->Type()) {
+		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Scope::Assign, file)) {
+			func->FindOverload(args, file);
+		}
+	}
+
+	return ScanResult();
 }
 
 CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file) {
-	List<ScopeList> args;
+	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
-	Symbol assign = Symbol::FindFunction(var->Type().Add(Scope::Assign), args, file);
+	FunctionSymbol* assign = nullptr;
 
-	if (assign.type != SymbolType::None) {
+	if (TypeSymbol* const type = var->Type()) {
+		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Scope::Assign, file)) {
+			assign = func->FindOverload(args, file);
+		}
+	}
+
+	if (assign) {
 		List<NodePtr> nodes;
 		nodes.Add(var);
 
 		Pointer<ConvertNode> cn = new ConvertNode(value->scope, value->file);
 		cn->isExplicit = false;
 		cn->node = value;
-		cn->type = assign.arguments[0];
+		cn->type = assign->ArgumentType(0)->AbsoluteName();
 		nodes.Add(cn);
 
-		return assign.symbolNode->Compile(nodes, info);
+		return assign->symbolNode->Compile(nodes, info);
 	}
-	else {
-		return CompiledNode();
-	}
+
+	return CompiledNode();
 }
 
 bool Node::IsEmpty(const NodePtr& node) {

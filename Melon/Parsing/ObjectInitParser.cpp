@@ -1,8 +1,8 @@
-#include "CustomInitParser.h"
+#include "ObjectInitParser.h"
 
 #include "ExpressionParser.h"
 
-#include "Melon/Nodes/CustomInitNode.h"
+#include "Melon/Nodes/ObjectInitNode.h"
 
 using namespace Boxx;
 
@@ -11,11 +11,11 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr CustomInitParser::Parse(ParsingInfo& info) {
+NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::CurlyOpen) return nullptr;
 	info.index++;
 
-	Pointer<CustomInitNode> cn = new CustomInitNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+	Pointer<ObjectInitNode> cn = new ObjectInitNode(info.scope, info.GetFileInfo(info.Current(-1).line));
 
 	while (info.Current().type != TokenType::CurlyClose) {
 		if (!cn->vars.IsEmpty()) {

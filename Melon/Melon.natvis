@@ -1,50 +1,184 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="Melon::FileInfo">
+		<DisplayString>{filename.str, sb}:{line}</DisplayString>
+	</Type>
+	
 	<Type Name="Melon::Symbols::Scope">
-		<DisplayString Condition="!types.hasValue &amp;&amp; !variant.hasValue">{name.str, sb}</DisplayString>
+		<DisplayString Condition="!types.hasValue &amp;&amp; !arguments.hasValue">{name.str, sb}</DisplayString>
 
-		<DisplayString Condition="!types.hasValue &amp;&amp; variant.hasValue">{name.str, sb}:{variant.value}</DisplayString>
 		
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; !variant.hasValue">
+		
+		<DisplayString Condition="!types.hasValue &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 0">
+			{name.str, sb}()
+		</DisplayString>
+
+		<DisplayString Condition="!types.hasValue &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 1">
+			{name.str, sb}({arguments.value.list->list[0]})
+		</DisplayString>
+
+		<DisplayString Condition="!types.hasValue &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 2">
+			{name.str, sb}({arguments.value.list->list[0]},{arguments.value.list->list[1]})
+		</DisplayString>
+
+		<DisplayString Condition="!types.hasValue &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 3">
+			{name.str, sb}({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]})
+		</DisplayString>
+
+		<DisplayString Condition="!types.hasValue &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 4">
+			{name.str, sb}({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]})
+		</DisplayString>
+
+		<DisplayString Condition="!types.hasValue &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size > 4">
+			{name.str, sb}({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]},...)
+		</DisplayString>
+		
+
+		
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; !arguments.hasValue">
 			{name.str, sb}&lt;&gt;
 		</DisplayString>
 		
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; !variant.hasValue">
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; !arguments.hasValue">
 			{name.str, sb}&lt;{types.value.list->list[0]}&gt;
 		</DisplayString>
 
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; !variant.hasValue">
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; !arguments.hasValue">
 			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;
 		</DisplayString>
 
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; !variant.hasValue">
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; !arguments.hasValue">
 			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;
 		</DisplayString>
 
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; !variant.hasValue">
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; !arguments.hasValue">
 			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;
 		</DisplayString>
+
+
 		
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 0">
+			{name.str, sb}&lt;&gt;()
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 1">
+			{name.str, sb}&lt;&gt;({arguments.value.list->list[0]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 2">
+			{name.str, sb}&lt;&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 3">
+			{name.str, sb}&lt;&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 4">
+			{name.str, sb}&lt;&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]})
+		</DisplayString>
+		
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size > 4">
+			{name.str, sb}&lt;&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]},...)
+		</DisplayString>
 		
 
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 0 &amp;&amp; variant.hasValue">
-			{name.str, sb}&lt;&gt;:{variant.value}
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 0">
+			{name.str, sb}&lt;{types.value.list->list[0]}&gt;()
 		</DisplayString>
 
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; variant.hasValue">
-			{name.str, sb}&lt;{types.value.list->list[0]}&gt;:{variant.value}
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 1">
+			{name.str, sb}&lt;{types.value.list->list[0]}&gt;({arguments.value.list->list[0]})
 		</DisplayString>
 
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; variant.hasValue">
-			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;:{variant.value}
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 2">
+			{name.str, sb}&lt;{types.value.list->list[0]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]})
 		</DisplayString>
 
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; variant.hasValue">
-			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;:{variant.value}
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 3">
+			{name.str, sb}&lt;{types.value.list->list[0]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]})
 		</DisplayString>
 
-		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; variant.hasValue">
-			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;:{variant.value}
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 4">
+			{name.str, sb}&lt;{types.value.list->list[0]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 1 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size > 4">
+			{name.str, sb}&lt;{types.value.list->list[0]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]},...)
+		</DisplayString>
+
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 0">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;()
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 1">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;({arguments.value.list->list[0]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 2">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 3">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 4">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 2 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size > 4">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]},...)
+		</DisplayString>
+
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 0">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;()
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 1">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;({arguments.value.list->list[0]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 2">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 3">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 4">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size == 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size > 4">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]}&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]},...)
+		</DisplayString>
+
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 0">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;()
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 1">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;({arguments.value.list->list[0]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 2">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 3">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size == 4">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]})
+		</DisplayString>
+
+		<DisplayString Condition="types.hasValue &amp;&amp; types.value.list->size > 3 &amp;&amp; arguments.hasValue &amp;&amp; arguments.value.list->size > 4">
+			{name.str, sb}&lt;{types.value.list->list[0]},{types.value.list->list[1]},{types.value.list->list[2]},...&gt;({arguments.value.list->list[0]},{arguments.value.list->list[1]},{arguments.value.list->list[2]},{arguments.value.list->list[3]},...)
 		</DisplayString>
 	</Type>
 
@@ -57,7 +191,7 @@
 		<DisplayString Condition="scopes.list->size == 5 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]}</DisplayString>
 		<DisplayString Condition="scopes.list->size > 5 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]} ...</DisplayString>
 
-		<DisplayString Condition="scopes.list->size == 0 &amp;&amp; absolute">"global"</DisplayString>
+		<DisplayString Condition="scopes.list->size == 0 &amp;&amp; absolute">global ""</DisplayString>
 		<DisplayString Condition="scopes.list->size == 1 &amp;&amp; absolute">global {scopes.list->list[0]}</DisplayString>
 		<DisplayString Condition="scopes.list->size == 2 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}</DisplayString>
 		<DisplayString Condition="scopes.list->size == 3 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}</DisplayString>
@@ -66,7 +200,61 @@
 		<DisplayString Condition="scopes.list->size > 5 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]} ...</DisplayString>
 	</Type>
 
-	<Type Name="Melon::Symbols::Symbol">
-		<DisplayString>{{type={type, en}, scope={scope}}}</DisplayString>
+	<Type Name="Melon::Symbols::ScopeSymbol">
+		<DisplayString>ScopeSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="symbols">symbols</Item>
+			<Item Name="scopes">scopes</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Melon::Symbols::StructSymbol">
+		<DisplayString>StructSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="symbols">symbols</Item>
+			<Item Name="variants">templateVariants</Item>
+			<Item Name="templates">templateArguments</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Melon::Symbols::TemplateSymbol">
+		<DisplayString>TemplateSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="type">type</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Melon::Symbols::FunctionSymbol">
+		<DisplayString>FunctionSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="symbols" Condition="overloads.list->size == 0">symbols</Item>
+			<Item Name="scopes" Condition="overloads.list->size == 0">scopes</Item>
+			<Item Name="arguments" Condition="overloads.list->size == 0">arguments</Item>
+			<Item Name="templates" Condition="overloads.list->size == 0 &amp;&amp; templateArguments.list->size > 0">templateArguments</Item>
+			<Item Name="returns" Condition="overloads.list->size == 0">returnValues</Item>
+			<Item Name="overloads" Condition="overloads.list->size > 0">overloads</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Melon::Symbols::VariableSymbol">
+		<DisplayString>VariableSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="type">type</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Melon::Symbols::IntegerSymbol">
+		<DisplayString>IntegerSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="size">size</Item>
+			<Item Name="signed">isSigned</Item>
+			<Item Name="symbols">symbols</Item>
+		</Expand>
 	</Type>
 </AutoVisualizer>

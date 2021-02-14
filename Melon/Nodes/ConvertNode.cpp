@@ -3,6 +3,8 @@
 #include "CallNode.h"
 #include "TypeNode.h"
 
+#include "Melon/Symbols/TemplateSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -12,7 +14,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-ConvertNode::ConvertNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+ConvertNode::ConvertNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -20,44 +22,42 @@ ConvertNode::~ConvertNode() {
 
 }
 
-ScopeList ConvertNode::Type() const {
-	Symbol s = Symbol::FindNearestInNamespace(scope, type, file);
+TypeSymbol* ConvertNode::Type() const {
+	TypeSymbol* const s = SymbolTable::Find<TypeSymbol>(type, scope ? scope->AbsoluteName() : ScopeList(true), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
-	if (s.type == SymbolType::Template) {
-		return s.varType;
+	if (s == nullptr) return nullptr;
+
+	if (s->Is<TemplateSymbol>()) {
+		return s->Type();
 	}
-	else if (s.type != SymbolType::None) {
-		return s.scope;
-	}
-	else {
-		return ScopeList::undefined;
-	}
+	
+	return s;
 }
 
 CompiledNode ConvertNode::Compile(CompileInfo& info) {
-	ScopeList convertType = Type();
+	TypeSymbol* const convertType = Type();
 
 	if (node->Type() == convertType) return node->Compile(info);
 
-	Symbol convert = Symbol::FindExplicitConversion(node->Type(), convertType, file);
+	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(node->Type(), convertType, file);
 
-	if (convert.type == SymbolType::None) return CompiledNode();
+	if (!convert) return CompiledNode();
 
 	List<NodePtr> nodes;
 	nodes.Add(node);
 
-	if (convert.symbolNode) {
-		return convert.symbolNode->Compile(nodes, info);
+	if (convert->symbolNode) {
+		return convert->symbolNode->Compile(nodes, info);
 	}
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;
 		cn->isMethod = false;
-		Scope sc = convert.scope.Last();
-		sc.variant = nullptr;
-		Pointer<TypeNode> tn = new TypeNode(convert.scope.Pop().Add(sc));
+
+		Pointer<TypeNode> tn = new TypeNode(convert->ParentType()->AbsoluteName());
 		cn->node = tn;
 		cn->op = true;
+
 		return cn->Compile(info);
 	}
 }
@@ -66,11 +66,13 @@ void ConvertNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 }
 
-Set<ScanType> ConvertNode::Scan(ScanInfoStack& info) {
-	ScopeList convertType = Type();
+ScanResult ConvertNode::Scan(ScanInfoStack& info) {
+	TypeSymbol* const convertType = Type();
 
 	if (node->Type() == convertType) return node->Scan(info);
-	Symbol::FindExplicitConversion(node->Type(), convertType, file);
+
+	SymbolTable::FindExplicitConversion(node->Type(), convertType, file);
+
 	return node->Scan(info);
 }
 
@@ -85,20 +87,12 @@ NodePtr ConvertNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-Mango ConvertNode::ToMango() const {
-	Mango mango = Mango("as", MangoType::Map);
-	mango.Add("from", node->ToMango());
-	mango.Add("to", Type().ToString());
-	mango.Add("explicit", isExplicit);
-	return mango;
-}
-
 StringBuilder ConvertNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = node->ToMelon(indent);
 
 	if (isExplicit) {
 		sb += " as ";
-		sb += Type().ToString();
+		sb += Type()->AbsoluteName().ToString();
 	}
 
 	return sb;

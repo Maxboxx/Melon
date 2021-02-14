@@ -6,7 +6,7 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-NilNode::NilNode(const FileInfo& file) : Node(ScopeList(), file) {
+NilNode::NilNode(const FileInfo& file) : Node(nullptr, file) {
 
 }
 
@@ -14,8 +14,8 @@ NilNode::~NilNode() {
 
 }
 
-ScopeList NilNode::Type() const {
-	return ScopeList::Nil;
+TypeSymbol* NilNode::Type() const {
+	return SymbolTable::Nil;
 }
 
 bool NilNode::IsImmediate() const {
@@ -31,10 +31,6 @@ CompiledNode NilNode::Compile(CompileInfo& info) {
 	node.argument = Argument(0);
 	node.size = 0;
 	return node;
-}
-
-Mango NilNode::ToMango() const {
-	return Mango();
 }
 
 StringBuilder NilNode::ToMelon(const UInt indent) const {

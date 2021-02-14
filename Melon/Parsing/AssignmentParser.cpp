@@ -9,6 +9,8 @@
 #include "Melon/Nodes/NameNode.h"
 #include "Melon/Nodes/DiscardNode.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -53,8 +55,8 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 		singleType = true;
 	}
 
-	Pointer<AssignNode> assign = new AssignNode(info.scopes, FileInfo(info.filename, startLine, info.statementNumber, info.currentNamespace, info.includedNamespaces));
-	List<Tuple<ScopeList, Symbol, FileInfo>> symbols;
+	Pointer<AssignNode> assign = new AssignNode(info.scope, info.GetFileInfo(startLine));
+	List<Tuple<Scope, Symbol*>> symbols;
 
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
@@ -76,7 +78,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 		}
 
 		if (types[i] != ScopeList::Discard) {
-			Set<SymbolAttribute> attributes = VariableAttributeParser::Parse(info);
+			VariableAttributes attributes = VariableAttributeParser::Parse(info);
 			Scope name;
 
 			if (info.Current().type == TokenType::Discard) {
@@ -86,7 +88,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 				name = Scope(info.Current().value);
 			}
 			else {
-				if (!attributes.IsEmpty()) {
+				if (attributes != VariableAttributes::None) {
 					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "attributes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				}
 				else {
@@ -97,25 +99,24 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 			info.index++;
 
 			if (name != ScopeList::Discard.Last()) {
-				Pointer<NameNode> nn = new NameNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+				FileInfo file = info.GetFileInfo(info.Current(-1).line);
+				file.statement++;
+
+				Pointer<NameNode> nn = new NameNode(info.scope, file);
 				nn->name = name;
 				assign->vars.Add(nn);
 			}
 			else {
-				assign->vars.Add(new DiscardNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber, info.currentNamespace, info.includedNamespaces)));
+				assign->vars.Add(new DiscardNode(info.scope, info.GetFileInfo(info.Current(-1).line)));
 			}
 
 			if (name == ScopeList::Discard.Last()) continue;
 
-			Symbol v = Symbol(SymbolType::Variable);
-			v.symbolFile = info.currentFile;
-			v.symbolNamespace = info.currentNamespace;
-			v.includedNamespaces = info.includedNamespaces;
-			v.statementNumber = info.statementNumber;
-			v.varType = types[i];
-			v.attributes = attributes;
+			VariableSymbol* v = new VariableSymbol(info.GetFileInfo(info.Current(-1).line));
+			v->type = types[i];
+			v->attributes = attributes;
 
-			symbols.Add(Tuple<ScopeList, Symbol, FileInfo>(info.scopes.Add(name), v, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+			symbols.Add(Tuple<Scope, Symbol*>(name, v));
 		}
 		else {
 			if (NodePtr node = AssignableParser::Parse(info)) {
@@ -173,8 +174,8 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 		ErrorLog::Error(SyntaxError(SyntaxError::ManyExprAssign, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
-	for (const Tuple<ScopeList, Symbol, FileInfo>& symbol : symbols) {
-		Symbol::Add(symbol.value1, symbol.value2, symbol.value3);
+	for (const Tuple<Scope, Symbol*>& symbol : symbols) {
+		info.scope->AddSymbol(symbol.value1, symbol.value2);
 	}
 
 	info.statementNumber++;

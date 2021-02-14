@@ -8,7 +8,7 @@ using namespace Melon::Symbols;
 
 String ContinueNode::continueInstName = "continue";
 
-ContinueNode::ContinueNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+ContinueNode::ContinueNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -26,19 +26,15 @@ CompiledNode ContinueNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-Set<ScanType> ContinueNode::Scan(ScanInfoStack& info) {
-	if (info.Get().scopeInfo.CanContinue()) {
-		info.Get().scopeInfo.loopBreakCount = Math::Max(info.Get().scopeInfo.loopBreakCount, loops);
+ScanResult ContinueNode::Scan(ScanInfoStack& info) {
+	if (info.ScopeInfo().CanContinue()) {
+		info.ScopeInfo().loopBreakCount = Math::Max(info.ScopeInfo().loopBreakCount, loops);
 	}
 
-	info.Get().scopeInfo.maxLoopBreakCount = Math::Max(info.Get().scopeInfo.maxLoopBreakCount, loops);
+	info.ScopeInfo().maxLoopBreakCount = Math::Max(info.ScopeInfo().maxLoopBreakCount, loops);
 
-	return Set<ScanType>();
+	return ScanResult();
 };
-
-Mango ContinueNode::ToMango() const {
-	return Mango("continue", (Int)loops);
-}
 
 StringBuilder ContinueNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = String("continue ");

@@ -19,7 +19,7 @@ using namespace Melon::Optimizing;
 
 String ConditionNode::conditionInstName = "assigncond";
 
-ConditionNode::ConditionNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+ConditionNode::ConditionNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -27,8 +27,8 @@ ConditionNode::~ConditionNode() {
 
 }
 
-ScopeList ConditionNode::Type() const {
-	return cond->Type();//ScopeList().Add(Scope::Bool);
+TypeSymbol* ConditionNode::Type() const {
+	return cond->Type();
 }
 
 UInt ConditionNode::GetSize() const {
@@ -39,14 +39,14 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		CompiledNode c = assign->values[0]->Compile(info);
 
-		Symbol s = Symbol::Find(assign->values[0]->Type(), file);
+		TypeSymbol* const type = assign->values[0]->Type();
 		Argument argCopy = c.argument;
 		argCopy.mem.offset++;
 
 		NodePtr tempValue = assign->values[0];
 
 		Pointer<ArgumentNode> value = new ArgumentNode(argCopy);
-		value->type = s.Get(Scope::Value, file).varType;
+		value->type = type->Find<VariableSymbol>(Scope::Value, file)->Type()->AbsoluteName();
 		assign->values[0] = value;
 
 		OptimizerInstruction mov = Instruction(InstructionType::Mov, 1);
@@ -84,24 +84,23 @@ void ConditionNode::IncludeScan(ParsingInfo& info) {
 	cond->IncludeScan(info);
 }
 
-Set<ScanType> ConditionNode::Scan(ScanInfoStack& info) {
+ScanResult ConditionNode::Scan(ScanInfoStack& info) {
 	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
 		NodePtr tempValue = assign->values[0];
+		
+		TypeSymbol* const type = assign->values[0]->Type();
 
-		Symbol s = Symbol::Find(assign->values[0]->Type(), file);
-
-		if (s.scope.Size() > 0 && s.scope[0].name == Scope::Optional.name) {
-			Pointer<TypeNode> value = new TypeNode(s.Get(Scope::Value, file).varType);
+		if (type && type->AbsoluteName()[0].name == Scope::Optional.name) {
+			Pointer<TypeNode> value = new TypeNode(type->Find(Scope::Value, file)->Type()->AbsoluteName());
 			assign->values[0] = value;
 		}
 		else {
-			ErrorLog::Error(TypeError(TypeError::ConditionAssignment(tempValue->Type().ToString()), tempValue->file));
+			ErrorLog::Error(TypeError(TypeError::ConditionAssignment(tempValue->Type()->AbsoluteName().ToString()), tempValue->file));
 		}
 
-		Set<ScanType> scanSet = Set<ScanType>::Union(cond->Scan(info), tempValue->Scan(info));
-
+		ScanResult result = cond->Scan(info) | tempValue->Scan(info);
 		assign->values[0] = tempValue;
-		return scanSet;
+		return result;
 	}
 	else {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
@@ -139,10 +138,6 @@ NodePtr ConditionNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango ConditionNode::ToMango() const {
-	return cond->ToMango();
 }
 
 StringBuilder ConditionNode::ToMelon(const UInt indent) const {

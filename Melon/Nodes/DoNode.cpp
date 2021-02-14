@@ -16,7 +16,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DoNode::DoNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+DoNode::DoNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -83,11 +83,11 @@ void DoNode::IncludeScan(ParsingInfo& info) {
 	nodes->IncludeScan(info);
 }
 
-Set<ScanType> DoNode::Scan(ScanInfoStack& info) {
-	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
-	Set<ScanType> scanSet = nodes->Scan(info);
-	info.Get().scopeInfo.ExitScope();
-	return scanSet;
+ScanResult DoNode::Scan(ScanInfoStack& info) {
+	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
+	ScanResult result = nodes->Scan(info);
+	info.ScopeInfo().ExitScope();
+	return result;
 }
 
 ScopeList DoNode::FindSideEffectScope(const bool assign) {
@@ -103,12 +103,6 @@ NodePtr DoNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango DoNode::ToMango() const {
-	Mango mango = nodes->ToMango();
-	mango.SetLabel("do");
-	return mango;
 }
 
 StringBuilder DoNode::ToMelon(const UInt indent) const {

@@ -11,17 +11,16 @@ namespace Melon {
 		public:
 
 			///T Boolean
-			bool boolean;
+			bool boolean = false;
 
 			///T Constructor
 			BooleanNode(const FileInfo& file);
 			~BooleanNode();
 
-			virtual Symbols::ScopeList Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual bool IsImmediate() const override;
 			virtual Boxx::Long GetImmediate() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

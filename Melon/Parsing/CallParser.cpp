@@ -18,7 +18,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::ParenOpen) {
 		info.index++;
 
-		Pointer<CallNode> call = new CallNode(info.scopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		Pointer<CallNode> call = new CallNode(info.scope, info.GetFileInfo(info.Current(-1).line));
 
 		while (info.Current().type != TokenType::ParenClose) {
 			if (!call->args.IsEmpty()) {

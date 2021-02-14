@@ -4,6 +4,10 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/NamespaceSymbol.h"
+
 using namespace Boxx;
 
 using namespace Melon;
@@ -11,7 +15,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StructNode::StructNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+StructNode::StructNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -23,14 +27,20 @@ CompiledNode StructNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-bool StructNode::IsRecursive(const Symbol& symbol) const {
-	if (symbol.type != SymbolType::Struct) return false;
-	if (symbol.isRecursive) return false;
-	if (symbol.scope == this->symbol.scope) return true;
-
-	for (const Scope& name : symbol.names) {
-		if (IsRecursive(symbol.Get(name, file).GetType(file))) {
-			return true;
+bool StructNode::IsRecursive(StructSymbol* const symbol) const {
+	if (symbol == nullptr) return false;
+	if (symbol->isRecursive) return false;
+	if (symbol == this->symbol) return true;
+	
+	for (const Scope& name : symbol->members) {
+		if (VariableSymbol* const var = symbol->Find<VariableSymbol>(name, file)) {
+			if (TypeSymbol* const type = var->Type()) {
+				if (StructSymbol* const s = type->Cast<StructSymbol>()) {
+					if (IsRecursive(s)) {
+						return true;
+					}
+				}
+			}
 		}
 	}
 
@@ -38,96 +48,76 @@ bool StructNode::IsRecursive(const Symbol& symbol) const {
 }
 
 ScopeList StructNode::FindSideEffectScope(const bool assign) {
-	if (Symbol::Find(scope, file).type == SymbolType::Namespace) {
+	if (scope->Is<NamespaceSymbol>()) {
 		return ScopeList().Add(Scope::Global);
 	}
 
-	return scope;
+	return scope->AbsoluteName();
 }
 
-Set<ScanType> StructNode::Scan(ScanInfoStack& info) {
-	Symbol& s = Symbol::Find(symbol.scope.Pop(), file).Get(symbol.scope.Last(), file);
-	s.size = 0;
+ScanResult StructNode::Scan(ScanInfoStack& info) {
+	symbol->UpdateSize();
 
-	for (const Scope& var : vars) {
-		Symbol& v = Symbol::Find(symbol.scope, file).Get(var, file);
-		v.offset = s.size;
-		s.size += s.Get(var, file).GetType(file).size;
-
-		// TODO: error line
-		if (IsRecursive(v.GetType(file))) {
-			s.isRecursive = true;
-			ErrorLog::Error(SymbolError(SymbolError::RecursiveStruct(this->name.ToString()), file));
+	for (const Scope& var : symbol->members) {
+		if (VariableSymbol* const member = symbol->Find<VariableSymbol>(var, file)) {
+			if (TypeSymbol* const type = member->Type()) {
+				if (IsRecursive(type->Cast<StructSymbol>())) {
+					symbol->isRecursive = true;
+					ErrorLog::Error(SymbolError(SymbolError::RecursiveStruct(this->name.ToString()), member->File()));
+				}
+			}
 		}
 	}
 
-	return Set<ScanType>();
-}
-
-Mango StructNode::ToMango() const {
-	return Mango();
+	return ScanResult();
 }
 
 StringBuilder StructNode::ToMelon(const UInt indent) const {
 	if (name.name == Scope::Optional.name) return "";
+	if (symbol->templateParent != nullptr) return "";
 
-	for (const ScopeList& arg : Symbol::Find(symbol.scope, file).templateArgs) {
-		if (Symbol::Find(arg, file).type == SymbolType::Template) {
-			return "";
+	for (UInt i = 0; i < symbol->templateArguments.Size(); i++) {
+		if (symbol->templateArguments[i].IsTemplate()) continue;
+
+		if (TypeSymbol* const type = symbol->TemplateArgument(i)) {
+			if (type->Is<TemplateSymbol>()) return "";
 		}
 	}
 
 	StringBuilder sb = "struct ";
 
-	sb += name.ToSimpleString();
+	if (symbol->templateArguments.IsEmpty()) {
+		sb += symbol->Name().ToSimpleString();
+	}
+	else {
+		sb += symbol->Parent()->Name().ToSimpleString();
+		sb += "<";
+
+		for (UInt i = 0; i < symbol->templateArguments.Size(); i++) {
+			if (i > 0) sb += ", ";
+			sb += symbol->templateArguments[i].ToSimpleString();
+		}
+
+		sb += ">";
+	}
 
 	String tabs = String('\t').Repeat(indent + 1);
 
-	for (const Scope& var : vars) {
+	for (const Scope& var : symbol->members) {
 		sb += "\n";
 		sb += tabs;
-		sb += symbol.Get(var, file).varType.ToSimpleString();
+		sb += symbol->Find<VariableSymbol>(var, file)->type.ToSimpleString();
 		sb += ": ";
 		sb += var.ToSimpleString();
 	}
 
-	for (const Pair<String, Symbol>& syms : symbol.scopes) {
-		if (syms.value.type == SymbolType::Scope) {
-			if (syms.value.Contains(Scope::Call)) {
-				for (const Symbol& variant : syms.value.Get(Scope::Call, file).variants) {
-					if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
-						sb += "\n\n";
-						sb += tabs;
-						sb += variant.node->ToMelon(indent + 1);
-					}
-				}
-			}
-
-			for (const Symbol& variant : syms.value.variants) {
-				if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
+	for (const Pair<Scope, Symbol*>& syms : symbol->symbols) {
+		if (FunctionSymbol* const func = syms.value->Cast<FunctionSymbol>()) {
+			for (FunctionSymbol* const overload : func->overloads) {
+				if (overload->node && overload->node.Cast<FunctionNode>()->isUsed) {
 					sb += "\n\n";
 					sb += tabs;
-					sb += variant.node->ToMelon(indent + 1);
-				}
-			}
-
-			for (const Symbol& t : syms.value.templateVariants) {
-				if (t.Contains(Scope::Call)) {
-					for (const Symbol& variant : t.Get(Scope::Call, file).variants) {
-						if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
-							sb += "\n\n";
-							sb += tabs;
-							sb += variant.node->ToMelon(indent + 1);
-						}
-					}
-				}
-
-				for (const Symbol& variant : t.variants) {
-					if (variant.node && variant.node.Cast<FunctionNode>()->isUsed) {
-						sb += "\n\n";
-						sb += tabs;
-						sb += variant.node->ToMelon(indent + 1);
-					}
+					sb += overload->node->ToMelon(indent + 1);
 				}
 			}
 		}
@@ -136,6 +126,22 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 	sb += "\n";
 	sb += String('\t').Repeat(indent);
 	sb += "end";
+
+	if (!symbol->templateArguments.IsEmpty()) {
+		for (TemplateTypeSymbol* const type : symbol->Parent<TemplateTypeSymbol>()->templateVariants) {
+			if (type->templateParent == symbol) {
+				type->templateParent = nullptr;
+				StringBuilder s = type->Cast<StructSymbol>()->node->ToMelon(indent);
+				type->templateParent = symbol;
+
+				if (s.Size() > 0) {
+					sb += "\n\n";
+					sb += String('\t').Repeat(indent);
+					sb += s;
+				}
+			}
+		}
+	}
 
 	return sb;
 }

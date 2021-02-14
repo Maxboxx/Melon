@@ -1,5 +1,8 @@
 #include "NewVariableNode.h"
 
+#include "Melon/Symbols/NamespaceSymbol.h"
+#include "Melon/Symbols/TemplateSymbol.h"
+
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
 
@@ -10,7 +13,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NewVariableNode::NewVariableNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+NewVariableNode::NewVariableNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -18,26 +21,24 @@ NewVariableNode::~NewVariableNode() {
 
 }
 
-ScopeList NewVariableNode::GetType(const UInt index) const {
-	ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
-
+TypeSymbol* NewVariableNode::GetType(const UInt index) const {
 	ScopeList type = types[types.Size() > 1 ? index : 0];
 
 	if (type == ScopeList::Discard) {
-		return ScopeList::Discard;
+		return nullptr;
 	}
 
-	Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, type, file), file);
+	TypeSymbol* const sym = SymbolTable::Find<TypeSymbol>(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
-	if (s.type == SymbolType::Template) {
-		return s.varType;
+	if (TemplateSymbol* const t = sym->Cast<TemplateSymbol>()) {
+		return t->Type();
 	}
 	else {
-		return s.scope;
+		return sym;
 	}
 }
 
-ScopeList NewVariableNode::Type() const {
+TypeSymbol* NewVariableNode::Type() const {
 	return GetType(0);
 }
 
@@ -49,7 +50,7 @@ List<ScopeList> NewVariableNode::GetVariables() const {
 			vars.Add(ScopeList::Discard);
 		}
 		else {
-			vars.Add(Symbol::FindInNamespace(scope.Add(n), file).scope);
+			vars.Add(scope->Find(n, file)->AbsoluteName());
 		}
 	}
 
@@ -62,11 +63,11 @@ UInt NewVariableNode::GetSize() const {
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (names[i] == ScopeList::Discard.Last()) continue;
 
-		if (attributes[i].Contains(SymbolAttribute::Ref)) {
+		if ((attributes[i] & VariableAttributes::Ref) != VariableAttributes::None) {
 			size += StackPtr::ptrSize;
 		}
 		else {
-			size += Symbol::Find(GetType(i), file).size;
+			size += GetType(i)->Size();
 		}
 	}
 
@@ -75,32 +76,34 @@ UInt NewVariableNode::GetSize() const {
 
 CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurate error lines
 	CompiledNode cn;
-	cn.size = Symbol::Find(Type(), file).size;
+	cn.size = Type()->Size();
 
-	if (GetType(0) != ScopeList::Discard) {
-		if (attributes[0].Contains(SymbolAttribute::Ref)) {
+	if (GetType(0) != nullptr) {
+		if ((attributes[0] & VariableAttributes::Ref) != VariableAttributes::None) {
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			info.stack.Push(Symbol::Find(GetType(0), file).size);
+			info.stack.Push(GetType(0)->Size());
 		}
 
-		Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[0], file).stackIndex = info.stack.top;
+		VariableSymbol* const var = SymbolTable::Find<VariableSymbol>(names[0], scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+		var->stackIndex = info.stack.top;
 	}
 
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	for (UInt i = 1; i < names.Size(); i++) {
-		if (GetType(i) == ScopeList::Discard) continue;
+		if (GetType(i) == nullptr) continue;
 
-		if (attributes[i].Contains(SymbolAttribute::Ref)) {
+		if ((attributes[i] & VariableAttributes::Ref) != VariableAttributes::None) {
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
-			info.stack.Push(Symbol::Find(GetType(i), file).size);
+			info.stack.Push(GetType(i)->Size());
 		}
 
-		Symbol::Find(Symbol::ReplaceTemplates(scope, file), file).Get(names[i], file).stackIndex = info.stack.top;
+		VariableSymbol* const var = SymbolTable::Find<VariableSymbol>(names[i], scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+		var->stackIndex = info.stack.top;
 	}
 
 	return cn;
@@ -111,21 +114,19 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 		if (type == ScopeList::Discard) continue;
 
 		while (true) {
-			ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
-
-			Symbol s = Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, type, file), file);
+			Symbol* s = SymbolTable::Find(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 			bool done = true;
 
 			for (UInt i = 1; i < type.Size(); i++) {
-				if (s.type == SymbolType::Namespace) {
-					if (!s.Contains(type[i])) {
-						IncludeParser::ParseInclude(s.scope.Add(type[i]), info);
+				if (s->Is<NamespaceSymbol>()) {
+					if (!s->Contains(type[i])) {
+						IncludeParser::ParseInclude(s->AbsoluteName().Add(type[i]), info);
 						done = false;
 						break;
 					}
 					else {
-						s = s.Get(type[i], FileInfo());
+						s = s->Find(type[i], FileInfo());
 					}
 				}
 			}
@@ -135,30 +136,16 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> NewVariableNode::Scan(ScanInfoStack& info) {
-	Symbol::Find(Type(), file);
-
+ScanResult NewVariableNode::Scan(ScanInfoStack& info) {
 	for (UInt i = 0; i < types.Size(); i++) {
 		GetType(i);
 	}
 
 	for (UInt i = 0; i < names.Size(); i++) {
-		if (GetType(i) == ScopeList::Discard) continue;
-
-		Symbol::FindInNamespace(scope.Add(names[i]), file);
+		scope->Find(names[i], file);
 	}
 
-	return Set<ScanType>();
-}
-
-Mango NewVariableNode::ToMango() const {
-	Mango mango = Mango("newvar", MangoType::List);
-
-	for (UInt i = 0; i < names.Size(); i++) {
-		mango.Add(Mango(GetType(i).ToString(), scope.Add(names[i]).ToString()));
-	}
-
-	return mango;
+	return ScanResult();
 }
 
 StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
@@ -174,13 +161,10 @@ StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 	for (UInt i = 0; i < names.Size(); i++) {
 		if (i > 0) sb += ", ";
 
-		Symbol var = Symbol::FindInNamespace(scope.Add(names[i]), file);
+		VariableSymbol* const var = SymbolTable::Find<VariableSymbol>(names[i], scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
-		for (const SymbolAttribute attr : var.attributes) {
-			switch (attr) {
-				case SymbolAttribute::Const: sb += "const "; break;
-				case SymbolAttribute::Copy:  sb += "copy "; break;
-			}
+		if ((var->attributes & VariableAttributes::Const) != VariableAttributes::None) {
+			sb += "const ";
 		}
 
 		sb += names[i].ToSimpleString();

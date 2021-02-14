@@ -13,7 +13,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-RepeatNode::RepeatNode(const Symbols::ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+RepeatNode::RepeatNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -116,31 +116,20 @@ void RepeatNode::IncludeScan(ParsingInfo& info) {
 	condition->IncludeScan(info);
 }
 
-Set<ScanType> RepeatNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet;
+ScanResult RepeatNode::Scan(ScanInfoStack& info) {
+	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
+	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Loop);
 
-	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
-	info.Get().scopeInfo.EnterScope(ScopeInfo::ScopeType::Loop);
+	ScanResult result1 = content->Scan(info);
+	result1.SelfUseCheck(info, content->file);
 
-	for (const ScanType type : content->Scan(info)) {
-		scanSet.Add(type);
+	ScanResult result2 = condition->Scan(info);
+	result2.SelfUseCheck(info, condition->file);
 
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, content->file));
-		}
-	}
+	info.ScopeInfo().ExitScope();
+	info.ScopeInfo(ScopeInfo::WeakBranchUnion(scopeInfo, info.ScopeInfo()));
 
-	for (const ScanType type : condition->Scan(info)) {
-		scanSet.Add(type);
-
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, condition->file));
-		}
-	}
-
-	info.Get().scopeInfo.ExitScope();
-	info.Get().scopeInfo = ScopeInfo::WeakBranchUnion(scopeInfo, info.Get().scopeInfo);
-	return scanSet;
+	return result1 | result2;
 }
 
 ScopeList RepeatNode::FindSideEffectScope(const bool assign) {
@@ -165,13 +154,6 @@ NodePtr RepeatNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango RepeatNode::ToMango() const {
-	Mango mango = Mango("repeat", MangoType::Map);
-	mango.Add("condition", condition->ToMango());
-	mango.Add("content", content->ToMango());
-	return mango;
 }
 
 StringBuilder RepeatNode::ToMelon(const UInt indent) const {

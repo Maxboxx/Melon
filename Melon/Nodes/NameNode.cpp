@@ -4,6 +4,10 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -11,7 +15,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NameNode::NameNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+NameNode::NameNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -19,36 +23,32 @@ NameNode::~NameNode() {
 
 }
 
-ScopeList NameNode::Type() const {
-	Symbol s = GetSymbol();
+TypeSymbol* NameNode::Type() const {
+	Symbol* const s = GetSymbol();
 
-	if (s.type == SymbolType::Scope || s.type == SymbolType::Namespace || s.type == SymbolType::Struct || s.type == SymbolType::Enum) {
-		return s.scope;
+	if (s == nullptr) return nullptr;
+
+	if (TypeSymbol* const t = s->Cast<TypeSymbol>()) {
+		return t;
 	}
-	else if (s.type != SymbolType::None) {
-		const Symbol s2 = s.GetType(file);
-
-		if (s2.type != SymbolType::None) {
-			return s2.scope;
-		}
+	else {
+		return s->Type();
 	}
-
-	return ScopeList::undefined;
 }
 
-Symbol NameNode::GetSymbol() const {
-	ScopeList replacedScope = Symbol::ReplaceTemplates(scope, file);
+Symbol* NameNode::GetSymbol() const {
 	Scope s = name.Copy();
 
 	if (s.types) {
 		for (ScopeList& type : s.types.Get()) {
-			Symbol sym = Symbol::FindNearestInNamespace(replacedScope, type, file);
-			
-			if (sym.type == SymbolType::Template) {
-				type = sym.varType;
+			TypeSymbol* const sym = SymbolTable::Find<TypeSymbol>(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+			if (!sym) continue;
+
+			if (sym->Is<TemplateSymbol>()) {
+				type = sym->Type()->AbsoluteName();
 			}
 			else {
-				type = sym.scope;
+				type = sym->AbsoluteName();
 			}
 		}
 	}
@@ -56,22 +56,35 @@ Symbol NameNode::GetSymbol() const {
 	Scope noTemplateScope = s.Copy();
 	noTemplateScope.types = nullptr;
 
-	Symbol sym = Symbol::FindNearestInNamespace(replacedScope, noTemplateScope, file);
+	Symbol* const sym = SymbolTable::Find(noTemplateScope, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
-	if (sym.type == SymbolType::Template) {
-		ScopeList type = sym.varType;
+	if (sym->Is<TemplateSymbol>()) {
+		ScopeList type = sym->Type()->AbsoluteName();
 		type[type.Size() - 1].types = s.types;
-		return Symbol::Find(type, file);
+		return SymbolTable::FindAbsolute(type, file);
 	}
 
-	return Symbol::FindNearestInNamespace(replacedScope, Symbol::ReplaceNearestTemplates(replacedScope, ScopeList().Add(s), file), file);
+	if (sym->Is<FunctionSymbol>()) {
+		return sym;
+	}
+	else if (s.types) {
+		Scope scope = s.Copy();
+		scope.name  = "";
+		return sym->Find(scope, file);
+	}
+	else {
+		return sym;
+	}
 }
 
 CompiledNode NameNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
-	Symbol s = GetSymbol();
 
-	if (!ignoreRef && s.attributes.Contains(SymbolAttribute::Ref)) {
+	VariableSymbol* const sym = GetSymbol()->Cast<VariableSymbol>();
+
+	if (!sym) return cn;
+
+	if (!ignoreRef && sym->HasAttribute(VariableAttributes::Ref)) {
 		Pointer<NameNode> name = new NameNode(scope, file);
 		name->name = this->name;
 		name->ignoreRef = true;
@@ -79,48 +92,45 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 		return ptr->Compile(info);
 	}
 	else {
-		cn.argument = Argument(MemoryLocation(info.stack.Offset(s.stackIndex)));
+		cn.argument = Argument(MemoryLocation(info.stack.Offset(sym->stackIndex)));
 	}
 
-	cn.size = s.GetType(file).size;
+	cn.size = sym->Type()->Size();
+
 	return cn;
 }
 
-Set<ScanType> NameNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
-
-	Symbol s = GetSymbol();
+ScanResult NameNode::Scan(ScanInfoStack& info) {
+	ScanResult result;
+	Symbol* const s = GetSymbol();
 
 	if (name == Scope::Self) {
-		scanSet.Add(ScanType::Self);
+		result.selfUsed = true;
 	}
-	else if (s.type == SymbolType::Variable) {
-		info.usedVariables.Add(s.scope);
+	else if (!info.Assign()) {
+		if (VariableSymbol* const var = s->Cast<VariableSymbol>()) {
+			info.usedVariables.Add(var);
+		}
 	}
 
-	return scanSet;
+	return result;
 }
 
 ScopeList NameNode::FindSideEffectScope(const bool assign) {
 	if (assign) {
-		Symbol s = GetSymbol();
+		Symbol* const s = GetSymbol();
 
-		if (s.IsArgument() && s.attributes.Contains(SymbolAttribute::Ref)) {
-			return s.scope.Pop().Pop();
+		if (s->Is<VariableSymbol>() && (s->Cast<VariableSymbol>()->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+			return s->Parent()->Parent()->AbsoluteName();
 		}
 		else {
-			return s.scope.Pop();
+			return s->Parent()->AbsoluteName();
 		}
 	}
-	else {
-		return scope;
-	}
-}
 
-Mango NameNode::ToMango() const {
-	return Mango(Type().ToString(), GetSymbol().scope.ToString());
+	return scope->AbsoluteName();
 }
 
 StringBuilder NameNode::ToMelon(const UInt indent) const {
-	return name.ToString();
+	return name.ToSimpleString();
 }

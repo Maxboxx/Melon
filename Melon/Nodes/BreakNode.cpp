@@ -13,7 +13,7 @@ String BreakNode::scopeBreakInstName = "break!";
 String BreakNode::breakTrueInstName = "breaktrue";
 String BreakNode::breakFalseInstName = "breakfalse";
 
-BreakNode::BreakNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+BreakNode::BreakNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 	
 }
 
@@ -39,38 +39,28 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-Set<ScanType> BreakNode::Scan(ScanInfoStack& info) {
+ScanResult BreakNode::Scan(ScanInfoStack& info) {
 	if (!scopeWise) {
-		if (info.Get().scopeInfo.CanContinue()) {
+		if (info.ScopeInfo().CanContinue()) {
 			if (!isBreak) {
-				info.Get().scopeInfo.loopAbortCount = Math::Max(info.Get().scopeInfo.loopAbortCount, loops);
+				info.ScopeInfo().loopAbortCount = Math::Max(info.ScopeInfo().loopAbortCount, loops);
 			}
 
-			info.Get().scopeInfo.loopBreakCount = Math::Max(info.Get().scopeInfo.loopBreakCount, loops);
+			info.ScopeInfo().loopBreakCount = Math::Max(info.ScopeInfo().loopBreakCount, loops);
 		}
 
-		info.Get().scopeInfo.maxLoopBreakCount = Math::Max(info.Get().scopeInfo.maxLoopBreakCount, loops);
+		info.ScopeInfo().maxLoopBreakCount = Math::Max(info.ScopeInfo().maxLoopBreakCount, loops);
 	}
 	else {
-		if (info.Get().scopeInfo.CanContinue()) {
-			info.Get().scopeInfo.scopeBreakCount = Math::Max(info.Get().scopeInfo.scopeBreakCount, loops);
+		if (info.ScopeInfo().CanContinue()) {
+			info.ScopeInfo().scopeBreakCount = Math::Max(info.ScopeInfo().scopeBreakCount, loops);
 		}
 
-		info.Get().scopeInfo.maxScopeBreakCount = Math::Max(info.Get().scopeInfo.maxScopeBreakCount, loops);
+		info.ScopeInfo().maxScopeBreakCount = Math::Max(info.ScopeInfo().maxScopeBreakCount, loops);
 	}
 
-	return Set<ScanType>();
+	return ScanResult();
 };
-
-Mango BreakNode::ToMango() const {
-	Mango m = Mango(scopeWise ? "break!" : (isBreak ? "break" : "abort"), MangoType::List);
-	m.Add(Mango(scopeWise ? (Int)loops - 1 : (Int)loops));
-
-	if (isBreak && !scopeWise)
-		m.Add(Mango((bool)breakBool));
-
-	return m;
-}
 
 StringBuilder BreakNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = String(scopeWise ? "break!" : (isBreak ? "break" : "abort"));

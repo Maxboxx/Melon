@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 namespace Melon {
 	namespace Nodes {
 		///B CallNode
@@ -27,20 +29,20 @@ namespace Melon {
 			///T Method Name
 			Symbols::Scope methodName;
 
-			///T Operator
+			///T Call Operator
 			bool op = false;
 
 			///T Statement
 			bool isStatement = false;
 
-			CallNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			CallNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~CallNode();
 
 			///H Methods
 
 			///T Get function
 			/// Finds the function to call
-			Symbols::Symbol GetFunc() const;
+			Symbols::FunctionSymbol* GetFunc() const;
 
 			///T Is function
 			/// Checks if the node to call is a function
@@ -49,13 +51,12 @@ namespace Melon {
 			///T Is Init
 			bool IsInit() const;
 
-			virtual Symbols::ScopeList Type() const override;
-			virtual Boxx::List<Symbols::ScopeList> Types() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
+			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

@@ -6,7 +6,7 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-BooleanNode::BooleanNode(const FileInfo& file) : Node(ScopeList(), file) {
+BooleanNode::BooleanNode(const FileInfo& file) : Node(nullptr, file) {
 
 }
 
@@ -14,8 +14,8 @@ BooleanNode::~BooleanNode() {
 
 }
 
-ScopeList BooleanNode::Type() const {
-	return ScopeList::Bool;
+TypeSymbol* BooleanNode::Type() const {
+	return (TypeSymbol*)SymbolTable::Bool;
 }
 
 bool BooleanNode::IsImmediate() const {
@@ -31,10 +31,6 @@ CompiledNode BooleanNode::Compile(CompileInfo& info) {
 	node.argument = Argument(boolean ? 1 : 0);
 	node.size = 1;
 	return node;
-}
-
-Mango BooleanNode::ToMango() const {
-	return Mango("bool", boolean);
 }
 
 StringBuilder BooleanNode::ToMelon(const UInt indent) const {

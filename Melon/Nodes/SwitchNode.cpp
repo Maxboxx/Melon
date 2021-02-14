@@ -8,6 +8,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -20,7 +22,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-SwitchNode::SwitchNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+SwitchNode::SwitchNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -28,10 +30,10 @@ SwitchNode::~SwitchNode() {
 
 }
 
-ScopeList SwitchNode::Type() const {
-	if (!expr) return ScopeList::undefined;
+TypeSymbol* SwitchNode::Type() const {
+	if (!expr) return nullptr;
 
-	ScopeList type = nodes[0]->Type();
+	TypeSymbol* type = nodes[0]->Type();
 
 	for (UInt i = 1; i < nodes.Size(); i++) {
 		if (type != nodes[i]->Type()) ErrorLog::Error(TypeError(TypeError::SwitchExprType, file));
@@ -59,15 +61,13 @@ bool SwitchNode::IsScope() const {
 CompiledNode SwitchNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
-	if (this->expr) 
-		cn.size = Symbol::Find(Type(), file).size;
+	if (this->expr) {
+		cn.size = Type()->Size();
+	}
 
-	info.stack.PushExpr(Symbol::Find(this->match->Type(), this->match->file).size, cn);
+	info.stack.PushExpr(this->match->Type()->Size(), cn);
 	Pointer<MemoryNode> matchStack = new MemoryNode(info.stack.Offset());
-	matchStack->type = this->match->Type();
-
-	List<ScopeList> args;
-	args.Add(this->match->Type());
+	matchStack->type = this->match->Type()->AbsoluteName();
 
 	const UInt frame = info.stack.frame;
 	cn.AddInstructions(CompileAssignment(matchStack, this->match, info, this->match->file).instructions);
@@ -85,7 +85,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 			nodeArgs.Add(matchStack);
 			nodeArgs.Add(node);
 
-			CompiledNode comp = Symbol::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file).symbolNode->Compile(nodeArgs, info);
+			CompiledNode comp = SymbolTable::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file)->symbolNode->Compile(nodeArgs, info);
 			cn.AddInstructions(comp.instructions);
 
 			Instruction eq = Instruction(InstructionType::Ne, 1);
@@ -103,19 +103,20 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 		info.stack.PopExpr(frame, cn);
 	}
 
-	info.stack.Pop(Symbol::Find(this->match->Type(), this->match->file).size);
+	info.stack.Pop(this->match->Type()->Size());
 
 	Instruction defJmp = Instruction(InstructionType::Jmp, 0);
 	defaultJump = cn.instructions.Size();
 	cn.instructions.Add(defJmp);
 
-	if (expr)
-		info.stack.PushExpr(Symbol::Find(Type(), file).size, cn);
+	if (expr) {
+		info.stack.PushExpr(Type()->Size(), cn);
+	}
 
 	Argument result = Argument(MemoryLocation(info.stack.Offset()));
 
 	Pointer<MemoryNode> sn = new MemoryNode(result.mem.offset);
-	sn->type = Type();
+	sn->type = Type()->AbsoluteName();
 
 	for (NodePtr expr : nodes) {
 		cn.instructions.Add(Instruction::Label(info.label));
@@ -209,7 +210,7 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 
 	if (expr) {
 		cn.argument = result;
-		info.stack.Pop(Symbol::Find(Type(), file).size);
+		info.stack.Pop(Type()->Size());
 	}
 
 	return cn;
@@ -238,7 +239,7 @@ SwitchNode::SwitchScanInfo SwitchNode::ScanSetup(ScanInfo& info) const {
 		switchInfo.scope = info.scopeInfo.CopyBranch();
 
 		if (switchInfo.init) {
-			switchInfo.scope.unassigned = info.symbol.GetUnassignedVarsSet();
+			switchInfo.scope.unassigned = info.type->UnassignedMembers();
 		}
 	}
 
@@ -251,7 +252,9 @@ void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) con
 			info.init = true;
 
 			for (const Scope& var : switchInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = false;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = false;
+				}
 			}
 		}
 
@@ -262,7 +265,7 @@ void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) con
 void SwitchNode::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	if (!expr) {
 		if (switchInfo.init) {
-			info.scopeInfo.unassigned = info.symbol.GetUnassignedVarsSet();
+			info.scopeInfo.unassigned = info.type->UnassignedMembers();
 		}
 
 		switchInfo.cases.Add(info.scopeInfo);
@@ -285,11 +288,15 @@ void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 
 		if (switchInfo.init) {
 			for (const Scope& var : switchInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = true;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = true;
+				}
 			}
 
 			for (const Scope& var : switchInfo.scope.unassigned) {
-				info.symbol.Get(var, FileInfo()).isAssigned = false;
+				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
+					v->isAssigned = false;
+				}
 			}
 		}
 
@@ -297,40 +304,34 @@ void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	}
 }
 
-Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = match->Scan(info);
+ScanResult SwitchNode::Scan(ScanInfoStack& info) {
+	ScanResult result = match->Scan(info);
+	result.SelfUseCheck(info, match->file);
 
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, match->file));
+	TypeSymbol* const type = Type();
+	TypeSymbol* const matchType = match->Type();
+	
+	if (matchType) {
+		ScanAssignment(new TypeNode(matchType->AbsoluteName()), new TypeNode(matchType->AbsoluteName()), info, match->file);
 	}
-
-	if (expr) {
-		Symbol::Find(Type(), file);
-	}
-
-	Symbol::Find(this->match->Type(), this->match->file);
-
-	List<ScopeList> args;
-	args.Add(this->match->Type());
-	Symbol::FindFunction(this->match->Type().Add(Scope::Assign), args, this->match->file);
 
 	SwitchScanInfo switchInfo = ScanSetup(info.Get());
 
-	Pointer<TypeNode> type = new TypeNode(Type());
+	Pointer<TypeNode> typeNode = nullptr;
+
+	if (type) {
+		typeNode = new TypeNode(type->AbsoluteName());
+	}
 
 	for (const NodePtr& node : nodes) {
 		ScanPreContents(switchInfo, info.Get());
 
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-			}
-		}
-
-		if (expr) {
-			ScanAssignment(type, node, info, node->file);
+		if (expr && typeNode) {
+			ScanAssignment(typeNode, node, info, node->file);
 		}
 
 		ScanPostContents(switchInfo, info.Get());
@@ -339,16 +340,12 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 	if (def) {
 		ScanPreContents(switchInfo, info.Get());
 
-		for (const ScanType type : def->Scan(info)) {
-			scanSet.Add(type);
+		ScanResult r = def->Scan(info);
+		r.SelfUseCheck(info, def->file);
+		result |= r;
 
-			if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-				ErrorLog::Error(CompileError(CompileError::SelfInit, def->file));
-			}
-		}
-
-		if (expr) {
-			ScanAssignment(type, def, info, def->file);
+		if (expr && typeNode) {
+			ScanAssignment(typeNode, def, info, def->file);
 		}
 
 		ScanPostContents(switchInfo, info.Get());
@@ -358,19 +355,15 @@ Set<ScanType> SwitchNode::Scan(ScanInfoStack& info) {
 
 	for (const List<NodePtr>& nodeList : cases) {
 		for (const NodePtr& node : nodeList) {
-			for (const ScanType type : node->Scan(info)) {
-				scanSet.Add(type);
+			ScanResult r = node->Scan(info);
+			r.SelfUseCheck(info, node->file);
+			result |= r;
 
-				if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-					ErrorLog::Error(CompileError(CompileError::SelfInit, node->file));
-				}
-			}
-
-			Symbol::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file);
+			SymbolTable::FindOperator(Scope::Equal, matchType, node->Type(), node->file);
 		}
 	}
 
-	return scanSet;
+	return result;
 }
 
 ScopeList SwitchNode::FindSideEffectScope(const bool assign) {
@@ -430,36 +423,6 @@ NodePtr SwitchNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango SwitchNode::ToMango() const {
-	Mango mango = Mango(expr ? "switchexpr" : "switch", MangoType::Map);
-
-	mango.Add("match", match->ToMango());
-
-	Mango cases = Mango(MangoType::List);
-
-	for (UInt i = 0; i < nodes.Size(); i++) {
-		Mango m = Mango(MangoType::Map);
-
-		Mango list = Mango(MangoType::List);
-
-		for (NodePtr node : this->cases[i]) {
-			list.Add(node->ToMango());
-		}
-
-		m.Add("values", list);
-
-		m.Add(expr ? "expr" : "content", nodes[i]->ToMango());
-
-		cases.Add(m);
-	}
-
-	mango.Add("cases", cases);
-
-	mango.Add("default", def ? def->ToMango() : Mango(MangoType::Nil));
-
-	return mango;
 }
 
 StringBuilder SwitchNode::ToMelon(const UInt indent) const {

@@ -12,7 +12,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DefaultNode::DefaultNode(const ScopeList& scope, const FileInfo& file) : BinaryOperatorNode(scope, Scope::Default, file) {
+DefaultNode::DefaultNode(Symbol* const scope, const FileInfo& file) : BinaryOperatorNode(scope, Scope::Default, file) {
 
 }
 
@@ -20,11 +20,25 @@ DefaultNode::~DefaultNode() {
 
 }
 
-ScopeList DefaultNode::Type() const {
-	ScopeList type = node1->Type();
-	type = Symbol::Find(type, file).Get(Scope::Value, file).varType;
+TypeSymbol* DefaultNode::Type() const {
+	TypeSymbol* const type1 = node1->Type();
 
-	if (!Symbol::HasImplicitConversion(node2->Type(), type)) ErrorLog::Error(TypeError(TypeError::DefaultType, file));
+	// TODO: error?
+	if (type1 == nullptr) return nullptr;
+
+	Symbol* const value = type1->Contains(Scope::Value);
+
+	// TODO: error?
+	if (value == nullptr) return nullptr;
+
+	TypeSymbol* const type = value->Type();
+
+	// TODO: error?
+	if (type == nullptr) return nullptr;
+
+	if (node2->Type()->ImplicitConversionTo(type)) {
+		ErrorLog::Error(TypeError(TypeError::DefaultType, file));
+	}
 
 	return type;
 }
@@ -35,7 +49,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 
 	List<UInt> jumps;
 
-	info.stack.PushExpr(Symbol::Find(Type(), file).size, cn);
+	info.stack.PushExpr(Type()->Size(), cn);
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	CompiledNode c1 = node1->Compile(info);
@@ -50,12 +64,12 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(eq);
 
 	Pointer<MemoryNode> sn1 = new MemoryNode(cn.argument.mem);
-	sn1->type = Type();
+	sn1->type = Type()->AbsoluteName();
 
 	Pointer<MemoryNode> sn2 = new MemoryNode(c1.argument.mem);
 	sn2->mem.offset++;
 
-	sn2->type = Symbol::Find(node1->Type(), file).Get(Scope::Value, file).varType;
+	sn2->type = node1->Type()->Find<VariableSymbol>(Scope::Value, file)->Type()->AbsoluteName();
 
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
 
@@ -70,7 +84,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(Instruction::Label(info.label));
 	cn.instructions[jmp].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 
-	info.stack.Pop(Symbol::Find(Type(), file).size);
+	info.stack.Pop(Type()->Size());
 
 	return cn;
 }
@@ -80,33 +94,24 @@ void DefaultNode::IncludeScan(ParsingInfo& info) {
 	node2->IncludeScan(info);
 }
 
-Set<ScanType> DefaultNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
+ScanResult DefaultNode::Scan(ScanInfoStack& info) {
+	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
 
-	ScopeInfo scopeInfo = info.Get().scopeInfo.CopyBranch();
+	ScanResult result1 = node1->Scan(info);
+	result1.SelfUseCheck(info, node1->file);
 
-	for (const ScanType type : node1->Scan(info)) {
-		scanSet.Add(type);
+	ScanResult result2 = node2->Scan(info);
+	result2.SelfUseCheck(info, node2->file);
 
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
-		}
+	TypeSymbol* const type = Type();
+	
+	if (type) {
+		ScanAssignment(new TypeNode(type->AbsoluteName()), node2, info, file);
 	}
 
-	for (const ScanType type : node2->Scan(info)) {
-		scanSet.Add(type);
+	info.ScopeInfo(scopeInfo);
 
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
-		}
-	}
-
-	Symbol::Find(Type(), file);
-	ScanAssignment(new TypeNode(Type()), new TypeNode(Symbol::Find(node1->Type(), node1->file).Get(Scope::Value, node1->file).varType), info, file);
-	ScanAssignment(new TypeNode(Type()), node2, info, file);
-
-	info.Get().scopeInfo = scopeInfo;
-	return scanSet;
+	return result1 | result2;
 }
 
 ScopeList DefaultNode::FindSideEffectScope(const bool assign) {
@@ -118,13 +123,6 @@ NodePtr DefaultNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = node2->Optimize(info)) node2 = node;
 
 	return nullptr;
-}
-
-Mango DefaultNode::ToMango() const {
-	Mango mango = Mango("??", MangoType::List);
-	mango.Add(node1->ToMango());
-	mango.Add(node2->ToMango());
-	return mango;
 }
 
 StringBuilder DefaultNode::ToMelon(const UInt indent) const {

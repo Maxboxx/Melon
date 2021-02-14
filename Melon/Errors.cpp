@@ -3,7 +3,7 @@
 #include "Boxx/Map.h"
 #include "Boxx/Console.h"
 
-#include "Melon/Symbols/Symbols.h"
+#include "Melon/Symbols/FunctionSymbol.h"
 
 using namespace Boxx;
 using namespace Melon;
@@ -155,12 +155,12 @@ UInt ErrorLog::ErrorCount() {
 	return count;
 }
 
-String CompileError::FuncNotReturn(const Symbol& func) {
-	if (func.returnValues.Size() > 1) {
-		return "function '" + func.scope.ToString() + "' must return values";
+String CompileError::FuncNotReturn(FunctionSymbol* const func) {
+	if (func->returnValues.Size() > 1) {
+		return "function '" + func->AbsoluteName().ToString() + "' must return values";
 	}
 	else {
-		return "function '" + func.scope.ToString() + "' must return a value";
+		return "function '" + func->AbsoluteName().ToString() + "' must return a value";
 	}
 }
 

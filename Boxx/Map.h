@@ -96,7 +96,7 @@ namespace Boxx {
 
 		///T Iterator
 		/// Iterates over all key-value pairs in the map
-		///S for (Pair<Key, Value> pair : collection)
+		///S for (Pair<Key, Value> pair : map)
 		Pair<Key, Value>* begin();
 		const Pair<Key, Value>* begin() const;
 		Pair<Key, Value>* end();

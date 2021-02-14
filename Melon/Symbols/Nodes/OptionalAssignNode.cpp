@@ -1,7 +1,10 @@
 #include "OptionalAssignNode.h"
 
 #include "Melon/Symbols/ScopeList.h"
-#include "Melon/Symbols/Symbols.h"
+#include "Melon/Symbols/SymbolTable.h"
+#include "Melon/Symbols/TypeSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
 
 #include "Melon/Nodes/MemoryNode.h"
 #include "Melon/Nodes/BooleanNode.h"
@@ -25,10 +28,9 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	c1.AddInstructions(c2.instructions);
 	c1.argument = OffsetArgument(c1.argument, frame, info);
 
-	const ScopeList type1 = nodes[0]->Type();
-	const ScopeList type2 = nodes[1]->Type();
+	TypeSymbol* const type1 = nodes[0]->Type();
+	TypeSymbol* const type2 = nodes[1]->Type();
 
-	Symbol s = Symbol::Find(type1, nodes[0]->file);
 	UInt compIndex = c1.instructions.Size();
 
 	Instruction comp = Instruction(InstructionType::Eq, 1);
@@ -42,33 +44,16 @@ CompiledNode OptionalAssignNode::Compile(const Boxx::List<NodePtr>& nodes, Compi
 	c1.instructions.Add(mov1);
 	c1.instructions.Last().important = important;
 
-	Symbol argSym = s.Get(s.names[1], nodes[0]->file);
-	Symbol argType = argSym.GetType(nodes[0]->file);
+	Pointer<MemoryNode> mn1 = new MemoryNode(c1.argument.mem);
+	mn1->mem.offset++;
+	mn1->type = type1->Find<VariableSymbol>(Scope::Value, nodes[0]->file)->Type()->AbsoluteName();
 
-	const ScopeList typeName = argType.scope;
-
-	List<ScopeList> typeArgs;
-	typeArgs.Add(typeName);
-	Symbol argAssign = Symbol::FindFunction(typeName.Add(Scope::Assign), typeArgs, nodes[0]->file);
-
-	List<NodePtr> args;
-
-	Pointer<MemoryNode> sn1 = new MemoryNode(c1.argument.mem);
-	sn1->mem.offset++;
-	sn1->type = typeName;
-
-	args.Add(sn1);
-
-	Symbol s2 = Symbol::Find(type2, nodes[1]->file);
-
-	Pointer<MemoryNode> sn2 = new MemoryNode(c2.argument.mem);
-	sn2->mem.offset++;
-	sn2->type = s2.templateArgs[0];
-
-	args.Add(sn2);
+	Pointer<MemoryNode> mn2 = new MemoryNode(c2.argument.mem);
+	mn2->mem.offset++;
+	mn2->type = type2->Find<VariableSymbol>(Scope::Value, nodes[1]->file)->Type()->AbsoluteName();
 
 	info.important = important;
-	c1.AddInstructions(argAssign.symbolNode->Compile(args, info).instructions);
+	c1.AddInstructions(Node::CompileAssignment(mn1, mn2, info, nodes[1]->file).instructions);
 
 	UInt jumpIndex = c1.instructions.Size();
 	c1.instructions.Add(Instruction(InstructionType::Jmp));

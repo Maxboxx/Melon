@@ -12,7 +12,7 @@
 
 namespace Melon {
 	namespace Symbols {
-		class Symbol;
+		class FunctionSymbol;
 	}
 
 	///B ErrorLog
@@ -93,32 +93,35 @@ namespace Melon {
 		///T Current Namespace
 		Symbols::ScopeList currentNamespace;
 
+		///T File Scope
+		Symbols::Scope fileScope;
+
 		///T Included Namespaces
 		Boxx::Set<Symbols::ScopeList> includedNamespaces;
 
 		///T Statement number
 		/// The statement number of this file location
-		Boxx::UInt statementNumber;
+		Boxx::UInt statement;
 
 		///T Empty constructor
 		FileInfo() {
 			filename = "";
 			line = 0;
-			statementNumber = 0;
+			statement = 0;
 		}
 
 		///T Constructor
 		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Boxx::UInt statementNumber) {
 			this->filename = filename;
 			this->line = line;
-			this->statementNumber = statementNumber;
+			this->statement = statementNumber;
 		}
 
 		///T Constructor with Namespaces
 		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Boxx::UInt statementNumber, const Symbols::ScopeList& currentNamespace, const Boxx::Set<Symbols::ScopeList>& includedNamespaces) {
 			this->filename = filename;
 			this->line = line;
-			this->statementNumber = statementNumber;
+			this->statement = statementNumber;
 			this->currentNamespace = currentNamespace;
 			this->includedNamespaces = includedNamespaces;
 		}
@@ -155,7 +158,7 @@ namespace Melon {
 		}
 
 		///T Func Not Return
-		static Boxx::String FuncNotReturn(const Symbols::Symbol& func);
+		static Boxx::String FuncNotReturn(Symbols::FunctionSymbol* const func);
 
 		///T Return
 		static Boxx::String Return(const Boxx::UInt funcRetCount, const Boxx::UInt args);

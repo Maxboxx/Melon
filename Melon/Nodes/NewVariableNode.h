@@ -2,12 +2,14 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+
 namespace Melon {
 	namespace Nodes {
 
 		///B NewVariableNode
 		/// Node for creating new variables
-		class NewVariableNode : public Node {
+		class [[deprecated]] NewVariableNode : public Node {
 		public:
 
 			///T Types
@@ -21,9 +23,9 @@ namespace Melon {
 
 			///T Attributes
 			/// All attributes for each variable
-			Boxx::List<Boxx::Set<Symbols::SymbolAttribute>> attributes;
+			Boxx::List<Symbols::VariableAttributes> attributes;
 
-			NewVariableNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			NewVariableNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~NewVariableNode();
 
 			///T Get Variables
@@ -31,14 +33,13 @@ namespace Melon {
 			Boxx::List<Symbols::ScopeList> GetVariables() const;
 
 			///T Get the type of the specified type index
-			Symbols::ScopeList GetType(const Boxx::UInt index) const;
+			Symbols::TypeSymbol* GetType(const Boxx::UInt index) const;
 
-			virtual Symbols::ScopeList Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::UInt GetSize() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
-			virtual Boxx::Mango ToMango() const override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

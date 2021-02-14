@@ -6,6 +6,9 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -15,7 +18,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-BinaryOperatorNode::BinaryOperatorNode(const ScopeList& scope, const Scope& op, const FileInfo& file) : Node(scope, file) {
+BinaryOperatorNode::BinaryOperatorNode(Symbol* const scope, const Scope& op, const FileInfo& file) : Node(scope, file) {
 	this->op = op;
 }
 
@@ -23,21 +26,20 @@ BinaryOperatorNode::~BinaryOperatorNode() {
 
 }
 
-ScopeList BinaryOperatorNode::Type() const {
-	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+TypeSymbol* BinaryOperatorNode::Type() const {
+	FunctionSymbol* const s = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	if (s.type != SymbolType::None && !s.returnValues.IsEmpty()) {
-		const Symbol s2 = Symbol::FindNearest(s.scope.Pop(), s.returnValues[0], file);
-
-		if (s2.type == SymbolType::Template) {
-			return s2.varType;
-		}
-		else if (s2.type != SymbolType::None) {
-			return s2.scope;
+	if (s && !s->returnValues.IsEmpty()) {
+		if (TypeSymbol* const s2 = s->ReturnType(0)) {
+			if (TemplateSymbol* const t = s2->Cast<TemplateSymbol>()) {
+				return t->Type();
+			}
+			
+			return s2;
 		}
 	}
 
-	return ScopeList::undefined;
+	return nullptr;
 }
 
 Scope BinaryOperatorNode::GetOperator() const {
@@ -48,20 +50,20 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 	List<NodePtr> nodes;
 	nodes.Add(node1);
 	nodes.Add(node2);
-	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	
+	FunctionSymbol* const func = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	if (s.type == SymbolType::None) return CompiledNode();
+	if (!func) return CompiledNode();
 
-	if (s.symbolNode) {
-		return s.symbolNode->Compile(nodes, info);
+	if (func->symbolNode) {
+		return func->symbolNode->Compile(nodes, info);
 	}
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;
 		cn->isMethod = false;
-		Scope sc = s.scope.Last();
-		sc.variant = nullptr;
-		Pointer<TypeNode> tn = new TypeNode(s.scope.Pop().Add(sc));
+
+		Pointer<TypeNode> tn = new TypeNode(func->Parent()->Parent()->AbsoluteName());
 		cn->node = tn;
 		cn->op = true;
 		return cn->Compile(info);
@@ -73,36 +75,30 @@ void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
 	node2->IncludeScan(info);
 }
 
-Set<ScanType> BinaryOperatorNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = node1->Scan(info);
+ScanResult BinaryOperatorNode::Scan(ScanInfoStack& info) {
+	ScanResult result1 = node1->Scan(info);
+	result1.SelfUseCheck(info, node1->file);
 
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
-	}
+	ScanResult result2 = node2->Scan(info);
+	result2.SelfUseCheck(info, node2->file);
 
-	for (const ScanType type : node2->Scan(info)) {
-		scanSet.Add(type);
+	SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
-		}
-	}
-
-	Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
-
-	return scanSet;
+	return result1 | result2;
 }
 
 ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
-	Symbol s = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	FunctionSymbol* const f = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	if (s.symbolNode) {
+	if (f->symbolNode) {
 		return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
 	}
 	else {
 		// TODO: Check operator function
 		return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
 	}
+
+	return ScopeList();
 }
 
 NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
@@ -111,7 +107,7 @@ NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 
 	// TODO: Add more operators
 	if (node1->IsImmediate() && node2->IsImmediate()) {
-		if (node1->Type() == ScopeList::Bool && node2->Type() == ScopeList::Bool) {
+		if (node1->Type()->AbsoluteName() == ScopeList::Bool && node2->Type()->AbsoluteName() == ScopeList::Bool) {
 			if (op == Scope::Equal) {
 				Pointer<BooleanNode> bn = new BooleanNode(node1->file);
 				bn->boolean = node1->GetImmediate() == node2->GetImmediate();
@@ -128,15 +124,6 @@ NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango BinaryOperatorNode::ToMango() const {
-	const ScopeList op = Symbol::FindOperator(GetOperator(), node1->Type(), node2->Type(), file).scope;
-
-	Mango mango = Mango(op.ToString(), MangoType::List);
-	mango.Add(node1->ToMango());
-	mango.Add(node2->ToMango());
-	return mango;
 }
 
 StringBuilder BinaryOperatorNode::ToMelon(const UInt indent) const {

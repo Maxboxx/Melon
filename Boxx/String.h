@@ -218,6 +218,14 @@ namespace Boxx {
 		return "Error";
 	}
 
+	inline String NotImplementedError::Name() const {
+		return "NotImplementedError";
+	}
+
+	inline String NotSupportedError::Name() const {
+		return "NotSupportedError";
+	}
+
 	inline String SystemNotSupportedError::Name() const {
 		return "SystemNotSupportedError";
 	}

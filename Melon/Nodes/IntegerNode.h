@@ -20,11 +20,10 @@ namespace Melon {
 			IntegerNode(const FileInfo& file);
 			~IntegerNode();
 
-			virtual Symbols::ScopeList Type() const override;
+			virtual Symbols::TypeSymbol* Type() const override;
 			virtual bool IsImmediate() const override;
 			virtual Boxx::Long GetImmediate() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

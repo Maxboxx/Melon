@@ -8,7 +8,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-TypeNode::TypeNode(const ScopeList& type) : Node(ScopeList(), FileInfo()) {
+TypeNode::TypeNode(const ScopeList& type) : Node(nullptr, FileInfo()) {
 	this->type = type;
 }
 
@@ -19,12 +19,8 @@ CompiledNode TypeNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-ScopeList TypeNode::Type() const {
-	return type;
-}
-
-Mango TypeNode::ToMango() const {
-	return Mango();
+TypeSymbol* TypeNode::Type() const {
+	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
 StringBuilder TypeNode::ToMelon(const UInt indent) const {

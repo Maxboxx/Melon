@@ -9,10 +9,16 @@
 
 #include "Melon/MelonCompiler.h"
 
+#include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/IntegerSymbol.h"
+
 #include "Boxx/System.h"
 #include "Boxx/Regex.h"
 #include "Boxx/File.h"
 #include "Boxx/Math.h"
+#include "Boxx/ReplacementMap.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -23,7 +29,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-RootNode::RootNode() : Node(ScopeList(), FileInfo()) {
+RootNode::RootNode() : Node(nullptr, FileInfo()) {
 
 }
 
@@ -34,7 +40,7 @@ RootNode::~RootNode() {
 CompiledNode RootNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
-	Pointer<StatementsNode> statements = new StatementsNode(ScopeList(), FileInfo());
+	Pointer<StatementsNode> statements = new StatementsNode(nullptr, FileInfo());
 	statements->statements = nodes;
 	UInt size = statements->GetSize();
 
@@ -73,23 +79,23 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-List<OptimizerInstruction> RootNode::Compile(const Set<ScopeList>& usedVariables) {
+List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVariables) {
 	CompiledNode c;
 
-	List<Tuple<ScopeList, InstructionType, Long, Long>> integers;
-	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::Byte,   InstructionType::Byte,  Math::ByteMin(),   Math::ByteMax()));
-	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::UByte,  InstructionType::Byte,  Math::UByteMin(),  Math::UByteMax()));
-	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::Short,  InstructionType::Short, Math::ShortMin(),  Math::ShortMax()));
-	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::UShort, InstructionType::Short, Math::UShortMin(), Math::UShortMax()));
-	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::Int,    InstructionType::Int,   Math::IntMin(),    Math::IntMax()));
-	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::UInt,   InstructionType::Int,   Math::UIntMin(),   Math::UIntMax()));
-	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::Long,   InstructionType::Long,  Math::LongMin(),   Math::LongMax()));
-	integers.Add(Tuple<ScopeList, InstructionType, Long, Long>(ScopeList::ULong,  InstructionType::Long,  Math::ULongMin(),  Math::ULongMax()));
+	List<Tuple<IntegerSymbol*, InstructionType, Long, Long>> integers;
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Byte,   InstructionType::Byte,  Math::ByteMin(),   Math::ByteMax()));
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UByte,  InstructionType::Byte,  Math::UByteMin(),  Math::UByteMax()));
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Short,  InstructionType::Short, Math::ShortMin(),  Math::ShortMax()));
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UShort, InstructionType::Short, Math::UShortMin(), Math::UShortMax()));
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Int,    InstructionType::Int,   Math::IntMin(),    Math::IntMax()));
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UInt,   InstructionType::Int,   Math::UIntMin(),   Math::UIntMax()));
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Long,   InstructionType::Long,  Math::LongMin(),   Math::LongMax()));
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::ULong,  InstructionType::Long,  Math::ULongMin(),  Math::ULongMax()));
 
-	for (const Tuple<ScopeList, InstructionType, Long, Long>& integer : integers) {
-		if (usedVariables.Contains(integer.value1.Add(Scope("min")))) {
+	for (const Tuple<IntegerSymbol*, InstructionType, Long, Long>& integer : integers) {
+		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Scope("min"), file))) {
 			Instruction name = Instruction(InstructionType::Static);
-			name.instructionName = integer.value1.Add(Scope("min")).ToString();
+			name.instructionName = integer.value1->Find<VariableSymbol>(Scope("min"), file)->AbsoluteName().ToString();
 			c.instructions.Add(name);
 
 			Instruction value = Instruction(integer.value2);
@@ -97,9 +103,9 @@ List<OptimizerInstruction> RootNode::Compile(const Set<ScopeList>& usedVariables
 			c.instructions.Add(value);
 		}
 
-		if (usedVariables.Contains(integer.value1.Add(Scope("max")))) {
+		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Scope("max"), file))) {
 			Instruction name = Instruction(InstructionType::Static);
-			name.instructionName = integer.value1.Add(Scope("max")).ToString();
+			name.instructionName = integer.value1->Find<VariableSymbol>(Scope("max"), file)->AbsoluteName().ToString();
 			c.instructions.Add(name);
 
 			Instruction value = Instruction(integer.value2);
@@ -122,6 +128,11 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 	Collection<UInt> failedFuncs;
 
 	do {
+		for (; templateIndex < SymbolTable::templateSymbols.Size(); templateIndex++) {
+			SymbolTable::TemplateInfo info = SymbolTable::templateSymbols[templateIndex];
+			AddTemplateSpecialization(info.name, info.scope->AbsoluteName(), info.file, false);
+		}
+
 		for (UInt i = 0; i < failedNodes.Size();) {
 			try {
 				nodes[failedNodes[i]]->IncludeScan(info);
@@ -159,60 +170,61 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 				failedFuncs.Add(nodeIndex);
 			}
 		}
-
-		for (; templateIndex < Symbol::templateSymbols.Size(); templateIndex++) {
-			AddTemplateSpecialization(Symbol::templateSymbols[templateIndex], false);
-		}
 	}
 	while (
 		nodeIndex < nodes.Size() ||
 		funcIndex < funcs.Size() ||
 		!failedNodes.IsEmpty() ||
 		!failedFuncs.IsEmpty() ||
-		templateIndex < Symbol::templateSymbols.Size()
+		templateIndex < SymbolTable::templateSymbols.Size()
 	);
 
 	includeScanning = false;
 }
 
-void RootNode::AddTemplateSpecialization(const Symbol::TemplateSymbol& templateSymbol, const bool scan) {
-	Tuple<Symbol, List<ScopeList>> templateInfo = Symbol::FindTemplateArgs(templateSymbol);
+void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const bool scan) {
+	Tuple<TemplateTypeSymbol*, List<ScopeList>> templateInfo = FindTemplateArgs(name, scope, file);
 
-	if (templateInfo.value1.type == SymbolType::None) return;
+	if (templateInfo.value1 == nullptr) return;
 
-	Scope templateScope = templateInfo.value1.scope.Last().Copy();
+	Scope templateScope = templateInfo.value1->Name().Copy();
 	templateScope.types = templateInfo.value2;
-	templateScope.variant = nullptr;
 
-	if (Symbol::Contains(templateInfo.value1.scope.Pop().Add(templateScope))) return;
+	if (SymbolTable::ContainsAbsolute(templateInfo.value1->AbsoluteName().Pop().Add(templateScope))) return;
 
-	Scope last = templateInfo.value1.scope.Last();
-	last.variant = nullptr;
-	last.types   = nullptr;
+	ReplacementMap<TypeSymbol*> templateTypes;
 
-	Symbol templateSym = Symbol::Find(templateInfo.value1.scope.Pop().Add(last), file);
-	templateSym.templateVariants.Add(Symbol(templateInfo.value1.type));
+	for (UInt i = 0; i < templateInfo.value2.Size(); i++) {
+		if (TypeSymbol* const type = templateInfo.value1->TemplateArgument(i)) {
+			if (type->Is<TemplateSymbol>()) {
+				if (TypeSymbol* const t = SymbolTable::FindAbsolute<TypeSymbol>(templateInfo.value2[i], file)) {
+					templateTypes.Add(type, t);
+				}
+			}
+		}
+	}
 
-	Symbol& s = templateSym.templateVariants.Last();
+	Symbol* const s = templateInfo.value1->SpecializeTemplate(templateTypes, this);
 
-	templateInfo.value1.SpecializeTemplate(s, templateInfo.value2, this);
+	if (StructSymbol* const sym = s->Cast<StructSymbol>()) {
+		templateInfo.value1->Parent()->Cast<TemplateTypeSymbol>()->AddTemplateVariant(sym);
+		sym->templateParent = templateInfo.value1;
 
-	if (s.type == SymbolType::Struct) {
-		Pointer<StructNode> sn = new StructNode(ScopeList(true), templateSymbol.file);
-		sn->name = s.scope.Last();
+		Pointer<StructNode> sn = new StructNode(SymbolTable::FindAbsolute(ScopeList(true), file), file);
+		sn->name = sym->Parent()->Name();
 
 		List<ScopeList> templateArgs;
 
-		for (const ScopeList& arg : s.templateArgs) {
+		for (const ScopeList& arg : sym->templateArguments) {
 			templateArgs.Add(arg);
 		}
 
 		sn->name.types = templateArgs;
-		sn->name.variant = nullptr;
 
-		sn->symbol = s;
+		sn->symbol = sym;
+		sym->node = sn;
 
-		for (const Scope& var : s.names) {
+		for (const Scope& var : sym->members) {
 			sn->vars.Add(var);
 		}
 
@@ -224,15 +236,58 @@ void RootNode::AddTemplateSpecialization(const Symbol::TemplateSymbol& templateS
 	}
 }
 
-Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
+Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const ScopeList& name, const ScopeList& scope, const FileInfo& file) {
+	List<ScopeList> templateArgs = name.Last().types.Get().Copy();
 
-	info.Get().useFunction = true;
+	for (ScopeList& type : templateArgs) {
+		if (Symbol* const s = SymbolTable::Find(type, scope, file)) {
+			type = s->AbsoluteName();
+		}
+		else {
+			return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, List<ScopeList>());
+		}
+	}
+
+	ScopeList list = name.Last().name.Size() == 0 ? name.Pop() : name.Pop().Add(Scope(name.Last().name));
+
+	TemplateTypeSymbol* const sym = SymbolTable::Find<TemplateTypeSymbol>(list, scope, file);
+
+	if (sym == nullptr) {
+		return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, templateArgs);
+	}
+
+	bool found = false;
+
+	for (TemplateTypeSymbol* const variant : sym->templateVariants) {
+		if (variant->templateArguments.Size() == templateArgs.Size()) {
+			bool match = true;
+
+			for (UInt i = 0; i < templateArgs.Size(); i++) {
+				TypeSymbol* const symArg = variant->TemplateArgument(i);
+
+				if (symArg->Is<TemplateSymbol>()) continue;
+				if (symArg->AbsoluteName() == templateArgs[i]) continue;
+
+				match = false;
+				break;
+			}
+
+			if (match) {
+				return Tuple<TemplateTypeSymbol*, List<ScopeList>>(variant, templateArgs);
+			}
+		}
+	}
+
+	// TODO: Better error
+	ErrorLog::Error(SymbolError("template error", file));
+	return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, templateArgs);
+}
+
+ScanResult RootNode::Scan(ScanInfoStack& info) {
+	info.UseFunction(true);
 
 	for (const NodePtr& node : nodes) {
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
-		}
+		node->Scan(info);
 	}
 
 	while (!info.functions.IsEmpty()) {
@@ -242,10 +297,7 @@ Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 		for (const NodePtr& func : functions) {
 			if (func) {
 				func.Cast<FunctionNode>()->isUsed = true;
-
-				for (const ScanType type : func->Scan(info)) {
-					scanSet.Add(type);
-				}
+				func->Scan(info);
 			}
 			else {
 				// TODO: Remove
@@ -254,19 +306,16 @@ Set<ScanType> RootNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	info.Get().useFunction = false;
+	info.UseFunction(false);
 
 	for (const NodePtr& node : funcs) {
-		if (!info.usedFunctions.Contains(node.Cast<FunctionNode>()->s.scope)) {
+		if (!info.usedFunctions.Contains(node.Cast<FunctionNode>()->sym)) {
 			node.Cast<FunctionNode>()->isUsed = false;
-
-			for (const ScanType type : node->Scan(info)) {
-				scanSet.Add(type);
-			}
+			node->Scan(info);
 		}
 	}
 
-	return scanSet;
+	return ScanResult();
 }
 
 ScanInfoStack RootNode::Scan() {
@@ -290,7 +339,7 @@ NodePtr RootNode::Optimize(OptimizeInfo& info) {
 		funcs = List<NodePtr>(info.usedFunctions.Size());
 
 		for (const NodePtr& func : functions) {
-			if (info.usedFunctions.Contains(func.Cast<FunctionNode>()->s.scope)) {
+			if (info.usedFunctions.Contains(func.Cast<FunctionNode>()->sym)) {
 				funcs.Add(func);
 			}
 		}
@@ -308,16 +357,6 @@ NodePtr RootNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango RootNode::ToMango() const {
-	Mango mango = Mango("ast", MangoType::List);
-
-	for (const NodePtr& node : nodes) {
-		mango.Add(node->ToMango());
-	}
-
-	return mango;
 }
 
 StringBuilder RootNode::ToMelon(const UInt indent) const {
@@ -377,8 +416,12 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 			if (sb.Size() > 0) sb += "\n";
 		}
 
-		sb += node->ToMelon(0);
-		sb += "\n";
+		StringBuilder s = node->ToMelon(0);
+
+		if (s.Size() > 0) {
+			sb += s;
+			sb += "\n";
+		}
 	}
 
 	if (writeToFile) {
@@ -386,8 +429,4 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 		file.Write(sb.ToString());
 		file.Close();
 	}
-}
-
-String RootNode::ToString() const {
-	return Mango::Encode(ToMango(), true);
 }

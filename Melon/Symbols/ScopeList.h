@@ -14,17 +14,15 @@ namespace Melon {
 		public:
 			///H Members
 
-			///T name
-			/// The name of the scope
+			///T Name
 			Boxx::String name;
 
-			///T variant
-			/// Optional variant for the scope. Used for overloads
-			Boxx::Optional<Boxx::UInt> variant;
-
-			///T types
-			/// Extra types of the scope
+			///T Template types
 			Boxx::Optional<Boxx::List<ScopeList>> types;
+
+			///T Arguments
+			/// Arguments for a call
+			Boxx::Optional<Boxx::List<ScopeList>> arguments;
 
 			///H Constructors
 
@@ -57,6 +55,10 @@ namespace Melon {
 
 			///T Copy
 			Scope Copy() const;
+
+			///T Is Empty
+			/// Checks if the scope is empty
+			bool IsEmpty() const;
 
 			///H Operators
 
@@ -150,7 +152,7 @@ namespace Melon {
 			ScopeList();
 
 			///T Absolute
-			ScopeList(const bool absolute);
+			explicit ScopeList(const bool absolute);
 
 			///T Copy ScopeList
 			ScopeList(const ScopeList& scopeList);
@@ -196,6 +198,14 @@ namespace Melon {
 			///T Size
 			///R Boxx::UInt: The size of the list
 			Boxx::UInt Size() const;
+
+			///T Split
+			/// Split up scopes for use in searches
+			ScopeList Split() const;
+
+			///T Is Template
+			/// Checks if the scope is a relative template argument
+			bool IsTemplate() const;
 
 			///H Operators
 

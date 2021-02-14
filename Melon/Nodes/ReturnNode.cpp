@@ -7,6 +7,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -17,7 +19,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-ReturnNode::ReturnNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+ReturnNode::ReturnNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -25,19 +27,16 @@ ReturnNode::~ReturnNode() {
 
 }
 
-List<Symbol> ReturnNode::GetTypes() const {
-	List<Symbol> types;
+FunctionSymbol* ReturnNode::GetFunc() const {
+	return SymbolTable::Find<FunctionSymbol>(func, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+}
 
-	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
-	
-	for (ScopeList type : s.returnValues) {
-		Symbol sym = Symbol::FindNearestInNamespace(Symbol::ReplaceTemplates(s.scope.Pop(), file), type, file);
+List<TypeSymbol*> ReturnNode::GetTypes() const {
+	List<TypeSymbol*> types;
 
-		if (sym.type == SymbolType::Template) {
-			types.Add(Symbol::Find(sym.varType, file));
-		}
-		else {
-			types.Add(sym);
+	if (FunctionSymbol* const f = GetFunc()) {
+		for (UInt i = 0; i < f->returnValues.Size(); i++) {
+			types.Add(f->ReturnType(i));
 		}
 	}
 
@@ -45,33 +44,34 @@ List<Symbol> ReturnNode::GetTypes() const {
 }
 
 CompiledNode ReturnNode::Compile(CompileInfo& info) {
-	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
+	FunctionSymbol* const f = GetFunc();
+	if (!f) return CompiledNode();
 
 	UInt stackOffset = info.stack.ptrSize + info.stack.frame;
-	List<Symbol> types = GetTypes();
+	List<TypeSymbol*> types = GetTypes();
 
-	for (const Symbol& sym : types) {
-		stackOffset += sym.size;
+	for (TypeSymbol* const type : types) {
+		stackOffset += type->Size();
 	}
 
-	for (UInt i = 0; i < s.arguments.Size(); i++) {
-		Symbol sym = Symbol::FindNearestInNamespace(s.scope.Pop(), s.arguments[i], file);
+	for (UInt i = 0; i < f->arguments.Size(); i++) {
+		VariableSymbol* const var = f->Argument(i);
 
-		if (Symbol::Find(s.scope.Add(s.names[i]), file).attributes.Contains(SymbolAttribute::Ref)) {
+		if (var->HasAttribute(VariableAttributes::Ref)) {
 			stackOffset += info.stack.ptrSize;
 		}
 		else {
-			stackOffset += sym.size;
+			stackOffset += var->Type()->Size();
 		}
 	}
 
 	CompiledNode c;
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
-		stackOffset -= types[i].size;
+		stackOffset -= types[i]->Size();
 
 		Pointer<MemoryNode> sn = new MemoryNode(stackOffset);
-		sn->type = types[i].scope;
+		sn->type = types[i]->AbsoluteName();
 
 		info.important = true;
 		c.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
@@ -90,44 +90,44 @@ void ReturnNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-Set<ScanType> ReturnNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = Set<ScanType>();
-
-	if (info.Get().scopeInfo.CanContinue()) {
-		info.Get().scopeInfo.hasReturned = true;
+ScanResult ReturnNode::Scan(ScanInfoStack& info) {
+	if (info.ScopeInfo().CanContinue()) {
+		info.ScopeInfo().hasReturned = true;
 	}
 
-	info.Get().scopeInfo.willNotReturn = false;
+	info.ScopeInfo().willNotReturn = false;
+
+	ScanResult result;
 
 	for (const NodePtr& node : nodes) {
-		for (const ScanType type : node->Scan(info)) {
-			scanSet.Add(type);
-		}
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->file);
+		result |= r;
 	}
 
-	Symbol s = Symbol::Find(Symbol::ReplaceTemplates(func, file), file);
+	FunctionSymbol* const f = GetFunc();
 
-	if (s.returnValues.Size() != nodes.Size()) {
-		ErrorLog::Error(CompileError(CompileError::Return(s.returnValues.Size(), nodes.Size()), file));
+	if (f == nullptr) return result;
+
+	if (f->returnValues.Size() != nodes.Size()) {
+		ErrorLog::Error(CompileError(CompileError::Return(f->returnValues.Size(), nodes.Size()), file));
 	}
 
-	List<Symbol> types = GetTypes();
-
-	for (UInt i = 0; i < s.arguments.Size(); i++) {
-		Symbol::FindNearestInNamespace(s.scope.Pop(), s.arguments[i], file);
-		Symbol::Find(s.scope.Add(s.names[i]), file);
-	}
+	List<TypeSymbol*> types = GetTypes();
 
 	for (UInt i = 0; i < nodes.Size(); i++) {
 		if (i >= types.Size()) break;
-		ScanAssignment(new TypeNode(types[i].scope), nodes[i], info, nodes[i]->file);
+
+		if (types[i]) {
+			ScanAssignment(new TypeNode(types[i]->AbsoluteName()), nodes[i], info, nodes[i]->file);
+		}
 	}
 
-	return scanSet;
+	return result;
 }
 
 ScopeList ReturnNode::FindSideEffectScope(const bool assign) {
-	ScopeList list = nodes.IsEmpty() ? scope : scope.Pop();
+	ScopeList list = nodes.IsEmpty() ? scope->AbsoluteName() : scope->Parent()->AbsoluteName();
 
 	for (NodePtr& node : nodes) {
 		list = CombineSideEffects(list, node->GetSideEffectScope(assign));
@@ -142,15 +142,6 @@ NodePtr ReturnNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-Mango ReturnNode::ToMango() const {
-	Mango m = Mango("return", MangoType::List);
-
-	for (NodePtr node : nodes)
-		m.Add(node->ToMango());
-
-	return m;
 }
 
 StringBuilder ReturnNode::ToMelon(const UInt indent) const {

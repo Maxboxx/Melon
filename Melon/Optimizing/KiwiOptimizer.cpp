@@ -1075,7 +1075,9 @@ UInt KiwiOptimizer::NextRegisterGet(List<OptimizerInstruction>& instructions, UI
 	return instructions.Size();
 }
 
-Argument KiwiOptimizer::LastLabelInChain(const List<OptimizerInstruction>& instructions, const Argument& label) {
+Argument KiwiOptimizer::LastLabelInChain(const List<OptimizerInstruction>& instructions, const Argument& label, const Optional<Argument>& firstLabel) {
+	Argument first = firstLabel ? firstLabel.Get() : label;
+
 	for (UInt i = 0; i < instructions.Size(); i++) {
 		if (instructions[i].instruction.type == InstructionType::Label) {
 			if (instructions[i].instruction.instructionName == label.label) {
@@ -1083,7 +1085,11 @@ Argument KiwiOptimizer::LastLabelInChain(const List<OptimizerInstruction>& instr
 
 				for (UInt u = i + 1; u < instructions.Size(); u++) {
 					if (instructions[u].instruction.type == InstructionType::Jmp) {
-						return LastLabelInChain(instructions, instructions[u].instruction.arguments[0]);
+						if (instructions[u].instruction.arguments[0] == first) {
+							return first;
+						}
+
+						return LastLabelInChain(instructions, instructions[u].instruction.arguments[0], first);
 					}
 					else if (instructions[u].instruction.type == InstructionType::Label) {
 						arg.label = instructions[u].instruction.instructionName;

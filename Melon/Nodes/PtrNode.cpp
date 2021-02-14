@@ -12,15 +12,15 @@ using namespace Melon::Symbols;
 PtrNode::PtrNode(const NodePtr& node) : Node(node->scope, node->file) {this->node = node;}
 PtrNode::~PtrNode() {}
 
-ScopeList PtrNode::Type() const {
+TypeSymbol* PtrNode::Type() const {
 	return node->Type();
 }
 
-Boxx::List<ScopeList> PtrNode::Types() const {
+Boxx::List<TypeSymbol*> PtrNode::Types() const {
 	return node->Types();
 }
 
-Symbol PtrNode::GetSymbol() const {
+Symbol* PtrNode::GetSymbol() const {
 	return node->GetSymbol();
 }
 
@@ -46,12 +46,8 @@ void PtrNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 }
 
-Set<ScanType> PtrNode::Scan(ScanInfoStack& info) {
+ScanResult PtrNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
-}
-
-Mango PtrNode::ToMango() const {
-	return node->ToMango();
 }
 
 StringBuilder PtrNode::ToMelon(const UInt indent) const {

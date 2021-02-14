@@ -14,7 +14,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols::Nodes;
 
-LogicNode::LogicNode(const ScopeList& scope, const TokenType type, const FileInfo& file) : BinaryOperatorNode(scope, Scope(), file) {
+LogicNode::LogicNode(Symbol* const scope, const TokenType type, const FileInfo& file) : BinaryOperatorNode(scope, Scope(), file) {
 	this->type = type;
 }
 
@@ -22,8 +22,8 @@ LogicNode::~LogicNode() {
 
 }
 
-ScopeList LogicNode::Type() const {
-	return ScopeList::Bool;
+TypeSymbol* LogicNode::Type() const {
+	return (TypeSymbol*)SymbolTable::Bool;
 }
 
 Scope LogicNode::GetOperator() const {
@@ -159,40 +159,28 @@ CompiledNode LogicNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-Set<ScanType> LogicNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = node1->Scan(info);
+ScanResult LogicNode::Scan(ScanInfoStack& info) {
+	ScanResult result1 = node1->Scan(info);
+	result1.SelfUseCheck(info, node1->file);
 
-	if (info.Get().init && scanSet.Contains(ScanType::Self) && !info.Get().symbol.IsAssigned()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, node1->file));
-	}
-
-	for (const ScanType type : node2->Scan(info)) {
-		scanSet.Add(type);
-
-		if (info.Get().init && type == ScanType::Self && !info.Get().symbol.IsAssigned()) {
-			ErrorLog::Error(CompileError(CompileError::SelfInit, node2->file));
-		}
-	}
+	ScanResult result2 = node2->Scan(info);
+	result2.SelfUseCheck(info, node2->file);
 
 	Pointer<ConvertNode> convert1 = new ConvertNode(node1->scope, node1->file);
 	convert1->node = node1;
 	convert1->type = ScopeList::Bool;
 	convert1->isExplicit = true;
 
-	for (const ScanType type : convert1->Scan(info)) {
-		scanSet.Add(type);
-	}
+	ScanResult result3 = convert1->Scan(info);
 
 	Pointer<ConvertNode> convert2 = new ConvertNode(node2->scope, node2->file);
 	convert2->node = node2;
 	convert2->type = ScopeList::Bool;
 	convert2->isExplicit = true;
 
-	for (const ScanType type : convert2->Scan(info)) {
-		scanSet.Add(type);
-	}
+	ScanResult result4 = convert2->Scan(info);
 
-	return scanSet;
+	return result1 | result2 | result3 | result4;
 }
 
 ScopeList LogicNode::FindSideEffectScope(const bool assign) {
@@ -206,15 +194,6 @@ NodePtr LogicNode::Optimize(OptimizeInfo& info) {
 	// TODO: Optimize
 
 	return nullptr;
-}
-
-Mango LogicNode::ToMango() const {
-	const Scope op = GetOperator();
-
-	Mango mango = Mango(op.ToString(), MangoType::List);
-	mango.Add(node1->ToMango());
-	mango.Add(node2->ToMango());
-	return mango;
 }
 
 StringBuilder LogicNode::ToMelon(const UInt indent) const {

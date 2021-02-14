@@ -19,7 +19,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 	const UInt startIndex = info.index;
 
-	Pointer<NewVariableNode> node = new NewVariableNode(info.scopes, FileInfo(info.filename, info.Current().line, info.statementNumber, info.currentNamespace, info.includedNamespaces));
+	Pointer<NewVariableNode> node = new NewVariableNode(info.scope, info.GetFileInfo(info.Current().line));
 
 	while (const Optional<ScopeList> type = ParseType(info)) {
 		node->types.Add(type.Get());
@@ -42,7 +42,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 			node->attributes.Add(VariableAttributeParser::Parse(info));
 
 			if (info.Current().type != TokenType::Name && info.Current().type != TokenType::Discard) {
-				if (!node->attributes.Last().IsEmpty()) {
+				if (node->attributes.Last() != VariableAttributes::None) {
 					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "attributes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 				}
 

@@ -70,6 +70,36 @@ namespace Boxx {
 		T value{};
 	};
 
+	template <>
+	class Optional<bool> {
+	public:
+		Optional();
+		Optional(std::nullptr_t);
+		Optional(const bool value);
+
+		Optional(const Optional<bool>& value);
+		Optional(Optional<bool>&& value) noexcept;
+		~Optional();
+
+		bool HasValue() const;
+
+		bool Get() const;
+		bool& Get();
+
+		void operator=(std::nullptr_t);
+		void operator=(const bool value);
+
+		void operator=(const Optional<bool>& value);
+		void operator=(Optional<bool>&& value) noexcept;
+
+		explicit operator bool() const;
+		explicit operator bool&();
+
+	private:
+		bool hasValue;
+		bool value{};
+	};
+
 	///B OptionalError
 	/// Used if the optional does not contain a value
 	class OptionalError : public Error {
@@ -170,5 +200,77 @@ namespace Boxx {
 	template <class T>
 	inline Optional<T>::operator bool() const {
 		return hasValue;
+	}
+
+	inline Optional<bool>::Optional() {
+		hasValue = false;
+	}
+
+	inline Optional<bool>::Optional(std::nullptr_t) {
+		hasValue = false;
+	}
+
+	inline Optional<bool>::Optional(const bool value) {
+		hasValue = true;
+		this->value = value;
+	}
+
+	inline Optional<bool>::Optional(const Optional<bool>& value) {
+		hasValue = value.hasValue;
+		this->value = value.value;
+	}
+
+	inline Optional<bool>::Optional(Optional<bool>&& value) noexcept {
+		hasValue = value.hasValue;
+		this->value = std::move(value.value);
+		value.hasValue = false; 
+	}
+
+	inline Optional<bool>::~Optional() {
+
+	}
+
+	inline bool Optional<bool>::HasValue() const {
+		return hasValue;
+	}
+
+	inline bool Optional<bool>::Get() const {
+		if (!hasValue) throw OptionalError("Optional is null");
+		return value;
+	}
+
+	inline bool& Optional<bool>::Get() {
+		if (!hasValue) throw OptionalError("Optional is null");
+		return value;
+	}
+
+	inline void Optional<bool>::operator=(std::nullptr_t) {
+		hasValue = false;
+	}
+
+	inline void Optional<bool>::operator=(const bool value) {
+		hasValue = true;
+		this->value = value;
+	}
+
+	inline void Optional<bool>::operator=(const Optional<bool>& value) {
+		hasValue = value.hasValue;
+		this->value = value.value;
+	}
+
+	inline void Optional<bool>::operator=(Optional<bool>&& value) noexcept {
+		hasValue = value.hasValue;
+		this->value = std::move(value.value);
+		value.hasValue = false; 
+	}
+
+	inline Optional<bool>::operator bool() const {
+		if (!hasValue) throw OptionalError("Optional is null");
+		return value;
+	}
+
+	inline Optional<bool>::operator bool&() {
+		if (!hasValue) throw OptionalError("Optional is null");
+		return value;
 	}
 }

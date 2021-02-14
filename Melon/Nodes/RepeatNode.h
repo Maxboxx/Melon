@@ -9,16 +9,15 @@ namespace Melon {
 			NodePtr condition;
 			NodePtr content;
 
-			RepeatNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			RepeatNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~RepeatNode();
 
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

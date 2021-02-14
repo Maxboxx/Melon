@@ -1,5 +1,7 @@
 #include "ForConditionNode.h"
 
+#include "Boxx/Error.h"
+
 #include "AssignNode.h"
 #include "CallNode.h"
 #include "BinaryOperatorNode.h"
@@ -11,7 +13,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-ForConditionNode::ForConditionNode(const ScopeList& scope, const FileInfo& file) : Node(scope, file) {
+ForConditionNode::ForConditionNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -24,76 +26,56 @@ UInt ForConditionNode::GetSize() const {
 }
 
 CompiledNode ForConditionNode::Compile(CompileInfo& info) {
-	return CompiledNode();
+	throw NotSupportedError("ForConditionNodes can not compile themselves");
 }
 
 void ForConditionNode::IncludeScan(ParsingInfo& info) {
+	loopInit->IncludeScan(info);
+	loopCondition->IncludeScan(info);
 
+	if (loopStep) loopStep->IncludeScan(info);
 }
 
-Set<ScanType> ForConditionNode::Scan(ScanInfoStack& info) {
-	Set<ScanType> scanSet = loopInit->Scan(info);
+ScanResult ForConditionNode::Scan(ScanInfoStack& info) {
+	ScanResult result = loopInit->Scan(info);
+	result.SelfUseCheck(info, loopInit->file);
 
-	for (const ScanType type : loopCondition->Scan(info)) {
-		scanSet.Add(type);
-	}
-
-	if (loopCondition.Cast<AssignNode>() != nullptr) {
-		for (const ScanType type : loopCondition->Scan(info)) {
-			scanSet.Add(type);
-		}
+	if (!conditionOperator) {
+		ScanResult r = loopCondition->Scan(info);
+		r.SelfUseCheck(info, loopCondition->file);
+		result |= r;
 	}
 	else {
-		if (loopCondition->Type() != ScopeList::Bool) {
-			Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(loopCondition->scope, Scope::Less, loopCondition->file);
-			comp->node1 = loopInit.Cast<AssignNode>()->vars[0];
-			comp->node2 = loopCondition;
+		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(loopCondition->scope, (Scope)conditionOperator, loopCondition->file);
+		op->node1 = loopInit.Cast<AssignNode>()->vars[0];
+		op->node2 = loopCondition;
 
-			for (const ScanType type : comp->Scan(info)) {
-				scanSet.Add(type);
-			}
-		}
-		else {
-			for (const ScanType type : loopCondition->Scan(info)) {
-				scanSet.Add(type);
-			}
-		}
+		ScanResult r = op->Scan(info);
+		r.SelfUseCheck(info, loopCondition->file);
+		result |= r;
 	}
 
-	if (loopStep.Cast<AssignNode>() != nullptr) {
-		for (const ScanType type : loopStep->Scan(info)) {
-			scanSet.Add(type);
-		}
+	if (!stepOperator) {
+		ScanResult r = loopStep->Scan(info);
+		r.SelfUseCheck(info, loopStep->file);
+		result |= r;
 	}
 	else {
-		bool createAssign = true;
+		Pointer<AssignNode> assign = new AssignNode(loopStep->scope, loopStep->file);
+		assign->vars.Add(loopInit.Cast<AssignNode>()->vars[0]);
 
-		if (Pointer<CallNode> call = loopStep.Cast<CallNode>()) {
-			createAssign = !call->GetFunc().returnValues.IsEmpty();
-		}
+		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(loopStep->scope, (Scope)stepOperator, loopStep->file);
+		op->node1 = assign->vars[0];
+		op->node2 = loopStep;
 
-		if (createAssign) {
-			Pointer<AssignNode> assign = new AssignNode(loopStep->scope, loopStep->file);
-			assign->vars.Add(loopInit.Cast<AssignNode>()->vars[0]);
+		assign->values.Add(op);
 
-			Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(loopStep->scope, Scope::Add, loopStep->file);
-			add->node1 = assign->vars[0];
-			add->node2 = loopStep;
-
-			assign->values.Add(add);
-
-			for (const ScanType type : assign->Scan(info)) {
-				scanSet.Add(type);
-			}
-		}
-		else {
-			for (const ScanType type : loopStep->Scan(info)) {
-				scanSet.Add(type);
-			}
-		}
+		ScanResult r = assign->Scan(info);
+		r.SelfUseCheck(info, loopStep->file);
+		result |= r;
 	}
 
-	return scanSet;
+	return result;
 }
 
 ScopeList ForConditionNode::FindSideEffectScope(const bool assign) {
@@ -106,14 +88,6 @@ NodePtr ForConditionNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = loopStep->Optimize(info)) loopStep = node;
 
 	return nullptr;
-}
-
-Mango ForConditionNode::ToMango() const {
-	Mango mango = Mango(MangoType::Map);
-	mango.Add("init", loopInit->ToMango());
-	mango.Add("condition", loopCondition->ToMango());
-	mango.Add("step", loopStep->ToMango());
-	return mango;
 }
 
 StringBuilder ForConditionNode::ToMelon(const UInt indent) const {

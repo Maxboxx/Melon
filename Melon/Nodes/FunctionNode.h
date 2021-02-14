@@ -2,6 +2,8 @@
 
 #include "Node.h"
 
+#include "Melon/Symbols/FunctionSymbol.h"
+
 namespace Melon {
 	namespace Nodes {
 
@@ -14,37 +16,20 @@ namespace Melon {
 			/// The function body
 			NodePtr node;
 
-			///T Function
-			/// Absolute name of the function
-			Symbols::ScopeList func;
-
-			///T Symbol
-			/// The function symbol
-			Symbols::Symbol s;
-
-			///T Argument names
-			Boxx::List<Symbols::Scope> argNames;
+			///T Func
+			Symbols::FunctionSymbol* sym;
 
 			///T Is used
 			bool isUsed = true;
 
-			FunctionNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			FunctionNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~FunctionNode();
-
-			///T Is Not Specialized
-			/// Checks if the function is a template function and has not been specialized
-			bool IsNotSpecialized() const;
-
-			///T Specialize Templates
-			/// Specialize the values of templates
-			void SetTemplateValues() const;
 
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

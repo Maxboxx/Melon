@@ -64,7 +64,7 @@ namespace Melon {
 			/// All segments in the loop structure
 			Boxx::List<LoopSegment> segments;
 
-			LoopNode(const Symbols::ScopeList& scope, const FileInfo& file);
+			LoopNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~LoopNode();
 
 			///T Will A Segment Run
@@ -95,9 +95,8 @@ namespace Melon {
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
-			virtual Boxx::Set<ScanType> Scan(ScanInfoStack& info) override;
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
-			virtual Boxx::Mango ToMango() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
