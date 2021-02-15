@@ -16,7 +16,7 @@ namespace Melon {
 			///T Next free register index
 			Boxx::UByte index = 0;
 
-			///T Important stack values
+			///T Important memory values
 			bool important = false;
 		};
 	}

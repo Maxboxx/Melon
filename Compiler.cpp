@@ -26,14 +26,14 @@ int main() {
 	catch (FatalLoggerError e) {
 		ErrorLog::LogErrors();
 	}
-	/*catch (Error& e) {
+	catch (Error& e) {
 		try {
 			ErrorLog::Fatal(PlainError(e.Name() + ": " + e.Message()));
 		}
 		catch (FatalLoggerError e) {
 			ErrorLog::LogErrors();
 		}
-	}*/
+	}
 
 	return 0;
 }

@@ -8,6 +8,18 @@
 #include "Kiwi/x86_64Converter.h"
 
 namespace Melon {
+	namespace Parsing {
+		struct ParsingInfo;
+	}
+
+	namespace Nodes {
+		struct ScanInfoStack;
+	}
+
+	namespace Optimizing {
+		struct OptimizerInstruction;
+	}
+
 	///B CompilerOptions
 	/// Options for the compilation process
 	struct CompilerOptions {
@@ -48,8 +60,6 @@ namespace Melon {
 		bool outputMelon      = false;
 		bool outputKiwi       = false;
 		bool outputAssembly   = false;
-		bool outputAST        = false;
-		bool outputSymbols    = false;
 		bool outputExecutable = true;
 		///M
 
@@ -75,11 +85,18 @@ namespace Melon {
 	public:
 		///T Compile
 		/// Compiles a melon project
-		///A const Boxx::String& mainMelonFile: The main melon file for the project
-		///A const CompilerOptions& options: The compiler options to use for the compilation
+		///A mainMelonFile: The main melon file for the project
+		///A options: The compiler options to use for the compilation
 		static void Compile(const CompilerOptions& options);
 
 	private:
-		static void CompileFile(const Boxx::String& filename, const CompilerOptions& options);
+		static CompilerOptions SetupCompilerOptions(const CompilerOptions& options);
+
+		static Parsing::ParsingInfo ParseProject(const CompilerOptions& options);
+		static Nodes::ScanInfoStack ScanProject(const CompilerOptions& options, Parsing::ParsingInfo& info);
+		static Boxx::List<Optimizing::OptimizerInstruction> CompileProject(Parsing::ParsingInfo& info, Nodes::ScanInfoStack& scanInfo);
+
+		static void OutputKiwi(const CompilerOptions& options, const Boxx::List<Kiwi::Instruction>& instructions);
+		static void OutputAssembly(const CompilerOptions& options, const Boxx::List<Kiwi::Instruction>& instructions);
 	};
 }

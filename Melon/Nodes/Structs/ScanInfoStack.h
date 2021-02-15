@@ -16,39 +16,114 @@ namespace Melon {
 		class Node;
 
 		///B ScanInfoStack
+		/// A stack of ScanInfo values
 		class ScanInfoStack {
 		public:
 			ScanInfoStack() {
 				stack.Push(ScanInfo());
 			}
 
-			void Pop() {stack.Pop();}
-			void Push() {stack.Push(stack.Peek());}
-			ScanInfo& Get() {return stack.Peek();}
-			void Set(const ScanInfo& info) {stack.Set(info);}
+			///H Methods
 
-			bool Init() const {return stack.Peek().init;}
-			void Init(const bool init) {stack.Peek().init = init;}
+			///T Pop
+			/// Removes the top value form the stack
+			void Pop() {
+				stack.Pop();
+			}
 
-			bool Assign() const {return stack.Peek().assign;}
-			void Assign(const bool assign) {stack.Peek().assign = assign;}
+			///T Push
+			/// Adds a copy of the top value to the stack
+			void Push() {
+				stack.Push(stack.Peek());
+			}
 
-			bool UseFunction() const {return stack.Peek().useFunction;}
-			void UseFunction(const bool use) {stack.Peek().useFunction = use;}
+			///T Get
+			/// Get the top value of the stack
+			ScanInfo& Get() {
+				return stack.Peek();
+			}
 
-			Symbols::TypeSymbol* Type() const {return stack.Peek().type;}
-			void Type(Symbols::TypeSymbol* const type) {stack.Peek().type = type;}
+			///T Set
+			/// Sets the top of the stack
+			void Set(const ScanInfo& info) {
+				stack.Set(info);
+			}
 
-			FileInfo File() const {return stack.Peek().file;}
-			void File(const FileInfo file) {stack.Peek().file = file;}
+			///H Properties
+			/// Used to get/set properties of the top value of the stack
 
-			ScopeInfo& ScopeInfo() {return stack.Peek().scopeInfo;}
-			void ScopeInfo(const Nodes::ScopeInfo info) {stack.Peek().scopeInfo = info;}
+			///T Get Init
+			bool Init() const {
+				return stack.Peek().init;
+			}
 
+			///T Set Init
+			void Init(const bool init) {
+				stack.Peek().init = init;
+			}
+
+			///T Get Assign
+			bool Assign() const {
+				return stack.Peek().assign;
+			}
+
+			///T Set Assign
+			void Assign(const bool assign) {
+				stack.Peek().assign = assign;
+			}
+
+			///T Get UseFunction
+			bool UseFunction() const {
+				return stack.Peek().useFunction;
+			}
+
+			///T Set UseFunction
+			void UseFunction(const bool use) {
+				stack.Peek().useFunction = use;
+			}
+
+			///T Get Type
+			Symbols::TypeSymbol* Type() const {
+				return stack.Peek().type;
+			}
+
+			///T Set Type
+			void Type(Symbols::TypeSymbol* const type) {
+				stack.Peek().type = type;
+			}
+
+			///T Get File
+			FileInfo File() const {
+				return stack.Peek().file;
+			}
+
+			///T Set File
+			void File(const FileInfo file) {
+				stack.Peek().file = file;
+			}
+
+			///T Get ScopeInfo
+			ScopeInfo& ScopeInfo() {
+				return stack.Peek().scopeInfo;
+			}
+
+			///T Set ScopeInfo
+			void ScopeInfo(const Nodes::ScopeInfo info) {
+				stack.Peek().scopeInfo = info;
+			}
+
+			///H Members
+
+			///T Used Variables
 			Boxx::Set<Symbols::VariableSymbol*> usedVariables;
+
+			///T Used Types
 			Boxx::Set<Symbols::TypeSymbol*> usedTypes;
+
+			///T Used Functions
 			Boxx::Set<Symbols::FunctionSymbol*> usedFunctions;
 
+			///T Functions
 			Boxx::Collection<Boxx::Pointer<Node>> functions;
 
 		private:

@@ -23,6 +23,7 @@ namespace Melon {
 			/// The boolean argument to break
 			bool breakBool;
 
+			///T Scope wise break
 			bool scopeWise = false;
 
 			BreakNode(Symbols::Symbol* const scope, const FileInfo& file);

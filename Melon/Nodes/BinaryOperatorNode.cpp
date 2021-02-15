@@ -47,17 +47,18 @@ Scope BinaryOperatorNode::GetOperator() const {
 }
 
 CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
+	FunctionSymbol* const func = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
+	if (!func) return CompiledNode();
+
 	List<NodePtr> nodes;
 	nodes.Add(node1);
 	nodes.Add(node2);
-	
-	FunctionSymbol* const func = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
-	if (!func) return CompiledNode();
-
+	// Compile symbol node
 	if (func->symbolNode) {
 		return func->symbolNode->Compile(nodes, info);
 	}
+	// Compile operator function
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;
@@ -106,14 +107,18 @@ NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 	if (NodePtr node = node2->Optimize(info)) node2 = node;
 
 	// TODO: Add more operators
+	// Optimize immediate operands
 	if (node1->IsImmediate() && node2->IsImmediate()) {
+		// Bool operands
 		if (node1->Type()->AbsoluteName() == ScopeList::Bool && node2->Type()->AbsoluteName() == ScopeList::Bool) {
+			// Equal
 			if (op == Scope::Equal) {
 				Pointer<BooleanNode> bn = new BooleanNode(node1->file);
 				bn->boolean = node1->GetImmediate() == node2->GetImmediate();
 				info.optimized = true;
 				return bn;
 			}
+			// Not Equal
 			else if (op == Scope::NotEqual) {
 				Pointer<BooleanNode> bn = new BooleanNode(node1->file);
 				bn->boolean = node1->GetImmediate() != node2->GetImmediate();

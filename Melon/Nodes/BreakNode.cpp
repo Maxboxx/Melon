@@ -8,9 +8,9 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-String BreakNode::abortInstName = "abort";
+String BreakNode::abortInstName      = "abort";
 String BreakNode::scopeBreakInstName = "break!";
-String BreakNode::breakTrueInstName = "breaktrue";
+String BreakNode::breakTrueInstName  = "breaktrue";
 String BreakNode::breakFalseInstName = "breakfalse";
 
 BreakNode::BreakNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
@@ -40,6 +40,7 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 }
 
 ScanResult BreakNode::Scan(ScanInfoStack& info) {
+	// Regular break or abort
 	if (!scopeWise) {
 		if (info.ScopeInfo().CanContinue()) {
 			if (!isBreak) {
@@ -51,6 +52,7 @@ ScanResult BreakNode::Scan(ScanInfoStack& info) {
 
 		info.ScopeInfo().maxLoopBreakCount = Math::Max(info.ScopeInfo().maxLoopBreakCount, loops);
 	}
+	// Scope wise break
 	else {
 		if (info.ScopeInfo().CanContinue()) {
 			info.ScopeInfo().scopeBreakCount = Math::Max(info.ScopeInfo().scopeBreakCount, loops);

@@ -22,6 +22,8 @@ namespace Melon {
 			AssignNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~AssignNode();
 
+			///T Values
+			/// Gets the types and nodes for all values
 			Boxx::List<Boxx::Pair<Symbols::TypeSymbol*, NodePtr>> Values() const;
 
 			virtual Boxx::UInt GetSize() const override;
