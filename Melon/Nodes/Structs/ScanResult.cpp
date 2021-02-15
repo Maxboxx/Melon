@@ -8,7 +8,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 
 void ScanResult::SelfUseCheck(const ScanInfoStack& info, const FileInfo& file) {
-	if (selfUsed && info.Init() && !info.Type()->IsInitialized()) {
+	if (selfUsed && info->init && !info->type->IsInitialized()) {
 		ErrorLog::Error(CompileError(CompileError::SelfInit, file));
 	}
 }

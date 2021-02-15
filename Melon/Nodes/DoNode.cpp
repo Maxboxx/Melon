@@ -84,9 +84,9 @@ void DoNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult DoNode::Scan(ScanInfoStack& info) {
-	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
+	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	ScanResult result = nodes->Scan(info);
-	info.ScopeInfo().ExitScope();
+	info->scopeInfo.ExitScope();
 	return result;
 }
 

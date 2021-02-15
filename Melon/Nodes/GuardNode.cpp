@@ -116,13 +116,13 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 	ScanResult result = cond->Scan(info);
 	result.SelfUseCheck(info, cond->file);
 	
-	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
+	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 
-	if (info.Init()) {
-		scopeInfo.unassigned = info.Type()->UnassignedMembers();
+	if (info->init) {
+		scopeInfo.unassigned = info->type->UnassignedMembers();
 	}
 
-	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
+	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 
 	if (else_) {
 		ScanResult r = else_->Scan(info);
@@ -130,29 +130,29 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 		result |= r;
 	}
 
-	info.ScopeInfo().ExitScope();
+	info->scopeInfo.ExitScope();
 
-	ScopeInfo elseScope = info.ScopeInfo().CopyBranch();
+	ScopeInfo elseScope = info->scopeInfo.CopyBranch();
 
-	if (info.Init()) {
-		elseScope.unassigned = info.Type()->UnassignedMembers();
+	if (info->init) {
+		elseScope.unassigned = info->type->UnassignedMembers();
 	}
 
 	AddScopeBreak(info);
 
 	for (const Scope& var : scopeInfo.unassigned) {
-		if (VariableSymbol* const v = info.Type()->Find<VariableSymbol>(var, file)) {
+		if (VariableSymbol* const v = info->type->Find<VariableSymbol>(var, file)) {
 			v->isAssigned = false;
 		}
 	}
 	
-	info.ScopeInfo(scopeInfo);
+	info->scopeInfo = scopeInfo;
 
 	ScanResult r = continue_->Scan(info);
 	r.SelfUseCheck(info, continue_->file);
 	result |= r;
 
-	info.ScopeInfo(ScopeInfo::BranchIntersection(elseScope, info.ScopeInfo()));
+	info->scopeInfo = ScopeInfo::BranchIntersection(elseScope, info->scopeInfo);
 
 	return result;
 }
@@ -209,8 +209,8 @@ NodePtr GuardNode::Optimize(OptimizeInfo& info) {
 }
 
 void GuardNode::AddScopeBreak(ScanInfoStack& info) {
-	if (info.ScopeInfo().CanContinue()) {
-		switch (info.ScopeInfo().type) {
+	if (info->scopeInfo.CanContinue()) {
+		switch (info->scopeInfo.type) {
 			case ScopeInfo::ScopeType::Scope: {
 				Pointer<BreakNode> bn = new BreakNode(scope, file);
 				bn->isBreak = true;
@@ -218,7 +218,7 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 				bn->scopeWise = true;
 				end = bn;
 
-				info.ScopeInfo().maxScopeBreakCount = Math::Max(bn->loops, info.ScopeInfo().maxScopeBreakCount);
+				info->scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info->scopeInfo.maxScopeBreakCount);
 				break;
 			}
 
@@ -227,7 +227,7 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 				cn->loops = 1;
 				end = cn;
 
-				info.ScopeInfo().maxLoopBreakCount = Math::Max(cn->loops, info.ScopeInfo().maxLoopBreakCount);
+				info->scopeInfo.maxLoopBreakCount = Math::Max(cn->loops, info->scopeInfo.maxLoopBreakCount);
 				break;
 			}
 
@@ -245,16 +245,16 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 				}
 
 				if (func) {
-					if (func->returnValues.IsEmpty() && !info.ScopeInfo().hasReturned) {
+					if (func->returnValues.IsEmpty() && !info->scopeInfo.hasReturned) {
 						end = new ReturnNode(scope, file);
 					}
-					else if (!info.ScopeInfo().hasReturned) {
+					else if (!info->scopeInfo.hasReturned) {
 						// TODO: error
 						ErrorLog::Error(CompileError("guard must return from function", file));
 					}
 				}
 
-				info.ScopeInfo().willNotReturn = false;
+				info->scopeInfo.willNotReturn = false;
 				break;
 			}
 

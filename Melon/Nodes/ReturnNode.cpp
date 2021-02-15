@@ -91,11 +91,11 @@ void ReturnNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult ReturnNode::Scan(ScanInfoStack& info) {
-	if (info.ScopeInfo().CanContinue()) {
-		info.ScopeInfo().hasReturned = true;
+	if (info->scopeInfo.CanContinue()) {
+		info->scopeInfo.hasReturned = true;
 	}
 
-	info.ScopeInfo().willNotReturn = false;
+	info->scopeInfo.willNotReturn = false;
 
 	ScanResult result;
 

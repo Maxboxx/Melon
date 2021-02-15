@@ -196,7 +196,7 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 
 ScanResult AssignNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
-	info.Assign(true);
+	info->assign = true;
 
 	// Check for errors among values
 	UInt errorCount = ErrorLog::ErrorCount();
@@ -228,10 +228,10 @@ ScanResult AssignNode::Scan(ScanInfoStack& info) {
 		result |= r;
 
 		// Check for completed init
-		if (info.Init()) {
+		if (info->init) {
 			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 				if (nn->name == Scope::Self) {
-					info.Type()->CompleteInit();
+					info->type->CompleteInit();
 					result.selfUsed = false;
 				}
 			}
@@ -243,7 +243,7 @@ ScanResult AssignNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	info.Assign(false);
+	info->assign = false;
 
 	// Scan values
 	for (const NodePtr& node : this->values) {

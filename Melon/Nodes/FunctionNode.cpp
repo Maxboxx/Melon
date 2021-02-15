@@ -101,20 +101,20 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 
 	info.Push();
 	
-	info.ScopeInfo().type = ScopeInfo::ScopeType::Function;
-	info.ScopeInfo().Reset();
-	info.File(file);
+	info->scopeInfo.type = ScopeInfo::ScopeType::Function;
+	info->scopeInfo.Reset();
+	info->file = file;
 
 	if (sym->AbsoluteName().Pop().Last() == Scope::Init) {
-		info.Init(true);
-		info.Type(sym->Parent()->Parent<TypeSymbol>());
-		info.Type()->PrepareInit();
+		info->init = true;
+		info->type = sym->Parent()->Parent<TypeSymbol>();
+		info->type->PrepareInit();
 	}
 
 	ScanResult result = node->Scan(info);
 
-	if (info.Init() && !info.Type()->IsInitialized()) {
-		for (const Scope& var : info.Type()->UnassignedMembers()) {
+	if (info->init && !info->type->IsInitialized()) {
+		for (const Scope& var : info->type->UnassignedMembers()) {
 			ErrorLog::Error(CompileError(CompileError::VarNotInitStart + var.ToString() + CompileError::VarNotInitEnd, file));
 		}
 	}
@@ -127,7 +127,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	if (!info.ScopeInfo().hasReturned && !sym->returnValues.IsEmpty()) {
+	if (!info->scopeInfo.hasReturned && !sym->returnValues.IsEmpty()) {
 		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(sym), file));
 	}
 

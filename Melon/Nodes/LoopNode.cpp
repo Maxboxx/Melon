@@ -628,12 +628,12 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 ScanResult LoopNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
 
-	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
+	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	LoopScanInfo loopInfo = ScanSetup(info.Get());
-	info.ScopeInfo().ExitScope();
+	info->scopeInfo.ExitScope();
 
 	for (UInt i = 0; i < segments.Size(); i++) {
-		info.ScopeInfo().EnterScope(segments[i].IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
+		info->scopeInfo.EnterScope(segments[i].IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
 		ScanPreContents(loopInfo, info.Get(), segments[i]);
 
 		if (segments[i].type != LoopType::None) {
@@ -647,8 +647,8 @@ ScanResult LoopNode::Scan(ScanInfoStack& info) {
 		result |= r;
 
 		if (segments[i].IsLoop()) {
-			info.ScopeInfo().loopBreakCount  = loopInfo.scope.loopBreakCount;
-			info.ScopeInfo().scopeBreakCount = loopInfo.scope.scopeBreakCount;
+			info->scopeInfo.loopBreakCount  = loopInfo.scope.loopBreakCount;
+			info->scopeInfo.scopeBreakCount = loopInfo.scope.scopeBreakCount;
 		}
 
 		if (i == 0) {
@@ -658,12 +658,12 @@ ScanResult LoopNode::Scan(ScanInfoStack& info) {
 			ScanPostContents(loopInfo, info.Get(), segments[i]);
 		}
 
-		info.ScopeInfo().ExitScope();
+		info->scopeInfo.ExitScope();
 	}
 
-	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Scope);
+	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	ScanCleanup(loopInfo, info.Get());
-	info.ScopeInfo().ExitScope();
+	info->scopeInfo.ExitScope();
 
 	return result;
 }

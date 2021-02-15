@@ -547,7 +547,7 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 	FunctionSymbol* const func = GetFunc();
 	if (func == nullptr) return ScanResult();
 
-	if (info.UseFunction()) {
+	if (info->useFunction) {
 		if (!info.usedFunctions.Contains(func)) {
 			info.usedFunctions.Add(func);
 			info.functions.Add(func->node);

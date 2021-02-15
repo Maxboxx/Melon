@@ -117,8 +117,8 @@ void RepeatNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult RepeatNode::Scan(ScanInfoStack& info) {
-	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
-	info.ScopeInfo().EnterScope(ScopeInfo::ScopeType::Loop);
+	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
+	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Loop);
 
 	ScanResult result1 = content->Scan(info);
 	result1.SelfUseCheck(info, content->file);
@@ -126,8 +126,8 @@ ScanResult RepeatNode::Scan(ScanInfoStack& info) {
 	ScanResult result2 = condition->Scan(info);
 	result2.SelfUseCheck(info, condition->file);
 
-	info.ScopeInfo().ExitScope();
-	info.ScopeInfo(ScopeInfo::WeakBranchUnion(scopeInfo, info.ScopeInfo()));
+	info->scopeInfo.ExitScope();
+	info->scopeInfo = ScopeInfo::WeakBranchUnion(scopeInfo, info->scopeInfo);
 
 	return result1 | result2;
 }

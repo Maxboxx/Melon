@@ -115,11 +115,11 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult DotNode::Scan(ScanInfoStack& info) {
-	const bool assign = info.Assign();
-	info.Assign(false);
+	const bool assign = info->assign;
+	info->assign = false;
 
 	ScanResult result = node->Scan(info);
-	info.Assign(assign);
+	info->assign = assign;
 
 	TypeSymbol* const type = node->Type();
 	if (type == nullptr) return result;
@@ -137,16 +137,16 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	if (info.Assign()) {
+	if (info->assign) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
-					if (info.ScopeInfo().WillContinue()) {
+					if (info->scopeInfo.WillContinue()) {
 						var->isAssigned = true;
 					}
 
-					if (info.Type()->IsInitialized()) {
-						info.Init(false);
+					if (info->type->IsInitialized()) {
+						info->init = false;
 					}
 				}
 
@@ -154,7 +154,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 			}
 		}
 	}
-	else if (info.Init()) {
+	else if (info->init) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {

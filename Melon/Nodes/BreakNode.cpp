@@ -42,23 +42,23 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 ScanResult BreakNode::Scan(ScanInfoStack& info) {
 	// Regular break or abort
 	if (!scopeWise) {
-		if (info.ScopeInfo().CanContinue()) {
+		if (info->scopeInfo.CanContinue()) {
 			if (!isBreak) {
-				info.ScopeInfo().loopAbortCount = Math::Max(info.ScopeInfo().loopAbortCount, loops);
+				info->scopeInfo.loopAbortCount = Math::Max(info->scopeInfo.loopAbortCount, loops);
 			}
 
-			info.ScopeInfo().loopBreakCount = Math::Max(info.ScopeInfo().loopBreakCount, loops);
+			info->scopeInfo.loopBreakCount = Math::Max(info->scopeInfo.loopBreakCount, loops);
 		}
 
-		info.ScopeInfo().maxLoopBreakCount = Math::Max(info.ScopeInfo().maxLoopBreakCount, loops);
+		info->scopeInfo.maxLoopBreakCount = Math::Max(info->scopeInfo.maxLoopBreakCount, loops);
 	}
 	// Scope wise break
 	else {
-		if (info.ScopeInfo().CanContinue()) {
-			info.ScopeInfo().scopeBreakCount = Math::Max(info.ScopeInfo().scopeBreakCount, loops);
+		if (info->scopeInfo.CanContinue()) {
+			info->scopeInfo.scopeBreakCount = Math::Max(info->scopeInfo.scopeBreakCount, loops);
 		}
 
-		info.ScopeInfo().maxScopeBreakCount = Math::Max(info.ScopeInfo().maxScopeBreakCount, loops);
+		info->scopeInfo.maxScopeBreakCount = Math::Max(info->scopeInfo.maxScopeBreakCount, loops);
 	}
 
 	return ScanResult();

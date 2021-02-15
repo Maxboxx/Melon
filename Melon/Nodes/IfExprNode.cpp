@@ -103,7 +103,7 @@ void IfExprNode::IncludeScan(ParsingInfo& info) {
 
 ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
-	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
+	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 
 	TypeSymbol* const t = Type();
 	Pointer<TypeNode> type = t ? new TypeNode(t->AbsoluteName()) : nullptr;
@@ -124,7 +124,7 @@ ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 		result |= r;
 	}
 
-	info.ScopeInfo(scopeInfo);
+	info->scopeInfo = scopeInfo;
 	return result;
 }
 

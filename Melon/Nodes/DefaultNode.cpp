@@ -95,7 +95,7 @@ void DefaultNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult DefaultNode::Scan(ScanInfoStack& info) {
-	ScopeInfo scopeInfo = info.ScopeInfo().CopyBranch();
+	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 
 	ScanResult result1 = node1->Scan(info);
 	result1.SelfUseCheck(info, node1->file);
@@ -109,7 +109,7 @@ ScanResult DefaultNode::Scan(ScanInfoStack& info) {
 		ScanAssignment(new TypeNode(type->AbsoluteName()), node2, info, file);
 	}
 
-	info.ScopeInfo(scopeInfo);
+	info->scopeInfo = scopeInfo;
 
 	return result1 | result2;
 }

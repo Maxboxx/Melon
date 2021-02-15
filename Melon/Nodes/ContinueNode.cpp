@@ -27,11 +27,11 @@ CompiledNode ContinueNode::Compile(CompileInfo& info) {
 }
 
 ScanResult ContinueNode::Scan(ScanInfoStack& info) {
-	if (info.ScopeInfo().CanContinue()) {
-		info.ScopeInfo().loopBreakCount = Math::Max(info.ScopeInfo().loopBreakCount, loops);
+	if (info->scopeInfo.CanContinue()) {
+		info->scopeInfo.loopBreakCount = Math::Max(info->scopeInfo.loopBreakCount, loops);
 	}
 
-	info.ScopeInfo().maxLoopBreakCount = Math::Max(info.ScopeInfo().maxLoopBreakCount, loops);
+	info->scopeInfo.maxLoopBreakCount = Math::Max(info->scopeInfo.maxLoopBreakCount, loops);
 
 	return ScanResult();
 };
