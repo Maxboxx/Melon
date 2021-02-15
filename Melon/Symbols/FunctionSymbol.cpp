@@ -96,8 +96,8 @@ Symbol* FunctionSymbol::FindSymbol(const ScopeList& scopeList, const UInt index,
 	const Scope& scope = scopeList[index];
 
 	if (scope.name.Size() == 0 && scope.arguments) {
-		if (scope.arguments.Get().Size() == 1 && numReg.Match(scope.arguments.Get()[0][0].name)) {
-			return overloads[scope.arguments.Get()[0][0].name.ToUInt()]->FindSymbol(scopeList, index + 1, file);
+		if (scope.arguments->Size() == 1 && numReg.Match(scope.arguments.Value()[0][0].name)) {
+			return overloads[scope.arguments.Value()[0][0].name.ToUInt()]->FindSymbol(scopeList, index + 1, file);
 		}
 		else for (FunctionSymbol* const overload : overloads) {
 			if (overload->Name() == scope) {
@@ -327,7 +327,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, cons
 	List<FunctionSymbol*> matches;
 
 	for (FunctionSymbol* const overload : overloads) {
-		if (isStatic.HasValue() && ((overload->attributes & FunctionAttributes::Static) != FunctionAttributes::None) != isStatic.Get()) continue;
+		if (isStatic && ((overload->attributes & FunctionAttributes::Static) != FunctionAttributes::None) != isStatic) continue;
 		if (overload->RequiredArguments() > args.Size()) continue;
 		if (overload->arguments.Size() < args.Size()) continue;
 
@@ -366,7 +366,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateAr
 	List<FunctionSymbol*> matches;
 
 	for (FunctionSymbol* const overload : overloads) {
-		if (isStatic.HasValue() && ((overload->attributes & FunctionAttributes::Static) != FunctionAttributes::None) != isStatic.Get()) continue;
+		if (isStatic && ((overload->attributes & FunctionAttributes::Static) != FunctionAttributes::None) != isStatic) continue;
 		if (overload->RequiredArguments() > args.Size()) continue;
 		if (overload->arguments.Size() < args.Size()) continue;
 		if (overload->RequiredTemplateArguments() > templateArgs.Size()) continue;

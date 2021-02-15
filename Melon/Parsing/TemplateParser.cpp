@@ -18,13 +18,13 @@ Optional<List<ScopeList>> TemplateParser::Parse(ParsingInfo& info) {
 	List<ScopeList> types;
 
 	if (Optional<ScopeList> type = TypeParser::Parse(info)) {
-		types.Add((ScopeList)type);
+		types.Add(*type);
 
 		while (info.Current().type == TokenType::Comma) {
 			info.index++;
 
 			if (Optional<ScopeList> type = TypeParser::Parse(info)) {
-				types.Add((ScopeList)type);
+				types.Add(*type);
 			}
 			else {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("type", "','", "template list"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));

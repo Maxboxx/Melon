@@ -828,7 +828,7 @@ namespace Boxx {
 	inline void Pixel::WriteToFile(const String& filename, const Pixel& pixel, const Optional<Format>& format) {
 		if (format.HasValue()) {
 			if (pixel.width > Math::UByteMax() || pixel.height > Math::UByteMax()) {
-				if ((format.Get() & Format::DoubleSize) == Format::None) {
+				if ((*format & Format::DoubleSize) == Format::None) {
 					throw PixelEncodeError("Format should have double size for images with a width or height larger than 255");
 				}
 			} 
@@ -844,7 +844,7 @@ namespace Boxx {
 
 		if (format.HasValue()) {
 			if (colors.value1.Size() > Math::UByteMax()) {
-				if ((format.Get() & Format::DoubleBytes) == Format::None) {
+				if ((*format & Format::DoubleBytes) == Format::None) {
 					throw PixelEncodeError("Format should have double bytes for images with more than 256 colors");
 				}
 			} 
@@ -888,16 +888,16 @@ namespace Boxx {
 		else {
 			Buffer formatData = Buffer(pixel.pixels.Size());
 
-			EncodeHeader(colors.value1, pixel, formatData, format.Get());
+			EncodeHeader(colors.value1, pixel, formatData, *format);
 
-			if ((format.Get() & Format::Transpose) != Format::None) {
-				EncodePixels(pixel, colors.value1, transposeIDs, formatData, format.Get());
+			if ((*format & Format::Transpose) != Format::None) {
+				EncodePixels(pixel, colors.value1, transposeIDs, formatData, *format);
 			}
 			else {
-				EncodePixels(pixel, colors.value1, colors.value2, formatData, format.Get());
+				EncodePixels(pixel, colors.value1, colors.value2, formatData, *format);
 			}
 
-			bestFormat = format.Get();
+			bestFormat = *format;
 			data = formatData;
 		}
 

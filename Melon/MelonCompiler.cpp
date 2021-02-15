@@ -178,11 +178,11 @@ CompilerOptions MelonCompiler::SetupCompilerOptions(const CompilerOptions& optio
 	}
 
 	// Add main directory
-	compOptions.includeDirectories.Add(Regex::Match("^(~[%/\\]*){[%/\\].*}?$", filename).Get().match);
+	compOptions.includeDirectories.Add(Regex::Match("^(~[%/\\]*){[%/\\].*}?$", filename)->match);
 
 	// Setup output file
 	if (compOptions.outputName.Size() == 0) {
-		compOptions.outputName = Regex::Match("(~[%/\\]-){%.~[%/\\%.]*}?$", filename).Get().match;
+		compOptions.outputName = Regex::Match("(~[%/\\]-){%.~[%/\\%.]*}?$", filename)->match;
 	}
 
 	// Format include directories correctly

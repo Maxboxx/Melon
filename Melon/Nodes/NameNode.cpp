@@ -40,7 +40,7 @@ Symbol* NameNode::GetSymbol() const {
 	Scope s = name.Copy();
 
 	if (s.types) {
-		for (ScopeList& type : s.types.Get()) {
+		for (ScopeList& type : *s.types) {
 			TypeSymbol* const sym = SymbolTable::Find<TypeSymbol>(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 			if (!sym) continue;
 

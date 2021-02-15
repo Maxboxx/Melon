@@ -4,6 +4,7 @@
 #include "List.h"
 #include "Pair.h"
 #include "Map.h"
+#include "Set.h"
 #include "String.h"
 #include "Regex.h"
 #include "Token.h"
@@ -12,6 +13,7 @@
 
 ///N Mango
 namespace Boxx {
+	class Mango;
 
 	///B MangoType
 	/// Enum of all types of mango values
@@ -26,6 +28,12 @@ namespace Boxx {
 		Map
 		///M
 	};
+
+	///B Mango Typedefs
+	///M
+	typedef List<Mango> MangoList;
+	typedef Map<String, Mango> MangoMap;
+	///M
 
 	///B Mango
 	/// A mango data structure that can encode and decode mango files
@@ -59,10 +67,10 @@ namespace Boxx {
 		Mango(const String& string);
 
 		///T Mango list
-		Mango(const List<Mango>& list);
+		Mango(const MangoList& list);
 
 		///T Mango map
-		Mango(const Map<String, Mango>& map);
+		Mango(const MangoMap& map);
 
 		///T Constructors with labels
 		///M
@@ -73,8 +81,8 @@ namespace Boxx {
 		Mango(const String& label, const float number);
 		Mango(const String& label, const double number);
 		Mango(const String& label, const String& string);
-		Mango(const String& label, const List<Mango>& list);
-		Mango(const String& label, const Map<String, Mango>& map);
+		Mango(const String& label, const MangoList& list);
+		Mango(const String& label, const MangoMap& map);
 		///M
 
 		Mango(const Mango& mango);
@@ -110,6 +118,10 @@ namespace Boxx {
 		///E MangoTypeError: Thrown if the current type is not list
 		UInt Size() const;
 
+		///T Copy
+		/// Copies the mango value
+		Mango Copy() const;
+
 		///H Operators
 
 		///T Convert
@@ -122,8 +134,8 @@ namespace Boxx {
 		operator float() const;
 		operator double() const;
 		operator String() const;
-		operator List<Mango>() const;
-		operator Map<String, Mango>() const;
+		operator MangoList() const;
+		operator MangoMap() const;
 		///M
 
 		///T List index
@@ -152,8 +164,8 @@ namespace Boxx {
 		void operator=(const float number);
 		void operator=(const double number);
 		void operator=(const String& string);
-		void operator=(const List<Mango>& list);
-		void operator=(const Map<String, Mango>& map);
+		void operator=(const MangoList& list);
+		void operator=(const MangoMap& map);
 		///M
 
 		void operator=(const Mango& mango);
@@ -176,7 +188,7 @@ namespace Boxx {
 		///T Decode
 		/// Decodes a string to a mango value
 		///E MangoDecodeError: Thrown if the mango string can not be decoded
-		static Mango Decode(const String& mango);
+		static Mango Decode(const String& mango, const String& version = "");
 
 	private:
 		static String EncodeNode(const Mango& mango);
@@ -188,27 +200,80 @@ namespace Boxx {
 		bool integer = false;
 		double number = 0.0;
 		String string;
-		List<Mango> list;
-		Map<String, Mango> map;
+		MangoList list;
+		MangoMap map;
 
-		enum class MangoTokenType : UByte {
+		enum class TokenType : UByte {
 			None,
 			Comment,
 			Name,
+			VarName,
+			VersionName,
+			VersionDefault,
+			VersionEnd,
+			VersionList,
+			VersionContent,
 			Boolean,
 			Nil,
 			Number,
 			String,
 			Colon,
+			Assign,
 			OpenCurl,
 			CloseCurl,
 			OpenSq,
 			CloseSq
 		};
 
-		static Mango DecodeTokens(const List<Token<MangoTokenType>>& tokens);
-		static Optional<Mango> DecodeValue(const List<Token<MangoTokenType>>& tokens, UInt& index);
-		static Optional<String> DecodeLabel(const List<Token<MangoTokenType>>& tokens, UInt& index);
+		struct ParsingInfo {
+			String version;
+			MangoMap variables;
+
+			ParsingInfo Copy() const {
+				ParsingInfo info;
+				info.version = version;
+
+				for (const Pair<String, Mango>& pair : variables) {
+					info.variables.Add(pair.key, pair.value.Copy());
+				}
+
+				return info;
+			}
+		};
+
+		static Mango Parse(TokenList<TokenType>& tokens, const String& version);
+		static String ParseVersion(TokenList<TokenType>& tokens, const String& version);
+
+		static Optional<Mango> ParseNil(TokenList<TokenType>& tokens, ParsingInfo& info);
+		static Optional<Mango> ParseBoolean(TokenList<TokenType>& tokens, ParsingInfo& info);
+		static Optional<Mango> ParseNumber(TokenList<TokenType>& tokens, ParsingInfo& info);
+		static Optional<Mango> ParseString(TokenList<TokenType>& tokens, ParsingInfo& info);
+		static Optional<Mango> ParseVariable(TokenList<TokenType>& tokens, ParsingInfo& info);
+
+		static MangoList ParseListItems(TokenList<TokenType>& tokens, ParsingInfo& info, const bool includeVariables = true);
+		static Optional<Mango> ParseList(TokenList<TokenType>& tokens, ParsingInfo& info);
+
+		static Optional<Pair<String, Mango>> ParseMapItem(TokenList<TokenType>& tokens, ParsingInfo& info);
+		static MangoMap ParseMapItems(TokenList<TokenType>& tokens, ParsingInfo& info, const bool includeVariables = true);
+		static Optional<Mango> ParseMap(TokenList<TokenType>& tokens, ParsingInfo& info);
+
+		static Optional<String> ParseRawString(TokenList<TokenType>& tokens, ParsingInfo& info);
+		static Optional<String> ParseName(TokenList<TokenType>& tokens, ParsingInfo& info);
+		static Optional<String> ParseLabel(TokenList<TokenType>& tokens, ParsingInfo& info);
+		static Optional<Mango> ParseValue(TokenList<TokenType>& tokens, ParsingInfo& info, const bool allowInnerLabels = false);
+		static Optional<Mango> ParseLabeledValue(TokenList<TokenType>& tokens, ParsingInfo& info, const bool forceLabel = false);
+
+		static bool ParseVariableAssignment(TokenList<TokenType>& tokens, ParsingInfo& info, const bool isList, const bool forceSimple = false);
+
+		static void ValidateVersions(Set<String>& versions, const Set<String>& newVersions, bool& hasDefault);
+		static bool VersionMatch(const Set<String>& newVersions, bool& perfectMatch, const String& version);
+
+		static Optional<Set<String>> ParseVersions(TokenList<TokenType>& tokens, ParsingInfo& info);
+		static Optional<Mango> ParseVersionValue(TokenList<TokenType>& tokens, ParsingInfo& info, const bool hasLabel);
+
+		static bool ParseVersionVariables(TokenList<TokenType>& tokens, ParsingInfo& info, const bool isList);
+		static bool ParseVersionListItems(TokenList<TokenType>& tokens, ParsingInfo& info, MangoList& list);
+		static bool ParseVersionMapItems(TokenList<TokenType>& tokens, ParsingInfo& info, MangoMap& map);
 	};
 
 	///B MangoError
@@ -301,12 +366,12 @@ namespace Boxx {
 		this->string = string;
 	}
 
-	inline Mango::Mango(const List<Mango>& list) {
+	inline Mango::Mango(const MangoList& list) {
 		type = MangoType::List;
 		this->list = list;
 	}
 
-	inline Mango::Mango(const Map<String, Mango>& map) {
+	inline Mango::Mango(const MangoMap& map) {
 		type = MangoType::Map;
 		this->map = map;
 	}
@@ -356,13 +421,13 @@ namespace Boxx {
 		this->label = label;
 	}
 
-	inline Mango::Mango(const String& label, const List<Mango>& list) {
+	inline Mango::Mango(const String& label, const MangoList& list) {
 		type = MangoType::List;
 		this->list = list;
 		this->label = label;
 	}
 
-	inline Mango::Mango(const String& label, const Map<String, Mango>& map) {
+	inline Mango::Mango(const String& label, const MangoMap& map) {
 		type = MangoType::Map;
 		this->map = map;
 		this->label = label;
@@ -433,6 +498,48 @@ namespace Boxx {
 		return list.Size();
 	}
 
+	inline Mango Mango::Copy() const {
+		switch (type) {
+			case MangoType::Nil: {
+				return Mango(label, MangoType::Nil);
+			}
+
+			case MangoType::Boolean: {
+				return Mango(label, boolean);
+			}
+
+			case MangoType::Number: {
+				return Mango(label, number);
+			}
+
+			case MangoType::String: {
+				return Mango(label, string);
+			}
+
+			case MangoType::List: {
+				MangoList list;
+
+				for (const Mango& mango : this->list) {
+					list.Add(mango.Copy());
+				}
+
+				return Mango(label, list);
+			}
+
+			case MangoType::Map: {
+				MangoMap map;
+
+				for (const Pair<String, Mango>& pair : this->map) {
+					map.Add(pair.key, pair.value.Copy());
+				}
+
+				return Mango(label, map);
+			}
+		}
+
+		return Mango(MangoType::Nil);
+	}
+
 	inline Mango::operator bool() const {
 		if (type != MangoType::Boolean) throw MangoTypeError("Type is not boolean");
 		return boolean;
@@ -463,12 +570,12 @@ namespace Boxx {
 		return string;
 	}
 
-	inline Mango::operator List<Mango>() const {
+	inline Mango::operator MangoList() const {
 		if (type != MangoType::List) throw MangoTypeError("Type is not list");
 		return list;
 	}
 
-	inline Mango::operator Map<String, Mango>() const {
+	inline Mango::operator MangoMap() const {
 		if (type != MangoType::Map) throw MangoTypeError("Type is not map");
 		return map;
 	}
@@ -539,12 +646,12 @@ namespace Boxx {
 		this->string = string;
 	}
 
-	inline void Mango::operator=(const List<Mango>& list) {
+	inline void Mango::operator=(const MangoList& list) {
 		type = MangoType::List;
 		this->list = list;
 	}
 
-	inline void Mango::operator=(const Map<String, Mango>& map) {
+	inline void Mango::operator=(const MangoMap& map) {
 		type = MangoType::Map;
 		this->map = map;
 	}
@@ -709,9 +816,16 @@ namespace Boxx {
 
 				for (const Pair<String, Mango>& m : mango.map) {
 					if (labelPattern.Match(m.key))
-						str += nextTabs + m.key + ": ";
+						str += nextTabs + m.key;
 					else
-						str += nextTabs + "\"" + m.key.Escape() + "\": ";
+						str += nextTabs + "\"" + m.key.Escape() + "\"";
+
+					if (m.value.label.Size() == 0) {
+						str += ": ";
+					}
+					else {
+						str += " ";
+					}
 
 					str += EncodeNode(m.value, nextTabs);
 				}
@@ -724,136 +838,689 @@ namespace Boxx {
 		return str + "\n";
 	}
 
-	inline Mango Mango::Decode(const String& mango) {
-		List<TokenPattern<MangoTokenType>> patterns;
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Comment, "%-%-#{%/+}~{%0%-}*%0%-%-", true, true));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Comment, "%-%-~\n*", true, true));
+	inline Mango Mango::Decode(const String& mango, const String& version) {
+		List<TokenPattern<TokenType>> patterns;
+		patterns.Add(TokenPattern<TokenType>(TokenType::Comment, "%-%-#{%/+}~{%0%-}*%0%-%-", true, true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::Comment, "%-%-~\n*", true, true));
 
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Boolean, "true|false"));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Nil, "nil"));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Number, "%d*%.?%d+"));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Name, "%w+"));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::String, "\"()\"", true));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::String, "\"(./~{{\\\\}*\\})\"", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::Boolean, "true|false"));
+		patterns.Add(TokenPattern<TokenType>(TokenType::Nil, "nil"));
+		patterns.Add(TokenPattern<TokenType>(TokenType::Number, "%d*%.?%d+"));
+		patterns.Add(TokenPattern<TokenType>(TokenType::Name, "%w+"));
+		patterns.Add(TokenPattern<TokenType>(TokenType::String, "\"()\"", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::String, "\"(\\\\)\"", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::String, "\"(./~{{\\\\}*\\})\"", true));
 
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::Colon, "%:", true));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::OpenCurl, "%{", true));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::CloseCurl, "%}", true));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::OpenSq, "%[", true));
-		patterns.Add(TokenPattern<MangoTokenType>(MangoTokenType::CloseSq, "%]", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::VersionEnd, "%#%#", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::VersionList, "%#%[", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::VersionContent, "%#%{", true));
+
+		patterns.Add(TokenPattern<TokenType>(TokenType::VersionName, "%#(%w+)"));
+		patterns.Add(TokenPattern<TokenType>(TokenType::VarName, "%$(%w+)"));
+		patterns.Add(TokenPattern<TokenType>(TokenType::VersionDefault, "%#()", true));
+
+		patterns.Add(TokenPattern<TokenType>(TokenType::Assign, "%=", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::Colon, "%:", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::OpenCurl, "%{", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::CloseCurl, "%}", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::OpenSq, "%[", true));
+		patterns.Add(TokenPattern<TokenType>(TokenType::CloseSq, "%]", true));
 
 		try {
-			return DecodeTokens(Lexer::Lex(patterns, mango));
+			TokenList<TokenType> tokens = Lexer::Lex(patterns, mango);
+			return Parse(tokens, version);
 		}
-		catch (MangoDecodeError e) {
+		catch (MangoDecodeError& e) {
 			throw e;
 		}
-		catch (LexerError e) {
+		catch (TokenListError& e) {
+			throw MangoDecodeError("Unexpected end of string");
+		}
+		catch (LexerError& e) {
 			throw MangoDecodeError(e.Message());
 		}
 	}
 
-	inline Mango Mango::DecodeTokens(const List<Token<MangoTokenType>>& tokens) {
+	inline Mango Mango::Parse(TokenList<TokenType>& tokens, const String& version) {
 		UInt index = 0;
-		Optional<Mango> mango = DecodeValue(tokens, index);
 
-		if (index < tokens.Size()) throw MangoDecodeError("Unexpected token: '" + tokens[index].value + "'");
+		ParsingInfo info;
+		info.version = ParseVersion(tokens, version);
+
+		Optional<Mango> mango = ParseLabeledValue(tokens, info);
+
+		if (!tokens.AtEnd()) throw MangoDecodeError("Unexpected token: '" + tokens.Current().rawValue + "'");
 
 		if (mango) {
-			return (Mango)mango;
+			return *mango;
 		}
 		else {
-			throw MangoDecodeError("Invalid value");
+			throw MangoDecodeError("Invalid mango value");
 		}
 	}
 
-	inline Optional<Mango> Mango::DecodeValue(const List<Token<MangoTokenType>>& tokens, UInt& index) {
-		String label = "";
+	inline String Mango::ParseVersion(TokenList<TokenType>& tokens, const String& version) {
+		Optional<String> ver = nullptr;
+		Optional<String> verMatch = nullptr;
+		bool hasVersions = false;
 
-		if (Optional<String> s = DecodeLabel(tokens, index)) {
-			label = s.Get();
+		for (UInt i = 0; i < 2; i++) {
+			if (!ver && tokens.Current().type == TokenType::VersionName) {
+				ver = tokens.Current().value;
+				tokens.Advance();
+			}
+			else if (!hasVersions && tokens.Current().type == TokenType::VersionList) {
+				Set<String> versions;
+
+				while (tokens.Next().type != TokenType::CloseSq) {
+					if (tokens.Current().type != TokenType::Name) {
+						throw MangoDecodeError("Unexpected token: '" + tokens.Current().rawValue + "'");
+					}
+
+					if (versions.Contains(tokens.Current().value)) {
+						throw MangoDecodeError("Duplicate versions in version list");
+					}
+
+					versions.Add(tokens.Current().value);
+
+					if (version == tokens.Current().value) verMatch = version;
+				}
+
+				tokens.Advance();
+				hasVersions = true;
+			}
 		}
 
-		if (index >= tokens.Size()) throw MangoDecodeError("Unexpected end of string");
-
-		switch (tokens[index].type) {
-			case MangoTokenType::Nil: {
-				index++;
-				return Mango(label, MangoType::Nil);
+		if (hasVersions) {
+			if (verMatch) {
+				return *verMatch;
 			}
-			
-			case MangoTokenType::Boolean: {
-				index++;
-				return Mango(label, tokens[index - 1].value == "true");
-			}
-			
-			case MangoTokenType::Number: {
-				index++;
-				return Mango(label, tokens[index - 1].value.ToDouble());
-			}
-			
-			case MangoTokenType::String: {
-				index++;
-				return Mango(label, tokens[index - 1].value);
-			}
-			
-			case MangoTokenType::OpenSq: {
-				index++;
-				Mango list = Mango(label, MangoType::List);
-
-				while (Optional<Mango> value = DecodeValue(tokens, index)) {
-					list.Add((Mango)value);
-				}
-
-				if (index >= tokens.Size()) throw MangoDecodeError("Unexpected end of string");
-
-				if (tokens[index].type != MangoTokenType::CloseSq) {
-					throw MangoDecodeError("']' expected to close list");
-				}
-
-				index++;
-
-				return list;
-			}
-
-			case MangoTokenType::OpenCurl: {
-				index++;
-				Mango map = Mango(label, MangoType::Map);
-
-				while (Optional<String> key = DecodeLabel(tokens, index)) {
-					if (Optional<Mango> m = DecodeValue(tokens, index)) {
-						map.Add((String)key, (Mango)m);
-					}
-					else {
-						throw MangoDecodeError("Value expected after map key");
-					}
-				}
-
-				if (index >= tokens.Size()) throw MangoDecodeError("Unexpected end of string");
-
-				if (tokens[index].type != MangoTokenType::CloseCurl) {
-					throw MangoDecodeError("'}' expected to close map");
-				}
-
-				index++;
-
-				return map;
+			else if (hasVersions && ver) {
+				return *ver;
 			}
 		}
+		else {
+			if (version.Size() == 0 && ver) {
+				return *ver;
+			}
+			else {
+				return version;
+			}
+		}
+
+		throw MangoDecodeError("Invalid version");
 	}
 
-	inline Optional<String> Mango::DecodeLabel(const List<Token<MangoTokenType>>& tokens, UInt& index) {
-		if (index >= tokens.Size()) return nullptr;
+	inline Optional<Mango> Mango::ParseNil(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (tokens.Current().type == TokenType::Nil) {
+			tokens.Advance();
+			return Mango(MangoType::Nil);
+		}
 
-		if (tokens[index].type == MangoTokenType::Name) {
-			if (index + 1 >= tokens.Size()) throw MangoDecodeError("Unexpected end of string");
+		return nullptr;
+	}
 
-			if (tokens[index + 1].type == MangoTokenType::Colon) {
-				index += 2;
-				return tokens[index - 2].value;
+	inline Optional<Mango> Mango::ParseBoolean(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (tokens.Current().type == TokenType::Boolean) {
+			tokens.Advance();
+			return Mango(tokens.PeekPrevious().value == "true");
+		}
+
+		return nullptr;
+	}
+
+	inline Optional<Mango> Mango::ParseNumber(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (tokens.Current().type == TokenType::Number) {
+			tokens.Advance();
+			return Mango(tokens.PeekPrevious().value.ToDouble());
+		}
+
+		return nullptr;
+	}
+
+	inline Optional<Mango> Mango::ParseString(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (Optional<String> str = ParseRawString(tokens, info)) {
+			return Mango(*str);
+		}
+
+		return nullptr;
+	}
+
+	inline Optional<Mango> Mango::ParseVariable(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (tokens.Current().type == TokenType::VarName) {
+			tokens.Advance();
+			Mango m;
+
+			if (info.variables.Contains(tokens.PeekPrevious().value, m)) {
+				return m.Copy();
+			}
+			else {
+				return Mango(MangoType::Nil);
 			}
 		}
 
 		return nullptr;
 	}
+
+	inline MangoList Mango::ParseListItems(TokenList<TokenType>& tokens, ParsingInfo& info, const bool includeVariables) {
+		ParsingInfo parseInfo = info.Copy();
+		MangoList list;
+
+		if (includeVariables) {
+			while (ParseVariableAssignment(tokens, parseInfo, true));
+		}
+
+		while (ParseVersionListItems(tokens, parseInfo, list));
+
+		while (Optional<Mango> item = ParseLabeledValue(tokens, parseInfo)) {
+			list.Add(*item);
+		}
+
+		return list;
+	}
+
+	inline Optional<Mango> Mango::ParseList(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (tokens.Current().type != TokenType::OpenSq) return nullptr;
+		tokens.Advance();
+
+		MangoList list = ParseListItems(tokens, info);
+
+		if (tokens.Current().type != TokenType::CloseSq) {
+			throw MangoDecodeError("']' expected");	
+		}
+
+		tokens.Advance();
+		return Mango(list);
+	}
+
+	inline Optional<Pair<String, Mango>> Mango::ParseMapItem(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (Optional<String> key = ParseName(tokens, info)) {
+			Optional<Mango> value = nullptr;
+
+			if (tokens.Current().type == TokenType::Colon) {
+				tokens.Advance();
+				value = ParseValue(tokens, info, true);
+			}
+			else {
+				value = ParseLabeledValue(tokens, info, true);
+			}
+
+			if (!value) {
+				throw MangoDecodeError("Value expected after map key");
+			}
+
+			return Pair<String, Mango>(*key, *value);
+		}
+
+		return nullptr;
+	}
+
+	inline MangoMap Mango::ParseMapItems(TokenList<TokenType>& tokens, ParsingInfo& info, const bool includeVariables) {
+		ParsingInfo parseInfo = info.Copy();
+		MangoMap map;
+
+		if (includeVariables) {
+			while (ParseVariableAssignment(tokens, parseInfo, false));
+		}
+
+		while (ParseVersionMapItems(tokens, parseInfo, map));
+
+		while (Optional<Pair<String, Mango>> item = ParseMapItem(tokens, parseInfo)) {
+			if (map.Contains(item->key)) {
+				throw MangoDecodeError("Duplicate map key");
+			}
+
+			map.Add(*item);
+		}
+
+		return map;
+	}
+
+	inline Optional<Mango> Mango::ParseMap(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (tokens.Current().type != TokenType::OpenCurl) return nullptr;
+		tokens.Advance();
+
+		MangoMap map = ParseMapItems(tokens, info);
+
+		if (tokens.Current().type != TokenType::CloseCurl) {
+			throw MangoDecodeError("'}' expected");	
+		}
+
+		tokens.Advance();
+		return Mango(map);
+	}
+
+	inline Optional<String> Mango::ParseRawString(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (tokens.Current().type == TokenType::String) {
+			tokens.Advance();
+			return tokens.PeekPrevious().value;
+		}
+
+		return nullptr;
+	}
+
+	inline Optional<String> Mango::ParseName(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		if (tokens.Current().type == TokenType::Name) {
+			tokens.Advance();
+			return tokens.PeekPrevious().value;
+		}
+		else if (Optional<String> str = ParseRawString(tokens, info)) {
+			return *str;
+		}
+
+		return nullptr;
+	}
+
+	inline Optional<String> Mango::ParseLabel(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		const UInt pos = tokens.GetPos();
+
+		if (Optional<String> lbl = ParseName(tokens, info)) {
+			if (tokens.Current().type == TokenType::Colon) {
+				tokens.Advance();
+				return lbl;
+			}
+		}
+
+		tokens.SetPos(pos);
+		return nullptr;
+	}
+
+	inline Optional<Mango> Mango::ParseValue(TokenList<TokenType>& tokens, ParsingInfo& info, const bool allowInnerLabels) {
+		switch (tokens.Current().type) {
+			case TokenType::Nil:      return ParseNil(tokens, info);
+			case TokenType::Boolean:  return ParseBoolean(tokens, info);
+			case TokenType::Number:   return ParseNumber(tokens, info);
+			case TokenType::String:   return ParseString(tokens, info);
+			case TokenType::OpenSq:   return ParseList(tokens, info);
+			case TokenType::OpenCurl: return ParseMap(tokens, info);
+			case TokenType::VarName:  return ParseVariable(tokens, info);
+
+			case TokenType::VersionContent: return ParseVersionValue(tokens, info, !allowInnerLabels);
+			default: return nullptr;
+		}
+	}
+
+	inline Optional<Mango> Mango::ParseLabeledValue(TokenList<TokenType>& tokens, ParsingInfo& info, const bool forceLabel) {
+		const UInt pos = tokens.GetPos();
+		Optional<String> label = ParseLabel(tokens, info);
+
+		if (forceLabel && !label) {
+			tokens.SetPos(pos);
+			return nullptr;
+		}
+
+		if (Optional<Mango> mango = ParseVersionValue(tokens, info, label.HasValue())) {
+			if (label) mango->SetLabel(*label);
+			return *mango;
+		}
+		else if (Optional<Mango> mango = ParseValue(tokens, info)) {
+			if (label) mango->SetLabel(*label);
+			return *mango;
+		}
+
+		tokens.SetPos(pos);
+		return nullptr;
+	}
+
+	inline bool Mango::ParseVariableAssignment(TokenList<TokenType>& tokens, ParsingInfo& info, const bool isList, const bool forceSimple) {
+		if (!forceSimple) {
+			if (ParseVersionVariables(tokens, info, isList)) {
+				return true;
+			}
+		}
+
+		if (tokens.Current().type != TokenType::VarName) return false;
+		const UInt pos = tokens.GetPos();
+		const String var = tokens.Current().value;
+		tokens.Advance();
+
+		if (tokens.Current().type == TokenType::Assign) {
+			tokens.Advance();
+
+			if (Optional<Mango> mango = ParseLabeledValue(tokens, info)) {
+				if (info.variables.Contains(var)) {
+					info.variables[var] = *mango;
+				}
+				else {
+					info.variables.Add(var, *mango);
+				}
+
+				return true;
+			}
+			else {
+				throw MangoDecodeError("Invalid variable assignment");
+			}
+ 		}
+
+		tokens.SetPos(pos);
+		return true;
+	}
+
+	inline void Mango::ValidateVersions(Set<String>& versions, const Set<String>& newVersions, bool& hasDefault) {
+		for (const String& version : newVersions) {
+			if (versions.Contains(version)) {
+				throw MangoDecodeError("Duplicate version names");
+			}
+
+			versions.Add(version);
+		}
+
+		if (newVersions.IsEmpty()) {
+			if (hasDefault) {
+				throw MangoDecodeError("Multiple default versions");
+			}
+			
+			hasDefault = true;
+		}
+	}
+
+	inline bool Mango::VersionMatch(const Set<String>& newVersions, bool& perfectMatch, const String& version) {
+		if (newVersions.Contains(version)) {
+			perfectMatch = true;
+			return true;
+		}
+		else if (!perfectMatch && newVersions.IsEmpty()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	inline Optional<Set<String>> Mango::ParseVersions(TokenList<TokenType>& tokens, ParsingInfo& info) {
+		const TokenType type = tokens.Current().type;
+		
+		if (type != TokenType::VersionName && type != TokenType::VersionList && type != TokenType::VersionDefault) {
+			return nullptr;
+		}
+
+		Set<String> versions;
+
+		switch (tokens.Current().type) {
+			case TokenType::VersionName: {
+				versions.Add(tokens.Current().value);
+				tokens.Advance();
+				break;
+			}
+
+			case TokenType::VersionList: {
+				while (tokens.Next().type == TokenType::Name) {
+					if (versions.Contains(tokens.Current().value)) {
+						throw MangoDecodeError("Duplicate version names in version list");
+					}
+
+					versions.Add(tokens.Current().value);
+				}
+
+				if (tokens.Current().type != TokenType::CloseSq) {
+					throw MangoDecodeError("']' expected");
+				}
+
+				tokens.Advance();
+				break;
+			}
+
+			case TokenType::VersionDefault: {
+				tokens.Advance();
+				break;
+			}
+		}
+
+		return versions;
+	}
+
+	inline Optional<Mango> Mango::ParseVersionValue(TokenList<TokenType>& tokens, ParsingInfo& info, const bool hasLabel) {
+		if (tokens.Current().type != TokenType::VersionContent) return nullptr;
+		tokens.Advance();
+
+		Set<String> versionSet;
+		bool hasDefault = false;
+
+		Optional<Mango> value = nullptr;
+		bool perfectMatch = false;
+
+		while (Optional<Set<String>> versions = ParseVersions(tokens, info)) {
+			ValidateVersions(versionSet, *versions, hasDefault);
+			const bool match = VersionMatch(*versions, perfectMatch, info.version);
+
+			Mango mango;
+
+			if (hasLabel || tokens.Current().type == TokenType::Colon) {
+				if (tokens.Current().type != TokenType::Colon) {
+					throw MangoDecodeError("':' expected after version");
+				}
+
+				tokens.Advance();
+
+				if (Optional<Mango> m = ParseValue(tokens, info)) {
+					mango = *m;
+				}
+				else {
+					throw MangoDecodeError("Value expected after ':'");
+				}
+			}
+			else {
+				if (Optional<Mango> m = ParseLabeledValue(tokens, info, true)) {
+					mango = *m;
+				}
+				else {
+					throw MangoDecodeError("Value expected after ':'");
+				}
+			}
+
+			if (match) value = mango;
+		}
+
+		if (tokens.Current().type != TokenType::CloseCurl) {
+			throw MangoDecodeError("'}' expected");
+		}
+
+		tokens.Advance();
+
+		if (value) {
+			return *value;
+		}
+		else {
+			return Mango(MangoType::Nil);
+		}
+	}
+
+	inline bool Mango::ParseVersionVariables(TokenList<TokenType>& tokens, ParsingInfo& info, const bool isList) {
+		const UInt pos = tokens.GetPos();
+
+		Set<String> versionSet;
+		bool hasDefault = false;
+
+		Optional<ParsingInfo> parsingInfo = nullptr;
+		bool perfectMatch = false;
+		bool found = false;
+
+		while (Optional<Set<String>> versions = ParseVersions(tokens, info)) {
+			ValidateVersions(versionSet, *versions, hasDefault);
+			const bool match = VersionMatch(*versions, perfectMatch, info.version);
+
+			ParsingInfo pi = info.Copy();
+
+			if (tokens.Current().type == TokenType::Colon) {
+				tokens.Advance();
+
+				if (isList && tokens.Current().type == TokenType::OpenSq) {
+					tokens.Advance();
+				}
+				else if (!isList && tokens.Current().type == TokenType::OpenCurl) {
+					tokens.Advance();
+				}
+				else {
+					if (found) {
+						throw MangoDecodeError("'" + String(isList ? '[' : '{') + "' expected");
+					}
+					else {
+						tokens.SetPos(pos);
+						return false;
+					}
+				}
+
+				while (ParseVariableAssignment(tokens, pi, isList));
+
+				if (isList && tokens.Current().type == TokenType::CloseSq) {
+					tokens.Advance();
+				}
+				else if (!isList && tokens.Current().type == TokenType::CloseCurl) {
+					tokens.Advance();
+				}
+				else {
+					if (found) {
+						throw MangoDecodeError("'" + String(isList ? ']' : '}') + "' expected");
+					}
+					else {
+						tokens.SetPos(pos);
+						return false;
+					}
+				}
+			}
+			else if (!ParseVariableAssignment(tokens, pi, isList, true)) {
+				if (found) {
+					throw MangoDecodeError("Variable assignment expected after version name");
+				}
+				else {
+					tokens.SetPos(pos);
+					return false;
+				}
+			}
+
+			if (match) parsingInfo = pi;
+			found = true;
+		}
+
+		if (!found) {
+			tokens.SetPos(pos);
+			return false;
+		}
+
+		if (tokens.Current().type == TokenType::VersionEnd) {
+			tokens.Advance();
+		}
+
+		if (parsingInfo) info = *parsingInfo;
+		return true;
+	}
+
+	inline bool Mango::ParseVersionListItems(TokenList<TokenType>& tokens, ParsingInfo& info, MangoList& list) {
+		Set<String> versionSet;
+		bool hasDefault = false;
+
+		Optional<MangoList> mangoList = nullptr;
+		bool perfectMatch = false;
+		bool found = false;
+
+		while (Optional<Set<String>> versions = ParseVersions(tokens, info)) {
+			ValidateVersions(versionSet, *versions, hasDefault);
+			const bool match = VersionMatch(*versions, perfectMatch, info.version);
+
+			MangoList mlist;
+
+			if (tokens.Current().type == TokenType::Colon) {
+				tokens.Advance();
+
+				if (tokens.Current().type == TokenType::OpenSq) {
+					tokens.Advance();
+
+					mlist = ParseListItems(tokens, info, false);
+
+					if (tokens.Current().type == TokenType::CloseSq) {
+						tokens.Advance();
+					}
+					else {
+						throw MangoDecodeError("']' expected");
+					}
+				}
+				else {
+					throw MangoDecodeError("'[' expected");
+				}
+			}
+			else {
+				throw MangoDecodeError("':' expected after version name");
+			}
+
+			if (match) mangoList = mlist;
+			found = true;
+		}
+
+		if (!found) return false;
+
+		if (tokens.Current().type == TokenType::VersionEnd) {
+			tokens.Advance();
+		}
+
+		if (mangoList) {
+			for (const Mango& m : *mangoList) {
+				list.Add(m);
+			}
+		}
+
+		return true;
+	}
+
+	inline bool Mango::ParseVersionMapItems(TokenList<TokenType>& tokens, ParsingInfo& info, MangoMap& map) {
+		Set<String> versionSet;
+		bool hasDefault = false;
+
+		Optional<MangoMap> mangoMap = nullptr;
+		bool perfectMatch = false;
+		bool found = false;
+
+		while (Optional<Set<String>> versions = ParseVersions(tokens, info)) {
+			ValidateVersions(versionSet, *versions, hasDefault);
+			const bool match = VersionMatch(*versions, perfectMatch, info.version);
+
+			MangoMap mmap;
+
+			if (tokens.Current().type == TokenType::Colon) {
+				tokens.Advance();
+
+				if (tokens.Current().type == TokenType::OpenCurl) {
+					tokens.Advance();
+
+					mmap = ParseMapItems(tokens, info, false);
+
+					if (tokens.Current().type == TokenType::CloseCurl) {
+						tokens.Advance();
+					}
+					else {
+						throw MangoDecodeError("'}' expected");
+					}
+				}
+				else {
+					throw MangoDecodeError("'{' expected");
+				}
+			}
+			else if (Optional<Pair<String, Mango>> pair = ParseMapItem(tokens, info)) {
+				mmap.Add(*pair);
+			}
+			else {
+				throw MangoDecodeError("':' expected after version name");
+			}
+
+			if (match) mangoMap = mmap;
+			found = true;
+		}
+
+		if (!found) return false;
+
+		if (tokens.Current().type == TokenType::VersionEnd) {
+			tokens.Advance();
+		}
+
+		if (mangoMap) {
+			for (const Pair<String, Mango>& m : *mangoMap) {
+				if (map.Contains(m.key)) {
+					throw MangoDecodeError("Duplicate map keys");
+				}
+
+				map.Add(m);
+			}
+		}
+
+		return true;
+	}
 }
+

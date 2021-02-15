@@ -57,7 +57,7 @@ FunctionSymbol* TypeSymbol::ExplicitConversionTo(TypeSymbol* const type) {
 FunctionSymbol* TypeSymbol::ImplicitConversionFrom(TypeSymbol* const type) {
 	Scope as = Scope::As;
 	as.arguments = List<ScopeList>();
-	as.arguments.Get().Add(type->AbsoluteName());
+	as.arguments->Add(type->AbsoluteName());
 
 	FunctionSymbol* const op = Contains<FunctionSymbol>(as);
 
@@ -72,7 +72,7 @@ FunctionSymbol* TypeSymbol::ImplicitConversionFrom(TypeSymbol* const type) {
 FunctionSymbol* TypeSymbol::ExplicitConversionFrom(TypeSymbol* const type) {
 	Scope as = Scope::As;
 	as.arguments = List<ScopeList>();
-	as.arguments.Get().Add(type->AbsoluteName());
+	as.arguments->Add(type->AbsoluteName());
 
 	return Contains<FunctionSymbol>(as);
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include "Types.h"
 #include "Error.h"
 
@@ -35,13 +37,14 @@ namespace Boxx {
 		/// Checks if the optional contains a value
 		bool HasValue() const;
 
-		///T Get value
+		///T Value
 		/// Gets the value of the optional
 		///E OptionalError: Thrown if the optional is empty
-		///M
-		T Get() const;
-		T& Get();
-		///M
+		T Value() const;
+
+		///T Value Or Default
+		/// Gets the value or the default value if the optional does not have a value
+		T ValueOr(const T& defaultValue) const;
 
 		///H Operators
 
@@ -54,11 +57,34 @@ namespace Boxx {
 		void operator=(const Optional<T>& value);
 		void operator=(Optional<T>&& value) noexcept;
 
+		///T Comparison
+		/// Compares the optional with a value
+		///M
+		bool operator==(std::nullptr_t) const;
+		bool operator==(const T& value) const;
+		bool operator==(const Optional<T>& value) const;
+		bool operator!=(std::nullptr_t) const;
+		bool operator!=(const T& value) const;
+		bool operator!=(const Optional<T>& value) const;
+		///M
+
+		///T Not operator
+		/// Checks if the optional doeas not have a value
+		bool operator!() const;
+
 		///T Conversion to value
 		///E OptionalError: Thrown if the optional is empty
 		///M
-		explicit operator T() const;
-		explicit operator T&();
+		T operator*() const;
+		T& operator*();
+		///M
+
+		///T Member access
+		/// Used to access members of the value
+		///E OptionalError: Thrown if the optional is empty
+		///M
+		T* operator->();
+		const T* operator->() const;
 		///M
 
 		///T Conversion to bool
@@ -83,8 +109,8 @@ namespace Boxx {
 
 		bool HasValue() const;
 
-		bool Get() const;
-		bool& Get();
+		bool Value() const;
+		bool ValueOr(const bool defaultValue) const;
 
 		void operator=(std::nullptr_t);
 		void operator=(const bool value);
@@ -92,8 +118,19 @@ namespace Boxx {
 		void operator=(const Optional<bool>& value);
 		void operator=(Optional<bool>&& value) noexcept;
 
+		bool operator==(std::nullptr_t) const;
+		bool operator==(const bool value) const;
+		bool operator==(const Optional<bool>& value) const;
+		bool operator!=(std::nullptr_t) const;
+		bool operator!=(const bool value) const;
+		bool operator!=(const Optional<bool>& value) const;
+		
+		bool operator!() const;
+
+		bool operator*() const;
+		bool& operator*();
+
 		explicit operator bool() const;
-		explicit operator bool&();
 
 	private:
 		bool hasValue;
@@ -150,15 +187,14 @@ namespace Boxx {
 	}
 
 	template <class T>
-	inline T Optional<T>::Get() const {
+	inline T Optional<T>::Value() const {
 		if (!hasValue) throw OptionalError("Optional is null");
 		return value;
 	}
 
 	template <class T>
-	inline T& Optional<T>::Get() {
-		if (!hasValue) throw OptionalError("Optional is null");
-		return value;
+	inline T Optional<T>::ValueOr(const T& defaultValue) const {
+		return hasValue ? value : defaultValue;
 	}
 
 	template <class T>
@@ -186,15 +222,98 @@ namespace Boxx {
 	}
 
 	template <class T>
-	inline Optional<T>::operator T() const {
+	inline bool Optional<T>::operator==(std::nullptr_t) const {
+		return !hasValue;
+	}
+
+	template <class T>
+	inline bool Optional<T>::operator==(const T& value) const {
+		return hasValue && this->value == value;
+	}
+
+	template <class T>
+	inline bool Optional<T>::operator==(const Optional<T>& value) const {
+		if (hasValue == value.hasValue) {
+			if (hasValue) {
+				return this->value == value.value;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	template <class T>
+	inline bool Optional<T>::operator!=(std::nullptr_t) const {
+		return hasValue;
+	}
+
+	template <class T>
+	inline bool Optional<T>::operator!=(const T& value) const {
+		return !hasValue || this->value != value;
+	}
+
+	template <class T>
+	inline bool Optional<T>::operator!=(const Optional<T>& value) const {
+		if (hasValue == value.hasValue) {
+			if (hasValue) {
+				return this->value != value.value;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
+	template <class T>
+	inline bool operator==(std::nullptr_t, const Optional<T>& value) {
+		return value == nullptr;
+	}
+
+	template <class T>
+	inline bool operator==(const T& value1, const Optional<T>& value2) {
+		return value2 == value1;
+	}
+
+	template <class T>
+	inline bool operator!=(std::nullptr_t, const Optional<T>& value) {
+		return value != nullptr;
+	}
+
+	template <class T>
+	inline bool operator!=(const T& value1, const Optional<T>& value2) {
+		return value2 != value1;
+	}
+
+	template <class T>
+	inline bool Optional<T>::operator!() const {
+		return !hasValue;
+	}
+
+	template <class T>
+	inline T Optional<T>::operator*() const {
 		if (!hasValue) throw OptionalError("Optional is null");
 		return value;
 	}
 
 	template <class T>
-	inline Optional<T>::operator T&() {
+	inline T& Optional<T>::operator*() {
 		if (!hasValue) throw OptionalError("Optional is null");
 		return value;
+	}
+
+	template <class T>
+	inline T* Optional<T>::operator->() {
+		if (!hasValue) throw OptionalError("Optional is null");
+		return &value;
+	}
+
+	template <class T>
+	inline const T* Optional<T>::operator->() const {
+		if (!hasValue) throw OptionalError("Optional is null");
+		return &value;
 	}
 
 	template <class T>
@@ -234,14 +353,13 @@ namespace Boxx {
 		return hasValue;
 	}
 
-	inline bool Optional<bool>::Get() const {
+	inline bool Optional<bool>::Value() const {
 		if (!hasValue) throw OptionalError("Optional is null");
 		return value;
 	}
 
-	inline bool& Optional<bool>::Get() {
-		if (!hasValue) throw OptionalError("Optional is null");
-		return value;
+	inline bool Optional<bool>::ValueOr(const bool defaultValue) const {
+		return hasValue ? value : defaultValue;
 	}
 
 	inline void Optional<bool>::operator=(std::nullptr_t) {
@@ -264,12 +382,76 @@ namespace Boxx {
 		value.hasValue = false; 
 	}
 
+	inline bool Optional<bool>::operator==(std::nullptr_t) const {
+		return !hasValue;
+	}
+
+	inline bool Optional<bool>::operator==(const bool value) const {
+		return hasValue && this->value == value;
+	}
+
+	inline bool Optional<bool>::operator==(const Optional<bool>& value) const {
+		if (hasValue == value.hasValue) {
+			if (hasValue) {
+				return this->value == value.value;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	inline bool Optional<bool>::operator!=(std::nullptr_t) const {
+		return hasValue;
+	}
+
+	inline bool Optional<bool>::operator!=(const bool value) const {
+		return !hasValue || this->value != value;
+	}
+
+	inline bool Optional<bool>::operator!=(const Optional<bool>& value) const {
+		if (hasValue == value.hasValue) {
+			if (hasValue) {
+				return this->value != value.value;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
+	inline bool operator==(std::nullptr_t, const Optional<bool>& value) {
+		return value == nullptr;
+	}
+
+	inline bool operator==(const bool value1, const Optional<bool>& value2) {
+		return value2 == value1;
+	}
+
+	inline bool operator!=(std::nullptr_t, const Optional<bool>& value) {
+		return value != nullptr;
+	}
+
+	inline bool operator!=(const bool value1, const Optional<bool>& value2) {
+		return value2 != value1;
+	}
+
+	inline bool Optional<bool>::operator!() const {
+		return !hasValue;
+	}
+
 	inline Optional<bool>::operator bool() const {
+		return hasValue;
+	}
+
+	inline bool Optional<bool>::operator*() const {
 		if (!hasValue) throw OptionalError("Optional is null");
 		return value;
 	}
 
-	inline Optional<bool>::operator bool&() {
+	inline bool& Optional<bool>::operator*() {
 		if (!hasValue) throw OptionalError("Optional is null");
 		return value;
 	}

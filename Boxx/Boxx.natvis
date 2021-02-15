@@ -198,4 +198,29 @@
 			</CustomListItems>
 		</Expand>
 	</Type>
+
+	<Type Name="Boxx::Mango">
+		<DisplayString Condition="type == Boxx::MangoType::Nil &amp;&amp; label.len == 0">nil</DisplayString>
+		<DisplayString Condition="type == Boxx::MangoType::Nil &amp;&amp; label.len > 0">{label}: nil</DisplayString>
+
+		<DisplayString Condition="type == Boxx::MangoType::Boolean &amp;&amp; label.len == 0">{boolean}</DisplayString>
+		<DisplayString Condition="type == Boxx::MangoType::Boolean &amp;&amp; label.len > 0">{label}: {boolean}</DisplayString>
+
+		<DisplayString Condition="type == Boxx::MangoType::Number &amp;&amp; label.len == 0">{number}</DisplayString>
+		<DisplayString Condition="type == Boxx::MangoType::Number &amp;&amp; label.len > 0">{label}: {number}</DisplayString>
+
+		<DisplayString Condition="type == Boxx::MangoType::String &amp;&amp; label.len == 0">{string}</DisplayString>
+		<DisplayString Condition="type == Boxx::MangoType::String &amp;&amp; label.len > 0">{label}: {string}</DisplayString>
+		
+		<DisplayString Condition="type == Boxx::MangoType::List &amp;&amp; label.len == 0">{list}</DisplayString>
+		<DisplayString Condition="type == Boxx::MangoType::List &amp;&amp; label.len > 0">{label}: {list}</DisplayString>
+
+		<DisplayString Condition="type == Boxx::MangoType::Map &amp;&amp; label.len == 0">{map}</DisplayString>
+		<DisplayString Condition="type == Boxx::MangoType::Map &amp;&amp; label.len > 0">{label}: {map}</DisplayString>
+
+		<Expand>
+			<Item Name="list" Condition="type == Boxx::MangoType::List">list</Item>
+			<Item Name="map" Condition="type == Boxx::MangoType::Map">map</Item>
+		</Expand>
+	</Type>
 </AutoVisualizer>

@@ -330,7 +330,7 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 		Pointer<AssignNode> assign = new AssignNode(cond->loopStep->scope, cond->loopStep->file);
 		assign->vars.Add(cond->loopInit.Cast<AssignNode>()->vars[0]);
 
-		Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(cond->loopStep->scope, cond->stepOperator.Get(), cond->loopStep->file);
+		Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(cond->loopStep->scope, *cond->stepOperator, cond->loopStep->file);
 		add->node1 = assign->vars[0];
 		add->node2 = cond->loopStep;
 

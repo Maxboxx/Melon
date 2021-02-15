@@ -53,7 +53,7 @@ Optional<List<TypeSymbol*>> CallNode::GetTemplateTypes(const Optional<List<Scope
 
 	List<TypeSymbol*> args;
 
-	for (const ScopeList& s : types.Get()) {
+	for (const ScopeList& s : *types) {
 		TypeSymbol* const type = SymbolTable::Find<TypeSymbol>(s, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 		if (!type) return nullptr;
@@ -83,7 +83,7 @@ FunctionSymbol* CallNode::GetOperatorFunction(const Optional<List<TypeSymbol*>>&
 	if (TypeSymbol* const t = node->Type()) {
 		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Scope::Call, node->file)) {
 			if (templateTypes) {
-				return f->FindMethodOverload(templateTypes.Get(), argTypes, node->file);
+				return f->FindMethodOverload(*templateTypes, argTypes, node->file);
 			}
 			else {
 				return f->FindMethodOverload(argTypes, node->file);
@@ -107,7 +107,7 @@ FunctionSymbol* CallNode::GetInitFunction(const Optional<List<TypeSymbol*>>& tem
 FunctionSymbol* CallNode::GetStaticFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (FunctionSymbol* const f = node->GetSymbol()->Cast<FunctionSymbol>()) {
 		if (templateTypes) {
-			return f->FindStaticOverload(templateTypes.Get(), argTypes, node->file);
+			return f->FindStaticOverload(*templateTypes, argTypes, node->file);
 		}
 		else {
 			return f->FindStaticOverload(argTypes, node->file);
@@ -121,7 +121,7 @@ FunctionSymbol* CallNode::GetMethod(const Optional<List<TypeSymbol*>>& templateT
 	if (TypeSymbol* const t = node->Type()) {
 		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(methodName, node->file)) {
 			if (templateTypes) {
-				return f->FindMethodOverload(templateTypes.Get(), argTypes, node->file);
+				return f->FindMethodOverload(*templateTypes, argTypes, node->file);
 			}
 			else {
 				return f->FindMethodOverload(argTypes, node->file);
@@ -161,7 +161,7 @@ FunctionSymbol* CallNode::GetFunc() const {
 
 	// Get argument types
 	if (Optional<List<TypeSymbol*>> types = GetArgumentTypes()) {
-		argTypes = types.Get();
+		argTypes = *types;
 	}
 	else {
 		return nullptr;

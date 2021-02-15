@@ -138,7 +138,7 @@ Symbol* TemplateTypeSymbol::FindSymbol(const ScopeList& scopeList, const UInt in
 
 	if (scope.name.Size() == 0 && scope.types && !scope.arguments) {
 		for (TemplateTypeSymbol* const variant : templateVariants) {
-			const List<ScopeList> types = scope.types.Get();
+			const List<ScopeList> types = *scope.types;
 
 			if (types.Size() != variant->templateArguments.Size()) continue;
 

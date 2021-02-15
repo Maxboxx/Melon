@@ -144,8 +144,8 @@ namespace Boxx {
 			DocComment c;
 			bool add = true;
 
-			if (match && match.Get().groups.Size() == 3) {
-				UByte level = match.Get().groups[0].Size();
+			if (match && match->groups.Size() == 3) {
+				UByte level = match->groups[0].Size();
 
 				if (commentLevel < level) {
 					currentLevel++;
@@ -155,11 +155,11 @@ namespace Boxx {
 				}
 
 				commentLevel = level;
-				c.commentType = match.Get().groups[1][0];
-				c.content = match.Get().groups[2];
+				c.commentType = match->groups[1][0];
+				c.content = match->groups[2];
 			}
-			else if (match && match.Get().groups.Size() == 2) {
-				UByte level = match.Get().groups[0].Size();
+			else if (match && match->groups.Size() == 2) {
+				UByte level = match->groups[0].Size();
 
 				if (commentLevel < level) {
 					currentLevel++;
@@ -169,7 +169,7 @@ namespace Boxx {
 				}
 
 				commentLevel = level;
-				c.content = match.Get().groups[1];
+				c.content = match->groups[1];
 			}
 			else if (findCode) {
 				if (!hasS) {
@@ -337,7 +337,7 @@ namespace Boxx {
 				commentType == 'W' ||
 				commentType == 'V'
 			) {
-				String catName = categoryName ? categoryName.Get() : "Category";
+				String catName = categoryName.ValueOr("Category");
 
 				switch (commentType) {
 					case 'A': catName = "Arguments"; break;
@@ -359,7 +359,7 @@ namespace Boxx {
 				currentSection.title = catName;
 
 				if (commentType != 'W') {
-					Match m = splitValue.Match(comments[index].content).Get();
+					Match m = *splitValue.Match(comments[index].content);
 					currentSection.code.Add(m.groups[0].Replace("::", ":"));
 
 					if (m.groups.Size() > 1) {

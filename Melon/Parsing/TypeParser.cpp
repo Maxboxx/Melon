@@ -31,23 +31,23 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 			for (UInt i = 0; i < n; i++) {
 				Scope optionalScope = Scope::Optional;
 				optionalScope.types = List<ScopeList>();
-				optionalScope.types.Get().Add(ScopeList().Add((Scope)first));
+				optionalScope.types->Add(ScopeList().Add(*first));
 				first = optionalScope;
 
-				SymbolTable::SpecializeTemplate(ScopeList().Add((Scope)first), info.scope, info.GetFileInfo(info.Current(-1).line));
+				SymbolTable::SpecializeTemplate(ScopeList().Add(*first), info.scope, info.GetFileInfo(info.Current(-1).line));
 			}
 		}
 
-		ScopeList type = ScopeList().Add((Scope)first);
+		ScopeList type = ScopeList().Add(*first);
 
 		while (!info.EndOfFile()) {
 			if (info.Current().type != TokenType::Dot) break;
 			info.index++;
 
 			if (Optional<Scope> scope = ParseScope(info)) {
-				type = type.Add((Scope)scope);
+				type = type.Add(*scope);
 
-				if (scope.Get().types) {
+				if (scope->types) {
 					SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfo(info.Current(-1).line));
 				}
 
@@ -58,7 +58,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 					for (UInt i = 0; i < n; i++) {
 						Scope optionalScope = Scope::Optional;
 						optionalScope.types = List<ScopeList>();
-						optionalScope.types.Get().Add(ScopeList().Add(type));
+						optionalScope.types->Add(ScopeList().Add(type));
 						type = ScopeList().Add(optionalScope);
 
 						SymbolTable::SpecializeTemplate(ScopeList().Add(type), info.scope, info.GetFileInfo(info.Current(-1).line));

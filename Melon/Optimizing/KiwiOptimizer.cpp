@@ -570,11 +570,11 @@ void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) 
 				}
 
 				if (remove) {
-					replacement.Remove(remove.Get());
+					replacement.Remove(*remove);
 				}
 
 				if (nextReplacement) {
-					replacement.Add(nextReplacement.Get().value1, nextReplacement.Get().value2);
+					replacement.Add(nextReplacement->value1, nextReplacement->value2);
 				}
 			}
 		}
@@ -1076,7 +1076,7 @@ UInt KiwiOptimizer::NextRegisterGet(List<OptimizerInstruction>& instructions, UI
 }
 
 Argument KiwiOptimizer::LastLabelInChain(const List<OptimizerInstruction>& instructions, const Argument& label, const Optional<Argument>& firstLabel) {
-	Argument first = firstLabel ? firstLabel.Get() : label;
+	Argument first = firstLabel.ValueOr(label);
 
 	for (UInt i = 0; i < instructions.Size(); i++) {
 		if (instructions[i].instruction.type == InstructionType::Label) {

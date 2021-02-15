@@ -22,7 +22,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 	Pointer<NewVariableNode> node = new NewVariableNode(info.scope, info.GetFileInfo(info.Current().line));
 
 	while (const Optional<ScopeList> type = ParseType(info)) {
-		node->types.Add(type.Get());
+		node->types.Add(*type);
 
 		if (single && node->types.Size() == 1) break;
 

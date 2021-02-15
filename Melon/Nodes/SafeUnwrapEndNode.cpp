@@ -29,7 +29,7 @@ SafeUnwrapEndNode::~SafeUnwrapEndNode() {
 TypeSymbol* SafeUnwrapEndNode::Type() const  {
 	Scope scope = Scope::Optional;
 	scope.types = List<ScopeList>();
-	scope.types.Get().Add(node->Type()->AbsoluteName());
+	scope.types->Add(node->Type()->AbsoluteName());
 
 	return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList().Add(scope), file);
 }
@@ -93,7 +93,7 @@ void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 
 	Scope type = Scope::Optional;
 	type.types = List<ScopeList>();
-	type.types.Get().Add(nodeType);
+	type.types->Add(nodeType);
 
 	Node::root->AddTemplateSpecialization(ScopeList(true).Add(type), scope->AbsoluteName(), file);
 }

@@ -23,7 +23,7 @@ namespace Boxx {
 		///E LexerError: Thrown if the string contains an undefined token
 		///M
 		template <class T>
-		static List<Token<T>> Lex(const List<TokenPattern<T>>& patterns, const String& code);
+		static TokenList<T> Lex(const List<TokenPattern<T>>& patterns, const String& code);
 		///M
 		
 	private:
@@ -51,13 +51,13 @@ namespace Boxx {
 	};
 
 	template <class T>
-	static List<Token<T>> Lexer::Lex(const List<TokenPattern<T>>& patterns, const String& code) {
+	static TokenList<T> Lexer::Lex(const List<TokenPattern<T>>& patterns, const String& code) {
 		static Regex whiteSpace = Regex("^%n*");
 		static Regex undefinedToken = Regex("^~%n*");
 
-		if (code.Size() == 0) return List<Token<T>>();
+		if (code.Size() == 0) return TokenList<T>();
 
-		String match = whiteSpace.Match(code).Get().match;
+		String match = whiteSpace.Match(code)->match;
 		UInt line = 1 + Lines(match);
 		UInt i = match.Size();
 		List<Token<T>> tokens;
@@ -69,12 +69,12 @@ namespace Boxx {
 				Optional<Match> match = pattern.pattern.Match(code, i);
 
 				if (match) {
-					Match m = (Match)match;
+					Match m = *match;
 
 					i += m.length;
 
 					if (!pattern.ignore) {
-						tokens.Add(Token<T>(pattern.type, m.groups.IsEmpty() ? m.match : m.groups[0], line));
+						tokens.Add(Token<T>(pattern.type, m.groups.IsEmpty() ? m.match : m.groups[0], m.match, line));
 					}
 
 					line += Lines(m.match);
@@ -88,17 +88,17 @@ namespace Boxx {
 				Optional<Match> match = undefinedToken.Match(code, i);
 
 				if (match) {
-					throw LexerError("Undefined token '" + match.Get().match + "'");
+					throw LexerError("Undefined token '" + match->match + "'");
 				}
 			}
 
 			if (i < code.Size()) {
-				const String match = whiteSpace.Match(code, i).Get().match;
+				const String match = whiteSpace.Match(code, i)->match;
 				i += match.Size();
 				line += Lines(match);
 			}
 		}
 
-		return tokens;
+		return TokenList<T>(tokens);
 	}
 }

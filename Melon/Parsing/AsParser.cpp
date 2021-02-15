@@ -28,7 +28,7 @@ NodePtr AsParser::Parse(ParsingInfo& info) {
 	if (Optional<ScopeList> type = TypeParser::Parse(info)) {
 		Pointer<ConvertNode> cn = new ConvertNode(info.scope, info.GetFileInfo(asLine));
 		cn->isExplicit = true;
-		cn->type = type.Get();
+		cn->type = *type;
 		return cn;
 	}
 	else {

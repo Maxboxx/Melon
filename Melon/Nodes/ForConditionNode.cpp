@@ -46,7 +46,7 @@ ScanResult ForConditionNode::Scan(ScanInfoStack& info) {
 		result |= r;
 	}
 	else {
-		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(loopCondition->scope, (Scope)conditionOperator, loopCondition->file);
+		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(loopCondition->scope, *conditionOperator, loopCondition->file);
 		op->node1 = loopInit.Cast<AssignNode>()->vars[0];
 		op->node2 = loopCondition;
 
@@ -64,7 +64,7 @@ ScanResult ForConditionNode::Scan(ScanInfoStack& info) {
 		Pointer<AssignNode> assign = new AssignNode(loopStep->scope, loopStep->file);
 		assign->vars.Add(loopInit.Cast<AssignNode>()->vars[0]);
 
-		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(loopStep->scope, (Scope)stepOperator, loopStep->file);
+		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(loopStep->scope, *stepOperator, loopStep->file);
 		op->node1 = assign->vars[0];
 		op->node2 = loopStep;
 
@@ -95,7 +95,7 @@ StringBuilder ForConditionNode::ToMelon(const UInt indent) const {
 	sb += ", ";
 
 	if (conditionOperator) {
-		sb += conditionOperator.Get().ToString();
+		sb += conditionOperator->ToSimpleString();
 		sb += " ";
 	}
 
@@ -103,7 +103,7 @@ StringBuilder ForConditionNode::ToMelon(const UInt indent) const {
 	sb += ", ";
 
 	if (stepOperator) {
-		sb += stepOperator.Get().ToString();
+		sb += stepOperator->ToSimpleString();
 		sb += " ";
 	}
 

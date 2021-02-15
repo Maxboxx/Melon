@@ -68,7 +68,7 @@ ScopeList Node::GetSideEffectScope(const bool assign) {
 		sideEffectScope = FindSideEffectScope(assign);
 	}
 
-	return sideEffectScope.Get();
+	return *sideEffectScope;
 }
 
 ScopeList Node::FindSideEffectScope(const bool assign) {

@@ -24,7 +24,7 @@ namespace Melon {
 			static Boxx::Regex whiteSpace = Boxx::Regex("^%n*");
 			static Boxx::Regex undefinedToken = Boxx::Regex("^~%n*");
 
-			Boxx::String match = whiteSpace.Match(code).Get().match;
+			Boxx::String match = whiteSpace.Match(code)->match;
 			Boxx::UInt line = 1 + Lines(match);
 			Boxx::UInt i = match.Size();
 			Boxx::List<Token> tokens;
@@ -34,13 +34,13 @@ namespace Melon {
             
 				for (const TokenPattern& pattern : patterns) {
 					if (Boxx::Optional<Boxx::Match> match = pattern.pattern.Match(code, i)) {
-						i += match.Get().length;
+						i += match->length;
 
 						if (!pattern.ignore) {
-                   			tokens.Add(Token(pattern.type, match.Get().groups.IsEmpty() ? match.Get().match : match.Get().groups[0], line));
+                   			tokens.Add(Token(pattern.type, match->groups.IsEmpty() ? match->match : match->groups[0], line));
 						}
 
-						line += Lines(match.Get().match);
+						line += Lines(match->match);
 					
 						found = true;
 						break;
@@ -49,12 +49,12 @@ namespace Melon {
             
 				if (!found) {
 					if (Boxx::Optional<Boxx::Match> match = undefinedToken.Match(code, i)) {
-						ErrorLog::Error(TokenError(TokenError::UndefinedStart + match.Get().match + TokenError::UndefinedEnd, FileInfo(filename, line, 0)));
+						ErrorLog::Error(TokenError(TokenError::UndefinedStart + match->match + TokenError::UndefinedEnd, FileInfo(filename, line, 0)));
 					}
 				}
             
 				if (i < code.Size()) {
-					const Boxx::String match = whiteSpace.Match(code, i).Get().match;
+					const Boxx::String match = whiteSpace.Match(code, i)->match;
 					i += match.Size();
 					line += Lines(match);
 				}

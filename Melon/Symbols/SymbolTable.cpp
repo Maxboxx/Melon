@@ -95,7 +95,7 @@ Symbol* SymbolTable::Find(ScopeList name, ScopeList scope, const FileInfo& file,
 
 	for (Boxx::UInt i = 0; i < name.Size(); i++) {
 		if (name[i].types) {
-			for (ScopeList& type : name[i].types.Get()) {
+			for (ScopeList& type : *name[i].types) {
 				if (Symbol* const s = Find(type, scope, file)) {
 					type = s->AbsoluteName();
 				}
@@ -321,7 +321,7 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 			}
 
 			if (templateArgs) {
-				for (const ScopeList& arg : templateArgs.Get()) {
+				for (const ScopeList& arg : *templateArgs) {
 					if (arg.Size() > 0 && arg[0] == Scope()) {
 						if (TemplateSymbol* const t = s->Contains<TemplateSymbol>(arg[1])) {
 							if (TypeSymbol* const type = t->Type()) {
@@ -376,7 +376,7 @@ ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& 
 
 	for (Boxx::UInt i = 0; i < typeScope.Size(); i++) {
 		if (typeScope[i].types) {
-			for (ScopeList& type : typeScope[i].types.Get()) {
+			for (ScopeList& type : *typeScope[i].types) {
 				ScopeList temp = type;
 
 				if (temp.IsTemplate()) {

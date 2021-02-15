@@ -109,7 +109,7 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 	if (Optional<List<ScopeList>> templateList = TemplateParser::ParseDefine(info)) {
 		StructSymbol* tsym = new StructSymbol(info.GetFileInfo(structLine));
 
-		for (const ScopeList& arg : templateList.Get()) {
+		for (const ScopeList& arg : *templateList) {
 			if (arg[0].IsEmpty()) {
 				tsym->AddSymbol(arg[1], new TemplateSymbol(info.GetFileInfo(structLine)));
 			}
@@ -118,7 +118,7 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 		}
 
 		Scope templateScope = Scope("");
-		templateScope.types = templateList.Get();
+		templateScope.types = *templateList;
 
 		sym->AddTemplateVariant(tsym);
 		sym = tsym;

@@ -699,8 +699,8 @@ namespace Boxx {
 		List<Boxx::Match> matches;
 
 		while (Optional<Boxx::Match> match = Match(str, pos)) {
-			matches.Add(match.Get());
-			pos = match.Get().index + match.Get().length;
+			matches.Add(*match);
+			pos = match->index + match->length;
 		}
 
 		return matches;
@@ -818,9 +818,9 @@ namespace Boxx {
 		if (Optional<Tuple<UInt, UInt, bool>> quant = ParseQuantifier(pattern, index)) {
 			if (!element.value1->IsPlain()) {
 				Pointer<QuantifierNode> quantifier = new QuantifierNode();
-				quantifier->min = quant.Get().value1;
-				quantifier->max = quant.Get().value2;
-				quantifier->many = quant.Get().value3;
+				quantifier->min = quant->value1;
+				quantifier->max = quant->value2;
+				quantifier->many = quant->value3;
 
 				Pointer<QuantifierEndNode> qEnd = new QuantifierEndNode();
 				qEnd->min  = quantifier->min;
@@ -841,18 +841,18 @@ namespace Boxx {
 			}
 			else if (element.value1.Is<AnyNode>()) {
 				Pointer<AnyQuantifierNode> quantifier = new AnyQuantifierNode();
-				quantifier->min = quant.Get().value1;
-				quantifier->max = quant.Get().value2;
-				quantifier->many = quant.Get().value3;
+				quantifier->min = quant->value1;
+				quantifier->max = quant->value2;
+				quantifier->many = quant->value3;
 
 				element.value1 = quantifier;
 				element.value2 = quantifier;
 			}
 			else {
 				Pointer<PlainQuantifierNode> quantifier = new PlainQuantifierNode();
-				quantifier->min = quant.Get().value1;
-				quantifier->max = quant.Get().value2;
-				quantifier->many = quant.Get().value3;
+				quantifier->min = quant->value1;
+				quantifier->max = quant->value2;
+				quantifier->many = quant->value3;
 
 				quantifier->content = element.value1;
 				element.value2->next = new LeafNode();
@@ -896,7 +896,7 @@ namespace Boxx {
 		}
 		else if (Optional<char> c = ParseChar(pattern, index)) {
 			Pointer<StringNode> node = new StringNode();
-			node->string = String((char)c);
+			node->string = String(*c);
 			return NodeLeaf(node, node);
 		}
 
@@ -1011,20 +1011,20 @@ namespace Boxx {
 				index++;
 
 				if (Optional<UInt> num = ParseInt(pattern, index)) {
-					max = (UInt)num;
+					max = *num;
 				}
 				else {
 					throw RegexPatternError("Integer expected after '" + String(MetaChar::quantRange) + "' in quantifier range");
 				}
 			}
 			else if (Optional<UInt> num = ParseInt(pattern, index)) {
-				min = (UInt)num;
+				min = *num;
 
 				if (index < pattern.pattern.Size() && pattern[index] == MetaChar::quantRange) {
 					index++;
 
 					if (Optional<UInt> n = ParseInt(pattern, index)) {
-						max = (UInt)n;
+						max = *n;
 					}
 					else {
 						max = Math::UIntMax();
@@ -1081,8 +1081,8 @@ namespace Boxx {
 
 		if (Optional<char> endChar = ParseChar(pattern, index)) {
 			Pointer<RangeNode> range = new RangeNode();
-			range->start = (char)start;
-			range->end   = (char)endChar;
+			range->start = *start;
+			range->end   = *endChar;
 			return range;
 		}
 		else {
@@ -1095,7 +1095,7 @@ namespace Boxx {
 		UInt lastIndex = index;
 
 		while (Optional<char> c = ParseChar(pattern, index, false)) {
-			str.Add(c.Get());
+			str.Add(*c);
 			lastIndex = index;
 		}
 
@@ -1188,7 +1188,7 @@ namespace Boxx {
 
 		if (Optional<UInt> num = ParseInt(pattern, index)) {
 			Pointer<ElementMatchNode> match = new ElementMatchNode();
-			match->index = (UInt)num;
+			match->index = *num;
 			return match;
 		}
 
@@ -1207,7 +1207,7 @@ namespace Boxx {
 				set->nodes.Add(node);
 			}
 			else if (Optional<char> c = ParseSetChar(pattern, index)) {
-				set->chars.Add((char)c);
+				set->chars.Add(*c);
 			}
 			else if (Node node = ParseSetEscape(pattern, index)) {
 				node->next = new LeafNode();
@@ -1237,8 +1237,8 @@ namespace Boxx {
 
 		if (Optional<char> endChar = ParseSetChar(pattern, index)) {
 			Pointer<RangeNode> range = new RangeNode();
-			range->start = (char)start;
-			range->end   = (char)endChar;
+			range->start = *start;
+			range->end   = *endChar;
 			return range;
 		}
 		else {

@@ -1,7 +1,5 @@
 #include "ScopeList.h"
 
-#include "Symbols.h"
-
 #include "Boxx/Math.h"
 
 using namespace Boxx;
@@ -110,7 +108,7 @@ String Scope::ToString() const {
 
 		bool first = true;
 
-		for (const ScopeList& scopes : types.Get()) {
+		for (const ScopeList& scopes : *types) {
 			if (!first) {
 				scope += ",";
 			}
@@ -128,7 +126,7 @@ String Scope::ToString() const {
 
 		bool first = true;
 
-		for (const ScopeList& scopes : arguments.Get()) {
+		for (const ScopeList& scopes : *arguments) {
 			if (!first) {
 				scope += ",";
 			}
@@ -145,7 +143,7 @@ String Scope::ToString() const {
 }
 
 String Scope::ToSimpleString() const {
-	if (name == Scope::Optional.name && !types.Get().IsEmpty()) return types.Get()[0].ToSimpleString() + "?";
+	if (name == Scope::Optional.name && !types->IsEmpty()) return types.Value()[0].ToSimpleString() + "?";
 
 	String scope = name;
 
@@ -154,7 +152,7 @@ String Scope::ToSimpleString() const {
 
 		bool first = true;
 
-		for (const ScopeList& scopes : types.Get()) {
+		for (const ScopeList& scopes : *types) {
 			if (!first) {
 				scope += ", ";
 			}
@@ -172,7 +170,7 @@ String Scope::ToSimpleString() const {
 
 		bool first = true;
 
-		for (const ScopeList& scopes : arguments.Get()) {
+		for (const ScopeList& scopes : *arguments) {
 			if (!first) {
 				scope += ", ";
 			}
@@ -190,8 +188,8 @@ String Scope::ToSimpleString() const {
 
 Scope Scope::Copy() const {
 	Scope scope = *this;
-	if (types)     scope.types     = types.Get().Copy();
-	if (arguments) scope.arguments = arguments.Get().Copy();
+	if (types)     scope.types     = types->Copy();
+	if (arguments) scope.arguments = arguments->Copy();
 	return scope;
 }
 
@@ -205,8 +203,8 @@ bool Scope::operator==(const Scope& scope) const {
 	if (arguments.HasValue() != scope.arguments.HasValue()) return false;
 
 	if (types) {
-		const List<ScopeList> types1 = types.Get();
-		const List<ScopeList> types2 = scope.types.Get();
+		const List<ScopeList> types1 = *types;
+		const List<ScopeList> types2 = *scope.types;
 
 		if (types1.Size() != types2.Size()) return false;
 
@@ -216,8 +214,8 @@ bool Scope::operator==(const Scope& scope) const {
 	}
 
 	if (arguments) {
-		const List<ScopeList> arguments1 = arguments.Get();
-		const List<ScopeList> arguments2 = scope.arguments.Get();
+		const List<ScopeList> arguments1 = *arguments;
+		const List<ScopeList> arguments2 = *scope.arguments;
 
 		if (arguments1.Size() != arguments2.Size()) return false;
 
@@ -239,8 +237,8 @@ bool Scope::operator<(const Scope& scope) const {
 	if (arguments.HasValue() != scope.arguments.HasValue()) return scope.arguments.HasValue();
 
 	if (types) {
-		const List<ScopeList> types1 = types.Get();
-		const List<ScopeList> types2 = scope.types.Get();
+		const List<ScopeList> types1 = *types;
+		const List<ScopeList> types2 = *scope.types;
 
 		if (types1.Size() != types2.Size()) return types1.Size() < types2.Size();
 
@@ -250,8 +248,8 @@ bool Scope::operator<(const Scope& scope) const {
 	}
 
 	if (arguments) {
-		const List<ScopeList> arguments1 = types.Get();
-		const List<ScopeList> arguments2 = scope.types.Get();
+		const List<ScopeList> arguments1 = *types;
+		const List<ScopeList> arguments2 = *scope.types;
 
 		if (arguments1.Size() != arguments2.Size()) return arguments1.Size() < arguments2.Size();
 
@@ -373,13 +371,13 @@ ScopeList ScopeList::Split() const {
 		}
 		
 		if (scope.types) {
-			for (ScopeList& type : scope.types.Get()) {
+			for (ScopeList& type : *scope.types) {
 				type = type.Split();
 			}
 		}
 
 		if (scope.arguments) {
-			for (ScopeList& arg : scope.arguments.Get()) {
+			for (ScopeList& arg : *scope.arguments) {
 				arg = arg.Split();
 			}
 		}

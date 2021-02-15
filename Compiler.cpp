@@ -1,8 +1,8 @@
 #include "Boxx/List.h"
 #include "Boxx/String.h"
 
-#if BOXX_VERSION_LT(3, 2, 6)
-	#error Boxx version of 3.2.6 or newer required
+#if BOXX_VERSION_LT(3, 3, 0)
+	#error Boxx version of 3.3.0 or newer required
 #endif
 
 #include "Kiwi/Kiwi.h"

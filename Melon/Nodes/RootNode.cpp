@@ -237,7 +237,7 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 }
 
 Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const ScopeList& name, const ScopeList& scope, const FileInfo& file) {
-	List<ScopeList> templateArgs = name.Last().types.Get().Copy();
+	List<ScopeList> templateArgs = name.Last().types->Copy();
 
 	for (ScopeList& type : templateArgs) {
 		if (Symbol* const s = SymbolTable::Find(type, scope, file)) {
@@ -402,7 +402,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 			if (fileDir.Size() != 0) fileDir += "/";
 
 			if (Optional<Match> match = filename.Match(node->file.filename)) {
-				fileDir += match.Get().match;
+				fileDir += match->match;
 			}
 
 			sb = StringBuilder();

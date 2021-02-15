@@ -34,7 +34,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 				}
 			}
 
-			const String fileDir = Regex::Match("^(./)~[%/\\]+$", info.filename).Get().groups[0];
+			const String fileDir = Regex::Match("^(./)~[%/\\]+$", info.filename)->groups[0];
 			String includeDir = include[0].ToString();
 
 			for (UInt i = 1; i < include.Size(); i++) {

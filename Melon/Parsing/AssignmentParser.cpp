@@ -191,7 +191,7 @@ List<ScopeList> AssignmentParser::ParseTypes(ParsingInfo& info) {
 			types.Add(ScopeList::Discard);
 		}
 		else if (Optional<ScopeList> type = TypeParser::Parse(info)) {
-			types.Add(type.Get());
+			types.Add(*type);
 		}
 		else {
 			break;

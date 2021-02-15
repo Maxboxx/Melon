@@ -370,8 +370,8 @@ StringBuilder AssignNode::ToMelon(const UInt indent) const {
 
 	// Single/No types
 	if (type) {
-		if (type.Get() != ScopeList::Discard) {
-			sb += type.Get().ToSimpleString();
+		if (type != ScopeList::Discard) {
+			sb += type->ToSimpleString();
 			sb += ": ";
 		}
 	}

@@ -30,7 +30,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 	info.scope = funcSym;
 
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, parent == nullptr)) {
-		const FunctionHead funcHead = (FunctionHead)fh;
+		const FunctionHead funcHead = *fh;
 		Pointer<FunctionNode> func = new FunctionNode(info.scope, info.GetFileInfo(startLine));
 
 		UInt line = 0;
@@ -279,7 +279,7 @@ Optional<Scope> FunctionParser::ParseName(const bool isOperator, ParsingInfo& in
 
 	if (!isOperator) {
 		if (Optional<Scope> fname = ParseFunctionName(info, isPlain)) {
-			const Scope name = (Scope)fname;
+			const Scope name = *fname;
 
 			if (upper.Match(name.name)) {
 				ErrorLog::Info(InfoError(InfoError::LowerName("function", name.name), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
@@ -298,7 +298,7 @@ Optional<Scope> FunctionParser::ParseName(const bool isOperator, ParsingInfo& in
 	}
 	else {
 		if (Optional<Scope> name = ParseOperatorName(info)) {
-			return (Scope)name;
+			return *name;
 		}
 		else {
 			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("operator", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
@@ -386,7 +386,7 @@ List<ScopeList> FunctionParser::ParseReturnTypes(ParsingInfo& info) {
 		}
 
 		if (Optional<ScopeList> type = TypeParser::Parse(info)) {
-			returnTypes.Add((ScopeList)type);
+			returnTypes.Add(*type);
 		}
 		else {
 			break;
@@ -421,7 +421,7 @@ List<FunctionParser::Argument> FunctionParser::ParseArguments(ParsingInfo& info)
 			info.index++;
 
 			Argument argument;
-			argument.type       = (ScopeList)type;
+			argument.type       = *type;
 			argument.attributes = VariableAttributeParser::Parse(info, true);
 
 			if (info.Current().type != TokenType::Name) {
@@ -469,11 +469,11 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 	funcHead.returnTypes = ParseReturnTypes(info);
 	
 	if (Optional<Scope> name = ParseName(funcHead.isOperator, info, isPlain)) {
-		funcHead.name = (Scope)name;
+		funcHead.name = *name;
 	}
 
 	if (Optional<List<ScopeList>> templateArgs = TemplateParser::ParseDefine(info)) {
-		funcHead.templateArgs = templateArgs.Get();
+		funcHead.templateArgs = *templateArgs;
 	}
 
 	funcHead.arguments = ParseArguments(info);

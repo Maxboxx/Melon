@@ -138,7 +138,7 @@ namespace Boxx {
 
 		///T Is open
 		/// Checks if the file is open
-		bool IsOpen();
+		bool IsOpen() const;
 
 		void operator=(const FileWriter& file);
 		void operator=(FileWriter&& file) noexcept;
@@ -381,7 +381,7 @@ namespace Boxx {
 		file->close();
 	}
 
-	inline bool FileWriter::IsOpen() {
+	inline bool FileWriter::IsOpen() const {
 		return file != nullptr && file->is_open();
 	}
 

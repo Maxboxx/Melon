@@ -107,13 +107,13 @@ List<EnumParser::EnumValue> EnumParser::ParseValues(ParsingInfo& info) {
 	ULong currentValue = 0;
 
 	if (Optional<EnumValue> value = ParseValue(info, currentValue)) {
-		values.Add((EnumValue)value);
+		values.Add(*value);
 
 		while (info.Current().type == TokenType::Comma) {
 			info.index++;
 
 			if (Optional<EnumValue> value = ParseValue(info, currentValue)) {
-				values.Add((EnumValue)value);
+				values.Add(*value);
 			}
 			else {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("name", "','"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
