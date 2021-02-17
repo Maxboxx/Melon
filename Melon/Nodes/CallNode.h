@@ -10,6 +10,11 @@ namespace Melon {
 		/// Node for calling a value
 		class CallNode : public Node {
 		public:
+			enum class ArgAttributes : Boxx::UByte {
+				None,
+				Ref,
+				NoRef
+			};
 
 			///H Members
 
@@ -20,8 +25,8 @@ namespace Melon {
 			///T Arguments
 			Boxx::List<NodePtr> args;
 
-			///T No Ref Args
-			Boxx::List<bool> noRefs;
+			///T Argument attributes
+			Boxx::List<ArgAttributes> attributes;
 
 			///T Is Method
 			bool isMethod = false;
@@ -68,7 +73,7 @@ namespace Melon {
 			Symbols::FunctionSymbol* GetFunctionSymbol(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetOperatorFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetInitFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
-			Symbols::FunctionSymbol* GetStaticFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
+			Symbols::FunctionSymbol* GetStaticOrPlainFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetMethod(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 
 			struct CallInfo {

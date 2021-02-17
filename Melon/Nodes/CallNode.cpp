@@ -104,13 +104,23 @@ FunctionSymbol* CallNode::GetInitFunction(const Optional<List<TypeSymbol*>>& tem
 	return nullptr;
 }
 
-FunctionSymbol* CallNode::GetStaticFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
+FunctionSymbol* CallNode::GetStaticOrPlainFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (FunctionSymbol* const f = node->GetSymbol()->Cast<FunctionSymbol>()) {
-		if (templateTypes) {
-			return f->FindStaticOverload(*templateTypes, argTypes, node->file);
+		if (f->Parent()->Is<TypeSymbol>()) {
+			if (templateTypes) {
+				return f->FindStaticOverload(*templateTypes, argTypes, node->file);
+			}
+			else {
+				return f->FindStaticOverload(argTypes, node->file);
+			}
 		}
 		else {
-			return f->FindStaticOverload(argTypes, node->file);
+			if (templateTypes) {
+				return f->FindOverload(*templateTypes, argTypes, node->file);
+			}
+			else {
+				return f->FindOverload(argTypes, node->file);
+			}
 		}
 	}
 
@@ -140,7 +150,7 @@ FunctionSymbol* CallNode::GetFunctionSymbol(const Optional<List<TypeSymbol*>>& t
 		return GetInitFunction(templateTypes, argTypes);
 	}
 	else if (!isMethod) {
-		return GetStaticFunction(templateTypes, argTypes);
+		return GetStaticOrPlainFunction(templateTypes, argTypes);
 	}
 	else {
 		return GetMethod(templateTypes, argTypes);
@@ -277,16 +287,19 @@ UInt CallNode::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 			const bool aboveTop = (
 				n.argument.mem.memptr.IsLeft() && 
 				n.argument.mem.memptr.GetLeft().type == RegisterType::Stack &&
-				stack.Offset(n.argument.mem.offset) >= stack.top
+				stack.Offset(n.argument.mem.offset) > stack.top
 			);
 
 			// Does the value need to be converted to a different type
 			const bool needsConversion = !args[i]->Type()->IsOfType(callInfo.func->ArgumentType(i));
 
+			// Is the value a noref value
+			const bool hasNoRef = attributes[i] == ArgAttributes::NoRef;
+
 			// Check if the value needs to be assigned to temporary memory
-			if (notMemory || aboveTop || needsConversion || noRefs[i]) {
+			if (notMemory || aboveTop || needsConversion || hasNoRef) {
 				// Checks if a warning should be logged
-				if (!noRefs[i] && !args[i]->IsImmediate() && !args[i].Is<ObjectInitNode>()) {
+				if (!hasNoRef && !args[i]->IsImmediate() && !args[i].Is<ObjectInitNode>()) {
 					bool error = true;
 
 					if (Pointer<CallNode> call = args[i].Cast<CallNode>()) {
@@ -302,6 +315,9 @@ UInt CallNode::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 				callInfo.assignFirst[callInfo.assignFirst.Size() - 1] = true;
 				tempSize += callInfo.func->ArgumentType(callInfo.isInit ? i + 1 : i)->Size();
 				callInfo.memoryOffsets[callInfo.memoryOffsets.Size() - 1] = tempSize;
+			}
+			else if (attributes[i] != ArgAttributes::Ref) {
+				ErrorLog::Warning(WarningError("use 'ref' for reference arguments", args[i]->file));
 			}
 		}
 	}
@@ -558,9 +574,12 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 	for (UInt i = 0; i < args.Size(); i++) {
 		VariableSymbol* const arg = func->Argument(i);
 
-		if (arg && (arg->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
-			if (noRefs[i]) {
+		if (arg && (arg->attributes & VariableAttributes::Ref) == VariableAttributes::None) {
+			if (attributes[i] == ArgAttributes::NoRef) {
 				ErrorLog::Error(CompileError(CompileError::InvalidNoRef, args[i]->file));
+			}
+			else if (attributes[i] == ArgAttributes::Ref) {
+				ErrorLog::Error(CompileError("invalid use of 'ref'", args[i]->file));
 			}
 		}
 
@@ -623,7 +642,8 @@ StringBuilder CallNode::ToMelon(const UInt indent) const {
 
 	for (UInt i = 0; i < args.Size(); i++) {
 		if (i > 0) sb += ", ";
-		if (noRefs[i]) sb += "noref ";
+		if (attributes[i] == ArgAttributes::Ref)   sb += "ref ";
+		if (attributes[i] == ArgAttributes::NoRef) sb += "noref ";
 		sb += args[i]->ToMelon(indent);
 	}
 

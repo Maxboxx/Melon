@@ -35,7 +35,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 
 		UInt line = 0;
 
-		MapSymbol* const parentSym = parent ? parent->Cast<MapSymbol>() : info.scope;
+		MapSymbol* const parentSym = parent ? parent->Cast<MapSymbol>() : temp;
 		FunctionSymbol* functionParent = nullptr;
 
 		if (Symbol* const func = parentSym->Contains(funcHead.name)) {
@@ -126,6 +126,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		return en;
 	}
 
+	delete funcSym;
 	info.scope = temp;
 	info.index = startIndex;
 	return nullptr;

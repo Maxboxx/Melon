@@ -29,12 +29,16 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 				info.index++;
 			}
 
-			if (info.Current().type == TokenType::NoRef) {
+			if (info.Current().type == TokenType::Ref) {
 				info.index++;
-				call->noRefs.Add(true);
+				call->attributes.Add(CallNode::ArgAttributes::Ref);
+			}
+			else if (info.Current().type == TokenType::NoRef) {
+				info.index++;
+				call->attributes.Add(CallNode::ArgAttributes::NoRef);
 			}
 			else {
-				call->noRefs.Add(false);
+				call->attributes.Add(CallNode::ArgAttributes::None);
 			}
 
 			if (NodePtr node = ExpressionParser::Parse(info)) {
@@ -42,6 +46,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 			}
 			else {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("')'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				info.index++;
 			}
 		}
 
