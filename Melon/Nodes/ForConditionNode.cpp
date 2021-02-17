@@ -40,11 +40,13 @@ ScanResult ForConditionNode::Scan(ScanInfoStack& info) {
 	ScanResult result = loopInit->Scan(info);
 	result.SelfUseCheck(info, loopInit->file);
 
+	// Scan condition without condition operator
 	if (!conditionOperator) {
 		ScanResult r = loopCondition->Scan(info);
 		r.SelfUseCheck(info, loopCondition->file);
 		result |= r;
 	}
+	// Scan condition with condition operator
 	else {
 		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(loopCondition->scope, *conditionOperator, loopCondition->file);
 		op->node1 = loopInit.Cast<AssignNode>()->vars[0];
@@ -55,11 +57,13 @@ ScanResult ForConditionNode::Scan(ScanInfoStack& info) {
 		result |= r;
 	}
 
+	// Scan step without step operator
 	if (!stepOperator) {
 		ScanResult r = loopStep->Scan(info);
 		r.SelfUseCheck(info, loopStep->file);
 		result |= r;
 	}
+	// Scan step with step operator
 	else {
 		Pointer<AssignNode> assign = new AssignNode(loopStep->scope, loopStep->file);
 		assign->vars.Add(loopInit.Cast<AssignNode>()->vars[0]);

@@ -33,12 +33,14 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 
 	CompiledNode c;
 
+	// Function instruction
 	Instruction func = Instruction(InstructionType::Function);
 	func.instructionName = sym->AbsoluteName().ToString();
 	c.instructions.Add(func);
 
 	UInt funcSize = node->GetSize();
 
+	// Add push if the function needs memory
 	if (funcSize > 0) {
 		OptimizerInstruction push = Instruction(InstructionType::Push, funcSize);
 		push.important = true;
@@ -51,6 +53,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 
 	Long size = info.stack.ptrSize;
 
+	// Set stack index of arguments
 	for (Long i = sym->arguments.Size() - 1; i >= 0; i--) {
 		VariableSymbol* const arg = sym->Argument(i);
 		arg->stackIndex = -size;
@@ -63,10 +66,12 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 		}
 	}
 
+	// Compile function body
 	c.AddInstructions(node->Compile(info).instructions);
 
 	info.stack = stack;
 
+	// Add return and pop if needed
 	if (c.instructions.Last().instruction.type != InstructionType::Ret) {
 		if (funcSize > 0) {
 			OptimizerInstruction pop = Instruction(InstructionType::Pop, funcSize);
@@ -99,6 +104,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 	if (sym->IsNotSpecialized()) return ScanResult();
 	scope->SetTemplateValues(sym);
 
+	// Setup scan info
 	info.Push();
 	
 	info->scopeInfo.type = ScopeInfo::ScopeType::Function;
@@ -111,14 +117,17 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 		info->type->PrepareInit();
 	}
 
+	// Scan function body
 	ScanResult result = node->Scan(info);
 
+	// Check if member variables are initialized
 	if (info->init && !info->type->IsInitialized()) {
 		for (const Scope& var : info->type->UnassignedMembers()) {
 			ErrorLog::Error(CompileError(CompileError::VarNotInitStart + var.ToString() + CompileError::VarNotInitEnd, file));
 		}
 	}
 
+	// Check if arguments are used
 	for (UInt i = 0; i < sym->arguments.Size(); i++) {
 		VariableSymbol* const arg = sym->Argument(i);
 
@@ -127,6 +136,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
+	// Check if the function has not returned if it needs to
 	if (!info->scopeInfo.hasReturned && !sym->returnValues.IsEmpty()) {
 		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(sym), file));
 	}
@@ -145,6 +155,8 @@ NodePtr FunctionNode::Optimize(OptimizeInfo& info) {
 
 StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "";
+
+	// Get attribute names
 
 	if ((sym->attributes & FunctionAttributes::Debug) != FunctionAttributes::None) {
 		sb += "debug ";
@@ -166,12 +178,14 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 		sb += "required ";
 	}
 	
+	// Create functon head
 	sb += "function ";
 
 	if (sym->isOperator) {
 		sb += "operator ";
 	}
 
+	// Add return types
 	for (UInt i = 0; i < sym->returnValues.Size(); i++) {
 		if (i > 0) sb += ", ";
 		sb += sym->returnValues[i].ToSimpleString();
@@ -181,6 +195,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 		sb += ": ";
 	}
 
+	// Get name of function with template arguments
 	sb += sym->Parent()->Name().ToSimpleString();
 
 	if (!sym->templateArguments.IsEmpty()) {
@@ -194,6 +209,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 		sb += ">";
 	}
 
+	// Create argument list
 	sb += "(";
 
 	const UInt start = (!sym->arguments.IsEmpty() && sym->arguments[0][0] == Scope::Self) ? 1 : 0;
@@ -218,6 +234,8 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	}
 
 	sb += ")\n";
+
+	// Add function body
 	sb += String('\t').Repeat(indent + 1);
 	sb += node->ToMelon(indent + 1);
 	sb += "\n";

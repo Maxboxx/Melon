@@ -9,7 +9,6 @@ namespace Melon {
 		/// Node for the discard keyword
 		class DiscardNode : public Node {
 		public:
-			///T Constructor
 			DiscardNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DiscardNode();
 

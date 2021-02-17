@@ -10,7 +10,7 @@ namespace Melon {
 	namespace Nodes {
 
 		///B EnumNode
-		/// Node for structs
+		/// Node for enums
 		class EnumNode : public Node {
 		public:
 

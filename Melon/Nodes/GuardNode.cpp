@@ -41,9 +41,40 @@ bool GuardNode::IsScope() const {
 	return true;
 }
 
+void GuardNode::CompileElse(CompiledNode& compiled, CompileInfo& info, List<UInt>& jumps) {
+	for (const OptimizerInstruction& in : else_->Compile(info).instructions) {
+		// Check for custom instructions
+		if (in.instruction.type != InstructionType::Custom) {
+			compiled.instructions.Add(in);
+			continue;
+		}
+
+		const String type = in.instruction.instructionName;
+
+		// Check for scope wise breaks
+		if (type != BreakNode::scopeBreakInstName) {
+			compiled.instructions.Add(in);
+			continue;
+		}
+
+		// Handle scope wise breaks
+		if (in.instruction.sizes[0] > 1) {
+			OptimizerInstruction inst = in;
+			inst.instruction.sizes[0]--;
+			compiled.instructions.Add(inst);
+		}
+		else {
+			Instruction jmp = Instruction(InstructionType::Jmp);
+			jumps.Add(compiled.instructions.Size());
+			compiled.instructions.Add(jmp);
+		}
+	}
+}
+
 CompiledNode GuardNode::Compile(CompileInfo& info) {
 	const UInt frame = info.stack.frame;
 
+	// Compile condition
 	CompiledNode compiled = cond->Compile(info);
 
 	info.stack.PopExpr(frame, compiled);
@@ -57,31 +88,12 @@ CompiledNode GuardNode::Compile(CompileInfo& info) {
 
 	List<UInt> jumps;
 
-	if (else_) for (const OptimizerInstruction& in : else_->Compile(info).instructions) {
-		if (in.instruction.type != InstructionType::Custom) {
-			compiled.instructions.Add(in);
-			continue;
-		}
-
-		const String type = in.instruction.instructionName;
-
-		if (type != BreakNode::scopeBreakInstName) {
-			compiled.instructions.Add(in);
-			continue;
-		}
-
-		if (in.instruction.sizes[0] > 1) {
-			OptimizerInstruction inst = in;
-			inst.instruction.sizes[0]--;
-			compiled.instructions.Add(inst);
-		}
-		else {
-			Instruction jmp = Instruction(InstructionType::Jmp);
-			jumps.Add(compiled.instructions.Size());
-			compiled.instructions.Add(jmp);
-		}
+	// Compile else statements
+	if (else_) {
+		CompileElse(compiled, info, jumps);
 	}
 
+	// Add labels for breaks
 	if (!jumps.IsEmpty()) {
 		Instruction lbl = Instruction::Label(info.label);
 		compiled.instructions.Add(lbl);
@@ -93,10 +105,12 @@ CompiledNode GuardNode::Compile(CompileInfo& info) {
 		info.label++;
 	}
 
+	// Compile extra break
 	if (end) {
 		compiled.AddInstructions(end->Compile(info).instructions);
 	}
 
+	// Compile the continue statements
 	compiled.instructions.Add(Instruction::Label(info.label));
 	compiled.instructions[jumpIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 

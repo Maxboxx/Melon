@@ -39,7 +39,9 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 
 	UInt top = info.stack.top;
 
+	// Compile content
 	for (const OptimizerInstruction& in : nodes->Compile(info).instructions) {
+		// Check for custom instructions
 		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
 			continue;
@@ -47,11 +49,13 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 
 		const String type = in.instruction.instructionName;
 
+		// Check for scope wise break
 		if (type != BreakNode::scopeBreakInstName) {
 			compiled.instructions.Add(in);
 			continue;
 		}
 
+		// Handle scope wise break
 		if (in.instruction.sizes[0] > 1) {
 			OptimizerInstruction inst = in;
 			inst.instruction.sizes[0]--;
@@ -64,6 +68,7 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 		}
 	}
 
+	// Add labels for scope breaks
 	if (!jumps.IsEmpty()) {
 		Instruction lbl = Instruction::Label(info.label);
 		compiled.instructions.Add(lbl);

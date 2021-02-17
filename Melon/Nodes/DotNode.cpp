@@ -52,6 +52,7 @@ Symbol* DotNode::GetSymbol() const {
 		return nullptr;
 	}
 
+	// Get variable symbol
 	if (nodeSym->Is<VariableSymbol>()) {
 		TypeSymbol* const type = nodeSym->Type();
 
@@ -59,6 +60,7 @@ Symbol* DotNode::GetSymbol() const {
 			return s->Find(name, file);
 		}
 	}
+	// Get other symbols
 	else {
 		if (name.types) {
 			if (Symbol* const s = nodeSym->Contains(Scope(name.name))) {
@@ -83,10 +85,12 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 
 	CompiledNode c = node->Compile(info);
 
+	// Compile enum value
 	if (type->Is<EnumSymbol>()) {
 		c.argument = Argument(type->Find<ValueSymbol>(name, file)->value);
 		c.size = type->Size();
 	}
+	// Compile variable
 	else {
 		VariableSymbol* const var = type->Find<VariableSymbol>(name, file);
 
@@ -118,6 +122,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	const bool assign = info->assign;
 	info->assign = false;
 
+	// Scan node
 	ScanResult result = node->Scan(info);
 	info->assign = assign;
 
@@ -131,12 +136,14 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 		sym = type->Find(name, file);
 	}
 
+	// Scan variable
 	if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 		if ((var->attributes & VariableAttributes::Static) != VariableAttributes::None) {
 			info.usedVariables.Add(var);
 		}
 	}
 
+	// Scan assignment
 	if (info->assign) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {
@@ -154,6 +161,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 			}
 		}
 	}
+	// Scan init
 	else if (info->init) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 			if (nn->name == Scope::Self) {

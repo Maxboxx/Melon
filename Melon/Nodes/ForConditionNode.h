@@ -6,15 +6,22 @@ namespace Melon {
 	namespace Nodes {
 
 		///B ForConditionNode
-		/// Node for loop structures
+		/// Node for the conditions of for loops
 		class ForConditionNode : public Node {
 		public:
+			///T Loop Init
 			NodePtr loopInit;
 
+			///T Condition operator
 			Boxx::Optional<Symbols::Scope> conditionOperator;
+
+			///T Loop Condition
 			NodePtr loopCondition;
 
+			///T Step Operator
 			Boxx::Optional<Symbols::Scope> stepOperator;
+
+			///T Loop Step
 			NodePtr loopStep;
 
 			ForConditionNode(Symbols::Symbol* const scope, const FileInfo& file);

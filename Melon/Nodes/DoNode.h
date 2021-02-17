@@ -4,8 +4,12 @@
 
 namespace Melon {
 	namespace Nodes {
+		///B DoNode
+		/// A node for do statements
 		class DoNode : public Node {
 		public:
+			///T Content
+			/// The content of the do statement
 			NodePtr nodes;
 
 			DoNode(Symbols::Symbol* const scope, const FileInfo& file);

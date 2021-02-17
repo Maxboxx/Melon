@@ -5,10 +5,10 @@
 
 namespace Melon {
 	namespace Nodes {
-
 		class IfExprNode;
 
 		///B DefaultNode
+		/// Node for the default operator
 		class DefaultNode : public BinaryOperatorNode {
 		public:
 			DefaultNode(Symbols::Symbol* const scope, const FileInfo& file);

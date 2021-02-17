@@ -37,18 +37,23 @@ TypeSymbol* ConvertNode::Type() const {
 CompiledNode ConvertNode::Compile(CompileInfo& info) {
 	TypeSymbol* const convertType = Type();
 
-	if (node->Type() == convertType) return node->Compile(info);
+	// Check if the node needs conversion
+	if (node->Type() == convertType) {
+		return node->Compile(info);
+	}
 
+	// Find conversion operator
 	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(node->Type(), convertType, file);
-
 	if (!convert) return CompiledNode();
 
 	List<NodePtr> nodes;
 	nodes.Add(node);
 
+	// Compile symbol node
 	if (convert->symbolNode) {
 		return convert->symbolNode->Compile(nodes, info);
 	}
+	// Compile call to operator function
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;

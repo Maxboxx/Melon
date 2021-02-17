@@ -52,35 +52,42 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	info.stack.PushExpr(Type()->Size(), cn);
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
+	// Compile the optional value
 	CompiledNode c1 = node1->Compile(info);
 	cn.AddInstructions(c1.instructions);
 	cn.size = c1.size - 1;
 
 	UInt eqIndex = cn.instructions.Size();
 
+	// Check if the optional has a value
 	Instruction eq = Instruction(InstructionType::Eq, 1);
 	eq.arguments.Add(c1.argument);
 	eq.arguments.Add(Argument(0));
 	cn.instructions.Add(eq);
 
+	// Get memory location for the result and the optional value
 	Pointer<MemoryNode> sn1 = new MemoryNode(cn.argument.mem);
 	sn1->type = Type()->AbsoluteName();
 
 	Pointer<MemoryNode> sn2 = new MemoryNode(c1.argument.mem);
 	sn2->mem.offset++;
-
 	sn2->type = node1->Type()->Find<VariableSymbol>(Scope::Value, file)->Type()->AbsoluteName();
 
+	// Assign the optional value to the result
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
 
+	// And jump to end
 	UInt jmp = cn.instructions.Size();
 	cn.instructions.Add(Instruction(InstructionType::Jmp));
 
+	// Add label for default value
 	cn.instructions.Add(Instruction::Label(info.label));
 	cn.instructions[eqIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 
+	// Assign default value to result
 	cn.AddInstructions(CompileAssignment(sn1, node2, info, file).instructions);
 
+	// Add label to the end
 	cn.instructions.Add(Instruction::Label(info.label));
 	cn.instructions[jmp].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 

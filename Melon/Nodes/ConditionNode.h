@@ -4,10 +4,14 @@
 
 namespace Melon {
 	namespace Nodes {
+		class AssignNode;
+
+		///B ConditionNode
+		/// Node for conditional expressions
 		class ConditionNode : public Node {
 		public:
 
-			///T condition
+			///T Condition
 			NodePtr cond;
 
 			ConditionNode(Symbols::Symbol* const scope, const FileInfo& file);
@@ -21,10 +25,10 @@ namespace Melon {
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
-			static Boxx::String conditionInstName;
-
 		protected:
 			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+
+			CompiledNode CompileAssignCondition(Boxx::Pointer<AssignNode>& assign, CompileInfo& info);
 		};
 	}
 }

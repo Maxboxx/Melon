@@ -4,10 +4,12 @@
 
 namespace Melon {
 	namespace Nodes {
+		///B GuardNode
+		/// Node for guard statements
 		class GuardNode : public Node {
 		public:
 
-			///T Match expression
+			///T Condition
 			NodePtr cond;
 
 			///T Else
@@ -19,11 +21,14 @@ namespace Melon {
 			NodePtr continue_;
 
 			///T End
+			/// The final break of the else
 			NodePtr end;
 
 			GuardNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~GuardNode();
 
+			///T Add Scope Break
+			/// Adds a break to the end of the else scope
 			void AddScopeBreak(ScanInfoStack& info);
 
 			virtual Boxx::UInt GetSize() const override;
@@ -36,6 +41,8 @@ namespace Melon {
 
 		protected:
 			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+
+			void CompileElse(CompiledNode& compiled, CompileInfo& info, Boxx::List<Boxx::UInt>& jumps);
 		};
 	}
 }
