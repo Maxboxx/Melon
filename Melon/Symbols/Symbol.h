@@ -18,6 +18,7 @@ namespace Melon {
 	namespace Symbols {
 		class MapSymbol;
 		class TypeSymbol;
+		class FunctionSymbol;
 		class SymbolTable;
 
 		///B Symbol
@@ -41,6 +42,18 @@ namespace Melon {
 			///T Parent Type
 			/// Gets the parent type of the symbol
 			TypeSymbol* ParentType() const;
+
+			///T Current Type
+			/// Gets the parent type or the symbol if the symbol is a type symbol
+			TypeSymbol* CurrentType();
+
+			///T Parent Function
+			/// Gets the parent function of the symbol
+			FunctionSymbol* ParentFunction() const;
+
+			///T Parent Function
+			/// Gets the parent function or the symbol if the symbol is a function symbol
+			FunctionSymbol* CurrentFunction();
 
 			///T Name
 			/// Gets the name of the symbol

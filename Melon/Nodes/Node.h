@@ -146,6 +146,8 @@ namespace Melon {
 			/// Combines two side effect scopes by returning the most global of the two
 			static Symbols::ScopeList CombineSideEffects(const Symbols::ScopeList& scope1, const Symbols::ScopeList& scope2);
 
+			///T Root
+			/// Pointer to the root node
 			static RootNode* root;
 
 		protected:

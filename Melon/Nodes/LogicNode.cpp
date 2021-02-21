@@ -47,49 +47,54 @@ CompiledNode LogicNode::CompileToBool(const NodePtr& node, CompileInfo& info) {
 	return convert->Compile(info);
 }
 
+CompiledNode LogicNode::CompileAndOrOperand(CompileInfo& info, CompiledNode& cn, List<UInt>& jumps, const bool checkTrue) const {
+	// Compile operand
+	CompiledNode operand = CompileToBool(node1, info);
+	cn.AddInstructions(operand.instructions);
+
+	// Compare operand with false
+	Instruction comp = Instruction(checkTrue ? InstructionType::Ne : InstructionType::Eq, 1);
+	comp.arguments.Add(operand.argument);
+	comp.arguments.Add(Argument(0));
+
+	// Jump if next operand is not needed
+	jumps.Add(cn.instructions.Size());
+	cn.instructions.Add(comp);
+
+	// Free up register from operand
+	if (operand.argument.type == ArgumentType::Register && operand.argument.reg.type == RegisterType::Register) {
+		info.index--;
+	}
+
+	return operand;
+}
+
 CompiledNode LogicNode::CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) const {
 	CompiledNode cn;
 	cn.size = 1;
 
 	List<UInt> jumps;
 
-	CompiledNode operand1 = CompileToBool(node1, info);
-	cn.AddInstructions(operand1.instructions);
+	// Compile operand 1
+	CompiledNode operand1 = CompileAndOrOperand(info, cn, jumps, checkTrue);
 
-	Instruction comp1 = Instruction(checkTrue ? InstructionType::Ne : InstructionType::Eq, 1);
-	comp1.arguments.Add(operand1.argument);
-	comp1.arguments.Add(Argument(0));
-	jumps.Add(cn.instructions.Size());
-	cn.instructions.Add(comp1);
-
-	if (operand1.argument.type == ArgumentType::Register && operand1.argument.reg.type == RegisterType::Register) {
-		info.index--;
-	}
-
-	CompiledNode operand2 = CompileToBool(node2, info);
-	cn.AddInstructions(operand2.instructions);
-
-	Instruction comp2 = Instruction(checkTrue ? InstructionType::Ne : InstructionType::Eq, 1);
-	comp2.arguments.Add(operand2.argument);
-	comp2.arguments.Add(Argument(0));
-	jumps.Add(cn.instructions.Size());
-	cn.instructions.Add(comp2);
-
-	if (operand2.argument.type == ArgumentType::Register && operand2.argument.reg.type == RegisterType::Register) {
-		info.index--;
-	}
+	// Compile operand 2
+	CompiledNode operand2 = CompileAndOrOperand(info, cn, jumps, checkTrue);
 
 	cn.argument = Argument(Register(info.index++));
 
+	// Set result if all operand comps failed
 	Instruction mov1 = Instruction(InstructionType::Mov, 1);
 	mov1.arguments.Add(cn.argument);
 	mov1.arguments.Add(Argument(setTrue ? 0 : 1));
 	cn.instructions.Add(mov1);
 
+	// Jump to end
 	Instruction jmp = Instruction(InstructionType::Jmp);
-	jmp.arguments.Add(Argument(ArgumentType::Label, info.label + 1));
+	jmp.arguments.Add(Argument(ArgumentType::Label, (ULong)info.label + 1));
 	cn.instructions.Add(jmp);
 
+	// Add label and insert jumps
 	cn.instructions.Add(Instruction::Label(info.label));
 
 	for (const UInt jump : jumps) {
@@ -98,11 +103,13 @@ CompiledNode LogicNode::CompileAndOr(CompileInfo& info, const bool checkTrue, co
 
 	info.label++;
 
+	// Set result if an operand comp was successful
 	Instruction mov2 = Instruction(InstructionType::Mov, 1);
 	mov2.arguments.Add(cn.argument);
 	mov2.arguments.Add(Argument(setTrue ? 1 : 0));
 	cn.instructions.Add(mov2);
 
+	// Add end label
 	cn.instructions.Add(Instruction::Label(info.label++));
 
 	return cn;
@@ -113,18 +120,22 @@ CompiledNode LogicNode::CompileXor(CompileInfo& info, const bool checkEqual) con
 	cn.argument = Argument(Register(info.index++));
 	cn.size = 1;
 
+	// Compile operand 1
 	CompiledNode operand1 = CompileToBool(node1, info);
 	cn.AddInstructions(operand1.instructions);
 
+	// Compile operand 2
 	CompiledNode operand2 = CompileToBool(node2, info);
 	cn.AddInstructions(operand2.instructions);
 
+	// Check if operand results are equal or not
 	Instruction comp = Instruction(checkEqual ? InstructionType::Eq : InstructionType::Ne, 1);
 	comp.arguments.Add(operand1.argument);
 	comp.arguments.Add(operand2.argument);
 	comp.arguments.Add(cn.argument);
 	cn.instructions.Add(comp);
 
+	// Free up registers
 	if (operand2.argument.type == ArgumentType::Register && operand2.argument.reg.type == RegisterType::Register) {
 		info.index--;
 
@@ -137,35 +148,27 @@ CompiledNode LogicNode::CompileXor(CompileInfo& info, const bool checkEqual) con
 }
 
 CompiledNode LogicNode::Compile(CompileInfo& info) {
-	if (type == TokenType::Or) {
-		return CompileAndOr(info, true, true);
-	}
-	else if (type == TokenType::And) {
-		return CompileAndOr(info, false, false);
-	}
-	else if (type == TokenType::Xor) {
-		return CompileXor(info, false);
-	}
-	else if (type == TokenType::Nor) {
-		return CompileAndOr(info, true, false);
-	}
-	else if (type == TokenType::Nand) {
-		return CompileAndOr(info, false, true);
-	}
-	else if (type == TokenType::Xnor) {
-		return CompileXor(info, true);
+	switch (type) {
+		case TokenType::Or:   return CompileAndOr(info, true, true);
+		case TokenType::And:  return CompileAndOr(info, false, false);
+		case TokenType::Xor:  return CompileXor(info, false);
+		case TokenType::Nor:  return CompileAndOr(info, true, false);
+		case TokenType::Nand: return CompileAndOr(info, false, true);
+		case TokenType::Xnor: return CompileXor(info, true);
 	}
 
 	return CompiledNode();
 }
 
 ScanResult LogicNode::Scan(ScanInfoStack& info) {
+	// Scan operands
 	ScanResult result1 = node1->Scan(info);
 	result1.SelfUseCheck(info, node1->file);
 
 	ScanResult result2 = node2->Scan(info);
 	result2.SelfUseCheck(info, node2->file);
 
+	// Scan conversion to bool for both operands
 	Pointer<ConvertNode> convert1 = new ConvertNode(node1->scope, node1->file);
 	convert1->node = node1;
 	convert1->type = ScopeList::Bool;

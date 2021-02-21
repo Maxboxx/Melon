@@ -50,10 +50,12 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	UInt stackOffset = info.stack.ptrSize + info.stack.frame;
 	List<TypeSymbol*> types = GetTypes();
 
+	// Calculate stack offset for return values
 	for (TypeSymbol* const type : types) {
 		stackOffset += type->Size();
 	}
 
+	// Calculate stack offset for arguments
 	for (UInt i = 0; i < f->arguments.Size(); i++) {
 		VariableSymbol* const var = f->Argument(i);
 
@@ -67,6 +69,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 
 	CompiledNode c;
 
+	// Compile return values
 	for (UInt i = 0; i < nodes.Size(); i++) {
 		stackOffset -= types[i]->Size();
 
@@ -78,6 +81,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 		info.important = false;
 	}
 
+	// Add return instruction
 	info.stack.PopExpr(0, c);
 	c.instructions.Add(Instruction(InstructionType::Ret));
 
@@ -99,6 +103,7 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 
 	ScanResult result;
 
+	// Scan nodes
 	for (const NodePtr& node : nodes) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->file);
@@ -109,12 +114,14 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 
 	if (f == nullptr) return result;
 
+	// Check for correct number of return values
 	if (f->returnValues.Size() != nodes.Size()) {
 		ErrorLog::Error(CompileError(CompileError::Return(f->returnValues.Size(), nodes.Size()), file));
 	}
 
 	List<TypeSymbol*> types = GetTypes();
 
+	// Scan assignment to return values
 	for (UInt i = 0; i < nodes.Size(); i++) {
 		if (i >= types.Size()) break;
 

@@ -17,6 +17,7 @@ IntegerNode::~IntegerNode() {
 }
 
 TypeSymbol* IntegerNode::Type() const {
+	// Unsigned integers
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {
 			return (TypeSymbol*)SymbolTable::UByte;
@@ -34,6 +35,7 @@ TypeSymbol* IntegerNode::Type() const {
 			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Huge, file);
 		}
 	}
+	// Signed integers
 	else {
 		if (number >= Math::ByteMin()) {
 			return (TypeSymbol*)SymbolTable::Byte;
@@ -65,6 +67,7 @@ CompiledNode IntegerNode::Compile(CompileInfo& info) {
 	CompiledNode node;
 	node.argument = Argument(number);
 	
+	// Size of unsigned integers
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {
 			node.size = 1;
@@ -79,6 +82,7 @@ CompiledNode IntegerNode::Compile(CompileInfo& info) {
 			node.size = 8;
 		}
 	}
+	// Size of signed integers
 	else {
 		if (number >= Math::ByteMin()) {
 			node.size = 1;

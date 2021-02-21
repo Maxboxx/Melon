@@ -130,6 +130,7 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 	ScanResult result = cond->Scan(info);
 	result.SelfUseCheck(info, cond->file);
 	
+	// Setup scope info
 	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 
 	if (info->init) {
@@ -138,6 +139,7 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 
 	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 
+	// Scan else
 	if (else_) {
 		ScanResult r = else_->Scan(info);
 		r.SelfUseCheck(info, else_->file);
@@ -154,6 +156,7 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 
 	AddScopeBreak(info);
 
+	// Reset unassigned variables
 	for (const Scope& var : scopeInfo.unassigned) {
 		if (VariableSymbol* const v = info->type->Find<VariableSymbol>(var, file)) {
 			v->isAssigned = false;
@@ -162,6 +165,7 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 	
 	info->scopeInfo = scopeInfo;
 
+	// Scan continue
 	ScanResult r = continue_->Scan(info);
 	r.SelfUseCheck(info, continue_->file);
 	result |= r;
@@ -181,6 +185,7 @@ ScopeList GuardNode::FindSideEffectScope(const bool assign) {
 }
 
 NodePtr GuardNode::Optimize(OptimizeInfo& info) {
+	// Optimize nodes
 	if (NodePtr node = cond->Optimize(info)) cond = node;
 
 	if (else_) {
@@ -189,96 +194,117 @@ NodePtr GuardNode::Optimize(OptimizeInfo& info) {
 
 	if (NodePtr node = continue_->Optimize(info)) continue_ = node;
 
+	// Optimize condition for immediate values
 	if (cond->IsImmediate()) {
+		// Optimize false
 		if (cond->GetImmediate() == 0) {
-			if (else_) {
-				if (IsEmpty(else_) || !else_->HasSideEffects()) {
-					info.optimized = true;
-					return new EmptyNode();
-				}
-
-				Pointer<DoNode> dn = new DoNode(else_->scope, else_->file);
-				dn->nodes = else_;
-				info.optimized = true;
-				return dn;
-			}
-			else {
-				info.optimized = true;
-				return new EmptyNode();
-			}
+			return OptimizeFalseCondition(info);
 		}
+		// Optimize true
 		else {
-			info.optimized = true;
-
-			if (IsEmpty(continue_) || !continue_->HasSideEffects()) {
-				return new EmptyNode();
-			}
-			else {
-				return continue_;
-			}
+			return OptimizeTrueCondition(info);
 		}
 	}
 
 	return nullptr;
 }
 
+NodePtr GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
+	// Optimize else segment if it exists
+	if (else_) {
+		if (IsEmpty(else_) || !else_->HasSideEffects()) {
+			info.optimized = true;
+			return new EmptyNode();
+		}
+
+		Pointer<DoNode> dn = new DoNode(else_->scope, else_->file);
+		dn->nodes = else_;
+		info.optimized = true;
+		return dn;
+	}
+	// Replace guard with empty node
+	else {
+		info.optimized = true;
+		return new EmptyNode();
+	}
+}
+
+NodePtr GuardNode::OptimizeTrueCondition(OptimizeInfo& info) {
+	info.optimized = true;
+
+	if (IsEmpty(continue_) || !continue_->HasSideEffects()) {
+		return new EmptyNode();
+	}
+	else {
+		return continue_;
+	}
+}
+
 void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 	if (info->scopeInfo.CanContinue()) {
 		switch (info->scopeInfo.type) {
 			case ScopeInfo::ScopeType::Scope: {
-				Pointer<BreakNode> bn = new BreakNode(scope, file);
-				bn->isBreak = true;
-				bn->loops = 1;
-				bn->scopeWise = true;
-				end = bn;
-
-				info->scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info->scopeInfo.maxScopeBreakCount);
+				AddScopeWiseBreak(info);
 				break;
 			}
 
 			case ScopeInfo::ScopeType::Loop: {
-				Pointer<ContinueNode> cn = new ContinueNode(scope, file);
-				cn->loops = 1;
-				end = cn;
-
-				info->scopeInfo.maxLoopBreakCount = Math::Max(cn->loops, info->scopeInfo.maxLoopBreakCount);
+				AddContinue(info);
 				break;
 			}
 
+			// Return from function
 			case ScopeInfo::ScopeType::Function: {
-				FunctionSymbol* func = nullptr;
-				Symbol* sym = scope;
-
-				while (sym) {
-					if (func = sym->Cast<FunctionSymbol>()) {
-						break;
-					}
-					else {
-						sym = sym->Parent();
-					}
-				}
-
-				if (func) {
-					if (func->returnValues.IsEmpty() && !info->scopeInfo.hasReturned) {
-						end = new ReturnNode(scope, file);
-					}
-					else if (!info->scopeInfo.hasReturned) {
-						// TODO: error
-						ErrorLog::Error(CompileError("guard must return from function", file));
-					}
-				}
-
-				info->scopeInfo.willNotReturn = false;
+				AddReturn(info);
 				break;
 			}
-
+			
+			// Throw error
 			case ScopeInfo::ScopeType::Main: {
-				// TODO: error
-				ErrorLog::Error(CompileError("guard statements in main scope are not supported yet", file));
+				AddThrow(info);
 				break;
 			}
 		}
 	}
+}
+
+void GuardNode::AddScopeWiseBreak(ScanInfoStack& info) {
+	Pointer<BreakNode> bn = new BreakNode(scope, file);
+	bn->isBreak = true;
+	bn->loops = 1;
+	bn->scopeWise = true;
+	end = bn;
+
+	info->scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info->scopeInfo.maxScopeBreakCount);
+}
+
+void GuardNode::AddContinue(ScanInfoStack& info) {
+	Pointer<ContinueNode> cn = new ContinueNode(scope, file);
+	cn->loops = 1;
+	end = cn;
+
+	info->scopeInfo.maxLoopBreakCount = Math::Max(cn->loops, info->scopeInfo.maxLoopBreakCount);
+}
+
+void GuardNode::AddReturn(ScanInfoStack& info) {
+	FunctionSymbol* func = SymbolTable::Find<FunctionSymbol>(scope->CurrentFunction()->AbsoluteName(), scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+
+	if (func) {
+		if (func->returnValues.IsEmpty() && !info->scopeInfo.hasReturned) {
+			end = new ReturnNode(scope, file);
+		}
+		else if (!info->scopeInfo.hasReturned) {
+			// TODO: error
+			ErrorLog::Error(CompileError("guard must return from function", file));
+		}
+	}
+
+	info->scopeInfo.willNotReturn = false;
+}
+
+void GuardNode::AddThrow(ScanInfoStack& info) {
+	// TODO: error
+	ErrorLog::Error(CompileError("guard statements in main scope are not supported yet", file));
 }
 
 StringBuilder GuardNode::ToMelon(const UInt indent) const {

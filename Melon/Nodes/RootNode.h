@@ -58,6 +58,7 @@ namespace Melon {
 			/// Writes the optimized code to melon files
 			void ToMelonFiles(const CompilerOptions& options) const;
 
+			///T Parsing info
 			Parsing::ParsingInfo* parsingInfo = nullptr;
 
 		private:

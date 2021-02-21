@@ -34,6 +34,8 @@ TypeSymbol* IfExprNode::Type() const {
 
 CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
+
+	// Setup return value
 	cn.size = Type()->Size();
 
 	List<UInt> jumps;
@@ -48,10 +50,12 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 	StackPtr stack = info.stack;
 
+	// Compile conditions and segments
 	for (UInt i = 0; i < conditions.Size(); i++) {
 		info.stack = stack;
 		info.stack.PopExpr(frame, cn);
 
+		// Compile condition
 		CompiledNode cond = conditions[i]->Compile(info);
 		cn.AddInstructions(cond.instructions);
 
@@ -64,10 +68,12 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 		UInt jump = cn.instructions.Size() - 1;
 
+		// Compile value assignment
 		cn.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
 
 		info.stack.PopExpr(frame, cn);
 
+		// Add jump and label
 		jumps.Add(cn.instructions.Size());
 		cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
 
@@ -77,14 +83,17 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 	info.stack = stack;
 
+	// Compile else
 	cn.AddInstructions(CompileAssignment(sn, nodes.Last(), info, nodes.Last()->file).instructions);
 
 	info.stack.PopExpr(frame, cn);
 
+	// Add jumps to end
 	for (UInt i : jumps) {
 		cn.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
 	}
 
+	// End label
 	cn.instructions.Add(Instruction::Label(info.label++));
 
 	info.stack.Pop(Type()->Size());
@@ -108,6 +117,7 @@ ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 	TypeSymbol* const t = Type();
 	Pointer<TypeNode> type = t ? new TypeNode(t->AbsoluteName()) : nullptr;
 
+	// Scan values
 	for (const NodePtr& node : nodes) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->file);
@@ -118,6 +128,7 @@ ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 		}
 	}
 
+	// Scan conditions
 	for (const NodePtr& node : conditions) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->file);
@@ -143,6 +154,7 @@ ScopeList IfExprNode::FindSideEffectScope(const bool assign) {
 }
 
 NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
+	// Optimize nodes and conditions
 	for (NodePtr& node : nodes) {
 		if (NodePtr n = node->Optimize(info)) node = n;
 	}
@@ -152,14 +164,17 @@ NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 	}
 
 	// TODO: save type before this
+	// Remove segments
 	for (UInt i = 0; i < conditions.Size(); i++) {
 		if (conditions[i]->IsImmediate()) {
+			// Remove segment if condition is false
 			if (conditions[i]->GetImmediate() == 0) {
 				conditions.RemoveAt(i);
 				nodes.RemoveAt(i);
 				i--;
 				info.optimized = true;
 			}
+			// Remove remaining segments if condition is true
 			else {
 				nodes.RemoveAt(i + 1, nodes.Size() - i - 1);
 				conditions.RemoveAt(i, conditions.Size() - i);
@@ -169,6 +184,7 @@ NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 		}
 	}
 
+	// Replcae if expression with a value if there is only one segment
 	if (nodes.Size() == 1) {
 		if (nodes[0]->Type() != Type()) {
 			Pointer<ConvertNode> cn = new ConvertNode(nodes[0]->scope, nodes[0]->file);

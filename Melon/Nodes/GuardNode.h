@@ -43,6 +43,14 @@ namespace Melon {
 			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
 
 			void CompileElse(CompiledNode& compiled, CompileInfo& info, Boxx::List<Boxx::UInt>& jumps);
+
+			NodePtr OptimizeFalseCondition(OptimizeInfo& info);
+			NodePtr OptimizeTrueCondition(OptimizeInfo& info);
+
+			void AddScopeWiseBreak(ScanInfoStack& info);
+			void AddContinue(ScanInfoStack& info);
+			void AddReturn(ScanInfoStack& info);
+			void AddThrow(ScanInfoStack& info);
 		};
 	}
 }

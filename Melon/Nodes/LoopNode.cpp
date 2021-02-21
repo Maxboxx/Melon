@@ -67,6 +67,7 @@ CompiledNode LoopNode::Compile(CompileInfo& info) {
 	segmentInfo.segmentLabels = Array<UInt>(segments.Size() + 1);
 	segmentInfo.stackTop = info.stack.top;
 
+	// Compile segments
 	for (UInt i = 0; i < segments.Size(); i++) {
 		segmentInfo.index = i;
 
@@ -80,10 +81,12 @@ CompiledNode LoopNode::Compile(CompileInfo& info) {
 		info.stack.top = segmentInfo.stackTop;
 	}
 
+	// Create end label
 	Instruction endLbl = Instruction::Label(info.label);
 	segmentInfo.segmentLabels[segmentInfo.segmentLabels.Size() - 1] = info.label++;
 	c.instructions.Add(endLbl);
 
+	// Add jumps
 	for (const Tuple<UInt, UInt>& jump : segmentInfo.jumps) {
 		c.instructions[jump.value1].instruction.arguments.Add(Argument(ArgumentType::Label, segmentInfo.segmentLabels[jump.value2]));
 	}
@@ -95,14 +98,18 @@ void LoopNode::GetNextSegments(const UInt segment, UInt& nextTrue, UInt& nextFal
 	nextTrue = segments.Size();
 	nextFalse = segment + 1;
 
+	// Check if the current segment is the last segment
 	if (IsSegmentLast(segment)) {
+		// Set next false to end for also mismatch
 		if (segments[segment].also != segments[nextFalse].also) {
 			nextFalse = segments.Size();
 		}
 
+		// Get next for main segment
 		if (segment == 0) {
 			nextTrue = segments.Size();
 
+			// Set next true to first also
 			for (UInt u = 1; u < segments.Size(); u++) {
 				if (segments[u].also) {
 					nextTrue = u;
@@ -112,6 +119,7 @@ void LoopNode::GetNextSegments(const UInt segment, UInt& nextTrue, UInt& nextFal
 
 			nextFalse = segments.Size();
 
+			// Set next false to first else
 			for (UInt u = 1; u < segments.Size(); u++) {
 				if (!segments[u].also) {
 					nextFalse = u;
@@ -123,13 +131,17 @@ void LoopNode::GetNextSegments(const UInt segment, UInt& nextTrue, UInt& nextFal
 }
 
 bool LoopNode::IsSegmentLast(const UInt segment) const {
+	// Check if the segmet is last
 	if (segment == segments.Size() - 1) return true;
+
+	// Check if the segent is the last also
 	return segment != 0 && segments[segment].also != segments[segment + 1].also;
 }
 
 void LoopNode::AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
 	bool needsLabel = false;
 
+	// Check if a label is needed
 	for (const Tuple<UInt, UInt>& next : segmentInfo.jumps) {
 		if (next.value2 == segmentInfo.index) {
 			needsLabel = true;
@@ -137,6 +149,7 @@ void LoopNode::AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, Segme
 		}
 	}
 
+	// Add a label
 	if (needsLabel) {
 		Instruction lbl = Instruction::Label(info.label);
 		segmentInfo.segmentLabels[segmentInfo.index] = info.label++;
@@ -145,25 +158,30 @@ void LoopNode::AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, Segme
 }
 
 void LoopNode::CompileIfSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
+	// Setup segment
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 	AddLabelIfNeeded(compiled, info, segmentInfo);
 
 	LoopSegment segment = segments[segmentInfo.index];
 
+	// Compile condition
 	const UInt frame = info.stack.frame;
 	CompiledNode cond = segment.condition->Compile(info);
 	info.stack.PopExpr(frame, cond);
 	
 	compiled.AddInstructions(cond.instructions);
 
+	// Chech if condition is true
 	Instruction eq = Instruction(InstructionType::Eq, 1);
 	eq.arguments.Add(cond.argument);
 	eq.arguments.Add(Argument(0));
 	segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), nextFalse));
 	compiled.instructions.Add(eq);
 
+	// Compile statements
 	for (const OptimizerInstruction& in : segments[segmentInfo.index].statements->Compile(info).instructions) {
+		// Check for custom instructions
 		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
 			continue;
@@ -171,11 +189,13 @@ void LoopNode::CompileIfSegment(CompiledNode& compiled, CompileInfo& info, Segme
 
 		const String type = in.instruction.instructionName;
 
+		// Check for scopewise break
 		if (type != BreakNode::scopeBreakInstName) {
 			compiled.instructions.Add(in);
 			continue;
 		}
 
+		// Compile scopewise break
 		if (in.instruction.sizes[0] > 1) {
 			OptimizerInstruction inst = in;
 			inst.instruction.sizes[0]--;
@@ -188,6 +208,7 @@ void LoopNode::CompileIfSegment(CompiledNode& compiled, CompileInfo& info, Segme
 		}
 	}
 	
+	// Compile jump to next
 	if (!IsSegmentLast(segmentInfo.index)) {
 		if (nextTrue != segmentInfo.index + 1 && (segment.type == LoopType::If || segment.type == LoopType::None)) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
@@ -198,6 +219,7 @@ void LoopNode::CompileIfSegment(CompiledNode& compiled, CompileInfo& info, Segme
 }
 
 void LoopNode::CompileWhileSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
+	// Setup segment
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 	AddLabelIfNeeded(compiled, info, segmentInfo);
@@ -205,6 +227,7 @@ void LoopNode::CompileWhileSegment(CompiledNode& compiled, CompileInfo& info, Se
 	LoopSegment segment = segments[segmentInfo.index];
 	bool isLast = IsSegmentLast(segmentInfo.index);
 
+	// Compile segment
 	LoopInfo loopInfo;
 	CompileWhileStart(compiled, info, segmentInfo, loopInfo);
 	CompileLoopBody(compiled, info, segmentInfo, loopInfo);
@@ -214,6 +237,7 @@ void LoopNode::CompileWhileSegment(CompiledNode& compiled, CompileInfo& info, Se
 void LoopNode::CompileWhileStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
 	bool isLast = IsSegmentLast(segmentInfo.index);
 
+	// Add loop flag if loop is not last
 	if (!isLast) {
 		info.stack.Push(1);
 		loopInfo.stack = info.stack.top;
@@ -224,26 +248,33 @@ void LoopNode::CompileWhileStart(CompiledNode& compiled, CompileInfo& info, Segm
 		compiled.instructions.Add(mov);
 	}
 
+	// Add loop label
 	Instruction lbl = Instruction::Label(info.label);
 	loopInfo.loopLbl = info.label++;
 	compiled.instructions.Add(lbl);
 
+	// Compile condition
 	const UInt frame = info.stack.frame;
 	CompiledNode cond = segments[segmentInfo.index].condition->Compile(info);
 	info.stack.PopExpr(frame, cond);
 	compiled.AddInstructions(cond.instructions);
 
+	// Check if condition is true
 	Instruction eq = Instruction(InstructionType::Eq, 1);
 	eq.arguments.Add(cond.argument);
 	eq.arguments.Add(Argument(0));
 
-	if (!isLast)
+	// Set jump info
+	if (!isLast) {
 		loopInfo.loopEndJmp = compiled.instructions.Size();
-	else
+	}
+	else {
 		segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), segments.Size()));
+	}
 
 	compiled.instructions.Add(eq);
 
+	// Set loop flag to true
 	if (!isLast) {
 		Instruction mov = Instruction(InstructionType::Mov, 1);
 		mov.arguments.Add(Argument(MemoryLocation(info.stack.Offset(loopInfo.stack))));
@@ -256,18 +287,22 @@ void LoopNode::CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, Segmen
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 
+	// Add loop jump
 	Instruction jmp = Instruction(InstructionType::Jmp);
 	jmp.arguments.Add(Argument(ArgumentType::Label, loopInfo.loopLbl));
 	compiled.instructions.Add(jmp);
 
+	// Add jump to next segment
 	if (!IsSegmentLast(segmentInfo.index)) {
 		info.stack.Pop(1);
 
+		// Add end label
 		Instruction lbl = Instruction::Label(info.label);
 		loopInfo.loopEndLbl = info.label++;
 		compiled.instructions[loopInfo.loopEndJmp].instruction.arguments.Add(Argument(ArgumentType::Label, loopInfo.loopEndLbl));
 		compiled.instructions.Add(lbl);
 
+		// Add jump to next false
 		if (nextTrue == segmentInfo.index + 1) {
 			Instruction eq = Instruction(InstructionType::Eq, 1);
 			eq.arguments.Add(Argument(MemoryLocation(info.stack.Offset(loopInfo.stack))));
@@ -275,6 +310,7 @@ void LoopNode::CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, Segmen
 			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), nextFalse));
 			compiled.instructions.Add(eq);
 		}
+		// Add jump to next true
 		else if (nextFalse == segmentInfo.index + 1) {
 			Instruction ne = Instruction(InstructionType::Ne, 1);
 			ne.arguments.Add(Argument(MemoryLocation(info.stack.Offset(loopInfo.stack))));
@@ -282,6 +318,7 @@ void LoopNode::CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, Segmen
 			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), nextTrue));
 			compiled.instructions.Add(ne);
 		}
+		// Add jump to either next true or false
 		else {
 			Instruction ne = Instruction(InstructionType::Ne, 1);
 			ne.arguments.Add(Argument(MemoryLocation(info.stack.Offset(loopInfo.stack))));
@@ -297,6 +334,7 @@ void LoopNode::CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, Segmen
 }
 
 void LoopNode::CompileForSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
+	// Setup segment
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 	AddLabelIfNeeded(compiled, info, segmentInfo);
@@ -304,6 +342,7 @@ void LoopNode::CompileForSegment(CompiledNode& compiled, CompileInfo& info, Segm
 	LoopSegment segment = segments[segmentInfo.index];
 	bool isLast = IsSegmentLast(segmentInfo.index);
 
+	// Compile segment
 	LoopInfo loopInfo;
 	CompileForStart(compiled, info, segmentInfo, loopInfo);
 	CompileLoopBody(compiled, info, segmentInfo, loopInfo);
@@ -315,17 +354,21 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 
 	const UInt frame = info.stack.frame;
 
+	// Compile for init
 	Pointer<ForConditionNode> cond = segments[segmentInfo.index].condition.Cast<ForConditionNode>();
 	compiled.AddInstructions(cond->loopInit->Compile(info).instructions);
 
+	// Add jump to loop condition
 	Instruction jmp = Instruction(InstructionType::Jmp);
 	jmp.arguments.Add(Argument(ArgumentType::Label, (Long)info.label + 1));
 	compiled.instructions.Add(jmp);
 
+	// Add loop label
 	Instruction lbl1 = Instruction::Label(info.label);
 	loopInfo.loopLbl = info.label++;
 	compiled.instructions.Add(lbl1);
 
+	// Compile loop step
 	if (cond->stepOperator) {
 		Pointer<AssignNode> assign = new AssignNode(cond->loopStep->scope, cond->loopStep->file);
 		assign->vars.Add(cond->loopInit.Cast<AssignNode>()->vars[0]);
@@ -341,11 +384,13 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 		compiled.AddInstructions(cond->loopStep->Compile(info).instructions);
 	}
 
+	// Add condition label
 	Instruction lbl2 = Instruction::Label(info.label++);
 	compiled.instructions.Add(lbl2);
 
 	CompiledNode compiledCond;
 
+	// Compile condition
 	if (cond->conditionOperator) {
 		Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(cond->loopCondition->scope, Scope::Less, cond->loopCondition->file);
 		comp->node1 = cond->loopInit.Cast<AssignNode>()->vars[0];
@@ -359,14 +404,17 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 	info.stack.PopExpr(frame, compiledCond);
 	compiled.AddInstructions(compiledCond.instructions);
 
+	// Check if loop ondition is true
 	Instruction eq = Instruction(InstructionType::Eq, 1);
 	eq.arguments.Add(compiledCond.argument);
 	eq.arguments.Add(Argument(0));
 
-	if (!isLast)
+	if (!isLast) {
 		loopInfo.loopEndJmp = compiled.instructions.Size();
-	else
+	}
+	else {
 		segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), segments.Size()));
+	}
 
 	compiled.instructions.Add(eq);
 }
@@ -375,12 +423,14 @@ void LoopNode::CompileForEnd(CompiledNode& compiled, CompileInfo& info, SegmentI
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 
+	// Add jump to loop label
 	Instruction jmp = Instruction(InstructionType::Jmp);
 	jmp.arguments.Add(Argument(ArgumentType::Label, loopInfo.loopLbl));
 	compiled.instructions.Add(jmp);
 
 	info.stack.Pop(1);
 
+	// Add jump to next true
 	if (!IsSegmentLast(segmentInfo.index)) {
 		Instruction lbl = Instruction::Label(info.label);
 		loopInfo.loopEndLbl = info.label++;
@@ -401,7 +451,9 @@ void LoopNode::CompileLoopBody(CompiledNode& compiled, CompileInfo& info, Segmen
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 
+	// Compile loop body
 	for (const OptimizerInstruction& in : segments[segmentInfo.index].statements->Compile(info).instructions) {
+		// Check for custom instructions
 		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
 			continue;
@@ -409,6 +461,7 @@ void LoopNode::CompileLoopBody(CompiledNode& compiled, CompileInfo& info, Segmen
 
 		const String type = in.instruction.instructionName;
 
+		// Check for break instruction
 		if (
 			type != BreakNode::abortInstName &&
 			type != BreakNode::scopeBreakInstName &&
@@ -420,26 +473,31 @@ void LoopNode::CompileLoopBody(CompiledNode& compiled, CompileInfo& info, Segmen
 			continue;
 		}
 
+		// Compile multi break
 		if (in.instruction.sizes[0] > 1) {
 			OptimizerInstruction inst = in;
 			inst.instruction.sizes[0]--;
 			compiled.instructions.Add(inst);
 		}
+		// Compile abort
 		else if (type == BreakNode::abortInstName) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
 			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), segments.Size()));
 			compiled.instructions.Add(jmp);
 		}
+		// Compile break true
 		else if (type == BreakNode::breakTrueInstName) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
 			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), isLast ? segments.Size() : nextTrue));
 			compiled.instructions.Add(jmp);
 		}
+		// Compile break false and scopewise break
 		else if (type == BreakNode::breakFalseInstName || type == BreakNode::scopeBreakInstName) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
 			segmentInfo.jumps.Add(Tuple<UInt, UInt>(compiled.instructions.Size(), isLast ? segments.Size() : nextFalse));
 			compiled.instructions.Add(jmp);
 		}
+		// Compile continue
 		else if (type == ContinueNode::continueInstName) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
 			jmp.arguments.Add(Argument(ArgumentType::Label, loopInfo.loopLbl));
@@ -455,7 +513,9 @@ void LoopNode::CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, Seg
 
 	LoopSegment segment = segments[segmentInfo.index];
 
+	// Compile segment body
 	for (const OptimizerInstruction& in : segments[segmentInfo.index].statements->Compile(info).instructions) {
+		// Check for custom instructions
 		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
 			continue;
@@ -463,11 +523,13 @@ void LoopNode::CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, Seg
 
 		const String type = in.instruction.instructionName;
 
+		// Check for scope break instruction
 		if (type != BreakNode::scopeBreakInstName) {
 			compiled.instructions.Add(in);
 			continue;
 		}
 
+		// Compile scopewise break
 		if (in.instruction.sizes[0] > 1) {
 			OptimizerInstruction inst = in;
 			inst.instruction.sizes[0]--;
@@ -480,6 +542,7 @@ void LoopNode::CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, Seg
 		}
 	}
 
+	// Jump to next true
 	if (!IsSegmentLast(segmentInfo.index)) {
 		if (nextTrue != segmentInfo.index + 1 && (segment.type == LoopType::If || segment.type == LoopType::None)) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
@@ -504,6 +567,7 @@ bool LoopNode::WillASegmentRun() const {
 	bool hasPlainElse = false;
 
 	for (UInt i = 0; i < segments.Size(); i++) {
+		// Check if loop has plain also or else
 		if (segments[i].type == LoopType::None) {
 			if (segments[i].also) {
 				hasPlainAlso = true;
@@ -512,7 +576,8 @@ bool LoopNode::WillASegmentRun() const {
 				hasPlainElse = true;
 			}
 		}
-		else if (i > 0 && (segments[i].type == LoopType::While || segments[i].type == LoopType::For)) {
+		// Check if loop has also or else loops
+		else if (i > 0 && segments[i].IsLoop()) {
 			return false;
 		}
 	}
@@ -536,6 +601,7 @@ LoopNode::LoopScanInfo LoopNode::ScanSetup(ScanInfo& info) const {
 }
 
 void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const {
+	// Reset unassigned variables
 	if (loopInfo.init) {
 		if (!segment.also) {
 			for (const Scope& var : loopInfo.scope.unassigned) {
@@ -553,6 +619,7 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 		}
 	}
 
+	// Copy scope branch
 	if (!segment.also) {
 		info.scopeInfo = loopInfo.scope.CopyBranch();
 	}
@@ -592,6 +659,7 @@ void LoopNode::ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const Lo
 }
 
 void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
+	// Combine scan info for also segments
 	if (!loopInfo.alsoSegments.IsEmpty()) {
 		if (loopInfo.willASegmentRun) { 
 			loopInfo.scope = loopInfo.alsoSegments[0];
@@ -613,6 +681,7 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 		loopInfo.scope = loopInfo.mainSegment;
 	}
 
+	// Combine scope info for else segments
 	for (UInt i = 0; i < loopInfo.elseSegments.Size(); i++) {
 		if (loopInfo.willASegmentRun) {
 			loopInfo.scope = ScopeInfo::BranchIntersection(loopInfo.scope, loopInfo.elseSegments[i]);
@@ -628,29 +697,36 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 ScanResult LoopNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
 
+	// Setup scan
 	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	LoopScanInfo loopInfo = ScanSetup(info.Get());
 	info->scopeInfo.ExitScope();
 
+	// Setup segments
 	for (UInt i = 0; i < segments.Size(); i++) {
+		// Scan pre contents
 		info->scopeInfo.EnterScope(segments[i].IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
 		ScanPreContents(loopInfo, info.Get(), segments[i]);
 
+		// Scan condition
 		if (segments[i].type != LoopType::None) {
 			ScanResult r = segments[i].condition->Scan(info);
 			r.SelfUseCheck(info, segments[i].condition->file);
 			result |= r;
 		}
 
+		// Scan body
 		ScanResult r = segments[i].statements->Scan(info);
 		r.SelfUseCheck(info, segments[i].statements->file);
 		result |= r;
 
+		// Update break counts for loops
 		if (segments[i].IsLoop()) {
 			info->scopeInfo.loopBreakCount  = loopInfo.scope.loopBreakCount;
 			info->scopeInfo.scopeBreakCount = loopInfo.scope.scopeBreakCount;
 		}
 
+		// Scan post contents
 		if (i == 0) {
 			ScanFirstPostContents(loopInfo, info.Get());
 		}
@@ -661,6 +737,7 @@ ScanResult LoopNode::Scan(ScanInfoStack& info) {
 		info->scopeInfo.ExitScope();
 	}
 
+	// Cleanup scan
 	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	ScanCleanup(loopInfo, info.Get());
 	info->scopeInfo.ExitScope();
@@ -765,10 +842,12 @@ NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 		}
 	}
 
+	// Remove loop if all segments are removed
 	if (segments.Size() == 0) {
 		info.optimized = true;
 		return new EmptyNode();
 	}
+	// Convert plain segment to do node
 	else if (segments.Size() == 1 && (!segments[0].condition || segments[0].condition->IsImmediate())) {
 		if (!segments[0].IsLoop()) {
 			Pointer<DoNode> dn = new DoNode(segments[0].statements->scope, segments[0].statements->file);

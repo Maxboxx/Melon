@@ -40,10 +40,12 @@ RootNode::~RootNode() {
 CompiledNode RootNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
+	// Get size of statements
 	Pointer<StatementsNode> statements = new StatementsNode(nullptr, FileInfo());
 	statements->statements = nodes;
 	UInt size = statements->GetSize();
 
+	// Push
 	if (size > 0) {
 		OptimizerInstruction push = Instruction(InstructionType::Push, size);
 		push.important = true;
@@ -52,12 +54,14 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 
 	info.stack.PushFrame(size);
 
+	// Compile nodes
 	for (const NodePtr& node : nodes) {
 		for (const OptimizerInstruction& instruction : node->Compile(info).instructions) {
 			cn.instructions.Add(instruction);
 		}
 	}
 
+	// Pop
 	if (size > 0) {
 		OptimizerInstruction pop = Instruction(InstructionType::Pop, size);
 		pop.important = true;
@@ -66,10 +70,12 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 
 	info.stack.PopFrame(size);
 
+	// Add exit instruction
 	Instruction in = Instruction(InstructionType::Exit, info.stack.ptrSize);
 	in.arguments.Add(Argument(0));
 	cn.instructions.Add(in);
 
+	// Compile functions
 	for (const NodePtr& node : funcs) {
 		for (const OptimizerInstruction& instruction : node->Compile(info).instructions) {
 			cn.instructions.Add(instruction);
@@ -82,6 +88,7 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVariables) {
 	CompiledNode c;
 
+	// Static values for integers
 	List<Tuple<IntegerSymbol*, InstructionType, Long, Long>> integers;
 	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Byte,   InstructionType::Byte,  Math::ByteMin(),   Math::ByteMax()));
 	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UByte,  InstructionType::Byte,  Math::UByteMin(),  Math::UByteMax()));
@@ -92,6 +99,7 @@ List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVar
 	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Long,   InstructionType::Long,  Math::LongMin(),   Math::LongMax()));
 	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::ULong,  InstructionType::Long,  Math::ULongMin(),  Math::ULongMax()));
 
+	// Compile static memory
 	for (const Tuple<IntegerSymbol*, InstructionType, Long, Long>& integer : integers) {
 		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Scope("min"), file))) {
 			Instruction name = Instruction(InstructionType::Static);
@@ -114,6 +122,7 @@ List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVar
 		}
 	}
 
+	// Compile code
 	UByte index = 0;
 	CompileInfo info;
 	c.instructions.Add(Instruction(InstructionType::Code));
@@ -128,11 +137,13 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 	Collection<UInt> failedFuncs;
 
 	do {
+		// Create template symbols
 		for (; templateIndex < SymbolTable::templateSymbols.Size(); templateIndex++) {
 			SymbolTable::TemplateInfo info = SymbolTable::templateSymbols[templateIndex];
 			AddTemplateSpecialization(info.name, info.scope->AbsoluteName(), info.file, false);
 		}
 
+		// Scan failed nodes
 		for (UInt i = 0; i < failedNodes.Size();) {
 			try {
 				nodes[failedNodes[i]]->IncludeScan(info);
@@ -143,6 +154,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			}
 		}
 
+		// Scan failed functions
 		for (UInt i = 0; i < failedFuncs.Size();) {
 			try {
 				funcs[failedFuncs[i]]->IncludeScan(info);
@@ -153,6 +165,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			}
 		}
 
+		// Scan nodes
 		for (; nodeIndex < nodes.Size(); nodeIndex++) {
 			try {
 				nodes[nodeIndex]->IncludeScan(info);
@@ -162,6 +175,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			}
 		}
 
+		// Scan functions
 		for (; funcIndex < funcs.Size(); funcIndex++) {
 			try {
 				funcs[funcIndex]->IncludeScan(info);
@@ -171,6 +185,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			}
 		}
 	}
+	// Chech if scan is complete
 	while (
 		nodeIndex < nodes.Size() ||
 		funcIndex < funcs.Size() ||
@@ -183,6 +198,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 }
 
 void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const bool scan) {
+	// Find template args
 	Tuple<TemplateTypeSymbol*, List<ScopeList>> templateInfo = FindTemplateArgs(name, scope, file);
 
 	if (templateInfo.value1 == nullptr) return;
@@ -190,10 +206,12 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 	Scope templateScope = templateInfo.value1->Name().Copy();
 	templateScope.types = templateInfo.value2;
 
+	// Check if the type has already been specialized
 	if (SymbolTable::ContainsAbsolute(templateInfo.value1->AbsoluteName().Pop().Add(templateScope))) return;
 
 	ReplacementMap<TypeSymbol*> templateTypes;
 
+	// Create replacement map for template arguments
 	for (UInt i = 0; i < templateInfo.value2.Size(); i++) {
 		if (TypeSymbol* const type = templateInfo.value1->TemplateArgument(i)) {
 			if (type->Is<TemplateSymbol>()) {
@@ -204,8 +222,10 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 		}
 	}
 
+	// Specialize template type
 	Symbol* const s = templateInfo.value1->SpecializeTemplate(templateTypes, this);
 
+	// Create template specialization for struct
 	if (StructSymbol* const sym = s->Cast<StructSymbol>()) {
 		templateInfo.value1->Parent()->Cast<TemplateTypeSymbol>()->AddTemplateVariant(sym);
 		sym->templateParent = templateInfo.value1;
@@ -231,6 +251,7 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 		nodes.Add(sn);
 	}
 
+	// Scan the new type
 	if (scan && !includeScanning) {
 		IncludeScan(*parsingInfo);
 	}
@@ -239,6 +260,7 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const ScopeList& name, const ScopeList& scope, const FileInfo& file) {
 	List<ScopeList> templateArgs = name.Last().types->Copy();
 
+	// Find absolute name for template types
 	for (ScopeList& type : templateArgs) {
 		if (Symbol* const s = SymbolTable::Find(type, scope, file)) {
 			type = s->AbsoluteName();
@@ -250,6 +272,7 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 
 	ScopeList list = name.Last().name.Size() == 0 ? name.Pop() : name.Pop().Add(Scope(name.Last().name));
 
+	// Find base template type symbol
 	TemplateTypeSymbol* const sym = SymbolTable::Find<TemplateTypeSymbol>(list, scope, file);
 
 	if (sym == nullptr) {
@@ -258,6 +281,7 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 
 	bool found = false;
 
+	// Find best variant
 	for (TemplateTypeSymbol* const variant : sym->templateVariants) {
 		if (variant->templateArguments.Size() == templateArgs.Size()) {
 			bool match = true;
@@ -286,10 +310,12 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 ScanResult RootNode::Scan(ScanInfoStack& info) {
 	info->useFunction = true;
 
+	// Scan nodes
 	for (const NodePtr& node : nodes) {
 		node->Scan(info);
 	}
 
+	// Scan functions
 	while (!info.functions.IsEmpty()) {
 		Collection<NodePtr> functions = info.functions;
 		info.functions = Collection<NodePtr>();
@@ -308,6 +334,7 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 
 	info->useFunction = false;
 
+	// Scan unused functions
 	for (const NodePtr& node : funcs) {
 		if (!info.usedFunctions.Contains(node.Cast<FunctionNode>()->sym)) {
 			node.Cast<FunctionNode>()->isUsed = false;
@@ -326,6 +353,7 @@ ScanInfoStack RootNode::Scan() {
 }
 
 NodePtr RootNode::Optimize(OptimizeInfo& info) {
+	// Optimize nodes
 	for (UInt i = 0; i < nodes.Size(); i++) {
 		FileInfo file = nodes[i]->file;
 
@@ -334,6 +362,7 @@ NodePtr RootNode::Optimize(OptimizeInfo& info) {
 		nodes[i]->file = file;
 	}
 
+	// Remove unused functions
 	if (info.usedFunctions.Size() < funcs.Size()) {
 		List<NodePtr> functions = funcs;
 		funcs = List<NodePtr>(info.usedFunctions.Size());
@@ -347,6 +376,7 @@ NodePtr RootNode::Optimize(OptimizeInfo& info) {
 		info.optimized = true;
 	}
 
+	// Optimize functions
 	for (UInt i = 0; i < funcs.Size(); i++) {
 		if (NodePtr node = funcs[i]->Optimize(info)) funcs[i] = node;
 
@@ -364,6 +394,7 @@ StringBuilder RootNode::ToMelon(const UInt indent) const {
 }
 
 void RootNode::ToMelonFiles(const CompilerOptions& options) const {
+	// Create output directory
 	const String dir = options.outputDirectory + "melon/";
 	System::CreateDirectory(options.outputDirectory + "melon");
 
@@ -375,8 +406,11 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 	bool writeToFile = false;
 	StringBuilder sb;
 
+	// Convert nodes to melon files
 	for (const NodePtr& node : nodes) {
+		// Check if the namespace changes
 		if (node->file.currentNamespace != currentNamespace) {
+			// Write old namespace contents to file
 			if (writeToFile) {
 				FileWriter file = FileWriter(fileDir);
 				file.Write(sb.ToString());
@@ -390,6 +424,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 
 			fileDir = dir;
 
+			// Create directory for new namespace
 			for (UInt i = 0; i < currentNamespace.Size(); i++) {
 				if (i > 0) fileDir += "/";
 				fileDir += currentNamespace[i].ToString();
@@ -399,6 +434,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 				}
 			}
 
+			// Get file name
 			if (fileDir.Size() != 0) fileDir += "/";
 
 			if (Optional<Match> match = filename.Match(node->file.filename)) {
@@ -407,6 +443,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 
 			sb = StringBuilder();
 
+			// Convert includes to string
 			for (const ScopeList& include : node->file.includedNamespaces) {
 				sb += "include ";
 				sb += include.ToString();
@@ -416,6 +453,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 			if (sb.Size() > 0) sb += "\n";
 		}
 
+		// Convert node to melon string
 		StringBuilder s = node->ToMelon(0);
 
 		if (s.Size() > 0) {
@@ -424,6 +462,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 		}
 	}
 
+	// Write last text to file
 	if (writeToFile) {
 		FileWriter file = FileWriter(fileDir);
 		file.Write(sb.ToString());

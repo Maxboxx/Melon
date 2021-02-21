@@ -4,9 +4,15 @@
 
 namespace Melon {
 	namespace Nodes {
+		///T RepeatNode
+		/// Node for reapeat statements
 		class RepeatNode : public Node {
 		public:
+			///T Condition
 			NodePtr condition;
+
+			///T Content
+			/// The loop body
 			NodePtr content;
 
 			RepeatNode(Symbols::Symbol* const scope, const FileInfo& file);

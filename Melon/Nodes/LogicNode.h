@@ -17,11 +17,6 @@ namespace Melon {
 			LogicNode(Symbols::Symbol* const scope, const TokenType type, const FileInfo& file);
 			~LogicNode();
 
-			static CompiledNode CompileToBool(const NodePtr& node, CompileInfo& info);
-
-			CompiledNode CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) const;
-			CompiledNode CompileXor(CompileInfo& info, const bool checkEqual) const;
-
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Symbols::Scope GetOperator() const;
 			virtual CompiledNode Compile(CompileInfo& info) override;
@@ -31,6 +26,12 @@ namespace Melon {
 
 		protected:
 			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+
+			static CompiledNode CompileToBool(const NodePtr& node, CompileInfo& info);
+
+			CompiledNode CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) const;
+			CompiledNode CompileAndOrOperand(CompileInfo& info, CompiledNode& cn, Boxx::List<Boxx::UInt>& jumps, const bool checkTrue) const;
+			CompiledNode CompileXor(CompileInfo& info, const bool checkEqual) const;
 		};
 	}
 }

@@ -76,6 +76,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 	if (name.name == Scope::Optional.name) return "";
 	if (symbol->templateParent != nullptr) return "";
 
+	// Check if struct is completely specialized
 	for (UInt i = 0; i < symbol->templateArguments.Size(); i++) {
 		if (symbol->templateArguments[i].IsTemplate()) continue;
 
@@ -86,6 +87,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 
 	StringBuilder sb = "struct ";
 
+	// Create struct name with template arguments
 	if (symbol->templateArguments.IsEmpty()) {
 		sb += symbol->Name().ToSimpleString();
 	}
@@ -103,6 +105,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 
 	String tabs = String('\t').Repeat(indent + 1);
 
+	// Add members
 	for (const Scope& var : symbol->members) {
 		sb += "\n";
 		sb += tabs;
@@ -111,6 +114,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 		sb += var.ToSimpleString();
 	}
 
+	// Add functions
 	for (const Pair<Scope, Symbol*>& syms : symbol->symbols) {
 		if (FunctionSymbol* const func = syms.value->Cast<FunctionSymbol>()) {
 			for (FunctionSymbol* const overload : func->overloads) {
@@ -127,6 +131,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 	sb += String('\t').Repeat(indent);
 	sb += "end";
 
+	// Add template variants
 	if (!symbol->templateArguments.IsEmpty()) {
 		for (TemplateTypeSymbol* const type : symbol->Parent<TemplateTypeSymbol>()->templateVariants) {
 			if (type->templateParent == symbol) {

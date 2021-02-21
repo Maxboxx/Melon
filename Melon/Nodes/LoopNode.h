@@ -43,18 +43,36 @@ namespace Melon {
 
 				~LoopSegment() {}
 
+				///T Is Loop
 				bool IsLoop() const {
 					return type == LoopType::While || type == LoopType::For;
 				}
 			};
 
+			////B LoopScanInfo
+			//// Scan info for loops
 			struct LoopScanInfo {
+				////T Initial Scope Info
 				ScopeInfo scope;
+
+				////T Main Segment
+				//// Scope info for the main segment
 				ScopeInfo mainSegment;
+
+				////T Also Segments
+				//// Scope info for also segments
 				Boxx::List<ScopeInfo> alsoSegments;
+
+				////T Else Segments
+				//// Scan info for else segments
 				Boxx::List<ScopeInfo> elseSegments;
 
-				bool init            = false;
+				////T Init
+				//// True if the loop has initialized everything
+				bool init = false;
+
+				////T Will a Segment Run
+				//// True if at least one segment is guaranteed to run
 				bool willASegmentRun = false;
 
 				~LoopScanInfo() {}

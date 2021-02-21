@@ -38,7 +38,9 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 	List<UInt> endJumps;
 	List<UInt> condJumps;
 
+	// Compile loop body
 	for (const OptimizerInstruction& in : content->Compile(info).instructions) {
+		// Check for custom instructions
 		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
 			continue;
@@ -46,6 +48,7 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 
 		const String type = in.instruction.instructionName;
 
+		// Check for break instructions
 		if (
 			type != BreakNode::abortInstName &&
 			type != BreakNode::scopeBreakInstName &&
@@ -57,11 +60,13 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 			continue;
 		}
 
+		// Compile multi break
 		if (in.instruction.sizes[0] > 1) {
 			OptimizerInstruction inst = in;
 			inst.instruction.sizes[0]--;
 			compiled.instructions.Add(inst);
 		}
+		// Compile breaks
 		else if (
 			type == BreakNode::abortInstName || 
 			type == BreakNode::breakTrueInstName || 
@@ -72,6 +77,7 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 			endJumps.Add(compiled.instructions.Size());
 			compiled.instructions.Add(jmp);
 		}
+		// Compile continue
 		else if (type == ContinueNode::continueInstName) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
 			condJumps.Add(compiled.instructions.Size());
@@ -79,6 +85,7 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 		}
 	}
 
+	// Add jumps and labels
 	if (!condJumps.IsEmpty()) {
 		const UInt condLbl = info.label++;
 		compiled.instructions.Add(Instruction::Label(condLbl));
@@ -88,17 +95,20 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 		}
 	}
 
+	// Compile condition
 	const UInt frame = info.stack.frame;
 	CompiledNode cond = condition->Compile(info);
 	info.stack.PopExpr(frame, cond);
 	compiled.AddInstructions(cond.instructions);
 
+	// Check if condition is true
 	Instruction comp = Instruction(InstructionType::Eq, 1);
 	comp.arguments.Add(cond.argument);
 	comp.arguments.Add(Argument(0));
 	comp.arguments.Add(Argument(ArgumentType::Label, label));
 	compiled.instructions.Add(comp);
 
+	// Add end label and jumps
 	if (!endJumps.IsEmpty()) {
 		const UInt endLbl = info.label++;
 		compiled.instructions.Add(Instruction::Label(endLbl));

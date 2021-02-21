@@ -31,6 +31,26 @@ TypeSymbol* Symbol::ParentType() const {
 	return parent->ParentType();
 }
 
+TypeSymbol* Symbol::CurrentType() {
+	if (TypeSymbol* const type = this->Cast<TypeSymbol>()) return type;
+	return ParentType();
+}
+
+FunctionSymbol* Symbol::ParentFunction() const {
+	if (parent == nullptr) return nullptr;
+
+	if (FunctionSymbol* const func = parent->Cast<FunctionSymbol>()) {
+		return func;
+	}
+
+	return parent->ParentFunction();
+}
+
+FunctionSymbol* Symbol::CurrentFunction() {
+	if (FunctionSymbol* const type = this->Cast<FunctionSymbol>()) return type;
+	return ParentFunction();
+}
+
 Scope Symbol::Name() {
 	return name;
 }

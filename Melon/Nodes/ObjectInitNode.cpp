@@ -43,11 +43,11 @@ CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
 	TypeSymbol* const type = Type();
 
 	UInt offset = type->Size();
-
 	info.stack.PushExpr(offset, c);
 
 	UInt index = info.index;
 
+	// Compile vars
 	for (UInt i = 0; i < vars.Size(); i++) {
 		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
 
@@ -82,6 +82,7 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 
 	if (type == nullptr) return result;
 
+	// Check if object init is valid
 	if (StructSymbol* const s = type->Cast<StructSymbol>()) {
 		for (const Scope& member : s->members) {
 			bool found = false;
@@ -102,6 +103,7 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 		ErrorLog::Error(CompileError(CompileError::InvalidCustomInit, file));
 	}
 
+	// Scan assignments
 	for (UInt i = 0; i < vars.Size(); i++) {
 		for (UInt u = i + 1; u < vars.Size(); u++) {
 			if (vars[i] == vars[u]) {
@@ -115,6 +117,7 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 		ScanAssignment(new TypeNode(varType->AbsoluteName()), expressions[i], info, expressions[i]->file);
 	}
 
+	// Scan expressions
 	for (const NodePtr& node : expressions) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->file);
