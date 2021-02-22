@@ -3,6 +3,7 @@
 #include "SymbolTable.h"
 #include "TypeSymbol.h"
 #include "TemplateSymbol.h"
+#include "FunctionSymbol.h"
 
 using namespace Boxx;
 

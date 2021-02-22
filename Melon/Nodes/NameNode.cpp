@@ -4,6 +4,7 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/TypeSymbol.h"
 #include "Melon/Symbols/TemplateSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"

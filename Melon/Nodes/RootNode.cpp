@@ -10,6 +10,7 @@
 #include "Melon/MelonCompiler.h"
 
 #include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/TemplateTypeSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/IntegerSymbol.h"

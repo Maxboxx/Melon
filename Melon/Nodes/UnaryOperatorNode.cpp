@@ -72,9 +72,11 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 
 	FunctionSymbol* const func = type->FindUnaryOperator(op, file);
 
+	// Compile symbol node
 	if (func->symbolNode) {
 		return func->symbolNode->Compile(nodes, info);
 	}
+	// Compile operator function
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;

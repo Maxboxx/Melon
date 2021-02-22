@@ -5,6 +5,7 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/TypeSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"

@@ -68,7 +68,7 @@ namespace Melon {
 				Boxx::List<ScopeInfo> elseSegments;
 
 				////T Init
-				//// True if the loop has initialized everything
+				//// True if the loop is in a constructor
 				bool init = false;
 
 				////T Will a Segment Run

@@ -58,162 +58,191 @@ bool SwitchNode::IsScope() const {
 	return !expr;
 }
 
-CompiledNode SwitchNode::Compile(CompileInfo& info) {
-	CompiledNode cn;
-
-	if (this->expr) {
-		cn.size = Type()->Size();
-	}
-
-	info.stack.PushExpr(this->match->Type()->Size(), cn);
-	Pointer<MemoryNode> matchStack = new MemoryNode(info.stack.Offset());
-	matchStack->type = this->match->Type()->AbsoluteName();
-
-	const UInt frame = info.stack.frame;
-	cn.AddInstructions(CompileAssignment(matchStack, this->match, info, this->match->file).instructions);
-
-	List<UInt> endJumps;
-	List<List<UInt>> exprJumps;
-	UInt exprIndex = 0;
-	UInt defaultJump;
-
+void SwitchNode::CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+	// Compile cases
 	for (const List<NodePtr>& values : cases) {
 		List<UInt> jumps;
 
+		// Compile case values
 		for (NodePtr node : values) {
 			List<NodePtr> nodeArgs;
-			nodeArgs.Add(matchStack);
+			nodeArgs.Add(switchInfo.match);
 			nodeArgs.Add(node);
 
 			CompiledNode comp = SymbolTable::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file)->symbolNode->Compile(nodeArgs, info);
-			cn.AddInstructions(comp.instructions);
+			switchInfo.cn.AddInstructions(comp.instructions);
 
 			Instruction eq = Instruction(InstructionType::Ne, 1);
 			eq.arguments.Add(comp.argument);
 			eq.arguments.Add(Argument(0));
-			cn.instructions.Add(eq);
+			switchInfo.cn.instructions.Add(eq);
 
-			jumps.Add(cn.instructions.Size() - 1);
+			jumps.Add(switchInfo.cn.instructions.Size() - 1);
 		}
 
-		exprJumps.Add(jumps);
+		switchInfo.caseJumps.Add(jumps);
+	}
+}
+
+void SwitchNode::CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+	// Compile nodes
+	for (NodePtr expr : nodes) {
+		// Add label for case
+		switchInfo.cn.instructions.Add(Instruction::Label(info.label));
+
+		for (const UInt i : switchInfo.caseJumps[switchInfo.caseIndex]) {
+			switchInfo.cn.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
+		}
+
+		info.label++;
+		switchInfo.caseIndex++;
+
+		// Compile statements
+		if (!this->expr) {
+			CompiledNode compExpr = expr->Compile(info);
+
+			// Check for scopewise breaks
+			for (const OptimizerInstruction& in : compExpr.instructions) {
+				if (in.instruction.type != InstructionType::Custom) {
+					switchInfo.cn.instructions.Add(in);
+					continue;
+				}
+
+				const String type = in.instruction.instructionName;
+
+				if (type != BreakNode::scopeBreakInstName) {
+					switchInfo.cn.instructions.Add(in);
+					continue;
+				}
+
+				if (in.instruction.sizes[0] > 1) {
+					OptimizerInstruction inst = in;
+					inst.instruction.sizes[0]--;
+					switchInfo.cn.instructions.Add(inst);
+				}
+				else {
+					switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
+					switchInfo.cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
+				}
+			}
+		}
+		// Compile expression
+		else {
+			switchInfo.cn.AddInstructions(CompileAssignment(switchInfo.resultNode, expr, info, expr->file).instructions);
+		}
+
+		// Jump to end
+		switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
+		switchInfo.cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
+	}
+}
+
+void SwitchNode::CompileDefault(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+	if (def) {
+		// Compile statements
+		if (!this->expr) {
+			CompiledNode defNode = def->Compile(info);
+
+			// Check for scopewise breaks
+			for (const OptimizerInstruction& in : defNode.instructions) {
+				if (in.instruction.type != InstructionType::Custom) {
+					switchInfo.cn.instructions.Add(in);
+					continue;
+				}
+
+				const String type = in.instruction.instructionName;
+
+				if (type != BreakNode::scopeBreakInstName) {
+					switchInfo.cn.instructions.Add(in);
+					continue;
+				}
+
+				if (in.instruction.sizes[0] > 1) {
+					OptimizerInstruction inst = in;
+					inst.instruction.sizes[0]--;
+					switchInfo.cn.instructions.Add(inst);
+				}
+				else {
+					switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
+					switchInfo.cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
+				}
+			}
+		}
+		// Compile expression
+		else {
+			switchInfo.cn.AddInstructions(CompileAssignment(switchInfo.resultNode, def, info, def->file).instructions);
+		}
+	}
+}
+
+CompiledNode SwitchNode::Compile(CompileInfo& info) {
+	// Setup compile info
+	SwitchCompileInfo switchInfo;
+	switchInfo.caseIndex = 0;
+
+	// Get size of return type
+	if (this->expr) {
+		switchInfo.cn.size = Type()->Size();
 	}
 
+	// Compile match expression
+	info.stack.PushExpr(this->match->Type()->Size(), switchInfo.cn);
+	switchInfo.match = new MemoryNode(info.stack.Offset());
+	switchInfo.match->type = this->match->Type()->AbsoluteName();
+
+	const UInt frame = info.stack.frame;
+	switchInfo.cn.AddInstructions(CompileAssignment(switchInfo.match, this->match, info, this->match->file).instructions);
+
+	// Compile cases
+	CompileCaseMatches(switchInfo, info);
+
 	if (!this->expr) {
-		info.stack.PopExpr(frame, cn);
+		info.stack.PopExpr(frame, switchInfo.cn);
 	}
 
 	info.stack.Pop(this->match->Type()->Size());
 
+	// Jump to default
 	Instruction defJmp = Instruction(InstructionType::Jmp, 0);
-	defaultJump = cn.instructions.Size();
-	cn.instructions.Add(defJmp);
+	switchInfo.defaultJump = switchInfo.cn.instructions.Size();
+	switchInfo.cn.instructions.Add(defJmp);
 
 	if (expr) {
-		info.stack.PushExpr(Type()->Size(), cn);
+		info.stack.PushExpr(Type()->Size(), switchInfo.cn);
 	}
 
-	Argument result = Argument(MemoryLocation(info.stack.Offset()));
+	// Get result memory location
+	switchInfo.result = Argument(MemoryLocation(info.stack.Offset()));
+	switchInfo.resultNode = new MemoryNode(switchInfo.result.mem.offset);
+	switchInfo.resultNode->type = Type()->AbsoluteName();
 
-	Pointer<MemoryNode> sn = new MemoryNode(result.mem.offset);
-	sn->type = Type()->AbsoluteName();
+	// Compile case bodies
+	CompileCaseBodies(switchInfo, info);
 
-	for (NodePtr expr : nodes) {
-		cn.instructions.Add(Instruction::Label(info.label));
-
-		for (const UInt i : exprJumps[exprIndex]) {
-			cn.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
-		}
-
-		info.label++;
-		exprIndex++;
-
-		if (!this->expr) {
-			CompiledNode compExpr = expr->Compile(info);
-
-			for (const OptimizerInstruction& in : compExpr.instructions) {
-				if (in.instruction.type != InstructionType::Custom) {
-					cn.instructions.Add(in);
-					continue;
-				}
-
-				const String type = in.instruction.instructionName;
-
-				if (type != BreakNode::scopeBreakInstName) {
-					cn.instructions.Add(in);
-					continue;
-				}
-
-				if (in.instruction.sizes[0] > 1) {
-					OptimizerInstruction inst = in;
-					inst.instruction.sizes[0]--;
-					cn.instructions.Add(inst);
-				}
-				else {
-					endJumps.Add(cn.instructions.Size());
-					cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
-				}
-			}
-		}
-		else {
-			cn.AddInstructions(CompileAssignment(sn, expr, info, expr->file).instructions);
-		}
-
-		endJumps.Add(cn.instructions.Size());
-		cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
-	}
-
-	cn.instructions.Add(Instruction::Label(info.label));
-	cn.instructions[defaultJump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
+	// Add default label
+	switchInfo.cn.instructions.Add(Instruction::Label(info.label));
+	switchInfo.cn.instructions[switchInfo.defaultJump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
 	info.label++;
 
-	if (def) {
-		if (!this->expr) {
-			CompiledNode defNode = def->Compile(info);
+	// Compile default case
+	CompileDefault(switchInfo, info);
 
-			for (const OptimizerInstruction& in : defNode.instructions) {
-				if (in.instruction.type != InstructionType::Custom) {
-					cn.instructions.Add(in);
-					continue;
-				}
+	// Add end label
+	switchInfo.cn.instructions.Add(Instruction::Label(info.label));
 
-				const String type = in.instruction.instructionName;
-
-				if (type != BreakNode::scopeBreakInstName) {
-					cn.instructions.Add(in);
-					continue;
-				}
-
-				if (in.instruction.sizes[0] > 1) {
-					OptimizerInstruction inst = in;
-					inst.instruction.sizes[0]--;
-					cn.instructions.Add(inst);
-				}
-				else {
-					endJumps.Add(cn.instructions.Size());
-					cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
-				}
-			}
-		}
-		else {
-			cn.AddInstructions(CompileAssignment(sn, def, info, def->file).instructions);
-		}
-	}
-
-	cn.instructions.Add(Instruction::Label(info.label));
-
-	for (const UInt i : endJumps) {
-		cn.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
+	for (const UInt i : switchInfo.endJumps) {
+		switchInfo.cn.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
 	}
 
 	info.label++;
 
+	// Set result argument
 	if (expr) {
-		cn.argument = result;
+		switchInfo.cn.argument = switchInfo.result;
 		info.stack.Pop(Type()->Size());
 	}
 
-	return cn;
+	return switchInfo.cn;
 }
 
 void SwitchNode::IncludeScan(ParsingInfo& info) {
@@ -304,25 +333,21 @@ void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 	}
 }
 
-ScanResult SwitchNode::Scan(ScanInfoStack& info) {
-	ScanResult result = match->Scan(info);
-	result.SelfUseCheck(info, match->file);
+ScanResult SwitchNode::ScanNodes(ScanInfoStack& info) const {
+	ScanResult result;
 
-	TypeSymbol* const type = Type();
-	TypeSymbol* const matchType = match->Type();
-	
-	if (matchType) {
-		ScanAssignment(new TypeNode(matchType->AbsoluteName()), new TypeNode(matchType->AbsoluteName()), info, match->file);
-	}
-
+	// Setup scan
 	SwitchScanInfo switchInfo = ScanSetup(info.Get());
 
+	// Get type of switch expression
+	TypeSymbol* const type = Type();
 	Pointer<TypeNode> typeNode = nullptr;
 
 	if (type) {
 		typeNode = new TypeNode(type->AbsoluteName());
 	}
 
+	// Scan regular case nodes
 	for (const NodePtr& node : nodes) {
 		ScanPreContents(switchInfo, info.Get());
 
@@ -337,6 +362,7 @@ ScanResult SwitchNode::Scan(ScanInfoStack& info) {
 		ScanPostContents(switchInfo, info.Get());
 	}
 
+	// Scan default node
 	if (def) {
 		ScanPreContents(switchInfo, info.Get());
 
@@ -351,8 +377,27 @@ ScanResult SwitchNode::Scan(ScanInfoStack& info) {
 		ScanPostContents(switchInfo, info.Get());
 	}
 
+	// Cleanup scan
 	ScanCleanup(switchInfo, info.Get());
 
+	return result;
+}
+
+ScanResult SwitchNode::Scan(ScanInfoStack& info) {
+	ScanResult result = match->Scan(info);
+	result.SelfUseCheck(info, match->file);
+
+	// Scan match type
+	TypeSymbol* const matchType = match->Type();
+	
+	if (matchType) {
+		ScanAssignment(new TypeNode(matchType->AbsoluteName()), new TypeNode(matchType->AbsoluteName()), info, match->file);
+	}
+
+	// Scan Nodes
+	result |= ScanNodes(info);
+
+	// Scan case values
 	for (const List<NodePtr>& nodeList : cases) {
 		for (const NodePtr& node : nodeList) {
 			ScanResult r = node->Scan(info);
@@ -387,6 +432,7 @@ ScopeList SwitchNode::FindSideEffectScope(const bool assign) {
 }
 
 NodePtr SwitchNode::Optimize(OptimizeInfo& info) {
+	// Optimize nodes
 	if (NodePtr node = match->Optimize(info)) match = node;
 
 	for (NodePtr& node : nodes) {

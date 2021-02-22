@@ -6,6 +6,7 @@
 
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/NamespaceSymbol.h"
 
 using namespace Boxx;
