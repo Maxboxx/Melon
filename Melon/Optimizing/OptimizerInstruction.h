@@ -96,7 +96,7 @@ namespace Melon {
 				}
 			}
 
-			bool IsAssignmentRegister() const {
+			bool IsRegisterAssignment() const {
 				if (!IsAssignment()) return false;
 
 				if (instruction.arguments.Size() == 2) {
@@ -105,6 +105,22 @@ namespace Melon {
 				else {
 					return instruction.arguments[2].type == Kiwi::ArgumentType::Register;
 				}
+			}
+
+			Kiwi::Register GetAssignedRegister() const {
+				if (IsRegisterAssignment()) {
+					return instruction.arguments.Size() == 2 ? GetRegister(0) : GetRegister(2);
+				}
+
+				return Kiwi::Register();
+			}
+
+			Boxx::UInt GetAssignedIndex() const {
+				if (IsAssignment()) {
+					return instruction.arguments.Size() == 2 ? 0 : 2;
+				}
+
+				return 0;
 			}
 		};
 	}
