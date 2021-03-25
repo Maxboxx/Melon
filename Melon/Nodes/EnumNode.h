@@ -7,22 +7,18 @@ namespace Melon {
 		class EnumSymbol;
 	}
 
+	///N Melon::Nodes
 	namespace Nodes {
-
-		///B EnumNode
-		/// Node for enums
+		/// Node for enums.
 		class EnumNode : public Node {
 		public:
-
-			///T Name
-			/// The name of the enum
+			/// The name of the enum.
 			Symbols::Scope name;
 
-			///T Variables
-			/// The values of the enum
+			/// The values of the enum.
 			Boxx::List<Symbols::Scope> values;
 
-			///T Symbol
+			/// The enum symbol.
 			Symbols::EnumSymbol* symbol;
 
 			EnumNode(Symbols::Symbol* const scope, const FileInfo& file);

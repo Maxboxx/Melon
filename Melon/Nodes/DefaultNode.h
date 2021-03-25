@@ -3,12 +3,12 @@
 #include "Node.h"
 #include "BinaryOperatorNode.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		class IfExprNode;
 
-		///B DefaultNode
-		/// Node for the default operator
+		/// Node for the default operator.
 		class DefaultNode : public BinaryOperatorNode {
 		public:
 			DefaultNode(Symbols::Symbol* const scope, const FileInfo& file);

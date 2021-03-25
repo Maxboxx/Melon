@@ -2,33 +2,25 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B BinaryOperatorNode
-		/// Node for binary operators
+		/// Node for binary operators.
 		class BinaryOperatorNode : public Node {
 		public:
-
-			///H Members
-
-			///T Operands
+			/// The operands.
 			NodePtr node1, node2;
 
-			///T Operator
+			/// The operator.
 			Symbols::Scope op;
 
-			///H Constructors
-
-			///T Constructor
+			/// Creates a binary operator node.
 			BinaryOperatorNode(Symbols::Symbol* const scope, const Symbols::Scope& op, const FileInfo& file);
 			~BinaryOperatorNode();
 
-			///H Methods
-
 			virtual Symbols::TypeSymbol* Type() const override;
 
-			///T Get operator
+			/// Gets the operator.
 			virtual Symbols::Scope GetOperator() const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;

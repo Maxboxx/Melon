@@ -2,20 +2,16 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B DotNode
-		/// Node for the dot operator
+		/// Node for the dot operator.
 		class DotNode : public Node {
 		public:
-	
-			///T Node
-			/// Node to perform the dot operation on
+			/// The node to perform the dot operation on.
 			NodePtr node;
 
-			///T Name
-			/// The name of the dot operator
+			/// The name of the dot operator.
 			Symbols::Scope name;
 
 			DotNode(Symbols::Symbol* const scope, const FileInfo& file);

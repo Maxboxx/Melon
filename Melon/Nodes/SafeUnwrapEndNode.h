@@ -2,16 +2,13 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B SafeUnwrapEndNode
-		/// End node for the safe unwrap opertator
+		/// End node for the safe unwrap opertator.
 		class SafeUnwrapEndNode : public Node {
 		public:
-
-			///T Node
-			/// The unwrapped node
+			/// The unwrapped node.
 			NodePtr node;
 
 			SafeUnwrapEndNode(Symbols::Symbol* const scope, const FileInfo& file);

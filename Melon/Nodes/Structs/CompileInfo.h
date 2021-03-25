@@ -2,21 +2,23 @@
 
 #include "StackPtr.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		///B CompileInfo
-		/// Contains info about the compiliation
+		///H Structs
+
+		/// Contains info about the compiliation.
 		struct CompileInfo {
-			///T Next free label index
+			/// The next free label index.
 			Boxx::UInt label = 0;
 
-			///T Stack
+			/// The current stack and frame positions.
 			StackPtr stack;
 
-			///T Next free register index
+			/// The next free register index.
 			Boxx::UByte index = 0;
 
-			///T Important memory values
+			/// {true} if assignments to memory values are important.
 			bool important = false;
 		};
 	}

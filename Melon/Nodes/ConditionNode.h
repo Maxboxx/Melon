@@ -2,16 +2,15 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		class AssignNode;
 
-		///B ConditionNode
-		/// Node for conditional expressions
+		/// Node for conditional expressions.
 		class ConditionNode : public Node {
 		public:
-
-			///T Condition
+			/// The condition.
 			NodePtr cond;
 
 			ConditionNode(Symbols::Symbol* const scope, const FileInfo& file);

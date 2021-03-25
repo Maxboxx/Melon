@@ -4,35 +4,31 @@
 
 #include "Melon/Symbols/VariableSymbol.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
+		/// Node for creating new variables.
+		///T NewVariableNode
 		///B NewVariableNode
-		/// Node for creating new variables
 		class [[deprecated]] NewVariableNode : public Node {
 		public:
-
-			///T Types
-			/// List of relative types for the new variables
-			/// If the list only contains one type all variables will be of that type
+			/// List of relative types for the new variables.
+			///p If the list only contains one type all variables will be of that type.
 			Boxx::List<Symbols::ScopeList> types;
 
-			///T Names
-			/// All variable names to create
+			/// All variable names to create.
 			Boxx::List<Symbols::Scope> names;
 
-			///T Attributes
-			/// All attributes for each variable
+			/// All attributes for each variable.
 			Boxx::List<Symbols::VariableAttributes> attributes;
 
 			NewVariableNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~NewVariableNode();
-
-			///T Get Variables
-			/// Gets the absolute name of the variables
+			
+			/// Gets the absolute name of the variables.
 			Boxx::List<Symbols::ScopeList> GetVariables() const;
 
-			///T Get the type of the specified type index
+			/// Get the type of the specified type index.
 			Symbols::TypeSymbol* GetType(const Boxx::UInt index) const;
 
 			virtual Symbols::TypeSymbol* Type() const override;

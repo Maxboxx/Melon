@@ -8,22 +8,26 @@
 #include "Error.h"
 #include "String.h"
 
-///N Lexer
+///[Settings] block: indent
 
+///[Namespace] Boxx
 namespace Boxx {
+	///[Heading] Lexing
 
-	///B Lexer
-	/// Used to get all tokens from a string
-	class Lexer {
+	///[Title] Lexer
+	/// Static class for finding tokens in a string.
+	///[Block] Lexer
+	class Lexer final {
 	public:
-		///T Lex
-		/// Get all from tokens from a code string
-		///A const List<TokenPattern<T>>& patterns: A list of token patterns to search for
-		///A const String& code: The code to lex
-		///E LexerError: Thrown if the string contains an undefined token
+		Lexer() = delete;
+
+		/// Get all tokens from a string.
+		///[Arg] patterns: The token patterns to search for.
+		///[Arg] str: The string to search.
+		///[Error] LexerError: Thrown if the string contains an undefined token.
 		///M
 		template <class T>
-		static TokenList<T> Lex(const List<TokenPattern<T>>& patterns, const String& code);
+		static TokenList<T> Lex(const List<TokenPattern<T>>& patterns, const String& str);
 		///M
 		
 	private:
@@ -38,8 +42,9 @@ namespace Boxx {
 		}
 	};
 
-	///B LexerError
-	/// Thrown if the lexer can not lex a string
+	///[Title] LexerError
+	/// Used if a lexer is unable to lex a string.
+	///[Block] LexerError: Error
 	class LexerError : public Error {
 	public:
 		LexerError() : Error() {}

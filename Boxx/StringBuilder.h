@@ -4,60 +4,56 @@
 #include "String.h"
 #include "List.h"
 
-///N StringBuilder
+///[Settings] block: indent
 
+///[Namespace] Boxx
 namespace Boxx {
-	///B StringBuilder
-	/// A class used for constructing a string
+	///[Title] StringBuilder
+	/// A class used for constructing a string.
+	///[Block] StringBuilder
 	class StringBuilder {
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Empty String
+		/// Creates an empty string.
 		StringBuilder();
 
-		///T Create from String
-		///M
+		/// Creates a string from a char array.
 		StringBuilder(const char* str);
+
+		/// Create from a string.
 		StringBuilder(const String& str);
-		///M
 
 		StringBuilder(const StringBuilder& builder);
 		StringBuilder(StringBuilder&& builder) noexcept;
 		~StringBuilder();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T To String
-		/// Returns the constructed string
+		/// Returns the constructed string.
 		String ToString() const;
 
-		///T Copy
-		/// Copies the <code>StringBuilder</code>
+		/// Copies the {StringBuilder}.
 		StringBuilder Copy() const;
 
-		///T Size
-		/// Gets the size of the string
+		/// Gets the size of the string.
 		UInt Size() const;
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Append String
-		/// Appends a string to the <code>StringBuilder</code>
-		///M
+		/// Appends a string to the {StringBuilder}.
 		void operator+=(const char* str);
-		void operator+=(const String& str);
-		void operator+=(const StringBuilder& str);
-		///M
 
-		///T Assignment
-		///M
+		/// Appends a string to the {StringBuilder}.
+		void operator+=(const String& str);
+
+		/// Appends a string to the {StringBuilder}.
+		void operator+=(const StringBuilder& str);
+
 		void operator=(const StringBuilder& builder);
 		void operator=(StringBuilder&& builder) noexcept;
-		///M
 
-		///T Convert To String
-		/// Returns the constructed string
+		/// Returns the constructed string.
 		explicit operator String() const;
 
 	private:

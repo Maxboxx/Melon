@@ -2,17 +2,16 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		///T RepeatNode
-		/// Node for reapeat statements
+		/// Node for {reapeat} statements.
 		class RepeatNode : public Node {
 		public:
-			///T Condition
+			/// The {until} condition.
 			NodePtr condition;
 
-			///T Content
-			/// The loop body
+			/// The loop body.
 			NodePtr content;
 
 			RepeatNode(Symbols::Symbol* const scope, const FileInfo& file);

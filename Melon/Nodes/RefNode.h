@@ -2,16 +2,13 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B RefNode
-		/// Node for references
+		/// Node for references.
 		class RefNode : public Node {
 		public:
-
-			///T Node
-			/// The node to reference
+			/// The node to reference.
 			NodePtr node;
 
 			RefNode(const NodePtr& node);

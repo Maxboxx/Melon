@@ -3,451 +3,484 @@
 #include "Types.h"
 #include <math.h>
 
-///N Vector
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	class Vector2;
-	class Vector3;
-	class Vector4;
+	struct Vector2;
+	struct Vector3;
+	struct Vector4;
 
-	///B Vector2
-	/// A class for 2D vectors
-	class Vector2 {
+	///[Heading] Math
+
+	///[Title] Vector2
+	/// A struct for 2D vectors.
+	///[Block] Vector2
+	struct Vector2 {
 	public:
-		///H Values
+		///[Heading] Components
 
-		///T xy
-		/// Used to get/set the components of the vector
-		float x, y;
+		///[Title] x
+		float x;
+		
+		///[Title] y
+		float y;
 
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Zero vector
-		/// Creates a vector full of zeros
+		/// Creates a vector full of zeros.
 		Vector2();
 
-		///T Float constructor
-		/// Creates a vector with floats
-		explicit Vector2(const float x, const float y);
+		/// Creates a vector with floats.
+		Vector2(const float x, const float y);
 
-		///T Fill
-		/// Fills the entire vector with the same value
+		/// Fills the entire vector with the same value.
 		explicit Vector2(const float v);
 
 		Vector2(const Vector2& vector);
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Length
-		/// Gets the length of the vector
+		/// Gets the length of the vector.
 		float Length() const;
 
-		///T Squared length
-		/// Gets the squared length the vecor
+		/// Gets the squared length the vector.
 		float SquaredLength() const;
 
-		///T Normalize
-		/// Normalizes the vector and returns the result
+		/// Normalizes the vector and returns the result.
 		Vector2 Normalize() const;
 
-		///H Operators
+		///[Heading] Operators
 
 		Vector2 operator=(const Vector2& v);
 
-		///T Componentwise Addition
-		///M
+		/// Adds each component with {f}.
 		Vector2 operator+(const float f) const;
-		Vector2 operator+(const Vector2& v) const;
-		void operator+=(const float f);
-		void operator+=(const Vector2& v);
-		///M
 
-		///T Negation
+		/// Componentwise addition between vectors.
+		Vector2 operator+(const Vector2& v) const;
+
+		/// Adds each component with {f}.
+		void operator+=(const float f);
+
+		/// Componentwise addition between vectors.
+		void operator+=(const Vector2& v);
+
+		/// Negates each component.
 		Vector2 operator-() const;
 
-		///T Componentwise Subtraction
-		///M
+		/// Subtracts each component by {f}.
 		Vector2 operator-(const float f) const;
+
+		/// Componentwise subtraction between vectors.
 		Vector2 operator-(const Vector2& v) const;
+
+		/// Subtracts each component by {f}.
 		void operator-=(const float f);
+
+		/// Componentwise subtraction between vectors.
 		void operator-=(const Vector2& v);
-		///M
 
-		///T Componentwise Multiplication
-		///M
+		/// Multiplies each component by {f}.
 		Vector2 operator*(const float f) const;
+
+		/// Componentwise multiplication between vectors.
 		Vector2 operator*(const Vector2& v) const;
+
+		/// Multiplies each component by {f}.
 		void operator*=(const float f);
+
+		/// Componentwise multiplication between vectors.
 		void operator*=(const Vector2& v);
-		///M
 
-		///T Componentwise Division
-		///M
+		/// Divides each component by {f}.
 		Vector2 operator/(const float f) const;
+
+		/// Componentwise division between vectors.
 		Vector2 operator/(const Vector2& v) const;
+
+		/// Divides each component by {f}.
 		void operator/=(const float f);
+
+		/// Componentwise division between vectors.
 		void operator/=(const Vector2& v);
-		///M
 
-		///T Componentwise Mod
-		///M
+		/// Calculates the mod of each component with {f}.
 		Vector2 operator%(const float f) const;
+
+		/// Componentwise mod between vectors.
 		Vector2 operator%(const Vector2& v) const;
+
+		/// Calculates the mod of each component with {f}.
 		void operator%=(const float f);
+
+		/// Componentwise mod between vectors.
 		void operator%=(const Vector2& v);
-		///M
 
-		///T Equality
-		/// Checks if vectors have the same value
-		///M
+		/// Checks if vectors are equal.
 		bool operator==(const Vector2& v) const;
-		bool operator!=(const Vector2& v) const;
-		///M
 
-		///T Comparison
-		/// Compares the length of vectors
-		///M
+		/// Checks if vectors are not equal.
+		bool operator!=(const Vector2& v) const;
+
 		bool operator<(const Vector2& v) const;
 		bool operator>(const Vector2& v) const;
 		bool operator<=(const Vector2& v) const;
 		bool operator>=(const Vector2& v) const;
-		///M
 
-		///T bool conversion
-		/// Checks if the vector is full of zeros
-		///M
+		/// Checks if the vector is full of zeros.
 		explicit operator bool() const;
+
+		/// Checks if the vector is not full of zeros.
 		bool operator!() const;
-		///M
 
-		///T Conversion to different size
-		/// Converts the vector to a different size of vector
-		///M
+		/// Converts the vector to a {Vector3}.
 		explicit operator Vector3() const;
+
+		/// Converts the vector to a {Vector4}.
 		explicit operator Vector4() const;
-		///M
 
-		///H Static functions
+		///[Heading] Static functions
 
-		///T Dot product
-		/// Calculates the dot product of two vectors
+		/// Calculates the dot product of two vectors.
 		static float Dot(const Vector2& vector1, const Vector2& vector2);
 
-		///T Lerp
-		/// Makes a linear interpolation between two vectors
-		///A const Vector2& v1: The vector to start at
-		///A const Vector2& v2: The vector to end at
-		///A const float t: The progress of the interpolation
-		/// The value should be between <code>0.0</code> and <code>1.0</code>
+		/// Makes a linear interpolation between two vectors.
+		///[Arg] v1: The vector to start at.
+		///[Arg] v2: The vector to end at.
+		///[Arg] t: The progress of the interpolation.
+		///[para] The value should be between {0.0} and {1.0}.
 		static Vector2 Lerp(const Vector2& v1, const Vector2& v2, const float t);
 
-		///T Up vector
+		///[Title] Up vector
 		static Vector2 Up();
 
-		///T Down vector
+		///[Title] Down vector
 		static Vector2 Down();
 
-		///T Left vector
+		///[Title] Left vector
 		static Vector2 Left();
 
-		///T Right vector
+		///[Title] Right vector
 		static Vector2 Right();
 	};
 
-	///B Vector3
-	/// A class for 3D vectors
-	class Vector3 {
+	///[Title] Vector3
+	/// A struct for 3D vectors.
+	///[Block] Vector3
+	struct Vector3 {
 	public:
-		///H Values
+		///[Heading] Components
+		
+		///[Title] x
+		float x;
 
-		///T xyz
-		/// Used to get/set the components of the vector
-		float x, y, z;
+		///[Title] y
+		float y;
 
-		///H Constructors
+		///[Title] z
+		float z;
 
-		///T Zero vector
-		/// Creates a vector full of zeros
+		///[Heading] Constructors
+
+		/// Creates a vector full of zeros.
 		Vector3();
 
-		///T Float constructor
-		/// Creates a vector with floats
-		explicit Vector3(const float x, const float y, const float z);
+		/// Creates a vector with floats.
+		Vector3(const float x, const float y, const float z);
 
-		///T Fill
-		/// Fills the entire vector with the same value
+		/// Fills the entire vector with the same value.
 		explicit Vector3(const float v);
 
-		///T Vector2 and float
-		/// Creates a vector from a Vector2 and a float
+		/// Creates a vector from a {Vector2} and a {float}.
 		explicit Vector3(const Vector2& vector, const float z);
 
 		Vector3(const Vector3& vector);
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Length
-		/// Gets the length of the vector
+		/// Gets the length of the vector.
 		float Length() const;
 
-		///T Squared length
-		/// Gets the squared length the vecor
+		/// Gets the squared length the vector.
 		float SquaredLength() const;
 
-		///T Normalize
-		/// Normalizes the vector and returns the result
+		/// Normalizes the vector and returns the result.
 		Vector3 Normalize() const;
 	
-		///H Operators
+		///[Heading] Operators
 
 		Vector3 operator=(const Vector3& v);
 
-		///T Componentwise Addition
-		///M
+		/// Adds each component with {f}.
 		Vector3 operator+(const float f) const;
-		Vector3 operator+(const Vector3& v) const;
-		void operator+=(const float f);
-		void operator+=(const Vector3& v);
-		///M
 
-		///T Negation
+		/// Componentwise addition between vectors.
+		Vector3 operator+(const Vector3& v) const;
+
+		/// Adds each component with {f}.
+		void operator+=(const float f);
+
+		/// Componentwise addition between vectors.
+		void operator+=(const Vector3& v);
+
+		/// Negates each component.
 		Vector3 operator-() const;
 
-		///T Componentwise Subtraction
-		///M
+		/// Subtracts each component with {f}.
 		Vector3 operator-(const float f) const;
+
+		/// Componentwise subtraction between vectors.
 		Vector3 operator-(const Vector3& v) const;
+
+		/// Subtracts each component with {f}.
 		void operator-=(const float f);
+
+		/// Componentwise subtraction between vectors.
 		void operator-=(const Vector3& v);
-		///M
 
-		///T Componentwise Multiplication
-		///M
+		/// Multiplies each component with {f}.
 		Vector3 operator*(const float f) const;
+
+		/// Componentwise multiplication between vectors.
 		Vector3 operator*(const Vector3& v) const;
+
+		/// Multiplies each component with {f}.
 		void operator*=(const float f);
+
+		/// Componentwise multiplication between vectors.
 		void operator*=(const Vector3& v);
-		///M
 
-		///T Componentwise Division
-		///M
+		/// Divides each component with {f}.
 		Vector3 operator/(const float f) const;
+
+		/// Componentwise division between vectors.
 		Vector3 operator/(const Vector3& v) const;
+
+		/// Divides each component with {f}.
 		void operator/=(const float f);
+
+		/// Componentwise division between vectors.
 		void operator/=(const Vector3& v);
-		///M
 
-		///T Componentwise Mod
-		///M
+		/// Calculates the mod of each component with {f}.
 		Vector3 operator%(const float f) const;
+
+		/// Componentwise mod between vectors.
 		Vector3 operator%(const Vector3& v) const;
+
+		/// Calculates the mod of each component with {f}.
 		void operator%=(const float f);
+
+		/// Componentwise mod between vectors.
 		void operator%=(const Vector3& v);
-		///M
 
-		///T Equality
-		/// Checks if vectors have the same value
-		///M
+		/// Checks if vectors are equal.
 		bool operator==(const Vector3& v) const;
-		bool operator!=(const Vector3& v) const;
-		///M
 
-		///T Comparison
-		/// Compares the length of vectors
-		///M
+		/// Checks if vectors are not equal.
+		bool operator!=(const Vector3& v) const;
+
 		bool operator<(const Vector3& v) const;
 		bool operator>(const Vector3& v) const;
 		bool operator<=(const Vector3& v) const;
 		bool operator>=(const Vector3& v) const;
-		///M
 
-		///T bool conversion
-		/// Checks if the vector is full of zeros
-		///M
+		/// Checks if the vector is full of zeros.
 		explicit operator bool() const;
+
+		/// Checks if the vector is not full of zeros.
 		bool operator!() const;
-		///M
 
-		///T Conversion to different size
-		/// Converts the vector to a different size of vector
-		///M
+		/// Converts the vector to a {Vector2}.
 		explicit operator Vector2() const;
+
+		/// Converts the vector to a {Vector4}.
 		explicit operator Vector4() const;
-		///M
 
-		///H Static functions
+		///[Heading] Static functions
 
-		///T Dot product
-		/// Calculates the dot product of two vectors
+		/// Calculates the dot product of two vectors.
 		static float Dot(const Vector3& v1, const Vector3& v2);
 
-		///T Cross product
-		/// Calculates the cross product of two vectors
+		/// Calculates the cross product of two vectors.
 		static Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
-		///T Lerp
-		/// Makes a linear interpolation between two vectors
-		///A const Vector3& v1: The vector to start at
-		///A const Vector3& v2: The vector to end at
-		///A const float t: The progress of the interpolation
-		/// The value should be between <code>0.0</code> and <code>1.0</code>
+		/// Makes a linear interpolation between two vectors.
+		///[Arg] v1: The vector to start at.
+		///[Arg] v2: The vector to end at.
+		///[Arg] t: The progress of the interpolation.
+		///[para] The value should be between {0.0} and {1.0}.
 		static Vector3 Lerp(const Vector3& v1, const Vector3& v2, const float t);
 
-		///T Up vector
+		///[Title] Up vector
 		static Vector3 Up();
 
-		///T Down vector
+		///[Title] Down vector
 		static Vector3 Down();
 
-		///T Left vector
+		///[Title] Left vector
 		static Vector3 Left();
 
-		///T Right vector
+		///[Title] Right vector
 		static Vector3 Right();
 
-		///T Forward vector
+		///[Title] Forward vector
 		static Vector3 Forward();
 
-		///T Backward vector
+		///[Title] Backward vector
 		static Vector3 Backward();
 	};
 
-	///B Vector4
-	/// A class for 4D vectors
-	class Vector4 {
+	///[Title] Vector4
+	/// A struct for 4D vectors.
+	///[Block] Vector4
+	struct Vector4 {
 	public:
-		///H Values
+		///[Heading] Components
 
-		///T xyzw
-		/// Used to get/set the components of the vector
-		float x, y, z, w;
+		///[Title] x
+		float x;
 
-		///H Constructors
+		///[Title] y
+		float y;
 
-		///T Zero vector
-		/// Creates a vector full of zeros
+		///[Title] z
+		float z;
+
+		///[Title] w
+		float w;
+
+		///[Heading] Constructors
+
+		/// Creates a vector full of zeros.
 		Vector4();
 
-		///T Float constructor
-		/// Creates a vector with floats
+		/// Creates a vector with floats.
 		explicit Vector4(const float x, const float y, const float z, const float w);
 
-		///T Fill
-		/// Fills the entire vector with the same value
+		/// Fills the entire vector with the same value.
 		explicit Vector4(const float v);
 
-		///T Vector2 and floats
-		/// Creates a vector from a Vector2 and two floats
+		/// Creates a vector from a {Vector2} and two {floats}.
 		explicit Vector4(const Vector2& v, const float z, const float w);
 
-		///T Vector3 and float
-		/// Creates a vector from a Vector3 and a float
+		/// Creates a vector from a {Vector3} and a {float}.
 		explicit Vector4(const Vector3& v, const float w);
 
 		Vector4(const Vector4& vector);
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Length
-		/// Gets the length of the vector
+		/// Gets the length of the vector.
 		float Length() const;
 
-		///T Squared length
-		/// Gets the squared length the vecor
+		/// Gets the squared length the vector.
 		float SquaredLength() const;
 
-		///T Normalize
-		/// Normalizes the vector and returns the result
+		/// Normalizes the vector and returns the result.
 		Vector4 Normalize() const;
 
-		///H Operators
+		///[Heading] Operators
 
 		Vector4 operator=(const Vector4& v);
 
-		///T Componentwise Addition
-		///M
+		/// Adds each component with {f}.
 		Vector4 operator+(const float f) const;
-		Vector4 operator+(const Vector4& v) const;
-		void operator+=(const float f);
-		void operator+=(const Vector4& v);
-		///M
 
-		///T Negation
+		/// Componentwise addition between vectors.
+		Vector4 operator+(const Vector4& v) const;
+
+		/// Adds each component with {f}.
+		void operator+=(const float f);
+
+		/// Componentwise addition between vectors.
+		void operator+=(const Vector4& v);
+
+		/// Negates each component.
 		Vector4 operator-() const;
 
-		///T Componentwise Subtraction
-		///M
+		/// Subtracts each component with {f}.
 		Vector4 operator-(const float f) const;
+
+		/// Componentwise subtraction between vectors.
 		Vector4 operator-(const Vector4& v) const;
+
+		/// Subtracts each component with {f}.
 		void operator-=(const float f);
+
+		/// Componentwise subtraction between vectors.
 		void operator-=(const Vector4& v);
-		///M
 
-		///T Componentwise Multiplication
-		///M
+		/// Multiplies each component with {f}.
 		Vector4 operator*(const float f) const;
+
+		/// Componentwise multiplication between vectors.
 		Vector4 operator*(const Vector4& v) const;
+
+		/// Multiplies each component with {f}.
 		void operator*=(const float f);
+
+		/// Componentwise multiplication between vectors.
 		void operator*=(const Vector4& v);
-		///M
 
-		///T Componentwise Division
-		///M
+		/// Divides each component with {f}.
 		Vector4 operator/(const float f) const;
+
+		/// Componentwise division between vectors.
 		Vector4 operator/(const Vector4& v) const;
+
+		/// Divides each component with {f}.
 		void operator/=(const float f);
+
+		/// Componentwise division between vectors.
 		void operator/=(const Vector4& v);
-		///M
 
-		///T Componentwise Mod
-		///M
+		/// Calculates the mod of each component with {f}.
 		Vector4 operator%(const float f) const;
+
+		/// Componentwise mod between vectors.
 		Vector4 operator%(const Vector4& v) const;
+
+		/// Calculates the mod of each component with {f}.
 		void operator%=(const float f);
+
+		/// Componentwise mod between vectors.
 		void operator%=(const Vector4& v);
-		///M
 
-		///T Equality
-		/// Checks if vectors have the same value
-		///M
+		/// Checks if vectors are equal.
 		bool operator==(const Vector4& v) const;
-		bool operator!=(const Vector4& v) const;
-		///M
 
-		///T Comparison
-		/// Compares the length of vectors
-		///M
+		/// Checks if vectors are not equal.
+		bool operator!=(const Vector4& v) const;
+
 		bool operator<(const Vector4& v) const;
 		bool operator>(const Vector4& v) const;
 		bool operator<=(const Vector4& v) const;
 		bool operator>=(const Vector4& v) const;
-		///M
 
-		///T bool conversion
-		/// Checks if the vector is full of zeros
-		///M
+		/// Checks if the vector is full of zeros.
 		explicit operator bool() const;
+
+		/// Checks if the vector is not full of zeros.
 		bool operator!() const;
-		///M
 
-		///T Conversion to different size
-		/// Converts the vector to a different size of vector
-		///M
+		/// Converts the vector to a {Vector2}.
 		explicit operator Vector2() const;
+
+		/// Converts the vector to a {Vector3}.
 		explicit operator Vector3() const;
-		///M
 
-		///H Static functions
+		///[Heading] Static functions
 
-		///T Dot product
-		/// Calculates the dot product of two vectors
+		/// Calculates the dot product of two vectors.
 		static float Dot(const Vector4& v1, const Vector4& v2);
 
-		///T Lerp
-		/// Makes a linear interpolation between two vectors
-		///A const Vector4& v1: The vector to start at
-		///A const Vector4& v2: The vector to end at
-		///A const float t: The progress of the interpolation
-		/// The value should be between <code>0.0</code> and <code>1.0</code>
+		/// Makes a linear interpolation between two vectors.
+		///[Arg] v1: The vector to start at.
+		///[Arg] v2: The vector to end at.
+		///[Arg] t: The progress of the interpolation.
+		///[para] The value should be between {0.0} and {1.0}.
 		static Vector4 Lerp(const Vector4& v1, const Vector4& v2, const float t);
 	};
 

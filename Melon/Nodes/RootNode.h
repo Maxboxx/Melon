@@ -7,39 +7,26 @@
 namespace Melon {
 	struct CompilerOptions;
 
+	///N Melon::Nodes
 	namespace Nodes {
-
-		///B RootNode
-		/// The root node of the compiled program
+		/// The root node of the compiled program.
 		class RootNode : public Node {
 		public:
-
-			///H Members
-
-			///T Nodes
-			/// All nodes in the main scope of the program
+			/// All nodes in the main scope of the program.
 			Boxx::List<NodePtr> nodes;
 
-			///T Functions
-			/// All functions in the program
+			/// All functions in the program.
 			Boxx::List<NodePtr> funcs;
 
-			///T Function id
-			/// The id for the next function
+			/// The id for the next function.
 			Boxx::UInt funcId = 0;
 
-			///H Constructors
-
-			///T Empty
 			RootNode();
 			~RootNode();
 
-			///H Methods
-
 			virtual CompiledNode Compile(CompileInfo& info) override;
 
-			///T Compile
-			/// Returns the instruction list from <code>Node::Compile()</code>
+			/// Returns the instruction list from {Node::Compile()}.
 			Boxx::List<Optimizing::OptimizerInstruction> Compile(const Boxx::Set<Symbols::VariableSymbol*>& usedVariables);
 
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
@@ -47,18 +34,16 @@ namespace Melon {
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 
-			///T Add Template Specialization
+			/// Adds a template specialization.
 			void AddTemplateSpecialization(const Symbols::ScopeList& name, const Symbols::ScopeList& scope, const FileInfo& file, const bool scan = true);
 
-			///T Scan
-			/// Used for scanning for errors
+			/// Scans for errors.
 			ScanInfoStack Scan();
 
-			///T To Melon Files
-			/// Writes the optimized code to melon files
+			/// Writes the optimized code to melon files.
 			void ToMelonFiles(const CompilerOptions& options) const;
 
-			///T Parsing info
+			/// The current parsing info.
 			Parsing::ParsingInfo* parsingInfo = nullptr;
 
 		private:

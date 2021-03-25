@@ -4,26 +4,25 @@
 
 #include "NewVariableNode.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B AssignNode
-		/// Node for assignment
+		/// Node for assignment.
 		class AssignNode : public Node {
 		public:
-			///T Variables and values
-			/// List of variables and values for each variable
-			Boxx::List<NodePtr> vars, values;
+			/// The assignable values to assign values to.
+			Boxx::List<NodePtr> vars;
 
-			///T Types
-			/// List of all types
+			/// The values to assign.
+			Boxx::List<NodePtr> values;
+
+			/// The types for new variables.
 			Boxx::List<Symbols::ScopeList> types;
 
 			AssignNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~AssignNode();
 
-			///T Values
-			/// Gets the types and nodes for all values
+			/// Gets the types and nodes for all values.
 			Boxx::List<Boxx::Pair<Symbols::TypeSymbol*, NodePtr>> Values() const;
 
 			virtual Boxx::UInt GetSize() const override;

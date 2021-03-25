@@ -8,44 +8,45 @@
 
 #include <filesystem>
 
-///N System
+///[Settings] block: indent
 
+///[Namespace] Boxx
 namespace Boxx {
-	///B System
-	/// Static class for communicating with the operating system
-	class System {
+	///[Heading] Static Classes
+
+	///[Title] System
+	/// Static class for communicating with the operating system.
+	///[Block] System
+	class System final {
 	public:
-		///T Execute
-		/// Executes a system command
+		System() = delete;
+
+		/// Executes a system command.
 		static void Execute(const String& command);
 
-		///T File Exists
-		/// Checks if a file exists
+		/// Checks if a file exists.
 		static bool FileExists(const String& file);
 
-		///T Directory Exists
-		/// Checks if a directory exists
+		/// Checks if a directory exists.
 		static bool DirectoryExists(const String& directory);
 
-		///T Create Directory
-		/// Creates a directory
-		///R bool success: <code>true</code> if the directory was created. <code>false</code> otherwise.
+		/// Creates a directory.
+		///[Returns] bool success: {true} if the directory was created. {false} otherwise.
 		static bool CreateDirectory(const String& directory);
 
-		///T Delete Directory
-		/// Deletes a directory
-		///R bool success: <code>true</code> if the directory was deleted. <code>false</code> otherwise.
+		/// Deletes a directory.
+		///[Returns] bool success: {true} if the directory was deleted. {false} otherwise.
 		static bool DeleteDirectory(const String& directory);
 
-		///T Delete File
-		/// Deletes a file
-		///R bool success: <code>true</code> if the file was deleted. <code>false</code> otherwise.
+		/// Deletes a file.
+		///[Returns] bool success: {true} if the file was deleted. {false} otherwise.
 		static bool DeleteFile(const String& directory);
 
-		///T Get Files in Directory
-		/// Gets a list of all files in the specified directory
-		///E SystemNotSupportedError: Thrown if the operating system is not Windows
+		/// Gets a list of all files in the specified directory.
 		static List<String> GetFilesInDirectory(const String& directory);
+
+		/// Gets a list of all directories in the specified directory.
+		static List<String> GetDirectoriesInDirectory(const String& directory);
 	};
 
 	inline void System::Execute(const String& command) {
@@ -90,5 +91,17 @@ namespace Boxx {
 		}
 
 		return files;
+	}
+
+	inline List<String> System::GetDirectoriesInDirectory(const String& directory) {
+		List<String> dirs;
+
+		for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator((const char*)directory)) {
+			if (entry.is_directory()) {
+				dirs.Add(entry.path().filename().string());
+			}
+		}
+
+		return dirs;
 	}
 }

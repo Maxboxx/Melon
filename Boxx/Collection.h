@@ -7,85 +7,73 @@
 
 #include <cstring>
 
-///N Collection
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	///B Collection
-	/// A collection of items stored in no perticular order for fast insertions and deletions
+	///[Heading] Collections
+
+	///[Title] Collection
+	/// A collection of items stored in no perticular order for fast insertions and deletions.
+	///[Block] Collection
 	///M
 	template <class T>
-	class Collection {
+	class Collection final {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Empty collection
-		/// Creates an empty collection
+		/// Creates an empty collection.
 		Collection();
 
-		///T Reserved capacity
-		/// Creates a collection with a reserved capacity
+		/// Creates a collection with a reserved capacity.
 		explicit Collection(const UInt capacity);
 
 		Collection(const Collection<T>& c);
 		Collection(Collection<T>&& c) noexcept;
 		~Collection();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Size
-		/// Returns the number of items in the collection
+		/// Returns the number of items in the collection.
 		UInt Size() const;
 
-		///T Capacity
-		/// Returns the current capacity of the collection
+		/// Returns the current capacity of the collection.
 		UInt Capacity() const;
 
-		///T Is Empty
-		/// Checks if the collection is empty
+		/// Checks if the collection is empty.
 		bool IsEmpty() const;
 
-		///T Add value
-		/// Adds a value to the collection
+		/// Adds a value to the collection.
 		void Add(const T& value);
 
-		///T Remove value
-		/// Removes the first occurrence of the specified value from the collection
+		/// Removes the first occurrence of the specified value from the collection.
 		void Remove(const T& value);
 
-		///T Remove all
-		/// Removes all occurrences of the specified value from the collection
+		/// Removes all occurrences of the specified value from the collection.
 		void RemoveAll(const T& value);
 
-		///T Remove at
-		/// Removes an element from the collection at a specific index
+		/// Removes an element from the collection at a specific index.
 		void RemoveAt(const UInt index);
 
-		///T Clear
-		/// Removes everything from the collection
+		/// Removes everything from the collection.
 		void Clear();
 
-		///T Find index
-		/// Finds the index of the first occurrence of the specified value
-		///R Optional<UInt>: Contains the index of the item if an item was found
+		/// Finds the index of the first occurrence of the specified value.
 		Optional<UInt> Find(const T& value) const;
 
-		///T Contains
-		/// Checks if the collection contains a specific value
+		/// Checks if the collection contains a specific value.
 		bool Contains(const T& value) const;
 
-		///T Convert to array
-		/// Converts the collection to an array
+		/// Converts the collection to an array.
 		Array<T> ToArray() const;
 
-		///T Copy
-		/// Creates a copy of the collection
+		/// Creates a copy of the collection.
 		Collection<T> Copy() const;
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Indexing
-		/// Used to get/set the value at a specific index
-		///W The index of the items might change if the collection is modified
+		/// Used to get/set the value at a specific index.
 		///M
 		T& operator[](const UInt i);
 		const T& operator[](const UInt i) const;
@@ -94,18 +82,16 @@ namespace Boxx {
 		void operator=(const Collection<T>& c);
 		void operator=(Collection<T>&& c) noexcept;
 
-		///T Equality
-		/// Checks if two collections are the same
+		/// Checks if two collections are the same.
 		///M
 		bool operator==(const Collection<T>& c) const;
 		bool operator!=(const Collection<T>& c) const;
 		///M
 
-		///H Iterators
+		///[Heading] Iterators
 
-		///T Iterator
-		/// Iterates over all values in the collection
-		///S for (T t : collection)
+		/// Iterates over all values in the collection.
+		///[Code] for (T t : collection)
 		T* begin();
 		const T* begin() const;
 		T* end();

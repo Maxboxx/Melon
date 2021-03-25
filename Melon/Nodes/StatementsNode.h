@@ -2,15 +2,13 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B StatementsNode
-		/// Node for statements
+		/// Node for statements.
 		class StatementsNode : public Node {
 		public:
-
-			///T List of statements
+			/// The list of statements.
 			Boxx::List<NodePtr> statements;
 
 			StatementsNode(Symbols::Symbol* const scope, const FileInfo& file);

@@ -2,11 +2,10 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B DiscardNode
-		/// Node for the discard keyword
+		/// Node for the discard keyword.
 		class DiscardNode : public Node {
 		public:
 			DiscardNode(Symbols::Symbol* const scope, const FileInfo& file);

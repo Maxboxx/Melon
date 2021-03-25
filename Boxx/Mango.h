@@ -11,183 +11,242 @@
 #include "Lexer.h"
 #include "Optional.h"
 
-///N Mango
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
 	class Mango;
 
-	///B MangoType
-	/// Enum of all types of mango values
+	///[Heading] Mango
+
+	///[Title] MangoType
+	/// Enum of all types of mango values.
+	///[Block] MangoType
 	enum class MangoType : UByte {
-		///T Values
-		///M
+		/// Nil type.
 		Nil,
+
+		/// Boolean type.
 		Boolean,
+
+		/// Number type.
 		Number,
+
+		/// String type.
 		String,
+
+		/// List type.
 		List,
+
+		/// Map type.
 		Map
-		///M
 	};
 
-	///B Mango Typedefs
-	///M
+	///[Title] MangoList
+	/// Typedef for Mango list.
 	typedef List<Mango> MangoList;
-	typedef Map<String, Mango> MangoMap;
-	///M
 
-	///B Mango
-	/// A mango data structure that can encode and decode mango files
+	///[Title] MangoMap
+	/// Typedef for Mango map.
+	typedef Map<String, Mango> MangoMap;
+
+	///[Title] Mango
+	/// A mango data structure used for mango data.
+	///[Block] Mango
 	class Mango {
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Nil
+		/// Nil constructor.
 		Mango();
 
-		///T MangoType
-		/// Creates a mango value of the specified type
+		/// Creates a mango value of the specified type.
 		explicit Mango(const MangoType type);
 
-		///T Boolean
+		/// Creates a boolean mango value.
 		Mango(const bool boolean);
 
-		///T Integer
-		///M
+		/// Creates a mango number from int.
 		Mango(const Int number);
+
+		/// Creates a mango number from long.
 		Mango(const Long number);
-		///M
 
-		///T Floating point numbers
-		///M
+		/// Creates a mango number from float.
 		Mango(const float number);
-		Mango(const double number);
-		///M
 
-		///T String
+		/// Creates a mango number from double.
+		Mango(const double number);
+
+		/// Creates a mango string value.
 		Mango(const String& string);
 
-		///T Mango list
+		/// Creates a mango list value.
 		Mango(const MangoList& list);
 
-		///T Mango map
+		/// Creates a mango map value.
 		Mango(const MangoMap& map);
 
-		///T Constructors with labels
-		///M
+		/// Creates a labeled mango value of the specified type.
 		Mango(const String& label, const MangoType type);
+
+		/// Creates a labeled boolean mango value.
 		Mango(const String& label, const bool boolean);
+
+		/// Creates a labeled mango number.
 		Mango(const String& label, const Int number);
+
+		/// Creates a labeled mango number.
 		Mango(const String& label, const Long number);
+
+		/// Creates a labeled mango number.
 		Mango(const String& label, const float number);
+
+		/// Creates a labeled mango number.
 		Mango(const String& label, const double number);
+
+		/// Creates a labeled mango string.
 		Mango(const String& label, const String& string);
+
+		/// Creates a labeled mango list.
 		Mango(const String& label, const MangoList& list);
+
+		/// Creates a labeled mango map.
 		Mango(const String& label, const MangoMap& map);
-		///M
 
 		Mango(const Mango& mango);
 		Mango(Mango&& mango) noexcept;
 		~Mango();
 
-		///T Type
-		/// Get the current type of the mango value
+		///[Heading] Methods
+
+		/// Get the type of the mango value.
 		MangoType Type() const;
 
-		///T Set label
-		/// Set the label of a mango value
-		/// An empty string will remove the label
+		/// Setd the label of the mango value.
+		/// An empty string will remove the label.
 		void SetLabel(const String& label);
 
-		///T Get label
-		/// Get the label for this mango value
-		///R String label: The label. If the mango value has no label an empty string is returned
+		/// Gets the label for this mango value.
+		/// If the mango value has no label an empty string is returned.
 		String GetLabel() const;
 
-		///T Add to list
-		/// Add a mango value to the list
-		///E MangoTypeError: Thrown if the current type is not list
+		/// Adds a mango value to the mango list.
+		///[Error] MangoTypeError: Thrown if the mango type is not list.
 		void Add(const Mango& mango);
 
-		///T Add to map
-		/// Adds a value to the map with the specified key
-		///E MangoTypeError: Thrown if the current type is not map
+		/// Adds a new key to the mango map.
+		///[Error] MangoTypeError: Thrown if the mango type is not map.
 		void Add(const String& key, const Mango& mango);
 
-		///T Size of list
-		/// Returns the size of the list
-		///E MangoTypeError: Thrown if the current type is not list
+		/// Returns the size of the mango list.
+		///[Error] MangoTypeError: Thrown if the mango type is not list.
 		UInt Size() const;
 
-		///T Copy
-		/// Copies the mango value
+		/// Copies the mango value.
 		Mango Copy() const;
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Convert
-		/// Returns the mango value
-		///E MangoTypeError: Thrown if the mango type does not match the conversion type
-		///M
+		/// Returns the boolean mango value.
+		///[Error] MangoTypeError: Thrown if the mango type is not boolean.
 		operator bool() const;
-		operator Int() const;
-		operator Long() const;
-		operator float() const;
-		operator double() const;
-		operator String() const;
-		operator MangoList() const;
-		operator MangoMap() const;
-		///M
 
-		///T List index
-		/// Get or set a value in the list
-		///E MangoTypeError: Thrown if the current type is not list
+		/// Returns the mango number.
+		///[Error] MangoTypeError: Thrown if the mango type is not number.
+		operator Int() const;
+
+		/// Returns the mango number.
+		///[Error] MangoTypeError: Thrown if the mango type is not number.
+		operator Long() const;
+
+		/// Returns the mango number.
+		///[Error] MangoTypeError: Thrown if the mango type is not number.
+		operator float() const;
+
+		/// Returns the mango number.
+		///[Error] MangoTypeError: Thrown if the mango type is not number.
+		operator double() const;
+
+		/// Returns the mango string.
+		///[Error] MangoTypeError: Thrown if the mango type is not string.
+		operator String() const;
+
+		/// Returns the mango list.
+		///[Error] MangoTypeError: Thrown if the mango type is not list.
+		operator MangoList() const;
+
+		/// Returns the mango map.
+		///[Error] MangoTypeError: Thrown if the mango type is not map.
+		operator MangoMap() const;
+
+		/// Gets or sets a value in the mango list.
+		///[Error] MangoTypeError: Thrown if the mango type is not list.
 		///M
 		Mango& operator[](const UInt index);
 		const Mango& operator[](const UInt index) const;
 		///M
 
-		///T Map index
-		/// Get or set a value in the map
-		///E MangoTypeError: Thrown if the current type is not map
-		///E MangoKeyError: Thrown if the key does not exist
+		/// Gets or sets a value in the mango map.
+		///[Error] MangoTypeError: Thrown if the mango type is not map.
+		///[Error] MangoKeyError: Thrown if the key does not exist.
 		///M
 		Mango& operator[](const String& key);
 		const Mango& operator[](const String& key) const;
+		Mango& operator[](const char* const key);
+		const Mango& operator[](const char* const key) const;
 		///M
 
-		///T Assign value
-		/// Set the mango value. Changes the type to the type of the new value
-		///M
+		/// Assigns a boolean value to the mango value.
+		/// The mango type is changed to boolean.
 		void operator=(const bool boolean);
+
+		/// Assigns a number to the mango value.
+		/// The mango type is changed to number.
 		void operator=(const Int number);
+
+		/// Assigns a number to the mango value.
+		/// The mango type is changed to number.
 		void operator=(const Long number);
+
+		/// Assigns a number to the mango value.
+		/// The mango type is changed to number.
 		void operator=(const float number);
+
+		/// Assigns a number to the mango value.
+		/// The mango type is changed to number.
 		void operator=(const double number);
+
+		/// Assigns a string to the mango value.
+		/// The mango type is changed to string.
 		void operator=(const String& string);
+
+		/// Assigns a list to the mango value.
+		/// The mango type is changed to list.
 		void operator=(const MangoList& list);
+
+		/// Assigns a map to the mango value.
+		/// The mango type is changed to map.
 		void operator=(const MangoMap& map);
-		///M
 
 		void operator=(const Mango& mango);
 		void operator=(Mango&& mango) noexcept;
 
-		///T Equality
-		/// Checks the equality of two mango values
+		/// Checks the equality of two mango values.
 		///M
 		bool operator==(const Mango& mango) const;
 		bool operator!=(const Mango& mango) const;
 		///M
 
-		///H Static functions
+		///[Heading] Static functions
 
-		///T Encode
-		/// Encodes the mango value to a string
-		///A const bool pretty: Whether or not to create a pretty string
+		/// Encodes the mango value to a string.
+		///[Arg] pretty: Creates a pretty string if {true}.
 		static String Encode(const Mango& mango, const bool pretty = false);
 
-		///T Decode
-		/// Decodes a string to a mango value
-		///E MangoDecodeError: Thrown if the mango string can not be decoded
+		/// Decodes a string to a mango value.
+		///[Arg] version: The version of the mango string to use.
+		///[Error] MangoDecodeError: Thrown if the mango string can not be decoded.
 		static Mango Decode(const String& mango, const String& version = "");
 
 	private:
@@ -276,8 +335,9 @@ namespace Boxx {
 		static bool ParseVersionMapItems(TokenList<TokenType>& tokens, ParsingInfo& info, MangoMap& map);
 	};
 
-	///B MangoError
-	/// Base class for all mango errors
+	///[Title] MangoError
+	/// Base class for all mango errors.
+	///[Block] MangoError: Error
 	class MangoError : public Error {
 	public:
 		MangoError() : Error() {}
@@ -288,8 +348,9 @@ namespace Boxx {
 		}
 	};
 
-	///B MangoTypeError
-	/// Used for type related mango errors
+	///[Title] MangoTypeError
+	/// Used for type related mango errors.
+	///[Block] MangoTypeError: MangoError
 	class MangoTypeError : public MangoError {
 	public:
 		MangoTypeError() : MangoError() {}
@@ -300,8 +361,9 @@ namespace Boxx {
 		}
 	};
 
-	///B MangoKeyError
-	/// Used for mango map key related errors
+	///[Title] MangoKeyError
+	/// Used for map key related errors.
+	///[Block] MangoKeyError: MangoError
 	class MangoKeyError : public MangoError {
 	public:
 		MangoKeyError() : MangoError() {}
@@ -312,8 +374,9 @@ namespace Boxx {
 		}
 	};
 
-	///B MangoDecodeError
-	/// Used for decoding errors
+	///[Title] MangoDecodeError
+	/// Used for decoding errors.
+	///[Block] MangoDecodeError: MangoError
 	class MangoDecodeError : public MangoError {
 	public:
 		MangoDecodeError() : MangoError() {}
@@ -597,7 +660,7 @@ namespace Boxx {
 			return map[key];
 		}
 		catch (MapKeyError) {
-			throw MangoKeyError("Key not found");
+			throw MangoKeyError("Key '" + key + "' not found");
 		}
 	}
 
@@ -608,7 +671,29 @@ namespace Boxx {
 			return map[key];
 		}
 		catch (MapKeyError) {
-			throw MangoKeyError("Key not found");
+			throw MangoKeyError("Key '" + key + "' not found");
+		}
+	}
+
+	inline Mango& Mango::operator[](const char* const key) {
+		if (type != MangoType::Map) throw MangoTypeError("Type is not map");
+
+		try {
+			return map[key];
+		}
+		catch (MapKeyError) {
+			throw MangoKeyError("Key '" + String(key) + "' not found");
+		}
+	}
+
+	inline const Mango& Mango::operator[](const char* const key) const {
+		if (type != MangoType::Map) throw MangoTypeError("Type is not map");
+
+		try {
+			return map[key];
+		}
+		catch (MapKeyError) {
+			throw MangoKeyError("Key '" + String(key) + "' not found");
 		}
 	}
 
@@ -1193,7 +1278,7 @@ namespace Boxx {
  		}
 
 		tokens.SetPos(pos);
-		return true;
+		return false;
 	}
 
 	inline void Mango::ValidateVersions(Set<String>& versions, const Set<String>& newVersions, bool& hasDefault) {

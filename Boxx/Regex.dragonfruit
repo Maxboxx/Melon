@@ -1,0 +1,49 @@
+[para] Regex patterns have the following syntax:
+
+[Category] Groups
+[Value] (...): Matches the expression between {(} and {)}
+ The matched expression will be added to the returned list from the {Match()} method.
+ If no groups are present in the regex the entire matched string will be returned from the {Match()} method.
+[Value] {...}: Matches the expression between {{} and {\}}
+ The matched expression will not be returned from the {Match()} method.
+
+[Category] Quantifiers
+[Value] +: Matches the previous element one or more times as many times as possible
+[Value] *: Matches the previous element zero or more times as many times as possible
+[Value] -: Matches the previous element one or more times as few times as possible
+[Value] /: Matches the previous element zero or more times as few times as possible
+[Value] ?: Matches the previous element zero or one time
+[Value] <>: User defined quantifier that can be written in the following ways:
+[item] {<n>} Matches the previous element {n} times
+[item] {<n:m>} Matches the previous element a minimum of {n} times and a maximum of {m} times
+[item] {<n:>} Matches the previous element {n} or more times
+[item] {<:n>} Matches the previous element a minimum of zero times and a maximum of {n} times
+
+[para] A {+} can be added right before {>} to match as many times as possible
+ and a {-} can be added to match as few times as possible.
+ It defaults to {+} if omitted
+
+[Category] Character sets
+[Value] .: Matches any character
+[Value] %d: Matches a didgit
+[Value] %l: Matches a lower case letter
+[Value] %u: Matches an upper case letter
+[Value] %a: Matches a letter
+[Value] %v: Matches an alphanumeric character
+[Value] %w: Matches an alphanumeric character or an underscore
+[Value] %x: Matches a hexadecimal didgit
+[Value] %p: Matches a punctuation character
+[Value] %s: Matches a space or a tab
+[Value] %n: Macthes a whitespace character
+[Value] %b: Matches a word boundary
+[Value] a\:b: Matches any character in the range from {a} to {b}
+[Value] [...]: Custom character set. Matches any character present between {[} and {]}.
+ Predefined character sets and ranges works inside the custom character set
+
+[Category] Special characters
+[Value] ~: Inverse match. Matches anything except the next element
+[Value] #: Element match. The result of an element prefixed by {#} can be reffered to by using {%} followed by the number of that element starting at 0.
+[Value] ^: Matches the start of the search.
+[Value] $: Matches the end of the string.
+[Value] |: Matches either the expression before or after the {|} character
+[Value] %: Escape character. Treats the next character in the pattern as a literal charater unless it is a predefined character set

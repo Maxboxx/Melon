@@ -34,131 +34,101 @@ namespace Melon {
 		struct ParsingInfo;
 	}
 
+	///N Melon::Nodes
 	namespace Nodes {
 		class RootNode;
 
 		///T NodePtr
+		/// Typedef for a pointer to a {Node}.
 		typedef Boxx::Pointer<class Node> NodePtr;
 
-		///B Node
-		/// Base for all nodes
+		/// Base for all nodes.
 		class Node {
 		public:
-			///H Members
-
-			///T Scope
-			/// The scope the node is in
+			/// The scope the node is in.
 			Symbols::Symbol* scope;
 
-			///T File
-			/// The file info of the node
+			/// The file info of the node.
 			FileInfo file;
 
-			///T Side Effect Scope
+			/// The inner side effect scope.
 			Boxx::Optional<Symbols::ScopeList> sideEffectScope;
 
-			///H Constructors
-
-			///T Constructor
+			/// Creates a node.
 			Node(Symbols::Symbol* const scope, const FileInfo& file);
 			~Node();
 
-			///H Methods
-
-			///T Type
-			/// Returns the absolute type of the node
+			/// Returns the type of the node.
 			virtual Symbols::TypeSymbol* Type() const;
 
-			///T Types
-			/// Returns the absolute types of the node
-			/// Defaults to a list containing the result from <code>Type()</code>
+			/// Returns the types of all return values of the node.
+			///p Defaults to a list containing the result from {Type()}.
 			virtual Boxx::List<Symbols::TypeSymbol*> Types() const;
 
-			///T Get Symbol
-			/// Returns the symbol for the current node
+			/// Returns the symbol for the current node.
 			virtual Symbols::Symbol* GetSymbol() const;
 
-			///T Get Size
-			/// Gets the byte size of the node
-			/// This is only used by the compile step
+			/// Gets the byte size of the node.
+			///p This is only used by the compile step.
 			virtual Boxx::UInt GetSize() const;
 
-			///T Is Scope
-			/// Whether or not the node is a scope
+			/// {true} if the node is a scope.
 			virtual bool IsScope() const;
 
-			///T Compile
-			/// Compiles the node
+			/// Compiles the node.
 			virtual CompiledNode Compile(CompileInfo& info) = 0;
 
-			///T To Melon
-			/// Converts the node to melon
+			/// Converts the node to melon.
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const = 0;
 
-			///T Include Scan
-			/// Scans the node for potential extra includes
+			/// Scans the node for potential extra includes.
 			virtual void IncludeScan(Parsing::ParsingInfo& info);
 
-			///T Scan
-			/// Scans the node for potential errors
+			/// Scans the node for potential errors.
 			virtual ScanResult Scan(ScanInfoStack& info);
 
-			///T Has Side Effects
-			/// Checks if the node has side effects outside of the specified scope
-			///M
+			/// Checks if the node has side effects
 			bool HasSideEffects();
-			bool HasSideEffects(const Symbols::ScopeList& scope);
-			///M
 
-			///T Get Side Effect Scope
-			/// Gets the side effect scope 
+			/// Checks if the node has side effects outside of the specified scope.
+			bool HasSideEffects(const Symbols::ScopeList& scope);
+
+			/// Gets the side effect scope.
 			Symbols::ScopeList GetSideEffectScope(const bool assign);
 
-			///T Optimize
-			/// Optimizes the node
-			///R NodePtr node: The optimized node. If the node was not optimized, this will be <code>nullptr</code>
+			/// Optimizes the node.
+			///R The optimized node. If the node was not optimized, this will be {nullptr}.
 			virtual NodePtr Optimize(OptimizeInfo& info);
 
-			///T Is Immediate
-			/// <code>true</code> if the compiled node is an immediate value
-			/// Defaults to <code>false</code>
+			/// {true} if the compiled node is an immediate value.
+			///p Defaults to {false}.
 			virtual bool IsImmediate() const;
 
-			///T Get Immediate
-			/// Gets the immediate value of the node
+			/// Gets the immediate value of the node.
 			virtual Boxx::Long GetImmediate() const;
-
-			///H Static functions
 			
-			///T Scan Assignment
-			/// Scans an assignment
+			/// Scans an assignment.
 			static ScanResult ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file);
 
-			///T Compile Assignment
-			/// Compiles an assignment
+			/// Compiles an assignment.
 			static CompiledNode CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file);
 
-			///T Is Empty
-			/// Checks if a node is an empty empty node
+			/// Checks if a node is an empty empty node.
 			static bool IsEmpty(const NodePtr& node);
 
-			///T Combine Side Effects
-			/// Combines two side effect scopes by returning the most global of the two
+			/// Combines two side effect scopes by returning the outer scope.
 			static Symbols::ScopeList CombineSideEffects(const Symbols::ScopeList& scope1, const Symbols::ScopeList& scope2);
 
-			///T Root
-			/// Pointer to the root node
+			/// Pointer to the root node.
 			static RootNode* root;
 
 		protected:
-
-			///T Find Side Effect Scope
-			/// Finds the most global scope 
 			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
 		};
 
-		///B IncludeScanError
-		/// Used in include scan if more info is needed for the scan
+		///H Errors
+
+		/// Used in include scan if more info is needed for the scan.
 		class IncludeScanError : public Boxx::Error {
 		public:
 			IncludeScanError() : Error() {}

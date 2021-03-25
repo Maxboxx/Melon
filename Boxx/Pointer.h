@@ -2,7 +2,9 @@
 
 #include "Types.h"
 
-///N Pointer
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
 	template <class T>
 	class Pointer;
@@ -10,103 +12,101 @@ namespace Boxx {
 	template <class T>
 	class WeakPointer;
 
-	///B Pointer
-	/// A smart pointer class to help with memory management
-	/// It automatically calls <code>delete</code> on the internal pointer when it is no longer in use
-	///W Use <code>WeakPointer</code> for circular referencing to avoid memory leaks
-	/// Never assign a <code>WeakPointer</code> to a <code>Pointer</code>
+	///[Heading] Template Types
+
+	///[Title] Pointer
+	/// A smart pointer class to help with memory management.
+	/// It automatically calls {delete} on the internal pointer when it is no longer in use.
+	///[Warning] Use a {WeakPointer} for circular referencing to avoid memory leaks.
+	///[Block] Pointer
 	///M
 	template <class T>
-	class Pointer {
+	class Pointer final {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Nullptr
-		/// Creates a <code>nullptr</code>
+		/// Creates a {nullptr}.
 		Pointer();
 
-		///T Pointer
-		/// Keeps track of a pointer and deletes it when it is no longer needed
-		///A T* const ptr: The pointer to keep track of (must be allocated with <code>new</code> or be a <code>nullptr</code>)
+		/// Keeps track of a pointer and deletes it when it is no longer needed.
+		///[Arg] ptr: The pointer to keep track of (must be allocated with {new} or be a {nullptr}).
 		Pointer(T* const ptr);
 
 		Pointer(const Pointer<T>& ptr);
 		Pointer(Pointer<T>&& ptr) noexcept;
 
-		///T Subclass constructor
-		/// Creates a pointer where template argument <code>U</code> is a subclass of <code>T</code>
+		/// Creates a pointer where template argument {U} is a subclass of {T}.
 		///M
 		template <class U>
 		Pointer(const Pointer<U>& ptr);
-		template <class U>
-		Pointer(Pointer<U>&& ptr) noexcept;
 		///M
 
+		template <class U>
+		Pointer(Pointer<U>&& ptr) noexcept;
 		
 		~Pointer();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T References
-		/// Gets the number of references to this pointer
+		/// Gets the number of references to this pointer.
 		UInt References() const;
 
-		///T Cast
-		/// Cast a pointer to a different type
-		/// Returns a <code>nullptr</code> if the cast fails
+		/// Cast a pointer to a different type.
+		///[para] Returns a {nullptr} if the cast fails.
 		///M
 		template<class U>
 		Pointer<U> Cast() const;
 		///M
 
-		///T Is
-		/// Checks if the pointer is of a specific type
+		/// Checks if the pointer is of a specific type.
 		///M
 		template<class U>
 		bool Is() const;
 		///M
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Structure dereference
-		/// Gets acces to the members of the stored pointer
+		/// Gets acces to the members of the internal pointer.
 		T* operator->() const;
 
-		///T Dereference
-		/// Dereferences the stored pointer
+		/// Dereferences the internal pointer.
 		T& operator*() const;
 
-		///T Assignment
-		/// <code>ptr</code> must be allocated with <code>new</code> or be a <code>nullptr</code>
+		/// Assigns a new pointer.
+		///[para] {ptr} must be allocated with {new} or be a {nullptr}.
 		void operator=(T* const ptr);
 
 		void operator=(const Pointer<T>& ptr);
 		void operator=(Pointer<T>&& ptr) noexcept;
 
-		///T Subclass assignment
-		/// Assigns a pointer where template argument <code>U</code> is a subclass of <code>T</code>
+		/// Assigns a pointer where template argument {U} is a subclass of {T}.
 		///M
 		template <class U>
 		void operator=(const Pointer<U>& ptr);
+		///M
+
 		template <class U>
 		void operator=(Pointer<U>&& ptr) noexcept;
-		///M
 
-		///T Equality operators
-		/// Checks if two pointers point to the same object
-		///M
+		/// Checks if two pointers point to the same object.
 		bool operator==(T* const ptr) const;
-		bool operator!=(T* const ptr) const;
-		bool operator==(const Pointer<T>& ptr) const;
-		bool operator!=(const Pointer<T>& ptr) const;
-		bool operator==(const WeakPointer<T>& ptr) const;
-		bool operator!=(const WeakPointer<T>& ptr) const;
-		///M
 
-		///T Comparison operators
-		/// Compares the stored pointer with another pointer
-		///M
+		/// Checks if two pointers do not point to the same object.
+		bool operator!=(T* const ptr) const;
+
+		/// Checks if two pointers point to the same object.
+		bool operator==(const Pointer<T>& ptr) const;
+
+		/// Checks if two pointers do not point to the same object.
+		bool operator!=(const Pointer<T>& ptr) const;
+
+		/// Checks if two pointers point to the same object.
+		bool operator==(const WeakPointer<T>& ptr) const;
+
+		/// Checks if two pointers do not point to the same object.
+		bool operator!=(const WeakPointer<T>& ptr) const;
+
 		bool operator<(const Pointer<T>& ptr) const;
 		bool operator>(const Pointer<T>& ptr) const;
 		bool operator<=(const Pointer<T>& ptr) const;
@@ -115,17 +115,13 @@ namespace Boxx {
 		bool operator>(const WeakPointer<T>& ptr) const;
 		bool operator<=(const WeakPointer<T>& ptr) const;
 		bool operator>=(const WeakPointer<T>& ptr) const;
-		///M
 
-		///H Conversions
+		///[Heading] Conversions
 
-		///T Conversion to pointer
-		/// Conversion to the stored pointer
+		/// Returns the internal pointer.
 		explicit operator T*() const;
 
-		///T bool conversion
-		///R bool: <code>true</code> if the pointer is not a <code>nullptr</code>
-		/// <code>false</code> otherwise
+		/// {true} if the pointer is not {nullptr}.
 		explicit operator bool() const;
 
 	private:
@@ -144,102 +140,105 @@ namespace Boxx {
 		void Cleanup();
 	};
 
-	///B WeakPointer
-	/// Contains a pointer from a <code>Pointer</code> but does not keep track of references or delete memory.
-	///W The weak pointer will contain an invalid pointer if all references to the pointer by <code>Pointer</code> objects are removed
-	/// Never assign a <code>WeakPointer</code> to a <code>Pointer</code>
+	///[Title] WeakPointer
+	/// Contains a pointer from a {Pointer} but does not keep track of references or delete memory.
+	///W The weak pointer will contain an invalid pointer if all references to the pointer by {Pointer} objects are removed.
+	///[Block] WeakPointer
 	///M
 	template <class T>
-	class WeakPointer {
+	class WeakPointer final {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Null WeakPointer
-		/// Creates a <code>nullptr</code>
+		/// Creates a {nullptr}.
 		WeakPointer();
 
-		///T Pointer
-		/// References the pointer stored in <code>ptr</code> but does not contribute to the reference count
+		/// References the pointer stored in {ptr} but does not contribute to the reference count.
 		WeakPointer(const Pointer<T>& ptr);
 
 		WeakPointer(const WeakPointer<T>& ptr);
 		WeakPointer(WeakPointer<T>&& ptr);
 		
-
-		///T Subclass constructor
-		/// Creates a reference to a pointer where template argument <code>U</code> is a subclass of <code>T</code>
+		/// Creates a reference to a pointer where template argument {U} is a subclass of {T}.
 		///M
 		template <class U>
 		WeakPointer(const Pointer<U>& ptr);
+		///M
+
+		/// Creates a reference to a pointer where template argument {U} is a subclass of {T}.
+		///M
 		template <class U>
 		WeakPointer(const WeakPointer<U>& ptr);
+		///M
+
 		template <class U>
 		WeakPointer(WeakPointer<U>&& ptr);
-		///M
 
 		~WeakPointer();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Cast
-		/// Casts a pointer to a different type
-		/// Returns a <code>nullptr</code> if the cast fails
+		/// Casts the pointer to a different type.
+		///[para] Returns a {nullptr} if the cast fails.
 		///M
 		template<class U>
 		WeakPointer<U> Cast() const;
 		///M
 
-		///T Is
-		/// Checks if the pointer is of a specific type
+		/// Checks if the pointer is of a specific type.
 		///M
 		template<class U>
 		bool Is() const;
 		///M
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Structure dereference
-		/// Gets acces to the stored pointer
+		/// Gets acces to the members of the internal pointer.
 		T* operator->() const;
 
-		///T Dereference
-		/// Dereferences the stored pointer
+		/// Dereferences the internal pointer.
 		T& operator*() const;
 
-		///T Assignment
-		///M
+		/// Assigns a new pointer to the weak pointer.
 		void operator=(const Pointer<T>& ptr);
-		///M
 
-		///T Subclass assignment
-		/// Assigns a pointer where template argument <code>U</code> is a subclass of <code>T</code>
+		/// Assigns a pointer where template argument {U} is a subclass of {T}.
 		///M
 		template <class U>
 		void operator=(const WeakPointer<U>& ptr);
+		///M
+
+		/// Assigns a pointer where template argument {U} is a subclass of {T}.
+		///M
 		template <class U>
 		void operator=(const Pointer<U>& ptr);
+		///M
+
 		template <class U>
 		void operator=(WeakPointer<U>&& ptr);
-		///M
 
 		void operator=(const WeakPointer<T>& ptr);
 		void operator=(WeakPointer<T>&& ptr);
 
-		///T Equality operators
-		/// Checks if the pointers point to the same object
-		///M
+		/// Checks if the pointers point to the same object.
 		bool operator==(T* const ptr) const;
-		bool operator!=(T* const ptr) const;
-		bool operator==(const WeakPointer<T>& ptr) const;
-		bool operator!=(const WeakPointer<T>& ptr) const;
-		bool operator==(const Pointer<T>& ptr) const;
-		bool operator!=(const Pointer<T>& ptr) const;
-		///M
 
-		///T Comparison operators
-		/// Compares the stored pointer with another pointer
-		///M
+		/// Checks if the pointers do not point to the same object.
+		bool operator!=(T* const ptr) const;
+
+		/// Checks if the pointers point to the same object.
+		bool operator==(const WeakPointer<T>& ptr) const;
+
+		/// Checks if the pointers do not point to the same object.
+		bool operator!=(const WeakPointer<T>& ptr) const;
+
+		/// Checks if the pointers point to the same object.
+		bool operator==(const Pointer<T>& ptr) const;
+
+		/// Checks if the pointers do not point to the same object.
+		bool operator!=(const Pointer<T>& ptr) const;
+
 		bool operator<(const WeakPointer<T>& ptr) const;
 		bool operator>(const WeakPointer<T>& ptr) const;
 		bool operator<=(const WeakPointer<T>& ptr) const;
@@ -248,17 +247,13 @@ namespace Boxx {
 		bool operator>(const Pointer<T>& ptr) const;
 		bool operator<=(const Pointer<T>& ptr) const;
 		bool operator>=(const Pointer<T>& ptr) const;
-		///M
 
-		///H Conversions
+		///[Heading] Conversions
 
-		///T Conversion to pointer
-		/// Conversion to the stored pointer
+		/// Returns the internal pointer.
 		explicit operator T*() const;
 
-		///T bool conversion
-		///R bool: <code>true</code> if the pointer is not a <code>nullptr</code>
-		/// <code>false</code> otherwise
+		/// {true} if the internal pointer is not {nullptr}.
 		explicit operator bool() const;
 
 	private:

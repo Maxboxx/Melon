@@ -19,7 +19,7 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 
 		if (info.Current().type == TokenType::Exclamation) {
 			info.index++;
-			bn->scopeWise = true;
+			bn->scopewise = true;
 
 			if (info.Current().type == TokenType::Integer) {
 				bn->loops = info.Current().value.ToInt();

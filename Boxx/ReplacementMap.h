@@ -3,88 +3,74 @@
 #include "Types.h"
 #include "Map.h"
 
-///N ReplacementMap
+///[Settings] block: indent
 
+///[Namespace] Boxx
 namespace Boxx {
-	///B ReplacementMap
-	/// A type of map used to store replacements for values
+	///[Heading] Collections
+
+	///[Title] ReplacementMap
+	/// A type of map used to store replacements for values.
+	///[Block] ReplacementMap
 	///M
 	template <class T>
-	class ReplacementMap {
+	class ReplacementMap final {
 	///M
 	public:
-		///H Constructors
-
-		///T Constructor
 		ReplacementMap();
 		ReplacementMap(const ReplacementMap<T>& map);
 		ReplacementMap(ReplacementMap<T>&& map) noexcept;
 		~ReplacementMap();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Add Replacement
-		/// Adds a new replacement key to the map
-		///A const T& key: The value to replace with a new value
-		///A const T& replacement: The replacement value
-		///E MapKeyError: Thrown if the key already exists in the map
+		/// Adds a new replacement key to the map.
+		///[Error] MapKeyError: Thrown if the key already exists in the map.
 		void Add(const T& key, const T& replacement);
 
-		///T Set Replacement
-		/// Sets the value of a replacement key
-		///A const T& key: The key to modify
-		///A const T& replacement: The new replacement value
-		///E MapKeyError: Thrown if the key does not exist
+		/// Sets the value of a replacement key.
+		///[Error] MapKeyError: Thrown if the key does not exist.
 		void Set(const T& key, const T& replacement);
 
-		///T Remove key
-		/// Remove a key from the map if it exists
+		/// Removes a key from the map if it exists.
 		void Remove(const T& key);
 
-		///T Contains key
-		/// Checks if the map contains a specific key
+		/// Checks if the map contains a specific key.
 		bool Contains(const T& key) const;
 
-		///T Is Empty
-		/// Checks if the map is empty
+		/// Checks if the map is empty.
 		bool IsEmpty() const;
 
-		///T Copy
-		/// Creates a copy of the map
+		/// Creates a copy of the map.
 		ReplacementMap<T> Copy() const;
 
-		///T GetValue
-		/// Gets the replacement value for a specific key
-		///R T value: The replacement value or the value of <code>key</code> if the key was not found
+		/// Gets the replacement value for a specific key.
+		///[para] The key is returned if the key does not exist in the map.
 		T GetValue(const T& key) const;
 
-		///T GetChain
-		/// Gets the last replacement value in an entire replacement chain
-		///R T value: The last value of the replacement chain or the value of <code>key</code> if the key was not found
-		///W This will cause infinite recursion if the chain is a cycle
+		/// Gets the last value in a replacement chain.
+		///W This will cause infinite recursion if the chain is a cycle.
 		T GetChain(const T& key) const;
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Index
-		/// Gets the replacement value for a specific key
-		///E MapKeyError: Thrown if the key does not exist
+		/// Gets the replacement value for a specific key.
+		///[Error] MapKeyError: Thrown if the key does not exist.
 		T operator[](const T& key) const;
 
 		void operator=(const ReplacementMap<T>& map);
 		void operator=(ReplacementMap<T>&& map) noexcept;
 
-		///T Equality operators
-		///M
+		/// Checks if two maps are the same.
 		bool operator==(const ReplacementMap<T>& map) const;
+
+		/// Checks if two maps are not the same.
 		bool operator!=(const ReplacementMap<T>& map) const;
-		///M
 
-		///H Iterators
+		///[Heading] Iterators
 
-		///T Iterator
-		/// Iterates over all key-value pairs in the map
-		///S for (Pair<T, T> pair : map)
+		/// Iterates over all key-replacement pairs in the map.
+		///[Code] for (Pair<T, T> pair : map)
 		Pair<T, T>* begin();
 		const Pair<T, T>* begin() const;
 		Pair<T, T>* end();

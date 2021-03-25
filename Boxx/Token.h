@@ -5,32 +5,34 @@
 #include "List.h"
 #include "Regex.h"
 
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	///B Token
-	/// Contains info about a token
+	///[Heading] Lexing
+
+	///[Title] Token
+	/// Contains info about a token.
+	///[Block] Token
 	///M
 	template <class T>
 	struct Token {
 	///M
-		///T Type
-		/// The type of the token
+		/// The type of the token.
 		T type;
 
-		///T Value
-		/// Contains the matched string for the token
+		/// Contains the matched string for the token.
 		String value;
 
-		///T Raw Value
-		/// Contains the raw matched string for the token
+		/// Contains the raw matched string for the token.
 		String rawValue;
 
-		///T Line
-		/// The line number for the token
+		/// The line number for the token.
 		UInt line;
 
 		Token() {}
 
-		///T Constructor
+		/// Creates a token.
 		Token(const T type, const String& value, const String& rawValue, const UInt line = 0) {
 			this->type = type;
 			this->value = value;
@@ -39,8 +41,9 @@ namespace Boxx {
 		}
 	};
 
-	///B TokenPattern
-	/// Contains the pattern for a <code>Token</code>
+	///[Title] TokenPattern
+	/// Contains the pattern for a {Token}.
+	///[Block] TokenPattern
 	///M
 	template <class T>
 	struct TokenPattern {
@@ -51,11 +54,11 @@ namespace Boxx {
 
 		TokenPattern() {}
 
-		///T Constructor
-		///A const T type: The token type for the pattern
-		///A const String& pattern: The regex pattern for the token
-		///A const bool ignoreBoundary: Ignores word boundary at the end of the patterns. Used for operators
-		///A const bool ignore: Deletes token after lexing it
+		/// Creates a token pattern.
+		///[Arg] type: The token type for the pattern.
+		///[Arg] attern: The regex pattern for the token.
+		///[Arg] ignoreBoundary: Ignores word boundary at the end of the patterns. Used for operators.
+		///[Arg] ignore: Deletes token after lexing it.
 		TokenPattern(const T type, const String& pattern, const bool ignoreBoundary = false, const bool ignore = false) {
 			this->type = type;
 			this->ignore = ignore;
@@ -69,8 +72,9 @@ namespace Boxx {
 		}
 	};
 
-	///B TokenList
-	/// A list of tokens used for parsing
+	///[Title] TokenList
+	/// A list of tokens used for parsing.
+	///[Block] TokenList
 	///M
 	template <class T>
 	class TokenList {
@@ -83,54 +87,50 @@ namespace Boxx {
 
 		~TokenList();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Current
-		/// Gets the current token
+		/// Gets the current token.
+		///[Error] TokenListError: Thrown if the current position is outside the list.
 		Token<T> Current() const;
 
-		///T Advance
-		/// Advances to the next token
-		///M
+		/// Advances to the next token.
 		void Advance();
-		void Advance(const UInt steps);
-		///M
 
-		///T Next
-		/// Advances to the next token and returns it
+		/// Advances {steps} steps.
+		void Advance(const UInt steps);
+
+		/// Advances to the next token and returns it.
 		Token<T> Next();
 
-		///T Peek Next
-		/// Get the next token without advancing
-		///M
+		/// Get the next token without advancing.
+		///[Error] TokenListError: Thrown if the position is outside the list.
 		Token<T> PeekNext() const;
+
+		/// Get the token {steps} steps ahead without advancing.
+		///[Error] TokenListError: Thrown if the position is outside the list.
 		Token<T> PeekNext(const UInt steps) const;
-		///M
 
-		///T Peek Previous
-		/// Gets the previous token
-		///M
+		/// Gets the previous token.
+		///[Error] TokenListError: Thrown if the position is outside the list.
 		Token<T> PeekPrevious() const;
-		Token<T> PeekPrevious(const UInt steps) const;
-		///M
 
-		///T Get Pos
-		/// Gets the current position in the token list
+		/// Gets the token {steps} steps back.
+		///[Error] TokenListError: Thrown if the position is outside the list.
+		Token<T> PeekPrevious(const UInt steps) const;
+
+		/// Gets the current position in the token list.
 		UInt GetPos() const;
 
-		///T Set Pos
-		/// Sets the position in the token list
+		/// Sets the position in the token list.
 		void SetPos(const UInt pos);
 
-		///T At End
-		/// Checks if the current position is after the last token
-		///M
+		/// Checks if the current position is after the last token.
 		bool AtEnd() const;
-		bool AtEnd(const UInt steps) const;
-		///M
 
-		///T Size
-		/// Gets the size of the token list
+		/// Checks if the current position + {steps} is after the last token.
+		bool AtEnd(const UInt steps) const;
+
+		/// Gets the size of the token list.
 		UInt Size() const;
 		
 		void operator=(const TokenList<T>& list);
@@ -141,8 +141,9 @@ namespace Boxx {
 		UInt pos = 0;
 	};
 
-	///B TokenListError
-	/// Thrown for token list errors
+	///[Title] TokenListError
+	/// Used for token list errors.
+	///[Block] TokenListError: Error
 	class TokenListError : public Error {
 	public:
 		TokenListError() : Error() {}

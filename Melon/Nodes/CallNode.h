@@ -4,56 +4,56 @@
 
 #include "Melon/Symbols/FunctionSymbol.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		///B CallNode
-		/// Node for calling a value
+		/// Node for calling a value.
 		class CallNode : public Node {
 		public:
+			/// Argument attributes for the call.
 			enum class ArgAttributes : Boxx::UByte {
+				/// No attribute.
 				None,
+
+				/// {ref} attribute.
 				Ref,
+
+				/// {noref} attribute.
 				NoRef
 			};
 
-			///H Members
-
-			///T Node
-			/// The node to call
+			/// The node to call.
 			NodePtr node;
 
-			///T Arguments
+			/// The arguments for the call.
 			Boxx::List<NodePtr> args;
 
-			///T Argument attributes
+			/// The argument attributes for the call.
 			Boxx::List<ArgAttributes> attributes;
 
-			///T Is Method
+			/// {true} if the call is a method call.
 			bool isMethod = false;
 
-			///T Method Name
+			/// The method name.
+			///p Only used if {isMethod} is {true}.
 			Symbols::Scope methodName;
 
-			///T Call Operator
+			/// {true} if the call is a call operator.
 			bool op = false;
 
-			///T Statement
+			/// {true} if the call is a call statement.
 			bool isStatement = false;
 
 			CallNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~CallNode();
 
-			///H Methods
-
-			///T Get function
-			/// Finds the function to call
+			/// Finds the function to call.
 			Symbols::FunctionSymbol* GetFunc() const;
 
-			///T Is Self Passing
-			/// Checks if the function should pass self as an argument
+			/// Checks if the function should pass self as an argument.
 			bool IsSelfPassing() const;
 
-			///T Is Init
+			/// Checks if the function is a constructor.
 			bool IsInit() const;
 
 			virtual Symbols::TypeSymbol* Type() const override;

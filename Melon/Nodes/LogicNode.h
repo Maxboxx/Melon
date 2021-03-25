@@ -4,16 +4,15 @@
 
 #include "Melon/Token.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B LogicNode
-		/// Node for logic gates
-		struct LogicNode : public BinaryOperatorNode {
-			///T The logic gate type
+		/// Node for logic gates.
+		class LogicNode : public BinaryOperatorNode {
+		public:
+			/// The type of logic gate.
 			TokenType type;
 
-			///T Constructor
 			LogicNode(Symbols::Symbol* const scope, const TokenType type, const FileInfo& file);
 			~LogicNode();
 

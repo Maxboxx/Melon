@@ -22,42 +22,22 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	const UInt startIndex = info.index;
 	const UInt startLine = info.Current().line;
 
+	// Parse types
 	List<ScopeList> types = ParseTypes(info);
+
+	// Validate types
+	if (!ValidateTypes(info, types, flags)) {
+		info.index = startIndex;
+		return nullptr;
+	}
 
 	bool singleType = types.Size() == 1;
 
-	if (!types.IsEmpty() && info.Current().type == TokenType::Colon) {
-		info.index++;
-
-		bool newVars = false;
-
-		for (const ScopeList& type : types) {
-			if (type != ScopeList::Discard) {
-				newVars = true;
-			}
-		}
-
-		if ((flags & Flags::NewAssign) != Flags::None && !newVars) {
-			info.index = startIndex;
-			return nullptr;
-		}
-	}
-	else {
-		if ((flags & Flags::NewAssign) != Flags::None) {
-			info.index = startIndex;
-			return nullptr;
-		}
-
-		info.index = startIndex;
-		types = List<ScopeList>();
-		types.Add(ScopeList::Discard);
-
-		singleType = true;
-	}
-
+	// Create assign node
 	Pointer<AssignNode> assign = new AssignNode(info.scope, info.GetFileInfo(startLine));
 	List<Tuple<Scope, Symbol*>> symbols;
 
+	// Parse variables
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
 			if (info.Current().type != TokenType::Comma) {
@@ -185,18 +165,23 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 List<ScopeList> AssignmentParser::ParseTypes(ParsingInfo& info) {
 	List<ScopeList> types;
 
+	// Parse types
 	while (true) {
+		// Discard type
 		if (info.Current().type == TokenType::Discard) {
 			info.index++;
 			types.Add(ScopeList::Discard);
 		}
+		// Parse type
 		else if (Optional<ScopeList> type = TypeParser::Parse(info)) {
 			types.Add(*type);
 		}
+		// Invalid type
 		else {
 			break;
 		}
 
+		// Check for comma
 		if (info.Current().type == TokenType::Comma) {
 			info.index++;
 		}
@@ -206,4 +191,37 @@ List<ScopeList> AssignmentParser::ParseTypes(ParsingInfo& info) {
 	}
 
 	return types;
+}
+
+bool AssignmentParser::ValidateTypes(ParsingInfo& info, List<ScopeList>& types, const Flags flags) {
+	// Parse colon
+	if (!types.IsEmpty() && info.Current().type == TokenType::Colon) {
+		info.index++;
+
+		bool newVars = false;
+
+		// Check if new variables will be created
+		for (const ScopeList& type : types) {
+			if (type != ScopeList::Discard) {
+				newVars = true;
+			}
+		}
+
+		// Break if new assign is required and no vars are created
+		if ((flags & Flags::NewAssign) != Flags::None && !newVars) {
+			return false;
+		}
+	}
+	// Check if assign is valid
+	else {
+		if ((flags & Flags::NewAssign) != Flags::None) {
+			return false;
+		}
+
+		// Set types to discard
+		types = List<ScopeList>();
+		types.Add(ScopeList::Discard);
+	}
+
+	return true;
 }

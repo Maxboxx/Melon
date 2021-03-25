@@ -4,22 +4,19 @@
 
 #include "Melon/Symbols/FunctionSymbol.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B FunctionNode
-		/// Node for functions
+		/// Node for functions.
 		class FunctionNode : public Node {
 		public:
-
-			///T Node
-			/// The function body
+			/// The function body.
 			NodePtr node;
 
-			///T Func
+			/// The function symbol.
 			Symbols::FunctionSymbol* sym;
 
-			///T Is used
+			/// {true} if the function is used.
 			bool isUsed = true;
 
 			FunctionNode(Symbols::Symbol* const scope, const FileInfo& file);

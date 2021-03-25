@@ -2,32 +2,35 @@
 
 #include <chrono>
 #include "Types.h"
+#include "String.h"
 
-///N Time
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	///B Time
-	/// A static class used to keep track of time
-	class Time {
+	///[Heading] Static Classes
+
+	///[Title] Time
+	/// A static class used to keep track of time.
+	///[Block] Time
+	class Time final {
 	public:
-		///T Update Delta
+		Time() = delete;
+
+		/// Starts the time.
+		static void Start();
+
 		/// Updates the delta time. Call this once every frame.
 		static void Update();
 
-		///T Delta time
-		/// Get the current delta time
+		/// Get the current delta time.
 		static float Delta();
 
-		///T Maximum delta time
-		/// Set the maximum value of the delta time. Defaults to <code>1.0</code>
+		/// Set the maximum value of the delta time. Defaults to {1.0}.
 		static void SetMaxDelta(const float f);
 
-		///T Total time
-		/// Gets the total running time of the program in seconds since <code>Start()</code> was called
+		/// Gets the total running time elapsed in seconds since {Start()} was called.
 		static float Total();
-
-		///T Start time
-		/// Sets the start time for total time
-		static void Start();
 
 	private:
 		typedef std::chrono::high_resolution_clock::time_point time;

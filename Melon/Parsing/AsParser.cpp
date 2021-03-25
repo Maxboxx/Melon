@@ -15,16 +15,19 @@ using namespace Melon::Parsing;
 NodePtr AsParser::Parse(ParsingInfo& info) {
 	const UInt startIndex = info.index;
 
+	// Parse as token
 	if (info.EndOfFile() || info.Current().type != TokenType::As) {
 		info.index = startIndex;
 		return nullptr;
 	}
 
+	// Get token info
 	const UInt asLine = info.Current().line;
 	const String asValue = info.Current().value;
 
 	info.index++;
 
+	// Parse type
 	if (Optional<ScopeList> type = TypeParser::Parse(info)) {
 		Pointer<ConvertNode> cn = new ConvertNode(info.scope, info.GetFileInfo(asLine));
 		cn->isExplicit = true;

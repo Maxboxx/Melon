@@ -6,93 +6,87 @@
 #include "Array.h"
 #include "Error.h"
 
-///N Buffer
+///[Settings] block: indent
 
+///[Namespace] Boxx
 namespace Boxx {
-	///B Endian
-	/// Used to tell the buffer the endian of a value
-	enum class Endian : UByte {
-		///H Values
+	///[Heading] Buffer
 
-		///T Little endian
+	///[Title] Endian
+	/// Used to tell the buffer the endian of a value.
+	///[Block] Endian
+	enum class Endian : UByte {
+		/// Little endian.
 		Little,
 
-		///T Big endian
+		/// Big endian.
 		Big,
 
-		///T System endian
-		/// The endian used by the system
+		/// The endian used by the operating system.
 		System
 	};
 
-	///B Buffer
-	/// A data structure that contains binary data
-	/// The buffer grows if the capacity is reached
+	///[Title] Buffer
+	/// A buffer of binary data.
+	/// The buffer grows if the capacity is reached.
+	///[Block] Buffer
 	class Buffer {
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Empty Buffer
+		/// Creates an empty buffer.
 		Buffer();
 
-		///T Buffer with specific capacity
+		/// Creates a buffer with a specific capacity.
 		explicit Buffer(const UInt capacity);
 
 		Buffer(const Buffer& buffer);
 		Buffer(Buffer&& buffer) noexcept;
 		~Buffer();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Write
-		/// Writes data to the current position of the buffer and advances the position to the next byte after the written data
-		/// The data is converted to binary and is added to the buffer
-		/// This function can handle writing a <code>String</code> to the buffer
-		///A const Endian e: The endian to use for writing to the buffer
-		/// Non scalar types might not be encoded properly if this value is not <code>Endian::System</code>
-		/// Each component of a non scalar type have to be written to the buffer separately if an explicit endian is required
+		/// Writes data to the current position of the buffer and advances the position to the next byte after the written data.
+		/// The data is converted to binary and is added to the buffer.
+		///[para] This function can handle writing a {String} to the buffer.
+		///[Arg] data: The data to write to the bufer.
+		///[Arg] endian: The endian to use for writing to the buffer.
+		///[Warning] Non scalar types might not be encoded properly if the endian is not {Endian::System}.
+		/// Each component of a non scalar type have to be written to the buffer separately if an explicit endian is required.
 		///M
 		template <class T>
 		void Write(const T& data, const Endian endian = Endian::System);
 		///M
 
-		///T Read
-		/// Reads data from the current position of the buffer and advances the position to the next byte after the read data
-		/// A portion of the buffer data is converted from binary and returned
-		///A const Endian e: The endian to use for writing to the buffer
-		/// Non scalar types might not be encoded properly if this value is not <code>Endian::System</code>
-		/// Each component of a non scalar type have to be written to the buffer separately if an explicit endian is required
-		///E BufferReadError: Thrown if the buffer does not contain enough bytes to read
+		/// Reads data from the current position of the buffer and advances the position to the next byte after the read data.
+		///[Arg] endian: The endian to use for reading from the buffer.
+		///[Warning] Non scalar types might not be encoded properly if this value is not {Endian::System}.
+		/// Each component of a non scalar type have to be written to the buffer separately if an explicit endian is required.
+		///[Error] BufferReadError: Thrown if the buffer does not contain enough bytes to read.
 		///M
 		template <class T>
 		T Read(const Endian endian = Endian::System);
 		///M
 
-		///T Read string
-		/// Reads a string from the current position of the buffer and advances the position to the next byte after the string
-		///A const UInt bytes: The number of bytes to read from the buffer
-		///E BufferReadError: Thrown if the buffer does not contain enough bytes to read
+		/// Reads a string from the current position of the buffer and advances the position to the next byte after the string.
+		///[Arg] bytes: The number of bytes to read from the buffer as a string.
+		///[Error] BufferReadError: Thrown if the buffer does not contain enough bytes to read.
 		String ReadString(const UInt bytes);
-
-		///T To String
-		/// Converts the entire binary buffer data to a string
+		
+		/// Converts the entire binary buffer data to a string.
 		String ToString() const;
 
-		///T Buffer size
-		/// Returns the size of the buffer in bytes
+		/// Returns the size of the buffer in bytes.
 		UInt Size() const;
 
-		///T Buffer capacity
-		/// Returns the current capacity of the buffer in bytes
+		/// Returns the current capacity of the buffer in bytes.
 		UInt Capacity() const;
 
-		///T Set position
-		/// Sets the current position of the buffer
-		///E BufferPosError: Thrown if the position is invalid
+		/// Sets the current position of the buffer.
+		///[Error] BufferPosError: Thrown if the position is invalid.
 		void SetPos(const UInt pos);
 
-		///T Get position
-		/// Gets the current position of the buffer
+		/// Gets the current position of the buffer.
 		UInt GetPos() const;
 
 		void operator=(const Buffer& buffer);
@@ -108,8 +102,9 @@ namespace Boxx {
 		static bool NeedsByteSwap(Endian source, Endian target);
 	};
 
-	///B BufferError
-	/// Base class for all buffer errors
+	///[Title] BufferError
+	/// Base class for all buffer errors.
+	///[Block] BufferError: Error
 	class BufferError : public Error {
 	public:
 		BufferError() : Error() {}
@@ -120,8 +115,9 @@ namespace Boxx {
 		}
 	};
 
-	///B BufferReadError
-	/// Thrown if a read error occurs
+	///[Title] BufferReadError
+	/// Used if a buffer read error occurs.
+	///[Block] BufferReadError: BufferError
 	class BufferReadError : public BufferError {
 	public:
 		BufferReadError() : BufferError() {}
@@ -132,8 +128,9 @@ namespace Boxx {
 		}
 	};
 
-	///B BufferPosError
-	/// Thrown if the position of a buffer is invalid
+	///[Title] BufferPosError
+	/// Used if the position of a buffer is invalid.
+	///[Block] BufferPosError: BufferError
 	class BufferPosError : public BufferError {
 		public:
 		BufferPosError() : BufferError() {}

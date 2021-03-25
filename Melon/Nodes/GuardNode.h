@@ -2,35 +2,27 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		///B GuardNode
-		/// Node for guard statements
+		/// Node for {guard} statements.
 		class GuardNode : public Node {
 		public:
-
-			///T Condition
+			/// The guard condition.
 			NodePtr cond;
 
-			///T Else
-			/// All statements in the else block
+			/// The content of the {else} block.
 			NodePtr else_;
 
-			///T Continue
-			/// All statements after the guard
+			/// The statements after the {guard} statement.
 			NodePtr continue_;
 
-			///T End
-			/// The final break of the else
+			/// The final break of the {else} block.
 			NodePtr end;
 
 			GuardNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~GuardNode();
-
-			///T Add Scope Break
-			/// Adds a break to the end of the else scope
-			void AddScopeBreak(ScanInfoStack& info);
-
+			
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
@@ -41,6 +33,8 @@ namespace Melon {
 
 		protected:
 			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+
+			void AddScopeBreak(ScanInfoStack& info);
 
 			void CompileElse(CompiledNode& compiled, CompileInfo& info, Boxx::List<Boxx::UInt>& jumps);
 

@@ -2,22 +2,18 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B MemoryNode
-		/// Node for a memory location
+		/// Node for a memory location.
 		class MemoryNode : public Node {
 		public:
-
-			///T Memory Location
+			/// The memory location.
 			Kiwi::MemoryLocation mem;
 
-			///T Type
-			/// Absolute type name of the node
+			/// The absolute type name of the node.
 			Symbols::ScopeList type;
 
-			///T Constructor
 			MemoryNode(const Boxx::Int offset);
 			MemoryNode(const Kiwi::MemoryLocation& mem);
 			~MemoryNode();

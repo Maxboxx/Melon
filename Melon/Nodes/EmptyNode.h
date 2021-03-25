@@ -2,19 +2,15 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B EmptyNode
-		/// A node that does not get compiled
+		/// A node that does not get compiled.
 		class EmptyNode : public Node {
 		public:
-
-			///T node
-			/// This node does not get compiled but the <code>ToMango()</code> method is called
+			/// This node does not get compiled but the {ToMelon()} method is called for it.
 			NodePtr node;
 
-			///T Constructor
 			EmptyNode();
 			~EmptyNode();
 

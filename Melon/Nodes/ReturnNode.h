@@ -2,31 +2,25 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B ReturnNode
-		/// Node for function returns
+		/// Node for {return} statements.
 		class ReturnNode : public Node {
 		public:
-
-			///T Nodes
-			/// The nodes to return from the function
+			/// The nodes to return from the function.
 			Boxx::List<NodePtr> nodes;
 
-			///T Function
-			/// The absolute name of the function to return from
+			/// The absolute name of the function to return from.
 			Symbols::ScopeList func;
 
 			ReturnNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ReturnNode();
 
-			///T Get Function
-			/// Get the function for the return
+			/// Get the function to return from.
 			Symbols::FunctionSymbol* GetFunc() const;
 
-			///T Get Types
-			/// Get the symbols of the return value types
+			/// Get the symbols of the return value types.
 			Boxx::List<Symbols::TypeSymbol*> GetTypes() const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;

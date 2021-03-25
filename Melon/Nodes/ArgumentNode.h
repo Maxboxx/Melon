@@ -2,22 +2,19 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B ArgumentNode
-		/// Node for a kiwi arguement
+		/// Node for a kiwi arguement.
 		class ArgumentNode : public Node {
 		public:
-
-			///T Argument
+			/// The kiwi argument.
 			Kiwi::Argument argument;
 
-			///T Type
-			/// Absolute type name for the stack value
+			/// The absolute type name for the argument value.
 			Symbols::ScopeList type;
 
-			///T Constructor
+			/// Create from kiwi argument.
 			ArgumentNode(const Kiwi::Argument& arg);
 			~ArgumentNode();
 

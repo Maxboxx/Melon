@@ -9,30 +9,28 @@ namespace Melon {
 		class TypeSymbol;
 	}
 
+	///N Melon::Nodes
 	namespace Nodes {
-		///B ScanInfo
-		/// Used for info when scanning
+		///H Structs
+
+		/// Info used for scanning.
 		struct ScanInfo {
-			///T Init
-			/// true if the current function is an initializer
+			/// {true} if the current function is a constructor.
 			bool init = false;
 
-			///T Assign
-			/// true if the current value is being assigned to
+			/// {true} if the current value is being assigned to.
 			bool assign = false;
 
-			///T Use Function
-			/// true if functions should count as being used 
+			/// {true} if functions should be flagged as being used.
 			bool useFunction = true;
 
-			///T Type
-			/// The type that is being initialized
+			/// The type that is being initialized.
 			Symbols::TypeSymbol* type = nullptr;
 
-			///T File Info
+			/// File info.
 			FileInfo file;
 
-			///T Scope Info
+			/// Scope info.
 			ScopeInfo scopeInfo;
 		};
 	}

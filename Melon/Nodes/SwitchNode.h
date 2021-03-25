@@ -4,86 +4,71 @@
 
 #include "Boxx/Math.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		class MemoryNode;
 
-		///B SwitchNode
-		/// Node for both switch-statements and switch-expressions
+		/// Node for both {switch} statements and {switch} expressions.
 		class SwitchNode : public Node {
 		public:
-
-			///T Expression
-			/// <key>true</key> if the switch is an expression
+			/// {true} if the {switch} is an expression.
 			bool expr;
 
-			///T Match expression
+			/// The match expression.
 			NodePtr match;
 
-			///T Nodes
-			/// The nodes for all the cases
+			/// The nodes for all the cases.
 			Boxx::List<NodePtr> nodes;
 
-			///T Cases
-			/// All case expressions
+			/// All case expressions.
 			Boxx::List<Boxx::List<NodePtr>> cases;
 
-			///T Default
+			/// The default node.
 			NodePtr def;
 
 			SwitchNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~SwitchNode();
-			
-			////B SwitchScanInfo
-			//// Scan info for switch nodes
+
+			/// Scan info for switch nodes.
 			struct SwitchScanInfo {
-				////T Init
-				//// True if the switch is in a constructor
+				/// {true} if the {switch} is in a constructor.
 				bool init = false;
 				
-				////T Scope
-				//// Scope info
+				/// Scope info.
 				ScopeInfo scope;
 
-				////T Cases
-				//// Scope info for all cases
+				/// Scope info for all cases.
 				Boxx::List<ScopeInfo> cases;
 
-				////T Will a Case Run
-				//// True if at least one case is guaranteed to run
+				/// {true} if at least one case is guaranteed to run.
 				bool willACaseRun = false;
 			};
 
-			////B SwitchCompileInfo
-			//// Compile info for switch nodes
+			/// Compile info for {switch} nodes.
 			struct SwitchCompileInfo {
-				////T Compiled Node
+				/// The compiled node.
 				CompiledNode cn;
 
-				////T Match
-				//// The memory location of the match value
+				/// The memory location of the match value.
 				Boxx::Pointer<MemoryNode> match;
 
-				////T End Jumps
-				//// Indices for jump to end
+				/// Indices for jump to end.
 				Boxx::List<Boxx::UInt> endJumps;
 
-				////T Expr Jumps
-				//// Indicies for jump to case contents
+				/// Indicies for jump to case contents.
 				Boxx::List<Boxx::List<Boxx::UInt>> caseJumps;
 
-				////T Expr Index
-				//// The current case index
+				/// The current case index.
 				Boxx::UInt caseIndex;
 
-				////T Default jump
-				//// The jump to the default case
+				/// The jump to the default case.
 				Boxx::UInt defaultJump;
 
-				////T Result Argument
+				/// Result argument.
 				Kiwi::Argument result;
 
-				////T Result Node
+				/// Result node.
 				Boxx::Pointer<MemoryNode> resultNode;
 			};
 
@@ -99,20 +84,12 @@ namespace Melon {
 		protected:
 			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
 
-			///T Scan Setup
-			/// Sets up the switch scan info
 			SwitchScanInfo ScanSetup(ScanInfo& info) const;
 
-			///T Scan Pre Contents
-			/// A switch scan performed before the scan of the case content
 			void ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const;
 
-			///T Scan Post Contents
-			/// A switch scan performed after the scan of the case content
 			void ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const;
 
-			///T Scan Cleanup
-			/// Cleanup for the switch scan info
 			void ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const;
 
 			ScanResult ScanNodes(ScanInfoStack& info) const;

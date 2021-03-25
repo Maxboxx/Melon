@@ -2,34 +2,25 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B UnaryOperatorNode
-		/// Node for unary operators
+		/// Node for unary operators.
 		class UnaryOperatorNode : public Node {
 		public:
-
-			///H Members
-
-			///T The node to perform the oparation on
+			/// The node to perform the operation on.
 			NodePtr node;
 
-			///T The operator
+			/// The operator to use.
 			Symbols::Scope op;
 
-			///H Constructors
-
-			///T Constructor
 			UnaryOperatorNode(Symbols::Symbol* const scope, const Symbols::Scope& op, const FileInfo& file);
 			~UnaryOperatorNode();
-
-			///H Methods
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Symbols::Symbol* GetSymbol() const override;
 
-			///T Get operator
+			/// Gets the operator.
 			virtual Symbols::Scope GetOperator() const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;

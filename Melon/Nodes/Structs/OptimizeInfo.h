@@ -9,21 +9,22 @@ namespace Melon {
 		class FunctionSymbol;
 	}
 
+	///N Melon::Nodes
 	namespace Nodes {
-		///B OptimizeInfo
-		/// Info about optimization
+		///H Structs
+
+		/// Info about optimization.
 		struct OptimizeInfo {
-			///T Optimized
-			/// Whether or not the code has been optimized
+			/// Has the code been optimized.
 			bool optimized = false;
 
-			///T Used Variables
+			/// All used variables.
 			Boxx::Set<Symbols::VariableSymbol*> usedVariables;
 
-			///T Used Types
+			/// All used types.
 			Boxx::Set<Symbols::TypeSymbol*> usedTypes;
 
-			///T Used functions
+			/// All used functions.
 			Boxx::Set<Symbols::FunctionSymbol*> usedFunctions;
 		};
 	}

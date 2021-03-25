@@ -3,29 +3,38 @@
 #include <stdexcept>
 #include "Types.h"
 
-///N Error
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
 	class String;
 
-	///B Error
-	/// Base class for all errors in the library
+	///[Heading] Errors
+
+	///[Title] Error
+	/// Base class for all errors in the library.
+	///[Block] Error
 	class Error : public std::runtime_error {
 	public:
+		/// Creates an error with no message.
+		///[Code] Error()
 		Error() : runtime_error("") {}
+
+		/// Creates an error with a message.
+		///[Code] Error(const char* const msg)
 		Error(const char* const msg) : runtime_error(msg) {}
 
-		///T Get message
-		/// Returns the error message of the error
+		/// Returns the message of the error.
 		String Message() const;
 
-		///T Name
-		/// Returns the name of the error class
-		/// All errors should override this method
+		/// Returns the name of the error class.
+		///[para] All errors should override this method and return the name of the error class.
 		virtual String Name() const;
 	};
 
-	///B NotImplementedError
-	/// Thrown if something has not been implemented yet
+	///[Title] NotImplementedError
+	/// Used if something has not been implemented yet.
+	///[Block] NotImplementedError: Error
 	class NotImplementedError : public Error {
 	public:
 		NotImplementedError() : Error() {}
@@ -34,8 +43,9 @@ namespace Boxx {
 		virtual String Name() const override;
 	};
 
-	///B NotSupportedError
-	/// Thrown if there is no implementation available
+	///[Title] NotSupportedError
+	/// Used if there is no implementation available.
+	///[Block] NotSupportedError: Error
 	class NotSupportedError : public Error {
 	public:
 		NotSupportedError() : Error() {}
@@ -44,8 +54,9 @@ namespace Boxx {
 		virtual String Name() const override;
 	};
 
-	///B SystemNotSupportedError
-	/// Thrown if the current operating system is not supported
+	///[Title] SystemNotSupportedError
+	/// Thrown if the current operating system is not supported.
+	///[Block] SystemNotSupportedError: NotSupportedError
 	class SystemNotSupportedError : public NotSupportedError {
 	public:
 		SystemNotSupportedError() : NotSupportedError() {}

@@ -2,21 +2,18 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B IntegerNode
-		/// Node for an integer
+		/// Node for an integer.
 		class IntegerNode : public Node {
 		public:
-
-			///T Number
+			/// The integer value.
 			Boxx::Long number;
 
-			///T is unsigned
+			/// {true} if the integer is unsigned.
 			bool isUnsigned = true;
 
-			///T Constructor
 			IntegerNode(const FileInfo& file);
 			~IntegerNode();
 

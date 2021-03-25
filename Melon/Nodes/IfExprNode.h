@@ -2,20 +2,16 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B IfExprNode
-		/// Node for if-expressions
+		/// Node for {if} expressions.
 		class IfExprNode : public Node {
 		public:
-
-			///T Nodes
-			/// The nodes for each segment of the if-expression
+			/// The nodes for each segment of the {if} expression.
 			Boxx::List<NodePtr> nodes;
 
-			///T Conditions
-			/// The conditions for the segments
+			/// The conditions for the segments.
 			Boxx::List<NodePtr> conditions;
 
 			IfExprNode(Symbols::Symbol* const scope, const FileInfo& file);

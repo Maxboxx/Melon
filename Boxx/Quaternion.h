@@ -5,103 +5,109 @@
 #include "Types.h"
 #include "Math.h"
 
-///N Quaternion
-namespace Boxx {
-	///B Quaternion
-	class Quaternion {
-	public:
-		///H Constructors
+///[Settings] block: indent
 
-		///T Identity quaternion
+///[Namespace] Boxx
+namespace Boxx {
+	///[Heading] Math
+
+	///[Title] Quaternion
+	/// Represents a quaternion.
+	///[Block] Quaternion
+	struct Quaternion {
+	public:
+		///[Heading] Constructors
+
+		/// Creates an identity quaternion.
 		Quaternion();
 
-		///T Components
-		/// Creates a quaternion with the specified components
-		explicit Quaternion(const float x, const float y, const float z, const float w);
+		/// Creates a quaternion with the specified components.
+		Quaternion(const float x, const float y, const float z, const float w);
 
-		///T Vector
-		/// Creates a quaternion from a vector
+		/// Creates a quaternion from a vector.
 		explicit Quaternion(const Vector4& v);
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Arithmetic
-		/// Performs arithmetic with quaternions and floats
-		///M
+		/// Adds all components with {f}.
 		Quaternion operator+(const float f) const;
+
+		/// Componentwise addition between quaternions.
 		Quaternion operator+(const Quaternion& q) const;
-		Quaternion operator-() const;
+
+		/// Subtracts all components with {f}.
 		Quaternion operator-(const float f) const;
+
+		/// Componentwise subtraction between quaternions.
 		Quaternion operator-(const Quaternion& q) const;
+
+		/// Negates the quaternion.
+		Quaternion operator-() const;
+
+		/// Multiplies all components with {f}.
 		Quaternion operator*(const float f) const;
+
+		/// Multplies with another quaternion.
 		Quaternion operator*(const Quaternion& q) const;
+
+		/// Multiplies all components with {f}.
 		Quaternion operator/(const float f) const;
+
+		/// Multiplies with the inverse of {q}.
 		Quaternion operator/(const Quaternion& q) const;
-		///M
 
 		void operator*=(const Quaternion& q);
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Length
-		/// Gets the length of the quaternion
+		/// Gets the length of the quaternion.
 		float Length() const;
 
-		///T Squared length
-		/// Gets the squared length of the quaternion
+		/// Gets the squared length of the quaternion.
 		float SquaredLength() const;
 
-		///T Normalize
-		/// Normalizes the quaternion and returns the result
+		/// Normalizes the quaternion and returns the result.
 		Quaternion Normalize() const;
 
-		///T 3x3 rotation matrix
-		/// Creates a 3x3 rotation matrix from the quaternion
+		/// Creates a 3x3 rotation matrix from the quaternion.
 		Matrix3 RotationMatrix3() const;
 
-		///T 4x4 rotation matrix
-		/// Creates a 4x4 rotation matrix from the quaternion
+		/// Creates a 4x4 rotation matrix from the quaternion.
 		Matrix4 RotationMatrix4() const;
 
-		///H Static functions
+		///[Heading] Static functions
 
-		///T Dot product
-		/// Calculates the dot product between two quaternions
+		/// Calculates the dot product between two quaternions.
 		static float Dot(const Quaternion& q1, const Quaternion& q2);
 
-		///T Lerp
-		/// Makes a linear interpolation between two quaternions
-		///A const Quaternion& q1: The quaternion to start at
-		///A const Quaternion& q2: The quaternion to end at
-		///A const float t: The progress of the interpolation
-		/// The value should be between <code>0.0</code> and <code>1.0</code>
+		/// Makes a linear interpolation between two quaternions.
+		///[Arg] q1: The quaternion to start at.
+		///[Arg] q2: The quaternion to end at.
+		///[Arg] t: The progress of the interpolation.
+		///[para] This value should be between {0.0} and {1.0}.
 		static Quaternion Lerp(const Quaternion& q1, const Quaternion& q2, const float t);
 
-		///T Slerp
-		/// Makes a spherical linear interpolation between two quaternions
-		///A Quaternion q1: The quaternion to start at
-		///A Quaternion q2: The quaternion to end at
-		///A const float t: The progress of the interpolation
-		/// The value should be between <code>0.0</code> and <code>1.0</code>
+		/// Makes a spherical linear interpolation between two quaternions.
+		///[Arg] q1: The quaternion to start at.
+		///[Arg] q2: The quaternion to end at.
+		///[Arg] t: The progress of the interpolation.
+		///[para] The value should be between {0.0} and {1.0}.
 		static Quaternion Slerp(Quaternion q1, Quaternion q2, const float t);
 
-		///T Euler
-		/// Creates a quaternion from euler angles
+		/// Creates a quaternion from euler angles.
 		static Quaternion Euler(const Vector3& euler);
 
-		///T Direction
-		/// Creates a quaternion from a direction vector
-		///A const Vector3& up: The up vector for the rotation
+		/// Creates a quaternion from a direction vector.
+		///[Arg] direction: The direction vector.
+		///[Arg] up: The up vector for the rotation.
 		static Quaternion Direction(const Vector3& direction, const Vector3& up = Vector3::Up());
 
-		///T Axis angle
-		/// Creates a quaternion from an axis and a rotation in radians
+		/// Creates a quaternion from an axis and a rotation in radians.
 		static Quaternion AxisAngle(const Vector3& axis, const float rad);
 
-		///H Components
+		///[Heading] Components
 
-		///T Components
-		/// The components of the quaternion
+		/// The components of the quaternion.
 		float x, y, z, w;
 	};
 

@@ -28,7 +28,7 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 
 	if (!isBreak)
 		in.instructionName = abortInstName;
-	else if (scopeWise)
+	else if (scopewise)
 		in.instructionName = scopeBreakInstName;
 	else if (breakBool)
 		in.instructionName = breakTrueInstName;
@@ -41,7 +41,7 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 
 ScanResult BreakNode::Scan(ScanInfoStack& info) {
 	// Regular break or abort
-	if (!scopeWise) {
+	if (!scopewise) {
 		if (info->scopeInfo.CanContinue()) {
 			if (!isBreak) {
 				info->scopeInfo.loopAbortCount = Math::Max(info->scopeInfo.loopAbortCount, loops);
@@ -65,11 +65,11 @@ ScanResult BreakNode::Scan(ScanInfoStack& info) {
 };
 
 StringBuilder BreakNode::ToMelon(const UInt indent) const {
-	StringBuilder sb = String(scopeWise ? "break!" : (isBreak ? "break" : "abort"));
+	StringBuilder sb = String(scopewise ? "break!" : (isBreak ? "break" : "abort"));
 	sb += " ";
-	sb += String::ToString(scopeWise ? (Int)loops - 1 : (Int)loops);
+	sb += String::ToString(scopewise ? (Int)loops - 1 : (Int)loops);
 
-	if (isBreak && !scopeWise) {
+	if (isBreak && !scopewise) {
 		sb += ", ";
 		sb += String::ToString((bool)breakBool);
 	}

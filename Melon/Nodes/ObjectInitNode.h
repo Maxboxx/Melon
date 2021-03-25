@@ -2,23 +2,19 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B ObjectInitNode
-		/// Node for object init
+		/// Node for object init.
 		class ObjectInitNode : public Node {
 		public:
-
-			///T Node
+			/// The node to perform object init on.
 			NodePtr node;
 
-			///T Variables
-			/// The variables to assign values to
+			/// The variables to assign values to.
 			Boxx::List<Symbols::Scope> vars;
 
-			///T Expressions
-			/// The expressions to assign to the variables
+			/// The expressions to assign to the variables.
 			Boxx::List<NodePtr> expressions;
 
 			ObjectInitNode(Symbols::Symbol* const scope, const FileInfo& file);

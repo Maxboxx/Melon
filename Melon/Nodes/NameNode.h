@@ -2,19 +2,16 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B NameNode
-		/// Node for a name
+		/// Node for a name.
 		class NameNode : public Node {
 		public:
-
-			///T Name
+			/// The name of the node.
 			Symbols::Scope name;
 
-			///T Ignore Ref
-			/// Used to ignore ref
+			/// Used to ignore {ref}.
 			bool ignoreRef = false;
 
 			NameNode(Symbols::Symbol* const scope, const FileInfo& file);

@@ -11,98 +11,95 @@
 #include "Optional.h"
 #include "Tuple.h"
 
-///N Logger
+///[Settings] block: indent
 
+///[Namespace] Boxx
 namespace Boxx {
-	///B Logger
-	/// Used to log information to a file and/or console
+	///[Title] Logger
+	/// Used to log information to a file and/or console.
+	///[Block] Logger
 	class Logger {
 	public:
-
-		///H Constructors
-
-		///T Console constructor
-		/// A logger created this way can only log to the console
+		/// A logger created this way can only log to the console.
 		Logger();
 
-		///T Create log file
-		/// Creates a logger and opens a file for it
-		///E FileOpenError: Thrown if the file could not be opened
+		/// Creates a logger and opens a file for it.
+		///[Error] FileOpenError: Thrown if the file could not be opened.
 		explicit Logger(const String& filename);
 
 		Logger(const Logger& logger);
 		Logger(Logger&& logger) noexcept;
 		~Logger();
 
-		///H Logging Methods
+		///[Heading] Logging Methods
 
-		///T Write
-		/// Writes to the log file
-		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
+		/// Writes to the log file.
+		///[Error] LoggerFileError: Thrown if the logger has created a log file and the file is not open.
 		void Write(const String& str);
 
-		///T Log
-		/// Writes a log to the log file
-		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
+		/// Writes a log to the log file.
+		///[Error] LoggerFileError: Thrown if the logger has created a log file and the file is not open.
 		void Log(const String& str);
 
-		///T Info
-		/// Writes info to the log file and the console
-		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
+		/// Writes info to the log file and the console.
+		///[Error] LoggerFileError: Thrown if the logger has created a log file and the file is not open.
 		void Info(const String& str);
 
-		///T Success
-		/// Writes a success message to the log file and the console
-		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
+		/// Writes a success message to the log file and the console.
+		///[Error] LoggerFileError: Thrown if the logger has created a log file and the file is not open.
 		void Success(const String& str);
 
-		///T Warning
-		/// Writes a warning to the log file and the console
-		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
+		/// Writes a warning to the log file and the console.
+		///[Error] LoggerFileError: Thrown if the logger has created a log file and the file is not open.
 		void Warning(const String& str);
 
-		///T Error
-		/// Writes an error to the log file and the console
-		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
+		/// Writes an error to the log file and the console.
+		///[Error] LoggerFileError: Thrown if the logger has created a log file and the file is not open.
 		void Error(const String& str);
 
-		///T Fatal
-		/// Writes a fatal error to the log file and the console
-		///E FatalLoggerError: Always thrown
-		///E LoggerFileError: Thrown if the logger has created a log file and the file is not open
+		/// Writes a fatal error to the log file and the console.
+		///[Error] FatalLoggerError: Always thrown.
+		///[Error] LoggerFileError: Thrown if the logger has created a log file and the file is not open.
 		void Fatal(const String& str);
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Close
-		/// Close the log file
-		///E LoggerFileError: Thrown if the log file is not open
+		/// Close the log file.
 		void Close();
 
-		///T Is Open
-		/// Checks if the log file is open
+		/// Checks if the log file is open.
 		bool IsOpen() const;
 
-		///H Messages
+		///[Heading] Messages
 
-		////B LogLevel
-		//// The log level of a message
+		/// The log level of a message.
+		///[Block] LogLevel
 		enum class LogLevel : UByte {
-			////T Values
-			////M
+			/// Regular text.
 			Write,
+
+			/// A log message.
 			Log,
+
+			/// An info message.
 			Info,
+
+			/// A success message.
 			Success,
+
+			/// A warning message.
 			Warning,
+
+			/// An error message.
 			Error,
+
+			/// A fatal error message.
 			Fatal
-			////M
 		};
 
 		///T Iterator
-		/// Iterates over all logged messages
-		///S for (Tuple<Logger::LogLevel, String> message : logger)
+		/// Iterates over all logged messages.
+		///[Code] for (Tuple<Logger::LogLevel, String> message : logger)
 		const Tuple<LogLevel, String>* begin() const;
 		const Tuple<LogLevel, String>* end() const;
 
@@ -114,8 +111,11 @@ namespace Boxx {
 		List<Tuple<LogLevel, String>> loggedMessages;
 	};
 
-	///B LoggerError
-	/// Base class for all logger erros
+	///[Heading] Errors
+
+	///[Title] LoggerError
+	/// Base class for all logger errors.
+	///[Block] LoggerError: Error
 	class LoggerError : public Error {
 	public:
 		LoggerError() : Error() {}
@@ -126,8 +126,9 @@ namespace Boxx {
 		}
 	};
 
-	///B FatalLoggerError
-	/// Used for fatal logs
+	///[Title] FatalLoggerError
+	/// Used for fatal logs.
+	///[Block] FatalLoggerError: LoggerError
 	class FatalLoggerError : public LoggerError {
 	public:
 		FatalLoggerError() : LoggerError() {}
@@ -138,8 +139,9 @@ namespace Boxx {
 		}
 	};
 
-	///B LoggerFileError
-	/// Used for log file related errors
+	///[Title] LoggerFileError
+	/// Used for log file related errors.
+	///[Block] LoggerFileError: LoggerError
 	class LoggerFileError : public LoggerError {
 	public:
 		LoggerFileError() : LoggerError() {}

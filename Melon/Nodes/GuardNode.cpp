@@ -272,7 +272,7 @@ void GuardNode::AddScopeWiseBreak(ScanInfoStack& info) {
 	Pointer<BreakNode> bn = new BreakNode(scope, file);
 	bn->isBreak = true;
 	bn->loops = 1;
-	bn->scopeWise = true;
+	bn->scopewise = true;
 	end = bn;
 
 	info->scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info->scopeInfo.maxScopeBreakCount);

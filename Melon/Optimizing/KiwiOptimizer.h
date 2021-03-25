@@ -7,15 +7,14 @@
 
 #include "OptimizerInstruction.h"
 
+///N Melon::Optimizing
 namespace Melon {
 	namespace Optimizing {
-		///B KiwiOptimizer
 		/// Class for optimizing kiwi instructions
 		class KiwiOptimizer {
 		public:
-			///T Optimize
-			/// Optimizes a list of kiwi instructions
-			///A loops: The number of optimization loops to perform
+			/// Optimizes a list of kiwi instructions.
+			///A loops: The number of optimization loops to perform.
 			static Boxx::List<Kiwi::Instruction> Optimize(const Boxx::List<OptimizerInstruction>& instructionList, const Boxx::UInt loops = 1);
 
 		private:

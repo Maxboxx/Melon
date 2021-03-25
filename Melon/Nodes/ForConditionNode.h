@@ -2,26 +2,27 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B ForConditionNode
-		/// Node for the conditions of for loops
+		/// Node for the conditions of for loops.
 		class ForConditionNode : public Node {
 		public:
-			///T Loop Init
+			/// The init of the for condition.
 			NodePtr loopInit;
 
-			///T Condition operator
+			/// An optional condition operator.
+			///p The condition is automatically compared to the loop variable if this is set.
 			Boxx::Optional<Symbols::Scope> conditionOperator;
 
-			///T Loop Condition
+			/// The loop condition.
 			NodePtr loopCondition;
 
-			///T Step Operator
+			/// An optional step operator.
+			///p The loop variable is automatically updated if this is set.
 			Boxx::Optional<Symbols::Scope> stepOperator;
 
-			///T Loop Step
+			/// The loop step.
 			NodePtr loopStep;
 
 			ForConditionNode(Symbols::Symbol* const scope, const FileInfo& file);

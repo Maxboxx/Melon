@@ -3,74 +3,87 @@
 #include "Types.h"
 #include "Error.h"
 
-///N Either
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	///B Either
-	/// Stores either a <code>T1</code> or <code>T2</code>
+	///[Heading] Template Types
+
+	///[Title] Either
+	/// Stores either a {T1} or a {T2}.
+	///[Block] Either
 	///M
 	template <class T1, class T2>
 	class Either {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Create default either
-		/// This will use the type of the first template argument
 		Either();
 
-		///T Create from value
-		///M
+		/// Create with a {T1} value.
 		Either(const T1& value);
+
+		/// Create with a {T2} value.
 		Either(const T2& value);
-		///M
 
 		Either(const Either<T1, T2>& value);
 		Either(Either<T1, T2>&& value) noexcept;
 		~Either();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Is value
-		/// Checks if the value of the either is the left or right template type
-		///M
+		/// Checks if the value of the either is the left template type.
 		bool IsLeft() const;
-		bool IsRight() const;
-		///M
 
-		///T Get value
-		/// Gets the left or right value
-		///E EitherTypeError: Thrown if the either is of the wrong type
+		/// Checks if the value of the either is the right template type.
+		bool IsRight() const;
+
+		/// Gets the left value.
+		///[Error] EitherTypeError: Thrown if the either is of the wrong type.
 		///M
 		T1 GetLeft() const;
 		T1& GetLeft();
+		///M
+
+		/// Gets the right value.
+		///[Error] EitherTypeError: Thrown if the either is of the wrong type.
+		///M
 		T2 GetRight() const;
 		T2& GetRight();
 		///M
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Assignment
-		///M
+		/// Assignment of {T1} value.
+		/// Changes the either type to left.
 		void operator=(const T1& value);
+
+		/// Assignment of {T2} value.
+		/// Changes the either type to right.
 		void operator=(const T2& value);
-		///M
 
 		void operator=(const Either<T1, T2>& value);
 		void operator=(Either<T1, T2>&& value) noexcept;
 
-		///T Comparison
-		///M
+		/// Checks if two either values are equal.
 		bool operator==(const Either<T1, T2>& value) const;
+
+		/// Checks if two either values are not equal.
 		bool operator!=(const Either<T1, T2>& value) const;
-		///M
 
 		bool operator<(const Either<T1, T2>& value) const;
 
-		///T Conversion to value
-		///E EitherTypeError: Thrown if the either is empty
+		/// Gets the left value.
+		///[Error] EitherTypeError: Thrown if the either is of the wrong type.
 		///M
 		explicit operator T1() const;
 		explicit operator T1&();
+		///M
+
+		/// Gets the right value.
+		///[Error] EitherTypeError: Thrown if the either is of the wrong type.
+		///M
 		explicit operator T2() const;
 		explicit operator T2&();
 		///M
@@ -81,8 +94,9 @@ namespace Boxx {
 		T2 right{};
 	};
 
-	///B EitherTypeError
-	/// Used if the wrong type is used
+	///[Title] EitherTypeError
+	/// Used if the wrong either type is used.
+	///[Block] EitherTypeError: Error
 	class EitherTypeError : public Error {
 	public:
 		EitherTypeError() : Error() {}

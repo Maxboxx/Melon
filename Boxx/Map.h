@@ -7,76 +7,71 @@
 #include "Math.h"
 #include "String.h"
 
-///N Map
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	///B Map
-	/// A map is a collection of key-value pairs
-	/// The map key type must implement these operator functions to work:
-	/// <code>bool operator&lt;(const Key) const</code>
-	/// <code>bool operator==(const Key) const</code>
-	///W The map keys should never be modified in a way that affects the result of the above operator functions
+	///[Heading] Collections
+
+	///[Title] Map
+	/// A collection of key-value pairs.
+	///[para] The map key type must implement these operator functions to work:
+	///[item] {bool operator<(const Key) const}
+	///[item] {bool operator==(const Key) const}
+	///[Warning] The map keys should never be modified in a way that affects the result of the above operator functions.
+	///[Block] Map
 	///M
 	template <class Key, class Value>
-	class Map {
+	class Map final {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Empty map
-		/// Creates an empty map
+		/// Creates an empty map.
 		Map();
 
-		///T Reserved capacity
-		/// Creates a map with a reserved capacity
+		/// Creates a map with a reserved capacity.
 		explicit Map(const UInt capacity);
 
 		Map(const Map<Key, Value>& map);
 		Map(Map<Key, Value>&& map) noexcept;
 		~Map();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Add key-value pair
-		/// Adds a new key-value pair to the map
-		///E MapKeyError: Thrown if the key already exists in the map
-		///M
+		/// Adds a new key-value pair to the map.
+		///[Error] MapKeyError: Thrown if the key already exists in the map.
 		void Add(const Key& key, const Value& value);
-		void Add(const Pair<Key, Value>& pair);
-		///M
 
-		///T Remove key
-		/// Remove a key from the map if it exists
+		/// Adds a new key-value pair to the map.
+		///[Error] MapKeyError: Thrown if the key already exists in the map.
+		void Add(const Pair<Key, Value>& pair);
+
+		/// Remove a key from the map if it exists.
 		void Remove(const Key& key);
 
-		///T Contains key
-		/// Checks if the map contains a specific key
-		///A Value& value: An output argument containing the value associated with the key
-		///M
+		/// Checks if the map contains a specific key.
 		bool Contains(const Key& key) const;
-		bool Contains(const Key& key, Value& value) const;
-		///M
 
-		///T Size
-		/// Returns the current size of the map
+		/// Checks if the map contains a specific key and assigns the value of that key to {value} if it exists.
+		bool Contains(const Key& key, Value& value) const;
+
+		/// Returns the current size of the map.
 		UInt Size() const;
 
-		///T Capacity
-		/// Returns the current capacity of the map
+		/// Returns the current capacity of the map.
 		UInt Capacity() const;
 
-		///T Is Empty
-		/// Checks if the map is empty
+		/// Checks if the map is empty.
 		bool IsEmpty() const;
 
-		///T Copy
-		/// Creates a copy of the map
+		/// Creates a copy of the map.
 		Map<Key, Value> Copy() const;
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Indexing
-		/// Used to get/set the value at a specific key
-		///E MapKeyError: Thrown if the key does not exist
+		/// Used to get/set the value of a specific key.
+		///[Error] MapKeyError: Thrown if the key does not exist.
 		///M
 		Value& operator[](const Key& key);
 		const Value& operator[](const Key& key) const;
@@ -85,18 +80,16 @@ namespace Boxx {
 		void operator=(const Map<Key, Value>& map);
 		void operator=(Map<Key, Value>&& map) noexcept;
 
-		///T Equality
-		/// Checks if two maps are the same
-		///M
+		/// Checks if two maps are the same.
 		bool operator==(const Map<Key, Value>& map) const;
+
+		/// Checks if two maps are not the same.
 		bool operator!=(const Map<Key, Value>& map) const;
-		///M
 
-		///H Iterators
+		///[Heading] Iterators
 
-		///T Iterator
-		/// Iterates over all key-value pairs in the map
-		///S for (Pair<Key, Value> pair : map)
+		/// Iterates over all key-value pairs in the map.
+		///[Code] for (Pair<Key, Value> pair : map)
 		Pair<Key, Value>* begin();
 		const Pair<Key, Value>* begin() const;
 		Pair<Key, Value>* end();
@@ -108,8 +101,11 @@ namespace Boxx {
 		UInt BinarySearch(const Key& key) const;
 	};
 
-	///B MapError
-	/// Base class for all map errors
+	///[Heading] Errors
+
+	///[Title] MapError
+	/// Base class for all map errors.
+	///[Block] MapError: Error
 	class MapError : public Error {
 	public:
 		MapError():Error(){}
@@ -120,8 +116,9 @@ namespace Boxx {
 		}
 	};
 
-	///B MapKeyError
-	/// Used for key related errors in a map
+	///[Title] MapKeyError
+	/// Used for key related errors in a map.
+	///[Block] MapKeyError: MapError
 	class MapKeyError : public MapError {
 	public:
 		MapKeyError():MapError(){}

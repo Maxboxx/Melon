@@ -7,106 +7,94 @@
 
 #include <cstring>
 
-///N List
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
 	class String;
 	class Regex;
 
-	///B List
-	/// A List is a collection of items stored in a specific order.
+	///[Heading] Collections
+
+	///[Title] List
+	/// A list of items.
+	///[Block] List
 	///M
 	template <class T>
-	class List {
+	class List final {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Empty list
-		/// Creates an empty list
+		/// Creates an empty list.
 		List();
 
-		///T Reserved capacity
-		/// Creates a list with a reserved capacity
+		/// Creates a list with a reserved capacity.
 		explicit List(const UInt capacity);
 
 		List(const List<T>& list);
 		List(List<T>&& list) noexcept;
 		~List();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T List size
-		/// Returns the current size of the list
+		/// Returns the current size of the list.
 		UInt Size() const;
 
-		///T List capacity
-		/// Returns the current capacity of the list
+		/// Returns the current capacity of the list.
 		UInt Capacity() const;
 
 		///T Is Empty
 		/// Checks if the list is empty
 		bool IsEmpty() const;
 
-		///T Add value
-		/// Adds a value to the end of the list
+		/// Adds a value to the end of the list.
 		void Add(const T& value);
 
-		///T Insert value
-		/// Inserts a value at the specified index in the list
+		/// Inserts a value at the specified index in the list.
 		void Insert(const UInt index, const T& value);
 
-		///T Remove value
-		/// Removes the first occurrence of the specified value from the list
+		/// Removes the first occurrence of the specified value from the list.
 		void Remove(const T& value);
 
-		///T Remove all
-		/// Removes all occurrences of the specified value from the list
+		/// Removes all occurrences of the specified value from the list.
 		void RemoveAll(const T& value);
 
-		///T Remove at
-		/// Removes elements from the list
-		///A const UInt index: The position to remove at
-		///A const UInt numElements: The amount of elements to remove
-		void RemoveAt(const UInt index, const UInt numElements = 1);
+		/// Removes the item at the specified index.
+		///[Arg] index: The position to remove at.
+		///[Arg] numItems: The number of items to remove.
+		void RemoveAt(const UInt index, const UInt numItems = 1);
 
-		///T Remove last
-		/// Removes an element from the end of the list
-		///A const UInt pos: The position from the last element to remove at
+		/// Removes an item at the end of the list.
+		///[Arg] pos: The position from the last item to remove at.
 		void RemoveLast(const UInt pos = 0);
 
-		///T Clear list
-		/// Removes everything from the list
+		/// Removes all items from the list.
 		void Clear();
 
-		///T Find index
-		/// Returns the index of the first occurrence of the specified value
-		///R Optional<UInt>: Contains the index of the value if the value was found
+		/// Returns the index of the first occurrence of the specified value.
+		///[Return] Optional<UInt>: Contains the index of the value if the value was found.
 		Optional<UInt> Find(const T& value) const;
 
-		///T Contains
-		/// Checks if the list contains a specific value
+		/// Checks if the list contains the specified value.
 		bool Contains(const T& value) const;
 
-		///T Last value
-		/// Returns an element near the end of the list
-		///A const UInt pos: The position from the last element
+		/// Returns an item at the end of the list.
+		///[Arg] pos: The position from the last item.
 		///M
 		T& Last(const UInt pos = 0);
 		const T& Last(const UInt pos = 0) const;
 		///M
 
-		///T Convert to array
-		/// Converts the list to an array
+		/// Converts the list to an array.
 		Array<T> ToArray() const;
 
-		///T Copy
-		/// Creates a copy of the list
+		/// Creates a copy of the list.
 		List<T> Copy() const;
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Index operators
-		/// Used to get/set the value at a specific index
+		/// Used to get/set the value at a specific index.
 		///M
 		T& operator[](const UInt i);
 		const T& operator[](const UInt i) const;
@@ -115,18 +103,16 @@ namespace Boxx {
 		void operator=(const List<T>& list);
 		void operator=(List<T>&& list) noexcept;
 
-		///T Equality
-		/// Checks if two lists are the same
-		///M
+		/// Checks if two lists are the same.
 		bool operator==(const List<T>& list) const;
+
+		/// Checks if two lists are not the same.
 		bool operator!=(const List<T>& list) const;
-		///M
 
-		///H Iterators
+		///[Heading] Iterators
 
-		///T Iterator
-		/// Iterates over all values in the list
-		///S for (T t : list)
+		/// Iterates over all values in the list.
+		///[Code] for (T t : list)
 		T* begin();
 		const T* begin() const;
 		T* end();

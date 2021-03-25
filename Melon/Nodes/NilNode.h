@@ -2,11 +2,10 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B NilNode
-		/// Node for a nil value
+		/// Node for a {nil} value.
 		class NilNode : public Node {
 		public:
 			NilNode(const FileInfo& file);

@@ -3,68 +3,64 @@
 #include "Types.h"
 #include "Error.h"
 
-///N Array
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
 	template<class T, UInt S>
 	class StaticArray;
 
-	///B Array
+	///[Heading] Collections
+
+	///[Title] Array
 	/// An array class that keeps track of its own size.
-	/// It automatically calls <code>delete[]</code> on the internal array when it is no longer in use
+	/// It automatically calls {delete[]} on the internal array when it is no longer in use.
+	///[Block] Array
 	///M
 	template <class T>
-	class Array {
+	class Array final {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Empty array
-		/// Creates an empty array
+		/// Creates an empty array.
 		Array();
 
-		///T Size
-		/// Creates an array with a specific size
+		/// Creates an array with a specific size.
 		explicit Array(const UInt size);
 
-		///T Array pointer and size
-		/// Creates an array with the specified size and array pointer
-		///A T* const array: Must be allocated with <code>new</code> and have the same size as the value of <code>size</code>
+		/// Creates an array with the specified size and array pointer.
+		///[Arg] array: Must be allocated with {new} and have the same size as the value of {size}.
 		explicit Array(const UInt size, T* const array);
 
 		Array(const Array<T>& arr);
 		Array(Array<T>&& arr) noexcept;
 		~Array();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Size
-		/// Returns the size of the array
+		/// Returns the size of the array.
 		UInt Size() const;
 
-		///T Is Empty
-		/// Checks if the size of the array is <code>0</code>
+		/// Checks if the size of the array is {0}.
 		bool IsEmpty() const;
 
-		///T Contains
-		/// Checks if the array contains the specified value
+		/// Checks if the array contains the specified value.
 		bool Contains(const T& value) const;
 
-		///T Last value
-		/// Returns an element at the end of the array
-		///A const UInt pos: The position from the last element
+		/// Returns an element at the end of the array.
+		///[Arg] pos: The position from the last element.
 		///M
 		T& Last(const UInt pos = 0);
 		const T& Last(const UInt pos = 0) const;
 		///M
 
-		///T Copy
-		/// Creates a copy of the array
+		/// Creates a copy of the array.
 		Array<T> Copy() const;
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Indexing
-		/// Used to get/set the value at a specific index
+		/// Used to get/set the value at a specific index.
 		///M
 		T& operator[](const UInt i);
 		const T operator[](const UInt i) const;
@@ -73,8 +69,7 @@ namespace Boxx {
 		void operator=(const Array<T>& arr);
 		void operator=(Array<T>&& arr) noexcept;
 
-		///T Equality
-		/// Checks if the arrays have the same array pointer
+		/// Checks if two arrays have the same array pointer.
 		///M
 		bool operator==(T* const arr) const;
 		bool operator!=(T* const arr) const;
@@ -82,22 +77,18 @@ namespace Boxx {
 		bool operator!=(const Array<T>& arr) const;
 		///M
 
-		///H Conversions
+		///[Heading] Conversions
 
-		///T Conversion to array pointer
-		/// Returns the internal array pointer
+		/// Returns the internal array pointer.
 		explicit operator T*() const;
 
-		///T Conversion to bool
-		///R bool: <code>true</code> if the array pointer is not <code>nullptr</code>
-		/// <code>false</code> otherwise
+		/// Checks if the internal array pointer is not {nullptr}.
 		explicit operator bool() const;
 
-		///H Iterators
+		///[Heading] Iterators
 
-		///T Iterator
 		/// Iterates over all values in the array
-		///S for (T t : array)
+		///[Code] for (T t : array)
 		T* begin();
 		const T* begin() const;
 		T* end();

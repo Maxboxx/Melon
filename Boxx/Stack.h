@@ -3,77 +3,71 @@
 #include "Types.h"
 #include "List.h"
 
-///N Stack
-namespace Boxx {
+///[Settings] block: indent
 
-	///B Stack
-	/// A stack data structure for storing values
+///[Namespace] Boxx
+namespace Boxx {
+	///[Heading] Collections
+
+	///[Title] Stack
+	/// A stack of items.
+	///[Block] Stack
 	///M
 	template <class T>
-	class Stack {
+	class Stack final {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Empty stack
+		/// Creates an empty stack.
 		Stack();
 
-		///T Reserved capacity
-		/// Creates a stack with a reserved capacity
+		/// Creates a stack with a reserved capacity.
 		explicit Stack(const UInt capacity);
 
 		Stack(const Stack<T>& stack);
 		Stack(Stack<T>&& stack);
 		~Stack();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Push
-		/// Push a value to the top of the stack
+		/// Push a value to the top of the stack.
 		void Push(const T& value);
 
-		///T Set
-		/// Sets the value at the top of the stack
+		/// Sets the value at the top of the stack.
 		void Set(const T& value);
 
-		///T Peek
-		/// Return the item on the top of the stack
+		/// Returns the item on the top of the stack.
 		///M
 		T& Peek();
 		const T& Peek() const;
 		///M
 
-		///T Pop
-		/// Remove and return the item on the top of the stack
+		/// Remove and return the item on the top of the stack.
 		T& Pop();
 
-		///T Size
-		/// Get the current size of the stack
+		/// Get the current size of the stack.
 		UInt Size() const;
 
-		///T Capacity
-		/// Get the current capacity of the stack
+		/// Get the current capacity of the stack.
 		UInt Capacity() const;
 
-		///T Is Empty
-		/// Checks if the stack is empty
+		/// Checks if the stack is empty.
 		bool IsEmpty() const;
 
-		///T Copy
-		/// Creates a copy of the stack
+		/// Creates a copy of the stack.
 		Stack<T> Copy() const;
 
-		///H Operators
+		///[Heading] Operators
 
 		void operator=(const Stack<T>& stack);
 		void operator=(Stack<T>&& stack);
 
-		///T Equality
-		/// Checks if two stacks are the same
-		///M
+		/// Checks if two stacks are the same.
 		bool operator==(const Stack<T>& stack) const;
+
+		/// Checks if two stacks are not the same.
 		bool operator!=(const Stack<T>& stack) const;
-		///M
 
 	private:
 		List<T> stack;

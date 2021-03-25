@@ -2,22 +2,18 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B StackNode
-		/// Node for a stack location
+		/// Node for a stack position.
 		class StackNode : public Node {
 		public:
-
-			///T Stack Location
+			/// The stack position.
 			Boxx::UInt stack;
 
-			///T Type
-			/// Absolute type name of the node
+			/// The absolute type name of the node.
 			Symbols::ScopeList type;
 
-			///T Constructor
 			StackNode(const Boxx::UInt stack);
 			~StackNode();
 

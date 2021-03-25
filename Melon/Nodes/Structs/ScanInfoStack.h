@@ -12,45 +12,40 @@ namespace Melon {
 		class FunctionSymbol;
 	}
 
+	///N Melon::Nodes
 	namespace Nodes {
 		class Node;
 
-		///B ScanInfoStack
-		/// A stack of ScanInfo values
+		///H Structs
+
+		/// A stack of ScanInfo values.
 		class ScanInfoStack {
 		public:
 			ScanInfoStack() {
 				stack.Push(ScanInfo());
 			}
 
-			///H Methods
-
-			///T Pop
-			/// Removes the top value form the stack
+			/// Removes the top value form the stack.
 			void Pop() {
 				stack.Pop();
 			}
 
-			///T Push
-			/// Adds a copy of the top value to the stack
+			/// Adds a copy of the top value to the stack.
 			void Push() {
 				stack.Push(stack.Peek());
 			}
 
-			///T Get
-			/// Get the top value of the stack
+			/// Get the top value of the stack.
 			ScanInfo& Get() {
 				return stack.Peek();
 			}
 
-			///T Set
-			/// Sets the top of the stack
+			/// Sets the top of the stack.
 			void Set(const ScanInfo& info) {
 				stack.Set(info);
 			}
 
-			///T Structure dereference
-			/// Used to get/set members of the top value of the stack
+			/// Used to get/set members of the top value of the stack.
 			ScanInfo* operator->() {
 				return &stack.Peek();
 			}
@@ -59,18 +54,16 @@ namespace Melon {
 				return &stack.Peek();
 			}
 
-			///H Members
-
-			///T Used Variables
+			/// All used variables.
 			Boxx::Set<Symbols::VariableSymbol*> usedVariables;
 
-			///T Used Types
+			/// All used types.
 			Boxx::Set<Symbols::TypeSymbol*> usedTypes;
 
-			///T Used Functions
+			/// All used functions.
 			Boxx::Set<Symbols::FunctionSymbol*> usedFunctions;
 
-			///T Functions
+			/// All function nodes.
 			Boxx::Collection<Boxx::Pointer<Node>> functions;
 
 		private:

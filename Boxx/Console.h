@@ -7,35 +7,39 @@
 
 #include <string>
 
-///N Console
+///[Settings] block: indent
 
+///[Namespace] Boxx
 namespace Boxx {
-	///B Console
-	/// Static class used for reading/writing to the console
-	class Console {
+	///[Heading] Static Classes
+
+	///[Title] Console
+	/// Static class used for reading/writing to the console.
+	///[Block] Console
+	class Console final {
 	public:
-		
-		///T Write
-		/// Writes something to the console
+		Console() = delete;
+
+		/// Writes to the console.
 		///M
 		template <class T>
 		static void Write(const T& info);
 		///M
 
-		///T Empty print
-		/// Prints a line break to the console
+		/// Prints a line break to the console.
 		static void Print();
 
-		///T Print
-		/// Writes something to the console followed by a line break
+		/// Writes something to the console followed by a line break.
 		///M
 		template <class T>
 		static void Print(const T& info);
 		///M
 
-		///T Read
-		/// Reads input from the console
+		/// Reads input from the console.
 		static String Read();
+
+		/// Creates a prompt in the console and returns the user input.
+		static String Prompt(const String& prompt);
 	};
 
 	template <class T>
@@ -76,5 +80,10 @@ namespace Boxx {
 		std::string line;
 		std::getline(std::cin, line);
 		return line;
+	}
+
+	inline String Console::Prompt(const String& prompt) {
+		Write(prompt);
+		return Read();
 	}
 }

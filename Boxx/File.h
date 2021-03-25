@@ -10,69 +10,64 @@
 #include "Buffer.h"
 #include "Pointer.h"
 
-///N File
-namespace Boxx {
+///[Settings] block: indent 
 
-	///B FileMode
-	/// Bit flags for the different modes of opening a file
+///[Namespace] Boxx
+namespace Boxx {
+	///[Heading] Files
+
+	///[Title] FileMode
+	/// Bit flags for the different modes of opening a file.
+	///[Block] FileMode
 	enum class FileMode : UByte {
-		///T Values
-		///M
+		/// No mode.
 		None = 0,
+
+		/// Opens a file in binary mode.
 		Binary = 1
-		///M
 	};
 
 	BOXX_ENUM_FLAGS(FileMode);
 
-	///B FileReader
-	/// Used to read the contents of a file
+	///[Title] FileReader
+	/// Used to read the contents of a file.
+	///[Block] FileReader
 	class FileReader {
 	public:
-		///H Constructors
-
-		///T Empty constructor
 		FileReader();
 
-		///T Open file
-		/// Opens a file for reading
-		///E FileNotFoundError: Thrown if the file was not found
+		/// Opens a file for reading.
+		///[Error] FileNotFoundError: Thrown if the file was not found.
 		explicit FileReader(const char* const filename, const FileMode mode = FileMode::None);
 
 		FileReader(const FileReader& file);
 		FileReader(FileReader&& file) noexcept;
 		~FileReader();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Read line
-		/// Reads a line from the file
-		///E FileClosedError: Thrown if the file is closed
-		///E EndOfFileError: Thrown if the end of file has been reached
+		/// Reads a line from the file.
+		///[Error] FileClosedError: Thrown if the file is closed.
+		///[Error] EndOfFileError: Thrown if the end of file has been reached.
 		String ReadLine();
 
-		///T Read all
-		/// Read the entire file
-		///E FileClosedError: Thrown if the file is closed
-		///E EndOfFileError: Thrown if the end of file has been reached
+		/// Reads the remaining contents of the file.
+		///[Error] FileClosedError: Thrown if the file is closed.
+		///[Error] EndOfFileError: Thrown if the end of file has been reached.
 		String ReadAll();
 
-		///T Read to buffer
-		/// Read the entire file to a buffer
-		///E FileClosedError: Thrown if the file is closed
-		///E EndOfFileError: Thrown if the end of file has been reached
+		/// Reads the remaining contents of the file to a buffer.
+		///[Error] FileClosedError: Thrown if the file is closed.
+		///[Error] EndOfFileError: Thrown if the end of file has been reached.
 		Buffer ReadToBuffer();
 
-		///T Close
-		/// Close the file
-		///E FileClosedError: thrown if the file is already closed
+		/// Close the file.
 		void Close();
 
-		///T Is open
-		/// Checks if the file is open
+		/// Checks if the file is open.
 		bool IsOpen();
 
-		///H Iterators
+		///[Heading ]Iterators
 
 		class LineIterator {
 		public:
@@ -89,9 +84,8 @@ namespace Boxx {
 			String next;
 		};
 
-		///T Iterator
-		/// Iterates over all lines of the file
-		///S for (String line : file)
+		/// Iterates over all lines of the file.
+		///[Code] for (String line : file)
 		LineIterator begin();
 		LineIterator end();
 
@@ -103,41 +97,36 @@ namespace Boxx {
 		bool done = false;
 	};
 
-	///B FileWriter
-	/// Used to write text to a file
+	///[Title] FileWriter
+	/// Used to write to a file.
+	///[Block] FileWriter
 	class FileWriter {
 	public:
-		///H Constructors
-
-		///T Empty constructor
 		FileWriter();
 
-		///T Open file
-		/// Opens a file for writing
-		///E FileOpenError: Thrown if the file can not be opened
+		/// Opens a file for writing.
+		///[Error] FileOpenError: Thrown if the file can not be opened.
 		explicit FileWriter(const char* const filename, const FileMode mode = FileMode::None);
 
 		FileWriter(const FileWriter& file);
 		FileWriter(FileWriter&& file) noexcept;
 		~FileWriter();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Write
-		/// Writes data to the file
-		///E FileClosedError: Thrown if the file is closed
-		///M
+		/// Writes a string to the file.
+		///[Error] FileClosedError: Thrown if the file is closed.
 		void Write(const String& text);
-		void Write(const Buffer& data);
-		///M
 
-		///T Close
-		/// Close the file
-		///E FileClosedError: thrown if the file is already closed
+		/// Writes the contents of a buffer to the file.
+		///[Error] FileClosedError: Thrown if the file is closed.
+		void Write(const Buffer& data);
+
+		/// Close the file.
+		///[Error] FileClosedError: Thrown if the file is already closed.
 		void Close();
 
-		///T Is open
-		/// Checks if the file is open
+		/// Checks if the file is open.
 		bool IsOpen() const;
 
 		void operator=(const FileWriter& file);
@@ -147,8 +136,9 @@ namespace Boxx {
 		Pointer<std::ofstream> file;
 	};
 
-	///B FileError
-	/// Base class for all file errors
+	///[Title] FileError
+	/// Base class for all file errors.
+	///[Block] FileError: Error
 	class FileError : public Error {
 	public:
 		FileError():Error(){}
@@ -159,8 +149,9 @@ namespace Boxx {
 		}
 	};
 
-	///B FileNotFoundError
-	/// Thrown if a file is not found
+	///[Title] FileNotFoundError
+	/// Used if a file is not found.
+	///[Block] FileNotFoundError: FileError
 	class FileNotFoundError : public FileError {
 	public:
 		FileNotFoundError():FileError(){}
@@ -171,8 +162,9 @@ namespace Boxx {
 		}
 	};
 
-	///B FileOpenError
-	/// Thrown if a file can not be opened
+	///[Title] FileOpenError
+	/// Used if a file can not be opened.
+	///[Block] FileOpenError: FileError
 	class FileOpenError : public FileError {
 		public:
 		FileOpenError():FileError(){}
@@ -183,8 +175,9 @@ namespace Boxx {
 		}
 	};
 
-	///B FileClosedError
-	/// Thrown if a file is closed
+	///[Title] FileClosedError
+	/// Used if a file is closed.
+	///[Block] FileClosedError: FileError
 	class FileClosedError : public FileError {
 	public:
 		FileClosedError():FileError(){}
@@ -195,8 +188,10 @@ namespace Boxx {
 		}
 	};
 
-	///B EndOfFileError
-	/// Thrown if the end of file has been reached
+
+	///[Title] EndOfFileError
+	/// Used if the end of file has been reached.
+	///[Block] EndOfFileError: FileError
 	class EndOfFileError : public FileError {
 	public:
 		EndOfFileError():FileError(){}
@@ -280,8 +275,8 @@ namespace Boxx {
 	}
 
 	inline void FileReader::Close() {
-		if (!IsOpen()) throw FileClosedError("File is closed");
-		file->close();
+		if (IsOpen()) file->close();
+	
 	}
 
 	inline bool FileReader::IsOpen() {
@@ -377,8 +372,7 @@ namespace Boxx {
 	}
 
 	inline void FileWriter::Close() {
-		if (!IsOpen()) throw FileClosedError("File is closed");
-		file->close();
+		if (IsOpen()) file->close();
 	}
 
 	inline bool FileWriter::IsOpen() const {

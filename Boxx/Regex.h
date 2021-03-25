@@ -10,113 +10,63 @@
 #include "Stack.h"
 #include "Tuple.h"
 
-///N Regex
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
 	struct Match;
 
-	///B Regex
-	/// Class for parsing strings using a regular expression pattern
-	/// Regex patterns have the following syntax:
+	///[Heading] Regex
 
-	///C Groups
-	///V (...): Matches the expression between <code>(</code> and <code>)</code>
-	/// The matched expression will be added to the returned list from the <code>Match()</code> method.
-	/// If no groups are present in the regex the entire matched string will be returned from the <code>Match()</code> method.
-	///V {...}: Matches the expression between <code>{</code> and <code>}</code>
-	/// The matched expression will not be returned from the <code>Match()</code> method.
-
-	///C Quantifiers
-	///V +: Matches the previous element one or more times as many times as possible
-	///V *: Matches the previous element zero or more times as many times as possible
-	///V -: Matches the previous element one or more times as few times as possible
-	///V /: Matches the previous element zero or more times as few times as possible
-	///V ?: Matches the previous element zero or one time
-	///V <>: User defined quantifier that can be written in the following ways:
-	/// <code>&lt;n&gt;</code> Matches the previous element <code>n</code> times
-	/// <code>&lt;n:m&gt;</code> Matches the previous element a minimum of <code>n</code> times and a maximum of <code>m</code> times
-	/// <code>&lt;n:&gt;</code> Matches the previous element <code>n</code> or more times
-	/// <code>&lt;:n&gt;</code> Matches the previous element a minimum of zero times and a maximum of <code>n</code> times
-	/// <br>
-	/// A <code>+</code> can be added right before <code>&gt;</code> to match as many times as possible
-	/// and a <code>-</code> can be added to match as few times as possible.
-	/// It defaults to <code>+</code> if omitted
-
-	///C Character sets
-	///V .: Matches any character
-	///V %d: Matches a didgit
-	///V %l: Matches a lower case letter
-	///V %u: Matches an upper case letter
-	///V %a: Matches a letter
-	///V %v: Matches an alphanumeric character
-	///V %w: Matches an alphanumeric character or an underscore
-	///V %x: Matches a hexadecimal didgit
-	///V %p: Matches a punctuation character
-	///V %s: Matches a space or a tab
-	///V %n: Macthes a whitespace character
-	///V %b: Matches a word boundary
-	///V a::b: Matches any character in the range from <code>a</code> to <code>b</code>
-	///V [...]: Custom character set. Matches any character present between <code>[</code> and <code>]</code>.
-	/// Predefined character sets and ranges works inside the custom character set
-
-	///C Special characters
-	///V ~: Inverse match. Matches anything except the next element
-	///V #: Element match. The result of an element prefixed by <code>#</code> can be reffered to by using <code>%</code> followed by the number of that element starting at 0.
-	///V ^: Matches the start of the search.
-	///V $: Matches the end of the string.
-	///V |: Matches either the expression before or after the <code>|</code> character
-	///V %: Escape character. Treats the next character in the pattern as a literal charater unless it is a predefined character set
+	///[Title] Regex
+	/// Class for parsing strings using a regular expression pattern.
+	///[Import] Regex
+	///[Block] Regex
 	class Regex {
 	public:
-		///H Constructors
-
-		///T Empty
 		Regex();
 
-		///T From Pattern
-		/// Creates a regex from a regex pattern
-		///E RegexPatternError: Thrown if the pattern is invalid
+		/// Creates a regex from a regex pattern.
+		///[Error] RegexPatternError: Thrown if the pattern is invalid.
 		explicit Regex(const String& pattern);
 
 		Regex(const Regex& regex);
 		Regex(Regex&& regex) noexcept;
 		~Regex();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Match
-		/// Find matches in a string
-		///A const String& str: The string to find matches in
-		///A const UInt pos: The position in the string to start at
-		///R Optional<Match>: Contains a value if a match was found
+		/// Find matches in a string.
+		///[Arg] str: The string to find matches in.
+		///[Arg] pos: The position in the string to start at.
+		///[Returns] Optional<Match>: Contains a value if a match was found.
 		Optional<Boxx::Match> Match(const String& str, const UInt pos = 0) const;
 
-		///T Match Global
-		/// Find all matches in a string
-		///A const String& str: The string to find matches in
-		///A const UInt pos: The position in the string to start at
-		///R List<Match>: Contains all matches found in the string
+		/// Find all matches in a string.
+		///[Arg] str: The string to find matches in.
+		///[Arg] pos: The position in the string to start at.
+		///[Returns] List<Match>: Contains all matches found in the string.
 		List<Boxx::Match> GlobalMatch(const String& str, UInt pos = 0) const;
 
-		///H Static functions
+		///[Heading] Static functions
 
-		///T Match
-		/// Find matches in a string
-		///A const String& pattern: The regex pattern to use
-		///A const String& str: The string to find matches in
-		///A const UInt pos: The position in the string to start at
-		///R Optional<Match>: Contains a value if a match was found
+		/// Find matches in a string.
+		///[Arg] pattern: The regex pattern to use.
+		///[Arg] str: The string to find matches in.
+		///[Arg] pos: The position in the string to start at.
+		///[Error] RegexPatternError: Thrown if the pattern is invalid.
+		///[Returns] Optional<Match>: Contains a value if a match was found.
 		static Optional<Boxx::Match> Match(const String& pattern, const String& str, const UInt pos = 0);
 
-		///T Match Global
-		/// Find all matches in a string
-		///A const String& pattern: The regex pattern to use
-		///A const String& str: The string to find matches in
-		///A const UInt pos: The position in the string to start at
-		///R Optional<Match>: Contains a value if a match was found
+		/// Find all matches in a string.
+		///[Arg] pattern: The regex pattern to use.
+		///[Arg] str: The string to find matches in.
+		///[Arg] pos: The position in the string to start at.
+		///[Error] RegexPatternError: Thrown if the pattern is invalid.
+		///[Returns] List<Match>: Contains all matches found in the string.
 		static List<Boxx::Match> GlobalMatch(const String& pattern, const String& str, UInt pos = 0);
 
-		///T Escape
-		/// Escapes meta characters in a string to make the regex engine interpret the string literally
+		/// Escapes meta characters in a string to make the regex engine interpret the string literally.
 		static String Escape(const String& str);
 
 		void operator=(const Regex& regex); 
@@ -376,14 +326,16 @@ namespace Boxx {
 
 		// Meta Characters
 		struct MetaChar {
-			static const char range   = ':';
-			static const char escape  = '%';
-			static const char any     = '.';
-			static const char start   = '^';
-			static const char end     = '$';
-			static const char inverse = '~';
-			static const char select  = '|';
-			static const char element = '#';
+			static const char range     = ':';
+			static const char escape    = '%';
+			static const char any       = '.';
+			static const char start     = '^';
+			static const char end       = '$';
+			static const char inverse   = '~';
+			static const char select    = '|';
+			static const char element   = '#';
+			static const char expr      = '!';
+			static const char separator = ',';
 
 			static const char manyOpt    = '*';
 			static const char many       = '+';
@@ -492,6 +444,8 @@ namespace Boxx {
 				chars.Add(inverse);
 				chars.Add(select);
 				chars.Add(element);
+				chars.Add(expr);
+				chars.Add(separator);
 
 				chars.Add(manyOpt);
 				chars.Add(many);
@@ -603,28 +557,26 @@ namespace Boxx {
 		};
 	};
 
-	///B Match
-	/// Contains information about a regex match
+	///[Title] Match
+	/// Contains information about a regex match.
+	///[Block] Match
 	struct Match {
-		///T Index
-		/// The index of the string where the pattern was found
+		/// The index of the string where the pattern was found.
 		UInt index = 0;
 
-		///T Length
-		/// The length of the matched substring
+		/// The length of the matched substring.
 		UInt length = 0;
 
-		///T Match
-		/// Contains the entire matched string
+		/// Contains the entire matched substring.
 		String match;
 
-		///T Groups
-		/// A list of all matched groups
+		/// A list of all matched groups.
 		List<String> groups;
 	};
 
-	///B RegexPatternError
-	/// Thrown if a regex pattern is invalid
+	///[Title] RegexPatternError
+	/// Used if a regex pattern is invalid.
+	///[Block] RegexPatternError: Error
 	class RegexPatternError : public Error {
 	public:
 		RegexPatternError() : Error() {}
@@ -1661,9 +1613,21 @@ namespace Boxx {
 	}
 
 	inline const char* Regex::SelectNode::Match(const char* str, MatchInfo& info) {
+		const UInt groupSize   = info.groups.Size();
+		const UInt elementSize = info.elements.Size();
+
 		for (Node node : nodes) {
 			if (const char* c = node->Match(str, info)) {
 				return c;
+			}
+			else {
+				if (groupSize < info.groups.Size()) {
+					info.groups.RemoveAt(groupSize, info.groups.Size() - groupSize);
+				}
+
+				if (elementSize < info.elements.Size()) {
+					info.elements.RemoveAt(elementSize, info.elements.Size() - elementSize);
+				}
 			}
 		}
 		

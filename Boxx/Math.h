@@ -5,110 +5,129 @@
 #include <math.h>
 #include <cstdlib>
 
-///N Math
-namespace Boxx {
-	///B Math
-	/// Static class for math and number stuff
-	class Math {
-	public:
-		///H Constants
+///[Settings] block: indent
 
-		///T Pi
+///[Namespace] Boxx
+namespace Boxx {
+	///[Heading] Math
+
+	///[Title] Math
+	/// Static class for math and number stuff.
+	///[Block] Math
+	class Math final {
+	public:
+		Math() = delete;
+
+		///[Heading] Constants
+
+		/// Returns pi.
 		static constexpr float Pi();
 
-		///T Minimum and maximum byte values
-		/// Constants for the minumum and maximum value 8 bit integers can have
-		///M
-		static constexpr  Byte  ByteMin();
-		static constexpr  Byte  ByteMax();
+		/// The minimum value of a byte.
+		static constexpr Byte ByteMin();
+
+		/// The maximum value of a byte.
+		static constexpr Byte ByteMax();
+
+		/// The minimum value of an unsigned byte.
 		static constexpr UByte UByteMin();
+
+		/// The maximum value of an unsigned byte.
 		static constexpr UByte UByteMax();
-		///M
 
-		///T Minimum and maximum short values
-		/// Constants for the minumum and maximum value 16 bit integers can have
-		///M
-		static constexpr  Short  ShortMin();
-		static constexpr  Short  ShortMax();
+		/// The minimum value of a short.
+		static constexpr Short ShortMin();
+
+		/// The maximum value of a short.
+		static constexpr Short ShortMax();
+
+		/// The minimum value of an unsigned short.
 		static constexpr UShort UShortMin();
+
+		/// The maximum value of an unsigned short.
 		static constexpr UShort UShortMax();
-		///M
 
-		///T Minimum and maximum int values
-		/// Constants for the minumum and maximum value 32 bit integers can have
-		///M
-		static constexpr  Int  IntMin();
-		static constexpr  Int  IntMax();
+		/// The minimum value of an int.
+		static constexpr Int IntMin();
+
+		/// The maximum value of an int.
+		static constexpr Int IntMax();
+
+		/// The minimum value of an unsigned int.
 		static constexpr UInt UIntMin();
+
+		/// The maximum value of an unsigned int.
 		static constexpr UInt UIntMax();
-		///M
 
-		///T Minimum and maximum long values
-		/// Constants for the minumum and maximum value 64 bit integers can have
-		///M
-		static constexpr  Long  LongMin();
-		static constexpr  Long  LongMax();
+		/// The minimum value of a long.
+		static constexpr Long LongMin();
+
+		/// The maximum value of a long.
+		static constexpr Long LongMax();
+
+		/// The minimum value of an unsigned long.
 		static constexpr ULong ULongMin();
+
+		/// The maximum value of an unsigned long.
 		static constexpr ULong ULongMax();
-		///M
 
-		///T Minimum and maximum float values
-		/// Constants for the minumum and maximum value floats can have
-		///M
+		/// The minimum value of a float.
 		static constexpr float FloatMin();
+
+		/// The maximum value of a float.
 		static constexpr float FloatMax();
-		///M
 
-		///H General
+		///[Heading] General
 
-		///T Square root
+		/// Calculates the square root of {f}.
 		static float Sqrt(const float f) {
 			return sqrtf(f);
 		}
 
-		///T Absolute value
+		/// Calculates the absolute value of {f}.
 		static float Abs(const float f) {
 			return f < 0 ? -f : f;
 		}
 
-		///T Floor
+		/// Get the floor of {f}.
 		static float Floor(const float f) {
 			return floorf(f);
 		}
 
-		///T Ceiling
+		/// Get the ceiling of {f}.
 		static float Ceil(const float f) {
 			return ceilf(f);
 		}
 
-		///T Round
+		/// Rounds the value of {f}.
 		static float Round(const float f) {
 			return roundf(f);
 		}
 
-		///T Power
+		/// Calculates {base} to the power of {exponent}.
 		static float Pow(const float base, const float exponent) {
 			return powf(base, exponent);
 		}
 
-		///T Sign
-		/// Returns the sign of a number
-		///A const T d: The value to return if <code>value</code> is <code>0</code>
+		/// Gets the sign of a number.
+		///[Returns]
+		///[item] {-1} if {value} is negative.
+		///[item] {1} if {value} is positive.
+		///[item] {0} if {value} is {0}.
 		///M
 		template <class T>
-		static T Sign(const T value, const T d = 0) {
-			///M
+		static T Sign(const T value) {
+		///M
 			if (value < 0)
 				return -1;
 			if (value > 0)
 				return 1;
-			return d;
+			return 0;
 		}
 
-		///H Min and Max
+		///[Heading] Min and Max
 
-		///T Min
-		/// Returns the smallest of the two values
+		/// Returns the smallest of the two values.
 		///M
 		template <class T>
 		static T Min(const T a, const T b) {
@@ -116,8 +135,7 @@ namespace Boxx {
 			return a < b ? a : b;
 		}
 
-		///T Min with three values
-		/// Returns the smallest of three values
+		/// Returns the smallest of three values.
 		///M
 		template <class T>
 		static T Min(const T a, const T b, const T c) {
@@ -128,8 +146,7 @@ namespace Boxx {
 				return b < c ? b : c;
 		}
 
-		///T Max
-		/// Returns the largest of the two values
+		/// Returns the largest of the two values.
 		///M
 		template <class T>
 		static T Max(const T a, const T b) {
@@ -137,8 +154,7 @@ namespace Boxx {
 			return a > b ? a : b;
 		}
 
-		///T Max with three values
-		/// Returns the largest of three values
+		/// Returns the largest of three values.
 		///M
 		template <class T>
 		static T Max(const T a, const T b, const T c) {
@@ -149,8 +165,7 @@ namespace Boxx {
 				return b > c ? b : c;
 		}
 
-		///T Clamp
-		/// Clamps a value between a minimum and maximum value
+		/// Clamps {value} between {min} and {max}.
 		///M
 		template <class T>
 		static T Clamp(const T value, const T min, const T max) {
@@ -162,96 +177,81 @@ namespace Boxx {
 			return value;
 		}
 
-		///H Random
+		///[Heading] Random
 
-		///T Random seed
-		/// Sets the seed for the randomizer
+		/// Sets the seed for the randomizer.
 		static void RandomSeed(const UInt seed) {
 			Seed() = seed;
 		}
 
-		///T Random
-		/// Returns a random float value between <code>0.0</code> and <code>1.0</code>
+		/// Returns a random float value from {0.0} to {1.0}.
 		static float Random() {
 			return (float)NextSeed() / (float)UIntMax();
 		}
 
-		///T Random int
-		/// Returns a random integer value from <code>0</code> to <code>max - 1</code>
+		/// Returns a random integer value from {0} to {max - 1}.
 		static Int Random(const Int max) {
 			return NextSeed() % max;
 		}
 
-		///T Random float
-		/// Returns a random float value from <code>0.0</code> to <code>max</code>
+		/// Returns a random float value from {0.0} to {max}.
 		static float Random(const float max) {
 			return Random() * max;
 		}
 
-		///T Random range
-		/// Returns a random integer value between <code>min</code> and <code>max</code>
+		/// Returns a random integer value from {min} to {max}.
 		static Int Random(const Int min, const Int max) {
 			return Random(max - min) + min;
 		}
 
-		///T Random float range
-		/// Returns a random float value between <code>min</code> and <code>max</code>
+		/// Returns a random float value from {min} to {max}.
 		static float Random(const float min, const float max) {
 			return Random(max - min) + min;
 		}
 
-		///T Random sign
-		/// Returns either <code>1</code> or <code>-1</code>
+		/// Returns either {1} or {-1}.
 		static Int RandomSign() {
 			return Random(2) == 1 ? -1 : 1;
 		}
 
-		///H Angles and Trigonometry
+		///[Heading] Angles and Trigonometry
 
-		///T Radians to degrees
-		/// Converts radians to degrees
+		/// Converts radians to degrees.
 		static float Deg(const float rad) {
 			return rad * 57.2957795131f;
 		}
 
-		///T Degrees to radians
-		/// Converts degrees to radians
+		/// Converts degrees to radians.
 		static float Rad(const float deg) {
 			return deg * 0.01745329251f;
 		}
 
-		///T Sine
-		/// Returns the sine of an angle in radians
+		/// Returns the sine of an angle in radians.
 		static float Sin(const float rad) {
 			return sinf(rad);
 		}
 
-		///T Arcsine
-		/// Returns the arcsine in radians of a value
+		/// Returns the arcsine in radians of a value.
 		static float ASin(const float f) {
 			return asinf(f);
 		}
 
-		///T Cosine
-		/// Returns the cosine of an angle in radians
+		/// Returns the cosine of an angle in radians.
 		static float Cos(const float rad) {
 			return cosf(rad);
 		}
 
-		///T Arccosine
-		/// Returns the arccosine in radians of a value
+		/// Returns the arccosine in radians of a value.
 		static float ACos(const float f) {
 			return acosf(f);
 		}
 
-		///T Tangent
-		/// Returns the tangent of an angle in radians
+		/// Returns the tangent of an angle in radians.
 		static float Tan(const float rad) {
 			return tanf(rad);
 		}
 
-		///T Arctangent
-		/// Returns the arctangent in radians of a value
+		/// Returns the arctangent in radians of a value.
 		static float ATan(const float f) {
 			return atanf(f);
 		}

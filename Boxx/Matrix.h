@@ -5,23 +5,27 @@
 #include "Error.h"
 #include "String.h"
 
-///N Matrix
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	class Matrix2;
-	class Matrix3;
-	class Matrix4;
+	struct Matrix2;
+	struct Matrix3;
+	struct Matrix4;
 
-	///B Matrix2
-	/// A class for 2x2 matrices
-	class Matrix2 {
+	///[Heading] Math
+
+	///[Title] Matrix2
+	/// A struct for 2x2 matrices.
+	///[Block] Matrix2
+	struct Matrix2 {
 		public:
-			///H Constructors
+			///[Heading] Constructors
 
-			///T Identity matrix
+			/// Creates an identity matrix.
 			Matrix2();
 
-			///T Floats
-			/// Create a matrix with floats
+			/// Creates a matrix with values.
 			///M
 			explicit Matrix2(
 				const float v1, const float v2,
@@ -31,89 +35,66 @@ namespace Boxx {
 
 			Matrix2(const Matrix2& m);
 
-			///H Methods
+			///[Heading] Methods
 
-			///T Transpose
+			/// Returns the transpose of the matrix.
 			Matrix2 Transpose() const;
 
-			///T Inverse
-			///E DeterminantIsZeroError: Thrown if the determinant is zero
+			/// Returns the inverse of the matrix.
+			///[Error] DeterminantIsZeroError: Thrown if the determinant is zero.
 			Matrix2 Inverse() const;
 
-			///H Operators
+			///[Heading] Operators
 
-			///T Indexing
-			/// Get/set the value at a specific position in the matrix
-			///S float operator[][](const UInt row, const UInt column)
+			/// Get/set the value at a specific position in the matrix.
+			///[Code] float operator[][](const UInt row, const UInt column)
 			float* operator[](const UInt i);
 			const float* operator[](const UInt i) const;
 
-			///T Addition
-			///M
-			Matrix2 operator+(const float f) const;
-			Matrix2 operator+(const Matrix2& m) const;
-			///M
-
-			///T Negation
-			Matrix2 operator-() const;
-
-			///T Subtraction
-			///M
-			Matrix2 operator-(const float f) const;
-			Matrix2 operator-(const Matrix2& m) const;
-			///M
-
-			///T Multiply with float
-			Matrix2 operator*(const float f) const;
-
-			///T Multiply with vector
+			/// Multiplies the matrix with a vector.
 			Vector2 operator*(const Vector2& v) const;
 
-			///T Multiply with matrix
+			/// Multiplies the matrix with another matrix.
 			Matrix2 operator*(const Matrix2& m) const;
 
-			///T Divide with float
-			Matrix2 operator/(float f) const;
-
-			///T Multiply by inverse
-			/// Multiplies the matrix with the inverse of <code>m</code>
-			///E DeterminantIsZeroError: Thrown if the determinant of <code>m</code> is zero
+			/// Multiplies the matrix with the inverse of {m}.
+			///[Error] DeterminantIsZeroError: Thrown if the determinant of {m} is zero.
 			Matrix2 operator/(const Matrix2& m) const;
 
-			///H Conversions
+			///[Heading] Conversions
 
-			///T Conversion to different size
-			/// Fills the extra values like an identity matrix
-			///M
+			/// Converts the matrix to a 3x3 matrix.
+			/// The extra values are filled like an identity matrix.
 			explicit operator Matrix3() const;
+
+			/// Converts the matrix to a 4x4 matrix.
+			/// The extra values are filled like an identity matrix.
 			explicit operator Matrix4() const;
-			///M
 
-			///H Static functions
+			///[Heading] Static functions
 
-			///T Rotation
-			/// Gets a rotation matrix
-			///A const float r: Rotation in radians
+			/// Gets a rotation matrix.
+			///[Arg] r: Rotation in radians.
 			static Matrix2 Rotation(const float r);
 
 		private:
 			float values[4];
 
-			friend class Matrix3;
-			friend class Matrix4;
+			friend struct Matrix3;
+			friend struct Matrix4;
 	};
 
-	///B Matrix3
-	/// A class for 3x3 matrices
-	class Matrix3 {
+	///[Title] Matrix3
+	/// A struct for 3x3 matrices.
+	///[Block] Matrix3
+	struct Matrix3 {
 		public:
-			///H Constructors
+			///[Heading] Constructors
 
-			///T Identity matrix
+			/// Creates an identity matrix.
 			Matrix3();
 
-			///T Floats
-			/// Create a matrix with floats
+			/// Create a matrix with values.
 			///M
 			explicit Matrix3(
 				const float v1, const float v2, const float v3,
@@ -124,125 +105,98 @@ namespace Boxx {
 
 			Matrix3(const Matrix3& m);
 
-			///H Methods
+			///[Heading] Methods
 
-			///T Transpose
+			/// Returns the transpose of the matrix.
 			Matrix3 Transpose() const;
 
-			///T Inverse
-			///E DeterminantIsZeroError: Thrown if the determinant is zero
+			/// Returns the inverse of the matrix.
+			///[Error] DeterminantIsZeroError: Thrown if the determinant is zero.
 			Matrix3 Inverse() const;
 
-			///T Set sub matrix
-			/// Sets the top left 2x2 sub-matrix to <code>m</code>
+			/// Sets the top left 2x2 sub-matrix to {m}.
 			void SetSubMatrix(const Matrix2& m);
 
-			///T Set translation
-			/// Sets the translation part of the matrix
+			/// Sets the translation part of the matrix.
 			void SetTranslation(const Vector2& v);
 
-			///T Get translation
-			/// Gets the translation part of the matrix
+			/// Gets the translation part of the matrix.
 			Vector2 GetTranslation() const;
 
-			///T Set scale
-			/// Sets the scale part of the matrix
+			/// Sets the scale part of the matrix.
 			void SetScale(const Vector2& v);
 
-			///T Get scale
-			/// Gets the scale part of the matrix
+			/// Gets the scale part of the matrix.
 			Vector2 GetScale() const;
 
-			///H Operators
+			///[Heading] Operators
 
-			///T Indexing
-			/// Get/set the value at a specific position in the matrix
-			///S float operator[][](const UInt row, const UInt column)
+			/// Get/set the value at a specific position in the matrix.
+			///[Code] float operator[][](const UInt row, const UInt column)
 			float* operator[](const UInt i);
 			const float* operator[](const UInt i) const;
 
-			///T Addition
-			///M
-			Matrix3 operator+(const float f) const;
-			Matrix3 operator+(const Matrix3& m) const;
-			///M
-
-			///T Negation
-			Matrix3 operator-() const;
-
-			///T Subtraction
-			///M
-			Matrix3 operator-(const float f) const;
-			Matrix3 operator-(const Matrix3& m) const;
-			///M
-
-			///T Multiply with float
-			Matrix3 operator*(const float f) const;
-
-			///T Multiply with vector
+			/// Multiplies the matrix with a vector.
 			Vector3 operator*(const Vector3& v) const;
 
-			///T Multiply with matrix
+			/// Multiplies the matrix with another matrix.
 			Matrix3 operator*(const Matrix3& m) const;
 
-			///T Divide by float
-			Matrix3 operator/(float f) const;
-
-			///T Multiply by inverse
-			/// Multiplies the matrix with the inverse of <code>m</code>
-			///E DeterminantIsZeroError: Thrown if the determinant of <code>m</code> is zero
+			/// Multiplies the matrix with the inverse of {m}.
+			///[Error] DeterminantIsZeroError: Thrown if the determinant of {m} is zero.
 			Matrix3 operator/(const Matrix3& m) const;
 
-			///H Conversions
+			///[Heading] Conversions
 
-			///T Conversion to different size
-			/// Fills the extra values like an identity matrix
-			///M
+			/// Converts the matrix to a 2x2 matrix.
 			explicit operator Matrix2() const;
+
+			/// Converts the matrix to a 4x4 matrix.
+			/// The extra values are filled like an indentity matrix.
 			explicit operator Matrix4() const;
-			///M
 
-			///H Static functions
+			///[Heading] Static functions
 
-			///T Rotation around axis
-			/// Gets a rotation matrix around an axis
-			///A const float r: Rotation in radians
-			///M
+			/// Creates a rotation matrix around the x-axis.
+			///[Arg] r: Rotation in radians.
 			static Matrix3 RotationX(const float r);
+
+			/// Creates a rotation matrix around the y-axis.
+			///[Arg] r: Rotation in radians.
 			static Matrix3 RotationY(const float r);
+
+			/// Creates a rotation matrix around the z-axis.
+			///[Arg] r: Rotation in radians.
 			static Matrix3 RotationZ(const float r);
-			///M
 
-			///T Rotation around vector
-			/// Gets a rotation matrix around a vector
-			///A const float r: Rotation in radians
-			static Matrix3 Rotation(const float r, const Vector3 &v);
+			/// Creates a rotation matrix around an axis.
+			///[Arg] r: Rotation in radians.
+			///[Arg] axis: The axis to rotate around.
+			static Matrix3 Rotation(const float r, const Vector3 &axis);
 
-			///T Translation
-			/// Creates a translation matrix from a vector
+			/// Creates a translation matrix from a vector.
 			static Matrix3 Translation(const Vector2& v);
 
-			///T Scale
-			/// Creates a scale matrix from a vector
+			/// Creates a scale matrix from a vector.
 			static Matrix3 Scale(const Vector2& v);
 
 		private:
 			float values[9];
 
-			friend class Matrix4;
+			friend struct Matrix4;
 	};
 
-	///B Matrix4
-	/// A class for 4x4 matrices
-	class Matrix4 {
+	///[Title] Matrix4
+	/// A struct for 4x4 matrices.
+	///[Block] Matrix4
+	struct Matrix4 {
 		public:
-			///H Constructors
+			///[Heading] Constructors
 
-			///T Identity matrix
+			/// Creates an identity matrix.
 			Matrix4();
 
-			///T Floats
-			/// Create a matrix with floats
+			/// Creates a matrix with values.
 			///M
 			explicit Matrix4(
 				const float  v1, const float  v2, const float  v3, const float  v4,
@@ -254,129 +208,103 @@ namespace Boxx {
 			
 			Matrix4(const Matrix4& m);
 
-			///H Methods
+			///[Heading] Methods
 
-			///T Transpose
+			/// Returns the transpose of the matrix.
 			Matrix4 Transpose() const;
 
-			///T Inverse
-			///E DeterminantIsZeroError: Thrown if the determinant is zero
+			/// Returns the inverse of the matrix.
+			///[Error] DeterminantIsZeroError: Thrown if the determinant is zero.
 			Matrix4 Inverse() const;
 
-			///T Set sub matrix
-			/// Sets the top left sub-matrix to <code>m</code>
-			///M
+			/// Sets the top left sub-matrix to {m}.
 			void SetSubMatrix(const Matrix2& m);
-			void SetSubMatrix(const Matrix3& m);
-			///M
 
-			///T Set translation
-			/// Sets the translation part of the matrix
+			/// Sets the top left sub-matrix to {m}.
+			void SetSubMatrix(const Matrix3& m);
+
+			/// Sets the translation part of the matrix.
 			void SetTranslation(const Vector3& v);
 
-			///T Get translation
-			/// Gets the translation part of the matrix
+			/// Gets the translation part of the matrix.
 			Vector3 GetTranslation() const;
 
-			///T Set scale
-			/// Sets the scale part of the matrix
+			/// Sets the scale part of the matrix.
 			void SetScale(const Vector3& v);
 
-			///T Get scale
-			/// Gets the scale part of the matrix
+			/// Gets the scale part of the matrix.
 			Vector3 GetScale() const;
 
-			///T Indexing
-			/// Get/set the value at a specific position in the matrix
-			///S float operator[][](const UInt row, const UInt column)
+			/// Get/set the value at a specific position in the matrix.
+			///[Code] float operator[][](const UInt row, const UInt column)
 			float* operator[](const UInt i);
 			const float* operator[](const UInt i) const;
 
-			///T Addition
-			///M
-			Matrix4 operator+(const float f) const;
-			Matrix4 operator+(const Matrix4& m) const;
-			///M
-
-			///T Negation
-			Matrix4 operator-() const;
-
-			///T Subtraction
-			///M
-			Matrix4 operator-(const float f) const;
-			Matrix4 operator-(const Matrix4& m) const;
-			///M
-
-			///T Multiply with float
-			Matrix4 operator*(const float f) const;
-
-			///T Multiply with vector
+			/// Multiplies the matrix with a vector.
 			Vector4 operator*(const Vector4& v) const;
 
-			///T Multiply with matrix
+			/// Multiplies the matrix with another matrix.
 			Matrix4 operator*(const Matrix4& m) const;
-
-			///T Divide by float
-			Matrix4 operator/(float f) const;
-
-			///T Multiply by inverse
-			/// Multiplies the matrix with the inverse of <code>m</code>
-			///E DeterminantIsZeroError: Thrown if the determinant of <code>m</code> is zero
+			
+			/// Multiplies the matrix with the inverse of {m}.
+			///[Error] DeterminantIsZeroError: Thrown if the determinant of {m} is zero.
 			Matrix4 operator/(const Matrix4& m) const;
 
-			///H Conversions
+			///[Heading] Conversions
 
-			///T Conversion to different size
-			///M
+			/// Converts the matrix to a 2x2 matrix.
 			explicit operator Matrix2() const;
+
+			/// Converts the matrix to a 3x3 matrix.
 			explicit operator Matrix3() const;
-			///M
 		
-			///H Static functions
+			///[Heading] Static functions
 
-			///T Rotation around axis
-			/// Gets a rotation matrix around an axis
-			///A const float r: Rotation in radians
-			///M
+			/// Creates a rotation matrix around the x-axis.
+			///[Arg] r: Rotation in radians.
 			static Matrix4 RotationX(const float r);
-			static Matrix4 RotationY(const float r);
-			static Matrix4 RotationZ(const float r);
-			///M
 
-			///T Rotation around vector
-			/// Gets a rotation matrix around a vector
-			///A const float r: Rotation in radians
+			/// Creates a rotation matrix around the y-axis.
+			///[Arg] r: Rotation in radians.
+			static Matrix4 RotationY(const float r);
+
+			/// Creates a rotation matrix around the z-axis.
+			///[Arg] r: Rotation in radians.
+			static Matrix4 RotationZ(const float r);
+
+			/// Creates a rotation matrix around an axis.
+			///[Arg] r: Rotation in radians.
+			///[Arg] axis: The axis to rotate around.
 			static Matrix4 Rotation(const float r, const Vector3 &v);
 
-			///T Translation
-			/// Creates a translation matrix from a vector
+			/// Creates a translation matrix from a vector.
 			static Matrix4 Translation(const Vector3& v);
 
-			///T Scale
-			/// Creates a scale matrix from a vector
+			/// Creates a scale matrix from a vector.
 			static Matrix4 Scale(const Vector3& v);
 
-			///T Perspective
-			/// Creates a perspective matrix
-			///A const float fov: The filed of view in radians
-			///A const float aspect: The aspect ratio of the view
-			///A const float near: The near plane distance
-			///A const float far: The far plane distance
+			/// Creates a perspective matrix.
+			///[Arg] fov: The filed of view in radians.
+			///[Arg] aspect: The aspect ratio of the view.
+			///[Arg] near: The near plane distance.
+			///[Arg] far: The far plane distance.
 			static Matrix4 Perspective(const float fov, const float aspect, const float near, const float far);
 
-			///T View matrix
-			/// Creates a view matrix
-			///A const Vector3& lookAt: The point the camera is looking at
-			///A const Vector3& camera: The position of the camera
-			///A const Vector3& up: The up vector for the camera
+			/// Creates a view matrix.
+			///[Arg] lookAt: The point the camera is looking at.
+			///[Arg] camera: The position of the camera.
+			///[Arg] up: The up vector for the camera.
 			static Matrix4 View(const Vector3& lookAt, const Vector3& camera, const Vector3& up = Vector3::Up());
 
 		private:
 			float values[16];
 	};
 
-	///B Determinant is zero error
-	/// Thrown if the determinant of a matrix is zero
+	///[Heading] Errors
+
+	///[Title] DeterminantIsZeroError
+	/// Thrown if the determinant of a matrix is zero.
+	///[Block] DeterminantIsZeroError: Error
 	class DeterminantIsZeroError : public Error {
 	public: 
 		DeterminantIsZeroError() : Error("Determinant is zero") {}
@@ -398,23 +326,6 @@ namespace Boxx {
 		return &values[i * 2];
 	}
 
-	inline Matrix2 Matrix2::operator+(const float f) const {return Matrix2(values[0] + f, values[1] + f, values[2] + f, values[3] + f);}
-	inline Matrix2 Matrix2::operator+(const Matrix2& m) const {return Matrix2(values[0] + m.values[0], values[1] + m.values[1], values[2] + m.values[2], values[3] + m.values[3]);}
-
-	inline Matrix2 Matrix2::operator-() const {return Matrix2(-values[0], -values[1], -values[2], -values[3]);}
-	inline Matrix2 Matrix2::operator-(const float f) const {return Matrix2(values[0] - f, values[1] - f, values[2] - f, values[3] - f);}
-	inline Matrix2 Matrix2::operator-(const Matrix2& m) const {return Matrix2(values[0] - m.values[0], values[1] - m.values[1], values[2] - m.values[2], values[3] - m.values[3]);}
-
-	inline Matrix2 Matrix2::operator*(const float f) const {return Matrix2(values[0] * f, values[1] * f, values[2] * f, values[3] * f);}
-	inline Vector2 Matrix2::operator*(const Vector2& v) const {return Vector2(values[0] * v.x + values[1] * v.y, values[2] * v.x + values[3] * v.y);}
-	inline Matrix2 Matrix2::operator*(const Matrix2& m) const {return Matrix2(
-		values[0] * m.values[0] + values[1] * m.values[2],
-		values[0] * m.values[1] + values[1] * m.values[3],
-		values[2] * m.values[0] + values[3] * m.values[2],
-		values[2] * m.values[1] + values[3] * m.values[3]
-	);}
-
-	inline Matrix2 Matrix2::operator/(float f) const {f = 1.f / f; return Matrix2(values[0] / f, values[1] / f, values[2] / f, values[3] / f);}
 	inline Matrix2 Matrix2::operator/(const Matrix2& m) const {return *this * m.Inverse();}
 
 	inline Matrix2 Matrix2::Transpose() const {return Matrix2(values[0], values[2], values[1], values[3]);}
@@ -432,19 +343,12 @@ namespace Boxx {
 	inline float* Matrix3::operator[](const UInt i) {return &values[i * 3];}
 	inline const float* Matrix3::operator[](const UInt i) const {return &values[i * 3];}
 
-	inline Matrix3 Matrix3::operator+(const float f) const {return Matrix3(values[0] + f, values[1] + f, values[2] + f, values[3] + f, values[4] + f, values[5] + f, values[6] + f, values[7] + f, values[8] + f);}
-	inline Matrix3 Matrix3::operator+(const Matrix3& m) const {return Matrix3(values[0] + m.values[0], values[1] + m.values[1], values[2] + m.values[2], values[3] + m.values[3], values[4] + m.values[4], values[5] + m.values[5], values[6] + m.values[6], values[7] + m.values[7], values[8] + m.values[8]);}
-
-	inline Matrix3 Matrix3::operator-() const {return Matrix3(-values[0], -values[1], -values[2], -values[3], -values[4], -values[5], -values[6], -values[7], -values[8]);}
-	inline Matrix3 Matrix3::operator-(const float f) const {return Matrix3(values[0] - f, values[1] - f, values[2] - f, values[3] - f, values[4] - f, values[5] - f, values[6] - f, values[7] - f, values[8] - f);}
-	inline Matrix3 Matrix3::operator-(const Matrix3& m) const {return Matrix3(values[0] - m.values[0], values[1] - m.values[1], values[2] - m.values[2], values[3] - m.values[3], values[4] - m.values[4], values[5] - m.values[5], values[6] - m.values[6], values[7] - m.values[7], values[8] - m.values[8]);}
-
-	inline Matrix3 Matrix3::operator*(const float f) const {return Matrix3(values[0] * f, values[1] * f, values[2] * f, values[3] * f, values[4] * f, values[5] * f, values[6] * f, values[7] * f, values[8] * f);}
 	inline Vector3 Matrix3::operator*(const Vector3& v) const {return Vector3(
 		values[0] * v.x + values[1] * v.y + values[2] * v.z,
 		values[3] * v.x + values[4] * v.y + values[5] * v.z,
 		values[6] * v.x + values[6] * v.y + values[8] * v.z
 	);}
+
 	inline Matrix3 Matrix3::operator*(const Matrix3& m) const {return Matrix3(
 		values[0] * m.values[0] + values[1] * m.values[3] + values[2] * m.values[6],
 		values[0] * m.values[1] + values[1] * m.values[4] + values[2] * m.values[7],
@@ -457,7 +361,6 @@ namespace Boxx {
 		values[6] * m.values[2] + values[7] * m.values[5] + values[8] * m.values[8]
 	);}
 
-	inline Matrix3 Matrix3::operator/(float f) const {f = 1.f / f; return Matrix3(values[0] * f, values[1] * f, values[2] * f, values[3] * f, values[4] * f, values[5] * f, values[6] * f, values[7] * f, values[8] * f);}
 	inline Matrix3 Matrix3::operator/(const Matrix3& m) const {return *this * m.Inverse();}
 
 	inline Matrix3 Matrix3::Transpose() const {return Matrix3(values[0], values[3], values[6], values[1], values[4], values[7], values[2], values[5], values[8]);}
@@ -513,20 +416,13 @@ namespace Boxx {
 	inline float* Matrix4::operator[](const UInt i) {return &values[i * 4];}
 	inline const float* Matrix4::operator[](const UInt i) const {return &values[i * 4];}
 
-	inline Matrix4 Matrix4::operator+(const float f) const {return Matrix4(values[0] + f, values[1] + f, values[2] + f, values[3] + f, values[4] + f, values[5] + f, values[6] + f, values[7] + f, values[8] + f, values[9] + f, values[10] + f,values[11] + f, values[12] + f, values[13] + f, values[14] + f, values[15] + f);}
-	inline Matrix4 Matrix4::operator+(const Matrix4& m) const {return Matrix4(values[0] + m.values[0], values[1] + m.values[1], values[2] + m.values[2], values[3] + m.values[3], values[4] + m.values[4], values[5] + m.values[5], values[6] + m.values[6], values[7] + m.values[7], values[8] + m.values[8], values[9] + m.values[9], values[10] + m.values[10], values[11] + m.values[11], values[12] + m.values[12], values[13] + m.values[13], values[14] + m.values[14], values[15] + m.values[15]);}
-
-	inline Matrix4 Matrix4::operator-() const {return Matrix4(-values[0], -values[1], -values[2], -values[3], -values[4], -values[5], -values[6], -values[7], -values[8], -values[9], -values[10], -values[11], -values[12], -values[13], -values[14], -values[15]);}
-	inline Matrix4 Matrix4::operator-(const float f) const {return Matrix4(values[0] - f, values[1] - f, values[2] - f, values[3] - f, values[4] - f, values[5] - f, values[6] - f, values[7] - f, values[8] - f, values[9] - f, values[10] - f,values[11] - f, values[12] - f, values[13] - f, values[14] - f, values[15] - f);}
-	inline Matrix4 Matrix4::operator-(const Matrix4& m) const {return Matrix4(values[0] - m.values[0], values[1] - m.values[1], values[2] - m.values[2], values[3] - m.values[3], values[4] - m.values[4], values[5] - m.values[5], values[6] - m.values[6], values[7] - m.values[7], values[8] - m.values[8], values[9] - m.values[9], values[10] - m.values[10], values[11] - m.values[11], values[12] - m.values[12], values[13] - m.values[13], values[14] - m.values[14], values[15] - m.values[15]);}
-
-	inline Matrix4 Matrix4::operator*(const float f) const {return Matrix4(values[0] * f, values[1] * f, values[2] * f, values[3] * f, values[4] * f, values[5] * f, values[6] * f, values[7] * f, values[8] * f, values[9] * f, values[10] * f,values[11] * f, values[12] * f, values[13] * f, values[14] * f, values[15] * f);}
 	inline Vector4 Matrix4::operator*(const Vector4& v) const {return Vector4(
 		values[ 0] * v.x + values[ 1] * v.y + values[ 2] * v.z + values[ 3] * v.w,
 		values[ 4] * v.x + values[ 5] * v.y + values[ 6] * v.z + values[ 7] * v.w,
 		values[ 8] * v.x + values[ 9] * v.y + values[10] * v.z + values[11] * v.w,
 		values[12] * v.x + values[13] * v.y + values[14] * v.z + values[15] * v.w
 	);}
+
 	inline Matrix4 Matrix4::operator*(const Matrix4& m) const {return Matrix4(
 		values[0] * m.values[0] + values[1] * m.values[4] + values[2] * m.values[8] + values[3] * m.values[12],
 		values[0] * m.values[1] + values[1] * m.values[5] + values[2] * m.values[9] + values[3] * m.values[13],
@@ -546,7 +442,6 @@ namespace Boxx {
 		values[12] * m.values[3] + values[13] * m.values[7] + values[14] * m.values[11] + values[15] * m.values[15]
 	);}
 
-	inline Matrix4 Matrix4::operator/(float f) const {f = 1.f / f; return Matrix4(values[0] * f, values[1] * f, values[2] * f, values[3] * f, values[4] * f, values[5] * f, values[6] * f, values[7] * f, values[8] * f, values[9] * f, values[10] * f,values[11] * f, values[12] * f, values[13] * f, values[14] * f, values[15] * f);}
 	inline Matrix4 Matrix4::operator/(const Matrix4& m) const {return *this * m.Inverse();}
 
 	inline Matrix4 Matrix4::Transpose() const {return Matrix4(values[0], values[4], values[8], values[12], values[1], values[5], values[9], values[13], values[2], values[6], values[10], values[14], values[3], values[7], values[11], values[15]);}

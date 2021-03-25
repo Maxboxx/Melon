@@ -2,18 +2,16 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B BooleanNode
-		/// Node for a boolean value
+		/// Node for a boolean value.
 		class BooleanNode : public Node {
 		public:
-
-			///T Boolean
+			/// The boolean value.
 			bool boolean = false;
 
-			///T Constructor
+			/// Creates a boolean node.
 			BooleanNode(const FileInfo& file);
 			~BooleanNode();
 

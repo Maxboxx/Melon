@@ -2,34 +2,37 @@
 
 #include "Types.h"
 
-///N Pair
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	///B Pair
-	/// Used to store a key-value pair
+	///[Heading] Template Types
+
+	///[Title] Pair
+	/// A key-value pair.
+	///[Block] Pair
 	///M
 	template <class Key, class Value>
 	struct Pair {
 	///M
-		///H Members
+		///[Heading] Members
 
-		///T Key
-		/// The key of the pair
+		/// The key of the pair.
 		Key key;
 
-		///T Value
-		/// The value of the pair
+		/// The value of the pair.
 		Value value;
 
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Default pair
+		/// Default pair.
 		Pair()
 		{
 			key = Key();
 			value = Value();
 		}
 
-		///T Key and value
+		/// Create from key and value.
 		Pair(const Key& key, const Value& value)
 		:key(key),value(value){}
 

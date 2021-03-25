@@ -11,46 +11,42 @@
 #include "StaticArray.h"
 #include "Optional.h"
 
-///N String
-namespace Boxx {
-	///B String
-	/// A class for handling strings of characters
-	class String {
-	public:
-		///H Constructors
+///[Settings] block: indent
 
-		///T Default
-		/// Creates an empty string
+///[Namespace] Boxx
+namespace Boxx {
+	///[Title] String
+	/// A string of characters.
+	///[Block] String
+	class String final {
+	public:
+		///[Heading] Constructors
+
+		/// Creates an empty string.
 		String();
 
-		///T char array
-		/// Creates a string from a char array
-		///A const bool alloc: Only set this to <code>true</code> if you have allocated the array with <code>new</code> and want the class to delete it for you
+		/// Creates a string from a {char} array.
+		///[Arg] alloc: Only set this to {true} if you have allocated {str} with {new} and want the string to delete it for you.
 		String(const char* const str, const bool alloc = false);
 
-		///T Specific number of chars
-		/// Creates a string from a specific number of chars from a char array
-		///A const UInt bytes: The number of bytes to copy to the string
-		///A const bool alloc: Only set this to <code>true</code> if you have allocated the array with <code>new</code> and want the class to delete it for you
+		/// Creates a string from a specific number of chars from a {char} array.
+		///[Arg] bytes: The number of bytes to copy to the string.
+		///[Arg] alloc: Only set this to {true} if you have allocated {str} with {new} and want the string to delete it for you.
 		String(const char* const str, const UInt bytes, const bool alloc = false);
 
-		///T std::string
-		/// Converts an std::string to a String
+		/// Converts an {std::string} to a {String}.
 		String(const std::string& str);
 
-		///T char
-		/// Converts a char to a string
+		/// Converts a {char} to a string.
 		String(const char c);
 
-		///T Array and List
-		/// Converts an array or list of characters to a string
-		///M
+		/// Converts an array of characters to a string.
 		explicit String(const Array<char>& arr);
-		explicit String(const List<char>& list);
-		///M
 
-		///T Static array
-		/// Converts a static array of characters to a string
+		/// Converts a list of characters to a string.
+		explicit String(const List<char>& list);
+
+		/// Converts a static array of characters to a string.
 		///M
 		template <UInt S>
 		explicit String(const StaticArray<char, S>& arr);
@@ -60,147 +56,166 @@ namespace Boxx {
 		String(String&& str) noexcept;
 		~String();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Size
-		/// Gets the size of the string
+		/// Gets the size of the string.
 		UInt Size() const;
 		
-		///T Substring
-		/// Gets a substring from the string
-		///A const UInt start: The starting index for the substring
-		///A const UInt end: The ending index for the substring. Defaults to the last character of the string
-		///M
+		/// Gets a substring from the string.
+		///[Arg] start: The starting index for the substring.
 		String Sub(const UInt start) const;
-		String Sub(const UInt start, const UInt end) const;
-		///M
 
-		///T Split
-		/// Splits a string into an array of substrings using a separator
+		/// Gets a substring from the string.
+		///[Arg] start: The starting index for the substring.
+		///[Arg] end: The ending index for the substring.
+		String Sub(const UInt start, const UInt end) const;
+
+		/// Splits a string into an array of substrings using a separator.
 		Array<String> Split(const String& sep) const;
 
-		///T Trim
-		/// Removes whitespace from the start and end of the string
+		/// Removes whitespace from the start and end of the string.
 		String Trim() const;
 
-		///T Escape
-		/// Escape characters in the string to make it printable
+		/// Escape characters in the string to make it printable.
 		String Escape() const;
 
-		///T Lower
-		/// Converts the string to lower case
+		/// Converts the string to lower case.
 		String Lower() const;
 
-		///T Upper
-		/// Converts the string to upper case
+		/// Converts the string to upper case.
 		String Upper() const;
 
-		///T Replace
-		/// Searches the string for a specific substring and replaces all occurrences of it with the specified value
-		///A const String& search: The substring to search for
-		///A const String& replace: The string to replace the substring with
+		/// Searches the string for a specific substring and replaces all occurrences of it with the specified value.
+		///[Arg] search: The substring to search for.
+		///[Arg] replace: The string to replace the substring with.
 		String Replace(const String& search, const String& replace) const;
 
-		///T Repeat
-		/// Repeats a string <code>rep</code> times
+		/// Repeats a string {rep} times.
 		String Repeat(const UInt rep) const;
 
-		///H Operators
+		/// Finds the position of the specified substring.
+		///[Arg] start: The position to start the search at.
+		///[Returns] Optional<UInt>: The position of the string where {search} was found.
+		///[para] Does not contain a value if {search} was not found.
+		Optional<UInt> Find(const String& search, const UInt start = 0) const;
+
+		///[Heading] Operators
 
 		void operator=(const String& str);
 		void operator=(String&& str) noexcept;
 
-		///T Concatenation
-		/// Concatenates the string with a value
-		///M
+		/// Concatenates the string with another string.
 		String operator+(const String& s) const;
+
+		/// Concatenates the string with a character.
 		String operator+(const char c) const;
+
+		/// Concatenates the string with an integer.
 		String operator+(const int i) const;
+
+		/// Concatenates the string with an unsigned integer.
 		String operator+(const unsigned int i) const;
+
+		/// Concatenates the string with a float.
 		String operator+(const float f) const;
+
+		/// Concatenates the string with a double.
 		String operator+(const double d) const;
+
 		void operator+=(const String& s);
 		void operator+=(const char c);
 		void operator+=(const int i);
 		void operator+=(const unsigned int i);
 		void operator+=(const float f);
 		void operator+=(const double d);
-		///M
 
-		///T Equality operators
-		/// Compares two strings to check if they are equal or not
-		///M
+		/// Compares two strings to check if they are equal.
 		bool operator==(const char* const s) const;
+
+		/// Compares two strings to check if they are equal.
 		bool operator==(const String& s) const;
+
+		/// Compares two strings to check if they are not equal.
 		bool operator!=(const char* const s) const;
+
+		/// Compares two strings to check if they are not equal.
 		bool operator!=(const String& s) const;
-		///M
 
-		///T Comparison operators
-		/// Compares two strings in character order
-		///M
+		/// Compares two strings in character order.
 		bool operator<(const char* const s) const;
-		bool operator<(const String& s) const;
-		bool operator>(const char* const s) const;
-		bool operator>(const String& s) const;
-		bool operator<=(const char* const s) const;
-		bool operator<=(const String& s) const;
-		bool operator>=(const char* const s) const;
-		bool operator>=(const String& s) const;
-		///M
 
-		///T Index operator
-		/// Gets the character at the specified position of the string
+		/// Compares two strings in character order.
+		bool operator<(const String& s) const;
+
+		/// Compares two strings in character order.
+		bool operator>(const char* const s) const;
+
+		/// Compares two strings in character order.
+		bool operator>(const String& s) const;
+
+		/// Compares two strings in character order.
+		bool operator<=(const char* const s) const;
+
+		/// Compares two strings in character order.
+		bool operator<=(const String& s) const;
+
+		/// Compares two strings in character order.
+		bool operator>=(const char* const s) const;
+
+		/// Compares two strings in character order.
+		bool operator>=(const String& s) const;
+
+		/// Gets the character at the specified position of the string.
 		char operator[](const int i) const;
 
-		///H Conversion operators
-
-		///T Char array conversion
-		/// Conversion to a character pointer
+		/// Converts the string to a character pointer.
 		operator const char*() const;
 
-		///H Conversion functions
+		///[Heading] Conversion functions
 		
-		///T Convert to string
-		/// Converts a value to a string
-		///M
+		/// Converts a {bool} to a string.
 		static String ToString(const bool b);
+
+		/// Converts an {Int} to a string.
 		static String ToString(const Int i);
+
+		/// Converts a {UInt} to a string.
 		static String ToString(const UInt i);
+
+		/// Converts a {Long} to a string.
 		static String ToString(const Long l);
+
+		/// Converts a {ULong} to a string.
 		static String ToString(const ULong l);
+
+		/// Converts a {float} to a string.
 		static String ToString(const float f);
+
+		/// Converts a {double} to a string.
 		static String ToString(const double d);
-		///M
 		
-		///T Convert to int
-		/// Converts the string from a specific base to an int
+		/// Converts the string from a specific base to an int.
 		Int ToInt(const int base = 10) const;
 
-		///T Convert to unsigned int
-		/// Converts the string from a specific base to an unsigned int
+		/// Converts the string from a specific base to an unsigned int.
 		UInt ToUInt(const int base = 10) const;
 
-		///T Convert to long
-		/// Converts the string from a specific base to a long
+		/// Converts the string from a specific base to a long.
 		Long ToLong(const int base = 10) const;
 
-		///T Convert to unsigned long
-		/// Converts the string from a specific base to an unsigned long
+		/// Converts the string from a specific base to an unsigned long.
 		ULong ToULong(const int base = 10) const;
 
-		///T Convert to float
-		/// Converts the string to a float
+		/// Converts the string to a float.
 		float ToFloat() const;
 
-		///T Convert to double
-		/// Converts the string to a double
+		/// Converts the string to a double.
 		double ToDouble() const;
 
-		///H Iterator
-		///T Char iterator
-		/// Iterates over each <code>char</code> in the string
-		///S for (char c : string)
+		///[Heading] Iterators
+
+		/// Iterates over each {char} in the string.
+		///[Code] for (char c : string)
 		const char* begin() const;
 		const char* end() const;
 
@@ -528,6 +543,30 @@ namespace Boxx {
 		str[len * rep] = '\0';
 
 		return String(str, len * rep, true);
+	}
+
+	inline Optional<UInt> String::Find(const String& search, const UInt start) const {
+		for (UInt i = start; i < Size(); i++) {
+			if (str[i] == search.str[0] && Size() - i >= search.Size()) {
+				bool found = true;
+
+				for (UInt u = 1; u < search.Size(); u++) {
+					if (str[i + u] != search.str[u]) {
+						found = false;
+						break;
+					}
+				}
+
+				if (found) {
+					return i;
+				}
+			}
+			else {
+				return nullptr;
+			}
+		}
+
+		return nullptr;
 	}
 
 	inline void String::operator=(const String& str) {

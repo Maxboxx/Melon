@@ -585,10 +585,12 @@ void KiwiOptimizer::UpdateCombineInfo(List<OptimizerInstruction>& instructions, 
 }
 
 void KiwiOptimizer::ReplaceInstructionRegisters(Instruction& instruction, const ReplacementMap<Register>& replacement) {
+	// Replaces registers in a two argument instruction
 	if (instruction.arguments.Size() == 2 && instruction.type != InstructionType::Adr) {
 		ReplaceArgumentMemoryRegister(instruction.arguments[0], replacement);
 		ReplaceArgumentRegister(instruction.arguments[1], replacement);
 	}
+	// Replaces registers in a three argument instruction
 	else if (instruction.arguments.Size() == 3) {
 		ReplaceArgumentRegister(instruction.arguments[0], replacement);
 		ReplaceArgumentRegister(instruction.arguments[1], replacement);
@@ -597,9 +599,11 @@ void KiwiOptimizer::ReplaceInstructionRegisters(Instruction& instruction, const 
 }
 
 void KiwiOptimizer::ReplaceArgumentRegister(Argument& argument, const ReplacementMap<Register>& replacement) {
+	// Replaces a register argument
 	if (argument.type == ArgumentType::Register) {
 		argument.reg = replacement.GetChain(argument.reg);
 	}
+	// Replaces the register of a memory argument
 	else if (argument.type == ArgumentType::Memory) {
 		if (argument.mem.memptr.IsLeft()) {
 			argument.mem.memptr = replacement.GetChain(argument.mem.memptr.GetLeft());
@@ -727,8 +731,6 @@ void KiwiOptimizer::InsertEmptyPushPop(List<OptimizerInstruction>& instructions)
 
 	instructions.Add(Instruction(InstructionType::Pop, 0));
 }
-
-#define guard(x) if (!(x)) continue;
 
 void KiwiOptimizer::CombinePushPop(List<OptimizerInstruction>& instructions) {
 	// Insert empty push and pop instructions

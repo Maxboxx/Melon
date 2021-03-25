@@ -4,39 +4,46 @@
 #include "String.h"
 #include "Error.h"
 
-///N Tuple
+///[Settings] block: indent
 
+///[Namespace] Boxx
 namespace Boxx {
-	///B Tuple
-	/// Class for storing multiple values of different types
-	/// This class can handle a maximum of <code>8</code> values
+	///[Heading] Template Types
+
+	///[Title] Tuple
+	/// Class for storing a few values of different types.
+	/// This class can handle a maximum of {8} values.
+	///[Block] Tuple
 	///M
 	template <class ... T>
 	class Tuple {
 	///M
 
-		///T Values
-		/// The values in a tuple can be accesed using the <code>value</code> variables
-		/// The number of varibles the tuple has is determined by the number of template arguments
-		///S T1 value1
-		///S T2 value2
-		///S T3 value3
-		///S    ...   
+		///[Title] Values
+		/// The values in a tuple can be accesed using the value member variables.
+		/// The number of value varibles the tuple has is determined by the number of template arguments.
+		///[Code] T1 value1
+		///[Code] T2 value2
+		///[Code] T3 value3
+		///[Code]    ...   
 	public:
 		
-		///T Default constructor
-		///E TupleError: Thrown if the tuple contains more than <code>8</code> values
+		/// Creates a tuple of default values.
+		///[Error] TupleError: Thrown if the tuple contains more than {8} values.
 		Tuple();
 
-		///T Tuple from values
-		///E TupleError: Thrown if the tuple contains more than <code>8</code> values
+		/// Creates a tuple from values.
+		///[Error] TupleError: Thrown if the tuple contains more than {8} values.
 		Tuple(T ... values);
 
 		~Tuple();
 	};
 
-	///B TupleError
-	/// Thrown if a tuple contains more than <code>8</code> values
+	///[Heading] Errors
+
+	///[Title] TupleError
+	/// Used if a tuple contains more than {8} values.
+	///[Block] TupleError: Error
 	class TupleError : public Error {
 	public:
 		TupleError() : Error() {}

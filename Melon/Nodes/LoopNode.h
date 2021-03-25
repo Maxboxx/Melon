@@ -4,110 +4,80 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B LoopNode
-		/// Node for loop structures
+		/// Node for loop structures.
 		class LoopNode : public Node {
 		public:
-
-			////B LoopType
+			/// The different loop types.
 			enum class LoopType : Boxx::UByte {
-				////T Values
-				////M
+				/// Used for {also} and {else}.
 				None,
+
+				/// Used for {if}, {alsoif} and {elseif}.
 				If,
+
+				/// Used for {while}, {alsowhile} and {elsewhile}.
 				While,
+
+				/// Used for {for}, {alsofor} and {elsefor}.
 				For
-				////M
 			};
 
-			////B LoopSegment
-			//// Contains info about a loop segment
+			/// Contains info about a loop segment.
 			struct LoopSegment {
-				////T Type
+				/// The loop type of the segment.
 				LoopType type;
 
-				////T Also
-				//// <key>true</key> if the segment is an also-segment
+				/// {true} if the segment is an {also} segment.
 				bool also;
 
-				////T Condition
-				//// The condition of the segment
+				/// The condition of the segment.
 				NodePtr condition;
 
-				////T Statements
-				//// The contents of the segment
+				/// The body of the segment.
 				NodePtr statements;
 
 				~LoopSegment() {}
 
-				///T Is Loop
+				/// Checks if the segment is a loop.
 				bool IsLoop() const {
 					return type == LoopType::While || type == LoopType::For;
 				}
 			};
 
-			////B LoopScanInfo
-			//// Scan info for loops
+			/// Scan info for loops.
 			struct LoopScanInfo {
-				////T Initial Scope Info
+				/// The initial scope info.
 				ScopeInfo scope;
 
-				////T Main Segment
-				//// Scope info for the main segment
+				/// The scope info of the main loop segment.
 				ScopeInfo mainSegment;
 
-				////T Also Segments
-				//// Scope info for also segments
+				/// The scope info for {also} segments.
 				Boxx::List<ScopeInfo> alsoSegments;
 
-				////T Else Segments
-				//// Scan info for else segments
+				/// The scope info for {else} segments.
 				Boxx::List<ScopeInfo> elseSegments;
 
-				////T Init
-				//// True if the loop is in a constructor
+				/// {true} if the loop is in a constructor.
 				bool init = false;
 
-				////T Will a Segment Run
-				//// True if at least one segment is guaranteed to run
+				/// {true} if at least one segment is guaranteed to run.
 				bool willASegmentRun = false;
 
 				~LoopScanInfo() {}
 			};
 
-			///T Segments
-			/// All segments in the loop structure
+			/// All segments of the loop structure.
 			Boxx::List<LoopSegment> segments;
 
 			LoopNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~LoopNode();
 
-			///T Will A Segment Run
-			/// Returns <code>true</code> if at least one segment will run
+			/// {true} if at least one segment will run.
 			bool WillASegmentRun() const;
-
-			///T Scan Setup
-			/// Sets up the loop scan info
-			LoopScanInfo ScanSetup(ScanInfo& info) const;
-				
-			///T Scan First Post Contents
-			/// A loop scan performed on the first segment
-			void ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const;
-
-			///T Scan Pre Contents
-			/// A loop scan performed before the scan of the loop segment content
-			void ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
-
-			///T Scan Post Contents
-			/// A loop scan performed after the scan of the loop segment content
-			void ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
-
-			///T Scan Cleanup
-			/// Cleanup for the loop scan info
-			void ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const;
 
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
@@ -121,12 +91,13 @@ namespace Melon {
 			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
 
 		private:
-			///T Get Next Segments
-			/// Gets the index for the next true and false segment
-			void GetNextSegments(const Boxx::UInt segment, Boxx::UInt& nextTrue, Boxx::UInt& nextFalse) const;
+			LoopScanInfo ScanSetup(ScanInfo& info) const;
+			void ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const;
+			void ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
+			void ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
+			void ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const;
 
-			///T Is Segment Last
-			/// Checks if the specified segment is the last also or else segment or is the only segment of the loop structure
+			void GetNextSegments(const Boxx::UInt segment, Boxx::UInt& nextTrue, Boxx::UInt& nextFalse) const;
 			bool IsSegmentLast(const Boxx::UInt segment) const;
 
 			struct SegmentInfo {
@@ -143,25 +114,20 @@ namespace Melon {
 				Boxx::UInt loopLbl = 0;
 			};
 
-			///T Add Label If Needed
 			void AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
 
-			///T Compile If Segment
 			void CompileIfSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
 
-			///T Compile While Segment
 			void CompileWhileSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
 			void CompileWhileStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
 			void CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
 
-			///T Compile For Segment
 			void CompileForSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
 			void CompileForStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
 			void CompileForEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
 			
 			void CompileLoopBody(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
 
-			///T Compile None Segment
 			void CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
 		};
 	}

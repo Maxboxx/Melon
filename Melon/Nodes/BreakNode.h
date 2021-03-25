@@ -2,29 +2,24 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B BreakNode
-		/// Node for breaking or aborting loops
+		/// Node for breaking or aborting loops.
 		class BreakNode : public Node {
 		public:
-	
-			///T Is break
-			/// <key>true</key> if break
-			/// <key>false</key> if abort
+			///[item] {true} if {break}.
+			///[item] {false} if {abort}.
 			bool isBreak;
 
-			///T Loops
-			/// The amount of loops to break
+			/// The number of loops to break.
 			Boxx::UInt loops;
 
-			///T Break bool
-			/// The boolean argument to break
+			/// The boolean argument to {break}.
 			bool breakBool;
 
-			///T Scope wise break
-			bool scopeWise = false;
+			/// {true} if the break is scopewise.
+			bool scopewise = false;
 
 			BreakNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~BreakNode();

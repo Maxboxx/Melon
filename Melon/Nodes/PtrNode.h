@@ -2,16 +2,13 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B PtrNode
-		/// Node for pointers
+		/// Node for pointers.
 		class PtrNode : public Node {
 		public:
-
-			///T Node
-			/// The node to point to
+			/// The node to point to.
 			NodePtr node;
 
 			PtrNode(const NodePtr& node);

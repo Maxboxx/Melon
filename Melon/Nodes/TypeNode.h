@@ -2,18 +2,15 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B TypeNode
-		/// A node that contains a type
+		/// A node that contains a type.
 		class TypeNode : public Node {
 		public:
-
-			///T Type
+			/// The absolute type.
 			Symbols::ScopeList type;
 
-			///T Constructor
 			TypeNode(const Symbols::ScopeList& type);
 			~TypeNode();
 

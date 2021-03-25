@@ -14,97 +14,103 @@
 #include "Collection.h"
 #include "Tuple.h"
 
-///N Pixel
+///[Settings] block: indent
 
+///[Namespace] Boxx
 namespace Boxx {
-	///B Pixel
-	/// Class for loading and writing pixel files
-	/// Documentation for the pixel format can be found here: <a href="https://maxboxx.com/pixel">https://maxboxx.com/pixel</a>
+	///[Heading] Pixel
+
+	///[Title] Pixel
+	/// Class for loading and writing pixel files.
+	///[para] Documentation for the pixel format can be found here: https://maxboxx.com/pixel
+	///[Block] Pixel
 	class Pixel {
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Empty pixel image
 		Pixel();
 
-		///T Image with a size
+		/// Creates an empty pixel image with the specified size.
 		Pixel(const UShort width, const UShort height);
 
-		///T Image with pixels
-		///A const Array<ColorRGBA>& pixels: An array containing the color for all pixels in the image
-		/// The size must be <code>width * height</code>
-		///E PixelSizeError: Thrown if the size of <code>pixels</code> is not <code>width * height</code>
+		/// Creates a pixel image with the specified size and the specified pixel colors.
+		///[Arg] pixels: An array containing the color for all pixels in the image.
+		///[Error] PixelSizeError: Thrown if the size of {pixels} is not {width * height}.
 		Pixel(const UShort width, const UShort height, const Array<ColorRGBA>& pixels);
 
 		Pixel(const Pixel& pixel);
 		Pixel(Pixel&& pixel) noexcept;
 		~Pixel();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Width
-		/// Gets the width of the image
+		/// Gets the width of the image.
 		UInt Width() const;
 
-		///T Height
-		/// Gets the height of the image
+		/// Gets the height of the image.
 		UInt Height() const;
 
-		///T Get Color
-		/// Gets the color from a specific pixel
+		/// Gets the color from a specific pixel.
 		ColorRGBA GetColor(const UShort x, const UShort y) const;
 
-		///T Set Color
-		/// Sets the color of a specific pixel
+		/// Sets the color of a specific pixel.
 		void SetColor(const UShort x, const UShort y, const ColorRGBA& color);
 
-		///T Get Pixels
-		/// Gets the array of all pixel colors in the image
+		/// Gets an array of all pixel colors in the image.
 		Array<ColorRGBA> GetPixels() const;
 
-		///T Set Pixels
-		/// Sets the array of all pixel colors in the image
-		///E PixelSizeError: Thrown if the size of <code>pixels</code> is not <code>width * height</code>
+		/// Sets the array of all pixel colors in the image.
+		///[Error] PixelSizeError: Thrown if the size of {pixels} is not {width * height}.
 		void SetPixels(const Array<ColorRGBA>& pixels);
 
-		///H Static functions
+		///[Heading] Static functions
 
-		///T Load from file
-		/// Loads a pixel image from a file
-		///E PixelLoadError: Thrown if loading fails
-		///E FileNotFoundError: Thrown if the file was not found
+		/// Loads a pixel image from a file.
+		///[Error] PixelLoadError: Thrown if loading fails.
+		///[Error] FileNotFoundError: Thrown if the file was not found.
 		static Pixel LoadFromFile(const String& filename);
 
 		enum class Format : UByte;
 
-		///T Write to file
-		/// Writes a pixel image to a file
-		///A Format format: The format to use for the pixel file
-		///E PixelEncodeError: Thrown if the encoding of the image fails
-		///E FileOpenError: Thrown if the file could not be opened
-		///M
+		/// Writes a pixel image to a file.
+		///[Error] PixelEncodeError: Thrown if the encoding of the image fails.
+		///[Error] FileOpenError: Thrown if the file could not be opened.
 		static void WriteToFile(const String& filename, const Pixel& pixel);
+
+		/// Writes a pixel image to a file.
+		///[Error] PixelEncodeError: Thrown if the encoding of the image fails.
+		///[Error] FileOpenError: Thrown if the file could not be opened.
 		static void WriteToFile(const String& filename, const Pixel& pixel, const Format format);
-		///M
 
 		void operator=(const Pixel& pixel);
 		void operator=(Pixel&& pixel) noexcept;
 
-		///H Enums
+		///[Heading] Enums
 
-		////B Format
-		//// Bitflags for the pixel file format
+		///[Title] Format
+		/// Bitflags for the pixel file format.
+		///[Block] Format
 		enum class Format : UByte {
-			////T Values
-			////M
+			/// No format.
 			None = 0,
+
+			/// The repeat format.
 			Repeat = 1,
+
+			/// The double bytes format.
 			DoubleBytes = 2,
+
+			/// The double size format.
 			DoubleSize = 4,
+
+			/// The background format.
 			Background = 8,
+
+			/// The alpha format.
 			Alpha = 16,
+
+			/// The transpose format.
 			Transpose = 32
-			////M
 		};
 
 	private:
@@ -135,8 +141,9 @@ namespace Boxx {
 
 	BOXX_ENUM_FLAGS(Pixel::Format);
 
-	///B PixelError
-	/// Base class for all pixel errors
+	///[Title] PixelError
+	/// Base class for all pixel errors.
+	///[Block] PixelError: Error
 	class PixelError : public Error {
 	public:
 		PixelError() : Error() {}
@@ -147,8 +154,9 @@ namespace Boxx {
 		}
 	};
 
-	///B PixelLoadError
-	/// Error thrown if loading fails
+	///[Title] PixelLoadError
+	/// Used if loading fails.
+	///[Block] PixelLoadError: PixelError
 	class PixelLoadError : public PixelError {
 	public:
 		PixelLoadError() : PixelError() {}
@@ -159,8 +167,9 @@ namespace Boxx {
 		}
 	};
 
-	///B PixelEncodeError
-	/// Error thrown if encoding fails
+	///[Title] PixelEncodeError
+	/// Used if encoding fails.
+	///[Block] PixelEncodeError: PixelError
 	class PixelEncodeError : public PixelError {
 	public:
 		PixelEncodeError() : PixelError() {}
@@ -171,8 +180,9 @@ namespace Boxx {
 		}
 	};
 
-	///B PixelSizeError
-	/// Error thrown if a mismatch in size occurs
+	///[Title] PixelSizeError
+	/// Used if a mismatch in size occurs.
+	///[Block] PixelSizeError: PixelError
 	class PixelSizeError : public PixelError {
 	public:
 		PixelSizeError() : PixelError() {}

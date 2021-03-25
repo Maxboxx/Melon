@@ -5,54 +5,56 @@
 #include "Types.h"
 #include "Error.h"
 
-///N Optional
+///[Settings] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	///B Optional
-	/// Stores an optional value
-	/// The optional value is either a <code>T</code> value or no value
-	/// <code>nullptr</code> is used to represent an empty optional
+	///[Heading] Template Types
+
+	///[Title] Optional
+	/// Stores an optional value.
+	/// The optional value is either a {T} value or no value.
+	/// {nullptr} is used to represent an optional with no value.
+	///[Block] Optional
 	///M
 	template <class T>
 	class Optional {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Create an empty optional
-		///M
+		/// Creates an optional without a value.
 		Optional();
-		Optional(std::nullptr_t);
-		///M
 
-		///T Create from value
+		/// Creates an optional without a value.
+		Optional(std::nullptr_t);
+
+		/// Creates an optional with a value.
 		Optional(const T& value);
 
 		Optional(const Optional<T>& value);
 		Optional(Optional<T>&& value) noexcept;
 		~Optional();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Has value
-		/// Checks if the optional contains a value
+		/// Checks if the optional has a value.
 		bool HasValue() const;
 
-		///T Value
-		/// Gets the value of the optional
-		///E OptionalError: Thrown if the optional is empty
+		/// Gets the value of the optional.
+		///[Error] OptionalError: Thrown if the optional does not have a value.
 		T Value() const;
 
-		///T Value Or Default
-		/// Gets the value or the default value if the optional does not have a value
+		/// Gets the value or a default value if the optional does not have a value.
 		T ValueOr(const T& defaultValue) const;
 
-		///H Operators
+		///[Heading] Operators
 
-		///T Assignment
-		///M
+		/// Removes the value from the optional.
 		void operator=(std::nullptr_t);
+
+		/// Sets the value of the optional.
 		void operator=(const T& value);
-		///M
 
 		void operator=(const Optional<T>& value);
 		void operator=(Optional<T>&& value) noexcept;
@@ -60,35 +62,43 @@ namespace Boxx {
 		///T Comparison
 		/// Compares the optional with a value
 		///M
-		bool operator==(std::nullptr_t) const;
-		bool operator==(const T& value) const;
-		bool operator==(const Optional<T>& value) const;
-		bool operator!=(std::nullptr_t) const;
-		bool operator!=(const T& value) const;
-		bool operator!=(const Optional<T>& value) const;
-		///M
 
-		///T Not operator
-		/// Checks if the optional doeas not have a value
+		/// Checks if the optional does not have a value.
+		bool operator==(std::nullptr_t) const;
+
+		/// Checks if the optional has a specific value.
+		bool operator==(const T& value) const;
+
+		/// Checks if two optionals are equal.
+		bool operator==(const Optional<T>& value) const;
+
+		/// Checks if the optional has a value.
+		bool operator!=(std::nullptr_t) const;
+
+		/// Checks if the optional does not have a specific value.
+		bool operator!=(const T& value) const;
+
+		/// Checks if two optionals are not equal. 
+		bool operator!=(const Optional<T>& value) const;
+
+		/// Checks if the optional doeas not have a value.
 		bool operator!() const;
 
-		///T Conversion to value
-		///E OptionalError: Thrown if the optional is empty
+		/// Gets the value from the optional.
+		///[Error] OptionalError: Thrown if the optional does not have a value.
 		///M
 		T operator*() const;
 		T& operator*();
 		///M
 
-		///T Member access
-		/// Used to access members of the value
-		///E OptionalError: Thrown if the optional is empty
+		/// Used to access members of the value.
+		///[Error] OptionalError: Thrown if the optional does not have a value.
 		///M
 		T* operator->();
 		const T* operator->() const;
 		///M
 
-		///T Conversion to bool
-		///R bool: <code>true</code> if the optional has a value. <code>false</code> otherwise
+		/// {true} if the optional has a value. {false} otherwise.
 		explicit operator bool() const;
 
 	private:
@@ -137,8 +147,9 @@ namespace Boxx {
 		bool value{};
 	};
 
-	///B OptionalError
-	/// Used if the optional does not contain a value
+	///[Title] OptionalError
+	/// Used if the optional does not contain a value.
+	///[Block] OptionalError: Error
 	class OptionalError : public Error {
 	public:
 		OptionalError() : Error() {}

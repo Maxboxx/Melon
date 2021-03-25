@@ -2,16 +2,13 @@
 
 #include "Node.h"
 
+///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-
-		///B ContinueNode
-		/// Node for continuing loops
+		/// Node for continuing loops.
 		class ContinueNode : public Node {
 		public:
-
-			///T Loops
-			/// The amount of loops to continue
+			/// The number of loops to continue.
 			Boxx::UInt loops;
 
 			ContinueNode(Symbols::Symbol* const scope, const FileInfo& file);

@@ -6,98 +6,87 @@
 #include "Optional.h"
 #include "Collection.h"
 
-///N Set
+///[Setting] block: indent
+
+///[Namespace] Boxx
 namespace Boxx {
-	///B Set
-	/// A Set is a collection of sorted unique values used for fast search.
-	/// The values of the set must implement these operator functions to work:
-	/// <code>bool operator&lt;(const T) const</code>
-	/// <code>bool operator==(const T) const</code>
-	///W The values in a set should never be modified in a way that affects the result of the above operator functions
+	///[Heading] Collections
+
+	///[Title] Set
+	/// A Set of sorted unique values used for fast search.
+	///[para] The values in the set must implement these operator functions to work:
+	///[item] {bool operator<(const T) const}
+	///[item] {bool operator==(const T) const}
+	///[Warning] The values in the set should never be modified in a way that affects the result of the above operator functions.
+	///[Block] Set
 	///M
 	template <class T>
-	class Set {
+	class Set final {
 	///M
 	public:
-		///H Constructors
+		///[Heading] Constructors
 
-		///T Empty set
-		/// Creates an empty set
+		/// Creates an empty set.
 		Set();
 
-		///T Reserved capacity
-		/// Creates a set with a reserved capacity
+		/// Creates a set with a reserved capacity.
 		explicit Set(const UInt capacity);
 
 		Set(const Set<T>& set);
 		Set(Set<T>&& set) noexcept;
 		~Set();
 
-		///H Methods
+		///[Heading] Methods
 
-		///T Size
-		/// Returns the current size of the set
+		/// Returns the current size of the set.
 		UInt Size() const;
 
-		///T Capacity
-		/// Return the current capacity of the set
+		/// Returns the current capacity of the set.
 		UInt Capacity() const;
 
-		///T Is Empty
-		/// Checks if the set is empty
+		/// Checks if the set is empty.
 		bool IsEmpty() const;
 
-		///T Add value
 		/// Adds a value to the set.
-		/// Overwrites the value if it already exists in the set.
+		/// The value is overwritten if the value already exists in the set.
 		void Add(const T& value);
 
-		///T Remove value
-		/// Removes the specified value from the set if it exists
+		/// Removes the specified value from the set if it exists.
 		void Remove(const T& value);
 
-		///T Contains value
-		/// Checks if the set contains a specific value
+		/// Checks if the set contains a specific value.
 		bool Contains(const T& value) const;
 
-		///T Combinations
-		/// Generates all combinations of the set that contains a specific amount of elements
+		/// Generates all combinations of the set that contains a specific amount of elements.
 		Collection<Set<T>> Combinations(const UInt numElements) const;
 
-		///T All Combinations
-		/// Generates all combinations of the set
+		/// Generates all combinations of the set.
 		Collection<Set<T>> AllCombinations() const;
 
-		///T Copy
-		/// Creates a copy of the set
+		/// Creates a copy of the set.
 		Set<T> Copy() const;
 
 		void operator=(const Set<T>& set);
 		void operator=(Set<T>&& set) noexcept;
 
-		///H Static functions
+		///[Heading] Static functions
 
-		///T Union
-		/// Returns the union of two sets
+		/// Returns the union of two sets.
 		static Set<T> Union(const Set<T>& set1, const Set<T>& set2);
 
-		///T Intersection
-		/// Returns the intersection of two sets
+		/// Returns the intersection of two sets.
 		static Set<T> Intersection(const Set<T>& set1, const Set<T>& set2);
 
-		///T Difference
-		/// Returns the difference of two sets
+		/// Returns the difference of two sets.
 		static Set<T> Difference(const Set<T>& set1, const Set<T>& set2);
 
-		///T Symmetric Difference
-		/// Returns the symmetric difference of two sets
+		/// Returns the symmetric difference of two sets.
 		static Set<T> SymmetricDifference(const Set<T>& set1, const Set<T>& set2);
 
-		///H Iterators
+		///[Heading] Iterators
 
-		///T Iterator
-		/// Iterates over all values in the set
-		///S for (const T t : set)
+		/// Iterates over all values in the set.
+		///[Code] for (const T t : set)
 		const T* begin() const;
 		const T* end() const;
 
