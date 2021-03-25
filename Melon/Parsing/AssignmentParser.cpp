@@ -38,81 +38,15 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	List<Tuple<Scope, Symbol*>> symbols;
 
 	// Parse variables
-	for (UInt i = 0; true; i++) {
-		if (i > 0) {
-			if (info.Current().type != TokenType::Comma) {
-				break;
-			}
+	ParseVariables(info, types, assign, symbols, singleType);
 
-			info.index++;
-		}
-
-		if (i >= types.Size()) {
-			if (singleType) {
-				ScopeList last = types.Last();
-				types.Add(last);
-			}
-			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::FewVariables, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-			}
-		}
-
-		if (types[i] != ScopeList::Discard) {
-			VariableAttributes attributes = VariableAttributeParser::Parse(info);
-			Scope name;
-
-			if (info.Current().type == TokenType::Discard) {
-				name = ScopeList::Discard.Last();
-			}
-			else if (info.Current().type == TokenType::Name) {
-				name = Scope(info.Current().value);
-			}
-			else {
-				if (attributes != VariableAttributes::None) {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "attributes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-				}
-				else {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-				}
-			}
-
-			info.index++;
-
-			if (name != ScopeList::Discard.Last()) {
-				FileInfo file = info.GetFileInfo(info.Current(-1).line);
-				file.statement++;
-
-				Pointer<NameNode> nn = new NameNode(info.scope, file);
-				nn->name = name;
-				assign->vars.Add(nn);
-			}
-			else {
-				assign->vars.Add(new DiscardNode(info.scope, info.GetFileInfo(info.Current(-1).line)));
-			}
-
-			if (name == ScopeList::Discard.Last()) continue;
-
-			VariableSymbol* v = new VariableSymbol(info.GetFileInfo(info.Current(-1).line));
-			v->type = types[i];
-			v->attributes = attributes;
-
-			symbols.Add(Tuple<Scope, Symbol*>(name, v));
-		}
-		else {
-			if (NodePtr node = AssignableParser::Parse(info)) {
-				assign->vars.Add(node);
-			}
-			else {
-				break;
-			}
-		}
-	}
-
+	// Check for single flag
 	if ((flags & Flags::Single) != Flags::None && assign->vars.Size() > 1) {
 		info.index = startIndex;
 		return nullptr;
 	}
 
+	// Break if assignment is empty
 	if (assign->vars.IsEmpty()) {
 		info.index = startIndex;
 		return nullptr;
@@ -120,6 +54,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 
 	assign->types = types;
 
+	// Check for assignment token
 	if (info.Current().type != TokenType::Assign) {
 		if ((flags & Flags::MethodCall) != Flags::None && info.Current().type == TokenType::ParenOpen) {
 			info.index = startIndex;
@@ -133,27 +68,15 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 
 	info.index++;
 
-	for (UInt i = 0; true; i++) {
-		if (i > 0) {
-			if (info.EndOfFile() || info.Current().type != TokenType::Comma) {
-				break;
-			}
+	// Parse expressions
+	ParseExpressions(info, assign);
 
-			info.index++;
-		}
-
-		if (NodePtr node = ExpressionParser::Parse(info)) {
-			assign->values.Add(node);
-		}
-		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("expression", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-		}
-	}
-
+	// Check if there are too many expressions
 	if (assign->values.Size() > assign->vars.Size()) {
 		ErrorLog::Error(SyntaxError(SyntaxError::ManyExprAssign, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 	}
 
+	// Add symbols to scope
 	for (const Tuple<Scope, Symbol*>& symbol : symbols) {
 		info.scope->AddSymbol(symbol.value1, symbol.value2);
 	}
@@ -224,4 +147,95 @@ bool AssignmentParser::ValidateTypes(ParsingInfo& info, List<ScopeList>& types, 
 	}
 
 	return true;
+}
+
+void AssignmentParser::ParseVariables(ParsingInfo& info, List<ScopeList>& types, Pointer<AssignNode>& assign, List<Tuple<Scope, Symbol*>>& symbols, const bool singleType) {
+	for (UInt i = 0; true; i++) {
+		if (i > 0) {
+			if (info.Current().type != TokenType::Comma) {
+				break;
+			}
+
+			info.index++;
+		}
+
+		if (i >= types.Size()) {
+			if (singleType) {
+				ScopeList last = types.Last();
+				types.Add(last);
+			}
+			else {
+				ErrorLog::Error(SyntaxError(SyntaxError::FewVariables, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			}
+		}
+
+		if (types[i] != ScopeList::Discard) {
+			VariableAttributes attributes = VariableAttributeParser::Parse(info);
+			Scope name;
+
+			if (info.Current().type == TokenType::Discard) {
+				name = ScopeList::Discard.Last();
+			}
+			else if (info.Current().type == TokenType::Name) {
+				name = Scope(info.Current().value);
+			}
+			else {
+				if (attributes != VariableAttributes::None) {
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "attributes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				}
+				else {
+					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				}
+			}
+
+			info.index++;
+
+			if (name != ScopeList::Discard.Last()) {
+				FileInfo file = info.GetFileInfo(info.Current(-1).line);
+				file.statement++;
+
+				Pointer<NameNode> nn = new NameNode(info.scope, file);
+				nn->name = name;
+				assign->vars.Add(nn);
+			}
+			else {
+				assign->vars.Add(new DiscardNode(info.scope, info.GetFileInfo(info.Current(-1).line)));
+			}
+
+			if (name == ScopeList::Discard.Last()) continue;
+
+			VariableSymbol* v = new VariableSymbol(info.GetFileInfo(info.Current(-1).line));
+			v->type = types[i];
+			v->attributes = attributes;
+
+			symbols.Add(Tuple<Scope, Symbol*>(name, v));
+		}
+		else {
+			if (NodePtr node = AssignableParser::Parse(info)) {
+				assign->vars.Add(node);
+			}
+			else {
+				break;
+			}
+		}
+	}
+}
+
+void AssignmentParser::ParseExpressions(ParsingInfo& info, Pointer<AssignNode>& assign) {
+	for (UInt i = 0; true; i++) {
+		if (i > 0) {
+			if (info.EndOfFile() || info.Current().type != TokenType::Comma) {
+				break;
+			}
+
+			info.index++;
+		}
+
+		if (NodePtr node = ExpressionParser::Parse(info)) {
+			assign->values.Add(node);
+		}
+		else {
+			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("expression", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		}
+	}
 }

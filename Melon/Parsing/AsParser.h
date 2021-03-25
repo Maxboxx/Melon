@@ -2,13 +2,13 @@
 
 #include "Parser.h"
 
+///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
-		///B AsParser
-		/// Parses the as operator
+		/// Parser for the {as} operator.
 		class AsParser {
 		public:
-			///T Parse
+			/// Parses an {as} operator.
 			static Nodes::NodePtr Parse(ParsingInfo& info);
 		};
 	}
