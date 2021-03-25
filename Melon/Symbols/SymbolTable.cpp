@@ -39,9 +39,9 @@ using namespace Melon::Symbols::Nodes;
 Pointer<ScopeSymbol> SymbolTable::symbols = new ScopeSymbol(FileInfo());
 List<SymbolTable::TemplateInfo> SymbolTable::templateSymbols;
 
-Symbol* SymbolTable::FindAbsolute(const ScopeList& name, const FileInfo& file) {
-	if (name.Size() > 0 && name[0] == Scope::Global) {
-		ScopeList list;
+Symbol* SymbolTable::FindAbsolute(const NameList& name, const FileInfo& file) {
+	if (name.Size() > 0 && name[0] == Name::Global) {
+		NameList list;
 
 		for (Boxx::UInt i = 1; i < name.Size(); i++) {
 			list = list.Add(name[i]);
@@ -53,9 +53,9 @@ Symbol* SymbolTable::FindAbsolute(const ScopeList& name, const FileInfo& file) {
 	return symbols->Symbol::Find(name, file);
 }
 
-Symbol* SymbolTable::ContainsAbsolute(const ScopeList& name) {
-	if (name.Size() > 0 && name[0] == Scope::Global) {
-		ScopeList list;
+Symbol* SymbolTable::ContainsAbsolute(const NameList& name) {
+	if (name.Size() > 0 && name[0] == Name::Global) {
+		NameList list;
 
 		for (Boxx::UInt i = 1; i < name.Size(); i++) {
 			list = list.Add(name[i]);
@@ -67,11 +67,11 @@ Symbol* SymbolTable::ContainsAbsolute(const ScopeList& name) {
 	return symbols->Symbol::Contains(name);
 }
 
-Symbol* SymbolTable::Contains(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options) {
-	return Contains(ScopeList().Add(name), scope, file, options);
+Symbol* SymbolTable::Contains(const Name& name, const NameList& scope, const FileInfo& file, const SearchOptions options) {
+	return Contains(NameList().Add(name), scope, file, options);
 }
 
-Symbol* SymbolTable::Contains(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options) {
+Symbol* SymbolTable::Contains(const NameList& name, const NameList& scope, const FileInfo& file, const SearchOptions options) {
 	ErrorLog::AddMarker();
 	Symbol* const sym = Find(name, scope, file, options);
 	ErrorLog::Revert();
@@ -79,23 +79,23 @@ Symbol* SymbolTable::Contains(const ScopeList& name, const ScopeList& scope, con
 	return sym;
 }
 
-Symbol* SymbolTable::Find(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options) {
-	return Find(ScopeList().Add(name), scope, file, options);
+Symbol* SymbolTable::Find(const Name& name, const NameList& scope, const FileInfo& file, const SearchOptions options) {
+	return Find(NameList().Add(name), scope, file, options);
 }
 
-Symbol* SymbolTable::Find(ScopeList name, ScopeList scope, const FileInfo& file, const SearchOptions options) {
+Symbol* SymbolTable::Find(NameList name, NameList scope, const FileInfo& file, const SearchOptions options) {
 	if ((options & SearchOptions::ReplaceTemplates) != SearchOptions::None) {
 		scope = ReplaceTemplatesAbsolute(scope, file);
 		name  = ReplaceTemplates(name, scope, file);
 	}
 
-	if (name.absolute || (name.Size() > 0 && name[0] == Scope::Global)) {
+	if (name.absolute || (name.Size() > 0 && name[0] == Name::Global)) {
 		return FindAbsolute(name, file);
 	}
 
 	for (Boxx::UInt i = 0; i < name.Size(); i++) {
 		if (name[i].types) {
-			for (ScopeList& type : *name[i].types) {
+			for (NameList& type : *name[i].types) {
 				if (Symbol* const s = Find(type, scope, file)) {
 					type = s->AbsoluteName();
 				}
@@ -106,7 +106,7 @@ Symbol* SymbolTable::Find(ScopeList name, ScopeList scope, const FileInfo& file,
 	const bool ignoreOrder = (options & SearchOptions::IgnoreOrder) != SearchOptions::None; 
 
 	if (scope.Size() > 0) {
-		ScopeList list = scope;
+		NameList list = scope;
 
 		while (list.Size() > 0) {
 			Symbol* const s = FindInNamespaces(list, file);
@@ -124,8 +124,8 @@ Symbol* SymbolTable::Find(ScopeList name, ScopeList scope, const FileInfo& file,
 	return FindInNamespaces(name, file);
 }
 
-Symbol* SymbolTable::FindInNamespaces(const ScopeList& name, const FileInfo& file) {
-	if (name.absolute || (name.Size() > 0 && name[0] == Scope::Global)) {
+Symbol* SymbolTable::FindInNamespaces(const NameList& name, const FileInfo& file) {
+	if (name.absolute || (name.Size() > 0 && name[0] == Name::Global)) {
 		return FindAbsolute(name, file);
 	}
 
@@ -155,16 +155,16 @@ Symbol* SymbolTable::FindInNamespaces(const ScopeList& name, const FileInfo& fil
 
 		if (!foundSymbol) {
 			if (Symbol* const sym = ContainsAbsolute(name)) {
-				if (FindAbsolute<NamespaceSymbol>(ScopeList().Add(name[0]), file)) {
+				if (FindAbsolute<NamespaceSymbol>(NameList().Add(name[0]), file)) {
 					foundSymbol = sym;
 				}
 			}
 		}
 	}
 
-	for (const ScopeList& includedNamespace : file.includedNamespaces) {
+	for (const NameList& includedNamespace : file.includedNamespaces) {
 		if (Symbol* const s = ContainsAbsolute(includedNamespace.Pop().Add(name))) {
-			if (includedNamespace.Last() == name[0] || s->file.fileScope == name[0]) {
+			if (includedNamespace.Last() == name[0] || s->file.fileName == name[0]) {
 				Symbol* ns = s->Parent();
 
 				for (Boxx::UInt i = 0; i < name.Size(); i++) {
@@ -190,7 +190,7 @@ Symbol* SymbolTable::FindInNamespaces(const ScopeList& name, const FileInfo& fil
 	return nullptr;
 }
 
-FunctionSymbol* SymbolTable::FindOperator(const Scope& op, TypeSymbol* const type1, TypeSymbol* const type2, const FileInfo& file) {
+FunctionSymbol* SymbolTable::FindOperator(const Name& op, TypeSymbol* const type1, TypeSymbol* const type2, const FileInfo& file) {
 	FunctionSymbol* const f1 = type1->Contains<FunctionSymbol>(op);
 	FunctionSymbol* f = nullptr;
 	bool isAmbig = false;
@@ -276,7 +276,7 @@ FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, Type
 	return nullptr;
 }
 
-void SymbolTable::SpecializeTemplate(const ScopeList& name, Symbol* const scope, const FileInfo& file) {
+void SymbolTable::SpecializeTemplate(const NameList& name, Symbol* const scope, const FileInfo& file) {
 	TemplateInfo info;
 	info.name  = name;
 	info.scope = scope;
@@ -284,16 +284,16 @@ void SymbolTable::SpecializeTemplate(const ScopeList& name, Symbol* const scope,
 	templateSymbols.Add(info);
 }
 
-ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const FileInfo& file) {
-	ScopeList list;
+NameList SymbolTable::ReplaceTemplatesAbsolute(const NameList& name, const FileInfo& file) {
+	NameList list;
 	list.absolute = true;
 
 	for (Boxx::UInt i = 0; i < name.Size(); i++) {
-		Scope scope = name[i].Copy();
+		Name scope = name[i].Copy();
 		
 		if (scope.types) {
 			Symbol* const s = FindAbsolute(list.Add(scope), FileInfo());
-			List<ScopeList> args;
+			List<NameList> args;
 
 			if (i < name.Size() - 1) {
 				if (TemplateSymbol* const t = s->Contains<TemplateSymbol>(name[i + 1])) {
@@ -311,7 +311,7 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 				}
 			}
 
-			Optional<List<ScopeList>> templateArgs = nullptr;
+			Optional<List<NameList>> templateArgs = nullptr;
 
 			if (TemplateTypeSymbol* const tts = s->Cast<TemplateTypeSymbol>()) {
 				templateArgs = tts->templateArguments;
@@ -321,8 +321,8 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 			}
 
 			if (templateArgs) {
-				for (const ScopeList& arg : *templateArgs) {
-					if (arg.Size() > 0 && arg[0] == Scope()) {
+				for (const NameList& arg : *templateArgs) {
+					if (arg.Size() > 0 && arg[0] == Name()) {
 						if (TemplateSymbol* const t = s->Contains<TemplateSymbol>(arg[1])) {
 							if (TypeSymbol* const type = t->Type()) {
 								if (type != t) {
@@ -339,15 +339,15 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 					}
 				}
 
-				Scope newScope = scope.Copy();
+				Name newName = scope.Copy();
 
-				newScope.types = args;
+				newName.types = args;
 
-				if (Symbol* const sym = ContainsAbsolute(list.Add(newScope))) {
+				if (Symbol* const sym = ContainsAbsolute(list.Add(newName))) {
 					scope = sym->Name();
 				}
 				else {
-					scope = newScope;
+					scope = newName;
 				}
 			}
 		}
@@ -371,16 +371,16 @@ ScopeList SymbolTable::ReplaceTemplatesAbsolute(const ScopeList& name, const Fil
 	return list;
 }
 
-ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& scope, const FileInfo& file) {
-	ScopeList typeScope = name;
+NameList SymbolTable::ReplaceTemplates(const NameList& name, const NameList& scope, const FileInfo& file) {
+	NameList typeName = name;
 
-	for (Boxx::UInt i = 0; i < typeScope.Size(); i++) {
-		if (typeScope[i].types) {
-			for (ScopeList& type : *typeScope[i].types) {
-				ScopeList temp = type;
+	for (Boxx::UInt i = 0; i < typeName.Size(); i++) {
+		if (typeName[i].types) {
+			for (NameList& type : *typeName[i].types) {
+				NameList temp = type;
 
 				if (temp.IsTemplate()) {
-					temp = typeScope;
+					temp = typeName;
 
 					while (temp.Size() > i + 1) {
 						temp = temp.Pop();
@@ -390,7 +390,7 @@ ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& 
 				}
 
 				if (Symbol* const sym = Find(temp, scope, file, SymbolTable::SearchOptions::ReplaceTemplates)) {
-					ScopeList absolute = ReplaceTemplatesAbsolute(sym->AbsoluteName(), file);
+					NameList absolute = ReplaceTemplatesAbsolute(sym->AbsoluteName(), file);
 					
 					if (temp != absolute) {
 						if (TemplateSymbol* const t = Contains<TemplateSymbol>(type, scope, file)) {
@@ -407,22 +407,22 @@ ScopeList SymbolTable::ReplaceTemplates(const ScopeList& name, const ScopeList& 
 				}
 			}
 		}
-		else if (typeScope[i].arguments) {
-			ScopeList list;
+		else if (typeName[i].arguments) {
+			NameList list;
 
 			for (Boxx::UInt u = 0; u < i; u++) {
-				list = list.Add(typeScope[u]);
+				list = list.Add(typeName[u]);
 			}
 
-			if (FunctionSymbol* const s = Find<FunctionSymbol>(list.Add(typeScope[i]), scope, file)) {
+			if (FunctionSymbol* const s = Find<FunctionSymbol>(list.Add(typeName[i]), scope, file)) {
 				if (s && s->replace) {
-					typeScope[i].arguments = s->replace->AbsoluteName().Last().arguments;
+					typeName[i].arguments = s->replace->AbsoluteName().Last().arguments;
 				}
 			}
 		}
 	}
 
-	return typeScope;
+	return typeName;
 }
 
 void SymbolTable::Setup() {
@@ -442,38 +442,38 @@ IntegerSymbol* SymbolTable::Long   = nullptr;
 IntegerSymbol* SymbolTable::ULong  = nullptr;
 
 void SymbolTable::SetupIntegers() {
-	Map<ScopeList, Boxx::Byte> integers;
-	integers.Add(ScopeList::Byte, -1);
-	integers.Add(ScopeList::UByte, 1);
-	integers.Add(ScopeList::Short, -2);
-	integers.Add(ScopeList::UShort, 2);
-	integers.Add(ScopeList::Int, -4);
-	integers.Add(ScopeList::UInt, 4);
-	integers.Add(ScopeList::Long, -8);
-	integers.Add(ScopeList::ULong, 8);
+	Map<NameList, Boxx::Byte> integers;
+	integers.Add(NameList::Byte, -1);
+	integers.Add(NameList::UByte, 1);
+	integers.Add(NameList::Short, -2);
+	integers.Add(NameList::UShort, 2);
+	integers.Add(NameList::Int, -4);
+	integers.Add(NameList::UInt, 4);
+	integers.Add(NameList::Long, -8);
+	integers.Add(NameList::ULong, 8);
 
-	Map<Scope, InstructionType> binOps;
-	binOps.Add(Scope::Add,          InstructionType::Add);
-	binOps.Add(Scope::Sub,          InstructionType::Sub);
-	binOps.Add(Scope::Mul,          InstructionType::Mul);
-	binOps.Add(Scope::IDiv,         InstructionType::Div);
-	binOps.Add(Scope::Mod,          InstructionType::Mod);
-	binOps.Add(Scope::BitOr,        InstructionType::Or);
-	binOps.Add(Scope::BitAnd,       InstructionType::And);
-	binOps.Add(Scope::BitXor,       InstructionType::Xor);
-	binOps.Add(Scope::BitNor,       InstructionType::Nor);
-	binOps.Add(Scope::BitNand,      InstructionType::Nand);
-	binOps.Add(Scope::BitXnor,      InstructionType::Xnor);
-	binOps.Add(Scope::ShiftLeft,    InstructionType::ShL);
-	binOps.Add(Scope::ShiftRight,   InstructionType::ShR);
-	binOps.Add(Scope::Equal,        InstructionType::Eq);
-	binOps.Add(Scope::NotEqual,     InstructionType::Ne);
-	binOps.Add(Scope::LessEqual,    InstructionType::Le);
-	binOps.Add(Scope::GreaterEqual, InstructionType::Ge);
-	binOps.Add(Scope::Less,         InstructionType::Lt);
-	binOps.Add(Scope::Greater,      InstructionType::Gt);
+	Map<Name, InstructionType> binOps;
+	binOps.Add(Name::Add,          InstructionType::Add);
+	binOps.Add(Name::Sub,          InstructionType::Sub);
+	binOps.Add(Name::Mul,          InstructionType::Mul);
+	binOps.Add(Name::IDiv,         InstructionType::Div);
+	binOps.Add(Name::Mod,          InstructionType::Mod);
+	binOps.Add(Name::BitOr,        InstructionType::Or);
+	binOps.Add(Name::BitAnd,       InstructionType::And);
+	binOps.Add(Name::BitXor,       InstructionType::Xor);
+	binOps.Add(Name::BitNor,       InstructionType::Nor);
+	binOps.Add(Name::BitNand,      InstructionType::Nand);
+	binOps.Add(Name::BitXnor,      InstructionType::Xnor);
+	binOps.Add(Name::ShiftLeft,    InstructionType::ShL);
+	binOps.Add(Name::ShiftRight,   InstructionType::ShR);
+	binOps.Add(Name::Equal,        InstructionType::Eq);
+	binOps.Add(Name::NotEqual,     InstructionType::Ne);
+	binOps.Add(Name::LessEqual,    InstructionType::Le);
+	binOps.Add(Name::GreaterEqual, InstructionType::Ge);
+	binOps.Add(Name::Less,         InstructionType::Lt);
+	binOps.Add(Name::Greater,      InstructionType::Gt);
 
-	for (const Pair<ScopeList, Boxx::Byte> integer : integers) {
+	for (const Pair<NameList, Boxx::Byte> integer : integers) {
 		// Type
 		IntegerSymbol* const intSym = symbols->AddSymbol(integer.key[0], new IntegerSymbol(
 			integer.value < 0 ? -integer.value : integer.value,
@@ -482,22 +482,22 @@ void SymbolTable::SetupIntegers() {
 		));
 
 		// Min max
-		VariableSymbol* const min = intSym->AddSymbol(Scope("min"), new VariableSymbol(FileInfo()));
+		VariableSymbol* const min = intSym->AddSymbol(Name("min"), new VariableSymbol(FileInfo()));
 		min->attributes = VariableAttributes::Const | VariableAttributes::Static;
 		min->type = intSym->AbsoluteName();
 
-		VariableSymbol* const max = intSym->AddSymbol(Scope("max"), new VariableSymbol(FileInfo()));
+		VariableSymbol* const max = intSym->AddSymbol(Name("max"), new VariableSymbol(FileInfo()));
 		max->attributes = VariableAttributes::Const | VariableAttributes::Static;
 		max->type = intSym->AbsoluteName();
 
 		// Neg
-		FunctionSymbol* const neg  = intSym->AddSymbol(Scope::Neg, new FunctionSymbol(FileInfo()));
+		FunctionSymbol* const neg  = intSym->AddSymbol(Name::Neg, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const neg1 = neg->AddOverload(new FunctionSymbol(FileInfo()));
 		neg1->symbolNode = new IntegerUnaryOperatorNode(Math::Abs(integer.value), InstructionType::Neg);
 
 		if (integer.value > 0) {
-			neg1->arguments.Add(ScopeList(true).Add(Scope(integer.key[0].name.Sub(1))));
-			neg1->returnValues.Add(ScopeList(true).Add(Scope(integer.key[0].name.Sub(1))));
+			neg1->arguments.Add(NameList(true).Add(Name(integer.key[0].name.Sub(1))));
+			neg1->returnValues.Add(NameList(true).Add(Name(integer.key[0].name.Sub(1))));
 		}
 		else {
 			neg1->arguments.Add(integer.key);
@@ -505,36 +505,36 @@ void SymbolTable::SetupIntegers() {
 		}
 
 		// Bit Not
-		FunctionSymbol* const bnot  = intSym->AddSymbol(Scope::BitNot, new FunctionSymbol(FileInfo()));
+		FunctionSymbol* const bnot  = intSym->AddSymbol(Name::BitNot, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const bnot1 = bnot->AddOverload(new FunctionSymbol(FileInfo()));
 		bnot1->symbolNode = new IntegerUnaryOperatorNode(Math::Abs(integer.value), InstructionType::Not);
 		bnot1->arguments.Add(integer.key);
 		bnot1->returnValues.Add(integer.key);
 
 		// To Bool
-		FunctionSymbol* const toBool  = intSym->AddSymbol(Scope::As, new FunctionSymbol(FileInfo()));
+		FunctionSymbol* const toBool  = intSym->AddSymbol(Name::As, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const toBool1 = toBool->AddOverload(new FunctionSymbol(FileInfo()));
 		toBool1->symbolNode = new IntegerToBoolNode();
 		toBool1->arguments.Add(integer.key);
-		toBool1->returnValues.Add(ScopeList::Bool);
+		toBool1->returnValues.Add(NameList::Bool);
 		toBool1->isExplicit = true;
 
 		// Not
-		FunctionSymbol* const intNot  = intSym->AddSymbol(Scope::Not, new FunctionSymbol(FileInfo()));
+		FunctionSymbol* const intNot  = intSym->AddSymbol(Name::Not, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const intNot1 = intNot->AddOverload(new FunctionSymbol(FileInfo()));
 		intNot1->symbolNode = new IntegerNotNode();
 		intNot1->arguments.Add(integer.key);
-		intNot1->returnValues.Add(ScopeList::Bool);
+		intNot1->returnValues.Add(NameList::Bool);
 
 		// Assign
-		FunctionSymbol* const assign  = intSym->AddSymbol(Scope::Assign, new FunctionSymbol(FileInfo()));
+		FunctionSymbol* const assign  = intSym->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
 		assign1->symbolNode = new IntegerAssignNode(integer.value);
 		assign1->arguments.Add(integer.key);
 
 		// Binary operators
-		for (const Pair<ScopeList, Boxx::Byte> integer2 : integers) {
-			FunctionSymbol* const convert1 = intSym->Contains<FunctionSymbol>(Scope::As)->AddOverload(new FunctionSymbol(FileInfo()));
+		for (const Pair<NameList, Boxx::Byte> integer2 : integers) {
+			FunctionSymbol* const convert1 = intSym->Contains<FunctionSymbol>(Name::As)->AddOverload(new FunctionSymbol(FileInfo()));
 			
 			IntegerConvertNode* const cn = new IntegerConvertNode();
 			cn->size = Math::Abs(integer.value);
@@ -546,7 +546,7 @@ void SymbolTable::SetupIntegers() {
 			convert1->symbolNode = cn;
 			convert1->isExplicit = false;
 
-			for (const Pair<Scope, InstructionType>& op : binOps) {
+			for (const Pair<Name, InstructionType>& op : binOps) {
 				FunctionSymbol* binOp = intSym->Contains<FunctionSymbol>(op.key);
 				if (!binOp) binOp = intSym->AddSymbol(op.key, new FunctionSymbol(FileInfo()));
 
@@ -557,12 +557,12 @@ void SymbolTable::SetupIntegers() {
 				const bool sign = integer.value < 0 || integer2.value < 0;
 
 				if (Instruction::IsComp(op.value))
-					binOp1->returnValues.Add(ScopeList::Bool);
+					binOp1->returnValues.Add(NameList::Bool);
 				else {
-					const ScopeList name = v1 > v2 ? integer.key : integer2.key;
+					const NameList name = v1 > v2 ? integer.key : integer2.key;
 
 					if (sign && name[0].name[0] == 'u')
-						binOp1->returnValues.Add(ScopeList(true).Add(Scope(name[0].name.Sub(1))));
+						binOp1->returnValues.Add(NameList(true).Add(Name(name[0].name.Sub(1))));
 					else
 						binOp1->returnValues.Add(name);
 				}
@@ -578,51 +578,51 @@ void SymbolTable::SetupIntegers() {
 		}
 	}
 
-	SymbolTable::Byte   = FindAbsolute<IntegerSymbol>(ScopeList::Byte,   FileInfo());
-	SymbolTable::UByte  = FindAbsolute<IntegerSymbol>(ScopeList::UByte,  FileInfo());
-	SymbolTable::Short  = FindAbsolute<IntegerSymbol>(ScopeList::Short,  FileInfo());
-	SymbolTable::UShort = FindAbsolute<IntegerSymbol>(ScopeList::UShort, FileInfo());
-	SymbolTable::Int    = FindAbsolute<IntegerSymbol>(ScopeList::Int,    FileInfo());
-	SymbolTable::UInt   = FindAbsolute<IntegerSymbol>(ScopeList::UInt,   FileInfo());
-	SymbolTable::Long   = FindAbsolute<IntegerSymbol>(ScopeList::Long,   FileInfo());
-	SymbolTable::ULong  = FindAbsolute<IntegerSymbol>(ScopeList::ULong,  FileInfo());
+	SymbolTable::Byte   = FindAbsolute<IntegerSymbol>(NameList::Byte,   FileInfo());
+	SymbolTable::UByte  = FindAbsolute<IntegerSymbol>(NameList::UByte,  FileInfo());
+	SymbolTable::Short  = FindAbsolute<IntegerSymbol>(NameList::Short,  FileInfo());
+	SymbolTable::UShort = FindAbsolute<IntegerSymbol>(NameList::UShort, FileInfo());
+	SymbolTable::Int    = FindAbsolute<IntegerSymbol>(NameList::Int,    FileInfo());
+	SymbolTable::UInt   = FindAbsolute<IntegerSymbol>(NameList::UInt,   FileInfo());
+	SymbolTable::Long   = FindAbsolute<IntegerSymbol>(NameList::Long,   FileInfo());
+	SymbolTable::ULong  = FindAbsolute<IntegerSymbol>(NameList::ULong,  FileInfo());
 }
 
 IntegerSymbol* SymbolTable::Bool = nullptr;
 
 void SymbolTable::SetupBoolean() {
-	IntegerSymbol* const boolSym = symbols->AddSymbol(ScopeList::Bool[0], new IntegerSymbol(1, false, FileInfo()));
+	IntegerSymbol* const boolSym = symbols->AddSymbol(NameList::Bool[0], new IntegerSymbol(1, false, FileInfo()));
 
-	FunctionSymbol* const assign  = boolSym->AddSymbol(Scope::Assign, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const assign  = boolSym->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
 	assign1->symbolNode = new BooleanAssignNode();
-	assign1->arguments.Add(ScopeList::Bool);
+	assign1->arguments.Add(NameList::Bool);
 
-	FunctionSymbol* const eq  = boolSym->AddSymbol(Scope::Equal, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const eq  = boolSym->AddSymbol(Name::Equal, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const eq1 = eq->AddOverload(new FunctionSymbol(FileInfo()));
 	eq1->symbolNode = new BooleanCompareNode(InstructionType::Eq);
-	eq1->arguments.Add(ScopeList::Bool);
-	eq1->arguments.Add(ScopeList::Bool);
-	eq1->returnValues.Add(ScopeList::Bool);
+	eq1->arguments.Add(NameList::Bool);
+	eq1->arguments.Add(NameList::Bool);
+	eq1->returnValues.Add(NameList::Bool);
 
-	FunctionSymbol* const ne  = boolSym->AddSymbol(Scope::NotEqual, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const ne  = boolSym->AddSymbol(Name::NotEqual, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const ne1 = ne->AddOverload(new FunctionSymbol(FileInfo()));
 	ne1->symbolNode = new BooleanCompareNode(InstructionType::Ne);
-	ne1->arguments.Add(ScopeList::Bool);
-	ne1->arguments.Add(ScopeList::Bool);
-	ne1->returnValues.Add(ScopeList::Bool);
+	ne1->arguments.Add(NameList::Bool);
+	ne1->arguments.Add(NameList::Bool);
+	ne1->returnValues.Add(NameList::Bool);
 
-	FunctionSymbol* const boolNot  = boolSym->AddSymbol(Scope::Not, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const boolNot  = boolSym->AddSymbol(Name::Not, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const boolNot1 = boolNot->AddOverload(new FunctionSymbol(FileInfo()));
 	boolNot1->symbolNode = new BooleanNotNode();
-	boolNot1->arguments.Add(ScopeList::Bool);
-	boolNot1->returnValues.Add(ScopeList::Bool);
+	boolNot1->arguments.Add(NameList::Bool);
+	boolNot1->returnValues.Add(NameList::Bool);
 
-	FunctionSymbol* const toBool  = boolSym->AddSymbol(Scope::As, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const toBool  = boolSym->AddSymbol(Name::As, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const toBool1 = toBool->AddOverload(new FunctionSymbol(FileInfo()));
 	toBool1->symbolNode = new BooleanToBooleanNode();
-	toBool1->arguments.Add(ScopeList::Bool);
-	toBool1->returnValues.Add(ScopeList::Bool);
+	toBool1->arguments.Add(NameList::Bool);
+	toBool1->returnValues.Add(NameList::Bool);
 	toBool1->isExplicit = false;
 
 	SymbolTable::Bool = boolSym;
@@ -631,49 +631,49 @@ void SymbolTable::SetupBoolean() {
 TypeSymbol* SymbolTable::Nil = nullptr;
 
 void SymbolTable::SetupNil() {
-	TypeSymbol* const nilSym = symbols->AddSymbol(ScopeList::Nil[0], new IntegerSymbol(0, false, FileInfo()));
+	TypeSymbol* const nilSym = symbols->AddSymbol(NameList::Nil[0], new IntegerSymbol(0, false, FileInfo()));
 
-	FunctionSymbol* const nilNot  = nilSym->AddSymbol(Scope::Not, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const nilNot  = nilSym->AddSymbol(Name::Not, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const nilNot1 = nilNot->AddOverload(new FunctionSymbol(FileInfo()));
 	nilNot1->symbolNode = new BooleanConstantNode(true);
-	nilNot1->arguments.Add(ScopeList::Bool);
-	nilNot1->returnValues.Add(ScopeList::Bool);
+	nilNot1->arguments.Add(NameList::Bool);
+	nilNot1->returnValues.Add(NameList::Bool);
 
-	FunctionSymbol* const toBool  = nilSym->AddSymbol(Scope::As, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const toBool  = nilSym->AddSymbol(Name::As, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const toBool1 = toBool->AddOverload(new FunctionSymbol(FileInfo()));
 	toBool1->symbolNode = new BooleanConstantNode(false);
-	toBool1->arguments.Add(ScopeList::Nil);
-	toBool1->returnValues.Add(ScopeList::Bool);
+	toBool1->arguments.Add(NameList::Nil);
+	toBool1->returnValues.Add(NameList::Bool);
 	toBool1->isExplicit = true;
 
-	FunctionSymbol* const assign  = nilSym->AddSymbol(Scope::Assign, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const assign  = nilSym->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
 	assign1->symbolNode = new EmptySymbolNode();
-	assign1->arguments.Add(ScopeList::Nil);
+	assign1->arguments.Add(NameList::Nil);
 
 	SymbolTable::Nil = nilSym;
 }
 
 void SymbolTable::SetupOptional() {
-	StructSymbol* const optionalSym = symbols->AddSymbol(Scope::Optional, new StructSymbol(FileInfo()));
-	List<ScopeList> args;
-	args.Add(ScopeList().Add(Scope("")).Add(Scope("T")));
-	Scope scope = Scope("");
+	StructSymbol* const optionalSym = symbols->AddSymbol(Name::Optional, new StructSymbol(FileInfo()));
+	List<NameList> args;
+	args.Add(NameList().Add(Name("")).Add(Name("T")));
+	Name scope = Name("");
 	scope.types = args;
 
 	StructSymbol* const optional = optionalSym->AddSymbol(scope, new StructSymbol(FileInfo()));
 	optional->templateArguments.Add(args[0]);
 
-	TemplateSymbol* const templateSym = optional->AddSymbol(Scope("T"), new TemplateSymbol(FileInfo()));
+	TemplateSymbol* const templateSym = optional->AddSymbol(Name("T"), new TemplateSymbol(FileInfo()));
 	templateSym->type = templateSym->AbsoluteName();
 
-	VariableSymbol* const hasValue = optional->AddSymbol(Scope::HasValue, new VariableSymbol(FileInfo()));
-	hasValue->type = ScopeList::Bool;
+	VariableSymbol* const hasValue = optional->AddSymbol(Name::HasValue, new VariableSymbol(FileInfo()));
+	hasValue->type = NameList::Bool;
 
-	VariableSymbol* const value = optional->AddSymbol(Scope::Value, new VariableSymbol(FileInfo()));
+	VariableSymbol* const value = optional->AddSymbol(Name::Value, new VariableSymbol(FileInfo()));
 	value->type = templateSym->AbsoluteName();
 
-	FunctionSymbol* const assign  = optional->AddSymbol(Scope::Assign, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const assign  = optional->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
 	assign1->symbolNode = new OptionalAssignNode();
@@ -685,24 +685,24 @@ void SymbolTable::SetupOptional() {
 
 	FunctionSymbol* const assign3 = assign->AddOverload(new FunctionSymbol(FileInfo()));
 	assign3->symbolNode = new OptionalAssignValueNode();
-	assign3->arguments.Add(ScopeList::Nil);
+	assign3->arguments.Add(NameList::Nil);
 
-	FunctionSymbol* const unwrap  = optional->AddSymbol(Scope::Unwrap, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const unwrap  = optional->AddSymbol(Name::Unwrap, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const unwrap1 = unwrap->AddOverload(new FunctionSymbol(FileInfo()));
 	unwrap1->symbolNode = new OptionalUnwrapNode();
 	unwrap1->arguments.Add(optional->AbsoluteName());
 	unwrap1->returnValues.Add(templateSym->AbsoluteName());
 
-	FunctionSymbol* const toBool  = optional->AddSymbol(Scope::As, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const toBool  = optional->AddSymbol(Name::As, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const toBool1 = toBool->AddOverload(new FunctionSymbol(FileInfo()));
 	toBool1->symbolNode = new OptionalToBooleanNode();
 	toBool1->arguments.Add(optional->AbsoluteName());
-	toBool1->returnValues.Add(ScopeList::Bool);
+	toBool1->returnValues.Add(NameList::Bool);
 	toBool1->isExplicit = true;
 
-	FunctionSymbol* const optionalNot  = optional->AddSymbol(Scope::Not, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const optionalNot  = optional->AddSymbol(Name::Not, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const optionalNot1 = optionalNot->AddOverload(new FunctionSymbol(FileInfo()));
 	optionalNot1->symbolNode = new OptionalNotNode();
 	optionalNot1->arguments.Add(optional->AbsoluteName());
-	optionalNot1->returnValues.Add(ScopeList::Bool);
+	optionalNot1->returnValues.Add(NameList::Bool);
 }

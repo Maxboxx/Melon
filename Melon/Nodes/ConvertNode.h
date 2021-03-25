@@ -12,7 +12,7 @@ namespace Melon {
 			NodePtr node;
 
 			/// The absolute name of the type to convert to.
-			Symbols::ScopeList type;
+			Symbols::NameList type;
 
 			/// Is the conversion explicit or not.
 			bool isExplicit = false;
@@ -28,7 +28,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 	}
 }

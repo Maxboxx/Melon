@@ -10,12 +10,12 @@ namespace Melon {
 
 			///T Parse Include
 			/// Parses a file to include to the project
-			static void ParseInclude(const Symbols::ScopeList& include, ParsingInfo& info);
+			static void ParseInclude(const Symbols::NameList& include, ParsingInfo& info);
 
 		private:
-			static void ParseFile(const Boxx::String& filename, const Symbols::ScopeList& include, const Symbols::Scope& includeFile, ParsingInfo& info);
-			static void CreateIncludeSymbols(const Boxx::String& filename, const Symbols::ScopeList& include);
-			static void ParseDirectory(const Boxx::String& directory, const Symbols::ScopeList& include, ParsingInfo& options);
+			static void ParseFile(const Boxx::String& filename, const Symbols::NameList& include, const Symbols::Name& includeFile, ParsingInfo& info);
+			static void CreateIncludeSymbols(const Boxx::String& filename, const Symbols::NameList& include);
+			static void ParseDirectory(const Boxx::String& directory, const Symbols::NameList& include, ParsingInfo& options);
 		};
 	}
 }

@@ -12,7 +12,7 @@ namespace Melon {
 			Boxx::List<NodePtr> nodes;
 
 			/// The absolute name of the function to return from.
-			Symbols::ScopeList func;
+			Symbols::NameList func;
 
 			ReturnNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ReturnNode();
@@ -30,7 +30,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 	}
 }

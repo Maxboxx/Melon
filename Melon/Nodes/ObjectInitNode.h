@@ -12,7 +12,7 @@ namespace Melon {
 			NodePtr node;
 
 			/// The variables to assign values to.
-			Boxx::List<Symbols::Scope> vars;
+			Boxx::List<Symbols::Name> vars;
 
 			/// The expressions to assign to the variables.
 			Boxx::List<NodePtr> expressions;
@@ -28,7 +28,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 	}
 }

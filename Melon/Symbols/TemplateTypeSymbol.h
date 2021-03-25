@@ -26,15 +26,15 @@ namespace Melon {
 			bool CanBeDeduced(TemplateTypeSymbol* const type);
 
 			/// The template arguments of the symbol.
-			Boxx::List<ScopeList> templateArguments;
+			Boxx::List<NameList> templateArguments;
 
-			virtual Scope Name() override;
+			virtual Symbols::Name Name() override;
 			virtual bool IsNotSpecialized() override;
 			virtual void SetTemplateValues(Symbol* const symbol) override;
 			virtual TemplateTypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 
 		protected:
-			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
+			virtual Symbol* FindSymbol(const NameList& nameList, const Boxx::UInt index, const FileInfo& file);
 
 			friend Melon::Nodes::RootNode;
 			friend Melon::Nodes::StructNode;

@@ -23,7 +23,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	const UInt startLine = info.Current().line;
 
 	// Parse types
-	List<ScopeList> types = ParseTypes(info);
+	List<NameList> types = ParseTypes(info);
 
 	// Validate types
 	if (!ValidateTypes(info, types, flags)) {
@@ -35,7 +35,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 
 	// Create assign node
 	Pointer<AssignNode> assign = new AssignNode(info.scope, info.GetFileInfo(startLine));
-	List<Tuple<Scope, Symbol*>> symbols;
+	List<Tuple<Name, Symbol*>> symbols;
 
 	// Parse variables
 	ParseVariables(info, types, assign, symbols, singleType);
@@ -77,7 +77,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	}
 
 	// Add symbols to scope
-	for (const Tuple<Scope, Symbol*>& symbol : symbols) {
+	for (const Tuple<Name, Symbol*>& symbol : symbols) {
 		info.scope->AddSymbol(symbol.value1, symbol.value2);
 	}
 
@@ -85,18 +85,18 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	return assign;
 }
 
-List<ScopeList> AssignmentParser::ParseTypes(ParsingInfo& info) {
-	List<ScopeList> types;
+List<NameList> AssignmentParser::ParseTypes(ParsingInfo& info) {
+	List<NameList> types;
 
 	// Parse types
 	while (true) {
 		// Discard type
 		if (info.Current().type == TokenType::Discard) {
 			info.index++;
-			types.Add(ScopeList::Discard);
+			types.Add(NameList::Discard);
 		}
 		// Parse type
-		else if (Optional<ScopeList> type = TypeParser::Parse(info)) {
+		else if (Optional<NameList> type = TypeParser::Parse(info)) {
 			types.Add(*type);
 		}
 		// Invalid type
@@ -116,7 +116,7 @@ List<ScopeList> AssignmentParser::ParseTypes(ParsingInfo& info) {
 	return types;
 }
 
-bool AssignmentParser::ValidateTypes(ParsingInfo& info, List<ScopeList>& types, const Flags flags) {
+bool AssignmentParser::ValidateTypes(ParsingInfo& info, List<NameList>& types, const Flags flags) {
 	// Parse colon
 	if (!types.IsEmpty() && info.Current().type == TokenType::Colon) {
 		info.index++;
@@ -124,8 +124,8 @@ bool AssignmentParser::ValidateTypes(ParsingInfo& info, List<ScopeList>& types, 
 		bool newVars = false;
 
 		// Check if new variables will be created
-		for (const ScopeList& type : types) {
-			if (type != ScopeList::Discard) {
+		for (const NameList& type : types) {
+			if (type != NameList::Discard) {
 				newVars = true;
 			}
 		}
@@ -142,14 +142,14 @@ bool AssignmentParser::ValidateTypes(ParsingInfo& info, List<ScopeList>& types, 
 		}
 
 		// Set types to discard
-		types = List<ScopeList>();
-		types.Add(ScopeList::Discard);
+		types = List<NameList>();
+		types.Add(NameList::Discard);
 	}
 
 	return true;
 }
 
-void AssignmentParser::ParseVariables(ParsingInfo& info, List<ScopeList>& types, Pointer<AssignNode>& assign, List<Tuple<Scope, Symbol*>>& symbols, const bool singleType) {
+void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, Pointer<AssignNode>& assign, List<Tuple<Name, Symbol*>>& symbols, const bool singleType) {
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
 			if (info.Current().type != TokenType::Comma) {
@@ -161,7 +161,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<ScopeList>& types,
 
 		if (i >= types.Size()) {
 			if (singleType) {
-				ScopeList last = types.Last();
+				NameList last = types.Last();
 				types.Add(last);
 			}
 			else {
@@ -169,15 +169,15 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<ScopeList>& types,
 			}
 		}
 
-		if (types[i] != ScopeList::Discard) {
+		if (types[i] != NameList::Discard) {
 			VariableAttributes attributes = VariableAttributeParser::Parse(info);
-			Scope name;
+			Name name;
 
 			if (info.Current().type == TokenType::Discard) {
-				name = ScopeList::Discard.Last();
+				name = NameList::Discard.Last();
 			}
 			else if (info.Current().type == TokenType::Name) {
-				name = Scope(info.Current().value);
+				name = Name(info.Current().value);
 			}
 			else {
 				if (attributes != VariableAttributes::None) {
@@ -190,7 +190,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<ScopeList>& types,
 
 			info.index++;
 
-			if (name != ScopeList::Discard.Last()) {
+			if (name != NameList::Discard.Last()) {
 				FileInfo file = info.GetFileInfo(info.Current(-1).line);
 				file.statement++;
 
@@ -202,13 +202,13 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<ScopeList>& types,
 				assign->vars.Add(new DiscardNode(info.scope, info.GetFileInfo(info.Current(-1).line)));
 			}
 
-			if (name == ScopeList::Discard.Last()) continue;
+			if (name == NameList::Discard.Last()) continue;
 
 			VariableSymbol* v = new VariableSymbol(info.GetFileInfo(info.Current(-1).line));
 			v->type = types[i];
 			v->attributes = attributes;
 
-			symbols.Add(Tuple<Scope, Symbol*>(name, v));
+			symbols.Add(Tuple<Name, Symbol*>(name, v));
 		}
 		else {
 			if (NodePtr node = AssignableParser::Parse(info)) {

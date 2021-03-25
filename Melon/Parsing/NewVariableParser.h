@@ -9,7 +9,7 @@ namespace Melon {
 			static Nodes::NodePtr Parse(ParsingInfo& info, const bool single = false);
 
 		private:
-			static Boxx::Optional<Symbols::ScopeList> ParseType(ParsingInfo& info);
+			static Boxx::Optional<Symbols::NameList> ParseType(ParsingInfo& info);
 		};
 	}
 }

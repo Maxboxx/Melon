@@ -18,7 +18,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-BinaryOperatorNode::BinaryOperatorNode(Symbol* const scope, const Scope& op, const FileInfo& file) : Node(scope, file) {
+BinaryOperatorNode::BinaryOperatorNode(Symbol* const scope, const Name& op, const FileInfo& file) : Node(scope, file) {
 	this->op = op;
 }
 
@@ -42,7 +42,7 @@ TypeSymbol* BinaryOperatorNode::Type() const {
 	return nullptr;
 }
 
-Scope BinaryOperatorNode::GetOperator() const {
+Name BinaryOperatorNode::GetOperator() const {
 	return op;
 }
 
@@ -88,7 +88,7 @@ ScanResult BinaryOperatorNode::Scan(ScanInfoStack& info) {
 	return result1 | result2;
 }
 
-ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
+NameList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
 	FunctionSymbol* const f = SymbolTable::FindOperator(GetOperator(), node1->Type(), node2->Type(), file);
 
 	if (f->symbolNode) {
@@ -99,7 +99,7 @@ ScopeList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
 		return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
 	}
 
-	return ScopeList();
+	return NameList();
 }
 
 NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
@@ -110,16 +110,16 @@ NodePtr BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 	// Optimize immediate operands
 	if (node1->IsImmediate() && node2->IsImmediate()) {
 		// Bool operands
-		if (node1->Type()->AbsoluteName() == ScopeList::Bool && node2->Type()->AbsoluteName() == ScopeList::Bool) {
+		if (node1->Type()->AbsoluteName() == NameList::Bool && node2->Type()->AbsoluteName() == NameList::Bool) {
 			// Equal
-			if (op == Scope::Equal) {
+			if (op == Name::Equal) {
 				Pointer<BooleanNode> bn = new BooleanNode(node1->file);
 				bn->boolean = node1->GetImmediate() == node2->GetImmediate();
 				info.optimized = true;
 				return bn;
 			}
 			// Not Equal
-			else if (op == Scope::NotEqual) {
+			else if (op == Name::NotEqual) {
 				Pointer<BooleanNode> bn = new BooleanNode(node1->file);
 				bn->boolean = node1->GetImmediate() != node2->GetImmediate();
 				info.optimized = true;

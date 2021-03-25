@@ -157,7 +157,7 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 	AddScopeBreak(info);
 
 	// Reset unassigned variables
-	for (const Scope& var : scopeInfo.unassigned) {
+	for (const Name& var : scopeInfo.unassigned) {
 		if (VariableSymbol* const v = info->type->Find<VariableSymbol>(var, file)) {
 			v->isAssigned = false;
 		}
@@ -175,7 +175,7 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList GuardNode::FindSideEffectScope(const bool assign) {
+NameList GuardNode::FindSideEffectScope(const bool assign) {
 	if (else_) {
 		return CombineSideEffects(cond->GetSideEffectScope(assign), CombineSideEffects(else_->GetSideEffectScope(assign), continue_->GetSideEffectScope(assign)));
 	}

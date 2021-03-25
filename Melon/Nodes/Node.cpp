@@ -47,10 +47,10 @@ bool Node::HasSideEffects() {
 	return HasSideEffects(scope->AbsoluteName());
 }
 
-bool Node::HasSideEffects(const ScopeList& scope) {
-	ScopeList list = GetSideEffectScope(false);
+bool Node::HasSideEffects(const NameList& scope) {
+	NameList list = GetSideEffectScope(false);
 
-	if (list.Size() == 1 && list[0] == Scope::Global) return true;
+	if (list.Size() == 1 && list[0] == Name::Global) return true;
 
 	UInt len = Math::Min(list.Size(), scope.Size());
 
@@ -63,7 +63,7 @@ bool Node::HasSideEffects(const ScopeList& scope) {
 	return list.Size() < scope.Size();
 }
 
-ScopeList Node::GetSideEffectScope(const bool assign) {
+NameList Node::GetSideEffectScope(const bool assign) {
 	if (!sideEffectScope) {
 		sideEffectScope = FindSideEffectScope(assign);
 	}
@@ -71,19 +71,19 @@ ScopeList Node::GetSideEffectScope(const bool assign) {
 	return *sideEffectScope;
 }
 
-ScopeList Node::FindSideEffectScope(const bool assign) {
+NameList Node::FindSideEffectScope(const bool assign) {
 	return scope->AbsoluteName();
 }
 
-ScopeList Node::CombineSideEffects(const ScopeList& scope1, const ScopeList& scope2) {
-	if (scope1.Size() == 1 && scope1[0] == Scope::Global) return scope1;
-	if (scope2.Size() == 1 && scope2[0] == Scope::Global) return scope2;
+NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2) {
+	if (scope1.Size() == 1 && scope1[0] == Name::Global) return scope1;
+	if (scope2.Size() == 1 && scope2[0] == Name::Global) return scope2;
 
 	UInt len = Math::Min(scope1.Size(), scope2.Size());
 
 	for (UInt i = 0; i < len; i++) {
 		if (scope1[i] != scope2[i]) {
-			return ScopeList(true);
+			return NameList(true);
 		}
 	}
 
@@ -128,7 +128,7 @@ ScanResult Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info,
 	args.Add(value->Type());
 
 	if (TypeSymbol* const type = var->Type()) {
-		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Scope::Assign, file)) {
+		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
 			func->FindOverload(args, file);
 		}
 	}
@@ -143,7 +143,7 @@ CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& in
 	FunctionSymbol* assign = nullptr;
 
 	if (TypeSymbol* const type = var->Type()) {
-		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Scope::Assign, file)) {
+		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
 			assign = func->FindOverload(args, file);
 		}
 	}

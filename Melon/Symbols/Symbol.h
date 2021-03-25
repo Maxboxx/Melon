@@ -6,7 +6,7 @@
 #include "Boxx/Map.h"
 #include "Boxx/ReplacementMap.h"
 
-#include "ScopeList.h"
+#include "NameList.h"
 
 #include "Melon/Errors.h"
 
@@ -50,10 +50,10 @@ namespace Melon {
 			FunctionSymbol* CurrentFunction();
 
 			/// Gets the name of the symbol.
-			virtual Scope Name();
+			virtual Symbols::Name Name();
 
 			/// Gets the absolute name of the symbol.
-			virtual ScopeList AbsoluteName();
+			virtual NameList AbsoluteName();
 
 			/// Gets the type of the symbol.
 			virtual TypeSymbol* Type();
@@ -69,43 +69,43 @@ namespace Melon {
 			virtual void SetTemplateValues(Symbol* const symbol);
 
 			/// Finds a specific symbol in the current symbol.
-			Symbol* Find(const Scope& scope, const FileInfo& file);
+			Symbol* Find(const Symbols::Name& name, const FileInfo& file);
 
 			/// Finds a specific symbol in the current symbol.
-			Symbol* Find(const ScopeList& scopeList, const FileInfo& file);
+			Symbol* Find(const NameList& nameList, const FileInfo& file);
 
 			/// Finds a specific symbol of the specified type.
 			///M
 			template <class T>
-			T* Find(const Scope& scope, const FileInfo& file);
+			T* Find(const Symbols::Name& name, const FileInfo& file);
 			///M
 
 			/// Finds a specific symbol of the specified type.
 			///M
 			template <class T>
-			T* Find(const ScopeList& scope, const FileInfo& file);
+			T* Find(const NameList& name, const FileInfo& file);
 			///M
 
 			/// Checks if the specified symbol exists and returns it.
 			///p If the symbol was not found {nullptr} is returned.
-			Symbol* Contains(const Scope& scope);
+			Symbol* Contains(const Symbols::Name& name);
 
 			/// Checks if the specified symbol exists and returns it.
 			///p If the symbol was not found {nullptr} is returned.
-			Symbol* Contains(const ScopeList& scopeList);
+			Symbol* Contains(const NameList& nameList);
 
 			/// Checks if a specific symbol of the specified type exists and returns it.
 			///p If the symbol was not found {nullptr} is returned
 			///M
 			template <class T>
-			T* Contains(const Scope& scope);
+			T* Contains(const Symbols::Name& scope);
 			///M
 
 			/// Checks if a specific symbol of the specified type exists and returns it.
 			///p If the symbol was not found {nullptr} is returned
 			///M
 			template <class T>
-			T* Contains(const ScopeList& scope);
+			T* Contains(const NameList& name);
 			///M
 
 			/// Checks if the symbol is a specific type of symbol.
@@ -130,15 +130,15 @@ namespace Melon {
 
 		protected:
 			static TypeSymbol* ReplaceType(TypeSymbol* const type, const Boxx::ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file);
-			static ScopeList ReplaceTypeScope(TypeSymbol* const type, const Boxx::ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file);
+			static NameList ReplaceTypeScope(TypeSymbol* const type, const Boxx::ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file);
 
-			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
+			virtual Symbol* FindSymbol(const NameList& nameList, const Boxx::UInt index, const FileInfo& file);
 
-			void FindError(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file);
+			void FindError(const NameList& nameList, const Boxx::UInt index, const FileInfo& file);
 
 			FileInfo file;
 			Symbol* parent = nullptr;
-			Scope name;
+			Symbols::Name name;
 
 			friend MapSymbol;
 			friend SymbolTable;
@@ -150,8 +150,8 @@ namespace Melon {
 		}
 
 		template <class T>
-		inline T* Symbol::Find(const Scope& scope, const FileInfo& file) {
-			if (Symbol* const sym = Find(ScopeList().Add(scope), file)) {
+		inline T* Symbol::Find(const Symbols::Name& name, const FileInfo& file) {
+			if (Symbol* const sym = Find(NameList(name), file)) {
 				return sym->Cast<T>();
 			}
 			else {
@@ -160,8 +160,8 @@ namespace Melon {
 		}
 
 		template <class T>
-		inline T* Symbol::Find(const ScopeList& scopeList, const FileInfo& file) {
-			if (Symbol* const sym = Find(scopeList, file)) {
+		inline T* Symbol::Find(const NameList& nameList, const FileInfo& file) {
+			if (Symbol* const sym = Find(nameList, file)) {
 				return sym->Cast<T>();
 			}
 			else {
@@ -170,8 +170,8 @@ namespace Melon {
 		}
 
 		template <class T>
-		inline T* Symbol::Contains(const Scope& scope) {
-			if (Symbol* const sym = Contains(ScopeList().Add(scope))) {
+		inline T* Symbol::Contains(const Symbols::Name& name) {
+			if (Symbol* const sym = Contains(NameList(name))) {
 				return sym->Cast<T>();
 			}
 			else {
@@ -180,9 +180,9 @@ namespace Melon {
 		}
 
 		template <class T>
-		inline T* Symbol::Contains(const ScopeList& scopeList) {
+		inline T* Symbol::Contains(const NameList& nameList) {
 			ErrorLog::AddMarker();
-			Symbol* const sym = FindSymbol(scopeList, 0, FileInfo());
+			Symbol* const sym = FindSymbol(nameList, 0, FileInfo());
 			ErrorLog::Revert();
 
 			if (sym) {

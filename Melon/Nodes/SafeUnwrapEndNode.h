@@ -24,7 +24,7 @@ namespace Melon {
 			static Boxx::String jumpInstName;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 	}
 }

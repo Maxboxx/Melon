@@ -43,7 +43,7 @@ CompiledNode ConditionNode::CompileAssignCondition(Pointer<AssignNode>& assign, 
 
 	// Temporary replaces the value node with argCopy
 	Pointer<ArgumentNode> value = new ArgumentNode(argCopy);
-	value->type = type->Find<VariableSymbol>(Scope::Value, file)->Type()->AbsoluteName();
+	value->type = type->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
 
 	NodePtr tempValue = assign->values[0];
 	assign->values[0] = value;
@@ -85,7 +85,7 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
 		convert->isExplicit = true;
 		convert->node = cond;
-		convert->type = ScopeList::Bool;
+		convert->type = NameList::Bool;
 		return convert->Compile(info);
 	}
 }
@@ -102,8 +102,8 @@ ScanResult ConditionNode::Scan(ScanInfoStack& info) {
 		TypeSymbol* const type = assign->values[0]->Type();
 
 		// Check if the types match
-		if (type && type->AbsoluteName()[0].name == Scope::Optional.name) {
-			Pointer<TypeNode> value = new TypeNode(type->Find(Scope::Value, file)->Type()->AbsoluteName());
+		if (type && type->AbsoluteName()[0].name == Name::Optional.name) {
+			Pointer<TypeNode> value = new TypeNode(type->Find(Name::Value, file)->Type()->AbsoluteName());
 			assign->values[0] = value;
 		}
 		else {
@@ -119,12 +119,12 @@ ScanResult ConditionNode::Scan(ScanInfoStack& info) {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
 		convert->isExplicit = true;
 		convert->node = cond;
-		convert->type = ScopeList::Bool;
+		convert->type = NameList::Bool;
 		return convert->Scan(info);
 	}
 }
 
-ScopeList ConditionNode::FindSideEffectScope(const bool assign) {
+NameList ConditionNode::FindSideEffectScope(const bool assign) {
 	return cond->GetSideEffectScope(assign);
 }
 

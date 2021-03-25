@@ -26,7 +26,7 @@ namespace Melon {
 		class VariableSymbol : public Symbol {
 		public:
 			/// The relative type of the variable.
-			ScopeList type;
+			NameList type;
 
 			/// The attributes of the variable.
 			VariableAttributes attributes = VariableAttributes::None;

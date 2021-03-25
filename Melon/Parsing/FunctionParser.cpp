@@ -49,7 +49,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		funcSym->returnValues = funcHead.returnTypes;
 		funcSym->attributes   = funcHead.attributes;
 
-		for (const ScopeList& arg : funcHead.templateArgs) {
+		for (const NameList& arg : funcHead.templateArgs) {
 			if (arg[0].IsEmpty()) {
 				funcSym->AddSymbol(arg[1], new TemplateSymbol(info.GetFileInfo(startLine)));
 			}
@@ -70,8 +70,8 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 				var->attributes = VariableAttributes::Ref;
 			}
 
-			funcSym->AddSymbol(Scope::Self, var);
-			funcSym->arguments.Add(ScopeList().Add(Scope::Self));
+			funcSym->AddSymbol(Name::Self, var);
+			funcSym->arguments.Add(NameList(Name::Self));
 		}
 
 		for (const Argument& arg : funcHead.arguments) {
@@ -82,7 +82,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 			var->attributes = arg.attributes;
 			funcSym->AddSymbol(arg.name, var);
 
-			funcSym->arguments.Add(ScopeList().Add(arg.name));
+			funcSym->arguments.Add(NameList(arg.name));
 		}
 
 		UInt loops = info.loops;
@@ -132,22 +132,22 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 	return nullptr;
 }
 
-Optional<Scope> FunctionParser::ParseFunctionName(ParsingInfo& info, const bool isPlain) {
+Optional<Name> FunctionParser::ParseFunctionName(ParsingInfo& info, const bool isPlain) {
 	if (isPlain) {
 		if (info.Current().type == TokenType::Name) {
-			const Scope s = Scope(info.Current().value);
+			const Name s = Name(info.Current().value);
 			info.index++;
 			return s;
 		}
 	}
 	else {
 		if (info.Current().type == TokenType::Name) {
-			const Scope s = Scope(info.Current().value);
+			const Name s = Name(info.Current().value);
 			info.index++;
 			return s;
 		}
 		else if (info.Current().type == TokenType::Init) {
-			const Scope s = Scope::Init;
+			const Name s = Name::Init;
 			info.index++;
 			return s;
 		}
@@ -156,115 +156,115 @@ Optional<Scope> FunctionParser::ParseFunctionName(ParsingInfo& info, const bool 
 	return nullptr;
 }
 
-Optional<Scope> FunctionParser::ParseOperatorName(ParsingInfo& info) {
+Optional<Name> FunctionParser::ParseOperatorName(ParsingInfo& info) {
 	switch (info.Current().type) {
 		// Math
 		case TokenType::Plus: {
 			info.index++;
-			return Scope::Add;
+			return Name::Add;
 		}
 		case TokenType::Minus: {
 			info.index++;
-			return Scope::Sub;
+			return Name::Sub;
 		}
 		case TokenType::Mul: {
 			info.index++;
-			return Scope::Mul;
+			return Name::Mul;
 		}
 		case TokenType::Div: {
 			info.index++;
-			return Scope::Div;
+			return Name::Div;
 		}
 		case TokenType::IDiv: {
 			info.index++;
-			return Scope::IDiv;
+			return Name::IDiv;
 		}
 		case TokenType::Mod: {
 			info.index++;
-			return Scope::Mod;
+			return Name::Mod;
 		}
 
 		// Bitwise
 		case TokenType::BNot: {
 			info.index++;
-			return Scope::BitNot;
+			return Name::BitNot;
 		}
 		case TokenType::BOr: {
 			info.index++;
-			return Scope::BitOr;
+			return Name::BitOr;
 		}
 		case TokenType::BAnd: {
 			info.index++;
-			return Scope::BitAnd;
+			return Name::BitAnd;
 		}
 		case TokenType::BXor: {
 			info.index++;
-			return Scope::BitXor;
+			return Name::BitXor;
 		}
 		case TokenType::BNor: {
 			info.index++;
-			return Scope::BitNor;
+			return Name::BitNor;
 		}
 		case TokenType::BNand: {
 			info.index++;
-			return Scope::BitNand;
+			return Name::BitNand;
 		}
 		case TokenType::BXnor: {
 			info.index++;
-			return Scope::BitXnor;
+			return Name::BitXnor;
 		}
 		case TokenType::BShiftLeft: {
 			info.index++;
-			return Scope::ShiftLeft;
+			return Name::ShiftLeft;
 		}
 		case TokenType::BShiftRight: {
 			info.index++;
-			return Scope::ShiftRight;
+			return Name::ShiftRight;
 		}
 
 		// Compare
 		case TokenType::Equal: {
 			info.index++;
-			return Scope::Equal;
+			return Name::Equal;
 		}
 		case TokenType::NotEqual: {
 			info.index++;
-			return Scope::NotEqual;
+			return Name::NotEqual;
 		}
 		case TokenType::Less: {
 			info.index++;
-			return Scope::Less;
+			return Name::Less;
 		}
 		case TokenType::LessEq: {
 			info.index++;
-			return Scope::LessEqual;
+			return Name::LessEqual;
 		}
 		case TokenType::Greater: {
 			info.index++;
-			return Scope::Greater;
+			return Name::Greater;
 		}
 		case TokenType::GreaterEq: {
 			info.index++;
-			return Scope::GreaterEqual;
+			return Name::GreaterEqual;
 		}
 
 		// Misc
 		case TokenType::ParenOpen: {
 			if (info.Current(1).type == TokenType::ParenClose) {
 				info.index += 2;
-				return Scope::Call;
+				return Name::Call;
 			}
 
 			return nullptr;
 		}
 		case TokenType::Len: {
 			info.index++;
-			return Scope::Len;
+			return Name::Len;
 		}
 		case TokenType::SquareOpen: {
 			if (info.Current(1).type == TokenType::SquareClose) {
 				info.index += 2;
-				return Scope::Index;
+				return Name::Index;
 			}
 
 			return nullptr;
@@ -274,13 +274,13 @@ Optional<Scope> FunctionParser::ParseOperatorName(ParsingInfo& info) {
 	return nullptr;
 }
 
-Optional<Scope> FunctionParser::ParseName(const bool isOperator, ParsingInfo& info, const bool isPlain) {
+Optional<Name> FunctionParser::ParseName(const bool isOperator, ParsingInfo& info, const bool isPlain) {
 	static Regex upper = Regex("^%u");
 	static Regex underscore = Regex("%a_+%a");
 
 	if (!isOperator) {
-		if (Optional<Scope> fname = ParseFunctionName(info, isPlain)) {
-			const Scope name = *fname;
+		if (Optional<Name> fname = ParseFunctionName(info, isPlain)) {
+			const Name name = *fname;
 
 			if (upper.Match(name.name)) {
 				ErrorLog::Info(InfoError(InfoError::LowerName("function", name.name), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
@@ -298,7 +298,7 @@ Optional<Scope> FunctionParser::ParseName(const bool isOperator, ParsingInfo& in
 		}
 	}
 	else {
-		if (Optional<Scope> name = ParseOperatorName(info)) {
+		if (Optional<Name> name = ParseOperatorName(info)) {
 			return *name;
 		}
 		else {
@@ -361,9 +361,9 @@ FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool
 	return attributes;
 }
 
-List<ScopeList> FunctionParser::ParseReturnTypes(ParsingInfo& info) {
+List<NameList> FunctionParser::ParseReturnTypes(ParsingInfo& info) {
 	const UInt retIndex = info.index;
-	List<ScopeList> returnTypes;
+	List<NameList> returnTypes;
 
 	while (true) {
 		if (!returnTypes.IsEmpty()) {
@@ -380,13 +380,13 @@ List<ScopeList> FunctionParser::ParseReturnTypes(ParsingInfo& info) {
 				}
 
 				info.index = retIndex;
-				returnTypes = List<ScopeList>();
+				returnTypes = List<NameList>();
 
 				break;
 			}
 		}
 
-		if (Optional<ScopeList> type = TypeParser::Parse(info)) {
+		if (Optional<NameList> type = TypeParser::Parse(info)) {
 			returnTypes.Add(*type);
 		}
 		else {
@@ -416,7 +416,7 @@ List<FunctionParser::Argument> FunctionParser::ParseArguments(ParsingInfo& info)
 			info.index++;
 		}
 
-		Optional<ScopeList> type = TypeParser::Parse(info);
+		Optional<NameList> type = TypeParser::Parse(info);
 
 		if (type && info.Current().type == TokenType::Colon) {
 			info.index++;
@@ -429,7 +429,7 @@ List<FunctionParser::Argument> FunctionParser::ParseArguments(ParsingInfo& info)
 				ErrorLog::Error(SyntaxError(SyntaxError::ArgNameExpected, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
 
-			argument.name = Scope(info.Current().value);
+			argument.name = Name(info.Current().value);
 			arguments.Add(argument);
 
 			info.index++;
@@ -469,11 +469,11 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 
 	funcHead.returnTypes = ParseReturnTypes(info);
 	
-	if (Optional<Scope> name = ParseName(funcHead.isOperator, info, isPlain)) {
+	if (Optional<Name> name = ParseName(funcHead.isOperator, info, isPlain)) {
 		funcHead.name = *name;
 	}
 
-	if (Optional<List<ScopeList>> templateArgs = TemplateParser::ParseDefine(info)) {
+	if (Optional<List<NameList>> templateArgs = TemplateParser::ParseDefine(info)) {
 		funcHead.templateArgs = *templateArgs;
 	}
 

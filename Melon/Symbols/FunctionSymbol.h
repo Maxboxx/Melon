@@ -86,13 +86,13 @@ namespace Melon {
 			FunctionSymbol* FindMethodOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 
 			/// The template arguments of the function.
-			Boxx::List<ScopeList> templateArguments;
+			Boxx::List<NameList> templateArguments;
 
 			/// The relative return types of the function.
-			Boxx::List<ScopeList> returnValues;
+			Boxx::List<NameList> returnValues;
 
 			/// The names of the function arguments.
-			Boxx::List<ScopeList> arguments;
+			Boxx::List<NameList> arguments;
 
 			/// The node to use for the compilation of the function.
 			///p Is {nullptr} if {node} should be used instead.
@@ -119,9 +119,9 @@ namespace Melon {
 			FunctionSymbol* replace = nullptr;
 
 		protected:
-			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
+			virtual Symbol* FindSymbol(const NameList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
 
-			Boxx::Tuple<Boxx::List<TypeSymbol*>, Boxx::List<ScopeList>> FindTemplateArguments(FunctionSymbol* const func, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			Boxx::Tuple<Boxx::List<TypeSymbol*>, Boxx::List<NameList>> FindTemplateArguments(FunctionSymbol* const func, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 			
 			FunctionSymbol* FindOverload(const Boxx::List<FunctionSymbol*>& overloads, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file);

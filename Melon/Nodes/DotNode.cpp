@@ -63,7 +63,7 @@ Symbol* DotNode::GetSymbol() const {
 	// Get other symbols
 	else {
 		if (name.types) {
-			if (Symbol* const s = nodeSym->Contains(Scope(name.name))) {
+			if (Symbol* const s = nodeSym->Contains(Name(name.name))) {
 				if (s->Is<FunctionSymbol>()) {
 					return s;
 				}
@@ -129,7 +129,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	TypeSymbol* const type = node->Type();
 	if (type == nullptr) return result;
 
-	Symbol* sym = type->Find(Scope(name.name), file);
+	Symbol* sym = type->Find(Name(name.name), file);
 	if (sym == nullptr) return result;
 
 	if (!sym->Is<FunctionSymbol>()) {
@@ -146,7 +146,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	// Scan assignment
 	if (info->assign) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
-			if (nn->name == Scope::Self) {
+			if (nn->name == Name::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 					if (info->scopeInfo.WillContinue()) {
 						var->isAssigned = true;
@@ -164,7 +164,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	// Scan init
 	else if (info->init) {
 		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
-			if (nn->name == Scope::Self) {
+			if (nn->name == Name::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 					if (!var->isAssigned) {
 						ErrorLog::Error(CompileError(CompileError::SelfVarUseStart + name.ToString() + CompileError::SelfVarUseEnd, file));
@@ -182,7 +182,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList DotNode::FindSideEffectScope(const bool assign) {
+NameList DotNode::FindSideEffectScope(const bool assign) {
 	if (assign) {
 		return node->GetSideEffectScope(assign);
 	}

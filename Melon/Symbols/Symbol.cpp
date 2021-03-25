@@ -52,16 +52,16 @@ FunctionSymbol* Symbol::CurrentFunction() {
 	return ParentFunction();
 }
 
-Scope Symbol::Name() {
+Name Symbol::Name() {
 	return name;
 }
 
-ScopeList Symbol::AbsoluteName() {
+NameList Symbol::AbsoluteName() {
 	if (parent) {
 		return parent->AbsoluteName().Add(Name());
 	}
 	else {
-		return ScopeList(true);
+		return NameList(true);
 	}
 }
 
@@ -69,19 +69,19 @@ TypeSymbol* Symbol::Type() {
 	return nullptr;
 }
 
-Symbol* Symbol::Find(const Scope& scope, const FileInfo& file) {
-	return Find(ScopeList().Add(scope), file);
+Symbol* Symbol::Find(const Symbols::Name& scope, const FileInfo& file) {
+	return Find(NameList(scope), file);
 }
 
-Symbol* Symbol::Find(const ScopeList& scopeList, const FileInfo& file) {
+Symbol* Symbol::Find(const NameList& scopeList, const FileInfo& file) {
 	return FindSymbol(scopeList.Split(), 0, file);
 }
 
-Symbol* Symbol::Contains(const Scope& scope) {
-	return Contains(ScopeList().Add(scope));
+Symbol* Symbol::Contains(const Symbols::Name& scope) {
+	return Contains(NameList(scope));
 }
 
-Symbol* Symbol::Contains(const ScopeList& scopeList) {
+Symbol* Symbol::Contains(const NameList& scopeList) {
 	ErrorLog::AddMarker();
 	Symbol* const symbol = FindSymbol(scopeList.Split(), 0, FileInfo());
 	ErrorLog::Revert();
@@ -89,13 +89,13 @@ Symbol* Symbol::Contains(const ScopeList& scopeList) {
 	return symbol;
 }
 
-Symbol* Symbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* Symbol::FindSymbol(const NameList& scopeList, const UInt index, const FileInfo& file) {
 	if (index >= scopeList.Size()) return this;
 	FindError(scopeList, index, file);
 	return nullptr;
 }
 
-void Symbol::FindError(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+void Symbol::FindError(const NameList& scopeList, const UInt index, const FileInfo& file) {
 	ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + scopeList[index].ToString() + SymbolError::NotFoundEnd, file));
 }
 
@@ -107,8 +107,8 @@ TypeSymbol* Symbol::ReplaceType(TypeSymbol* const type, const ReplacementMap<Typ
 	return SymbolTable::FindAbsolute<TypeSymbol>(ReplaceTypeScope(type, replacement, file), file);
 }
 
-ScopeList Symbol::ReplaceTypeScope(TypeSymbol* const type, const ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file) {
-	Map<TemplateSymbol*, ScopeList> templateTypes;
+NameList Symbol::ReplaceTypeScope(TypeSymbol* const type, const ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file) {
+	Map<TemplateSymbol*, NameList> templateTypes;
 
 	for (const Pair<TypeSymbol*, TypeSymbol*>& pair : replacement) {
 		if (TemplateSymbol* const t = pair.key->Cast<TemplateSymbol>()) {
@@ -117,9 +117,9 @@ ScopeList Symbol::ReplaceTypeScope(TypeSymbol* const type, const ReplacementMap<
 		}
 	}
 
-	ScopeList scope = SymbolTable::ReplaceTemplatesAbsolute(type->AbsoluteName(), file);
+	NameList scope = SymbolTable::ReplaceTemplatesAbsolute(type->AbsoluteName(), file);
 
-	for (const Pair<TemplateSymbol*, ScopeList>& pair : templateTypes) {
+	for (const Pair<TemplateSymbol*, NameList>& pair : templateTypes) {
 		pair.key->type = pair.value;
 	}
 

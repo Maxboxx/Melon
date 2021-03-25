@@ -14,7 +14,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols::Nodes;
 
-LogicNode::LogicNode(Symbol* const scope, const TokenType type, const FileInfo& file) : BinaryOperatorNode(scope, Scope(), file) {
+LogicNode::LogicNode(Symbol* const scope, const TokenType type, const FileInfo& file) : BinaryOperatorNode(scope, Name(), file) {
 	this->type = type;
 }
 
@@ -26,23 +26,23 @@ TypeSymbol* LogicNode::Type() const {
 	return (TypeSymbol*)SymbolTable::Bool;
 }
 
-Scope LogicNode::GetOperator() const {
+Name LogicNode::GetOperator() const {
 	switch (type) {
-		case TokenType::Or:   return Scope::Or;
-		case TokenType::And:  return Scope::And;
-		case TokenType::Xor:  return Scope::Xor;
-		case TokenType::Nor:  return Scope::Nor;
-		case TokenType::Nand: return Scope::Nand;
-		case TokenType::Xnor: return Scope::Xnor;
+		case TokenType::Or:   return Name::Or;
+		case TokenType::And:  return Name::And;
+		case TokenType::Xor:  return Name::Xor;
+		case TokenType::Nor:  return Name::Nor;
+		case TokenType::Nand: return Name::Nand;
+		case TokenType::Xnor: return Name::Xnor;
 	}
 
-	return Scope("logic");
+	return Name("logic");
 }
 
 CompiledNode LogicNode::CompileToBool(const NodePtr& node, CompileInfo& info) {
 	Pointer<ConvertNode> convert = new ConvertNode(node->scope, node->file);
 	convert->node = node;
-	convert->type = ScopeList::Bool;
+	convert->type = NameList::Bool;
 	convert->isExplicit = true;
 	return convert->Compile(info);
 }
@@ -171,14 +171,14 @@ ScanResult LogicNode::Scan(ScanInfoStack& info) {
 	// Scan conversion to bool for both operands
 	Pointer<ConvertNode> convert1 = new ConvertNode(node1->scope, node1->file);
 	convert1->node = node1;
-	convert1->type = ScopeList::Bool;
+	convert1->type = NameList::Bool;
 	convert1->isExplicit = true;
 
 	ScanResult result3 = convert1->Scan(info);
 
 	Pointer<ConvertNode> convert2 = new ConvertNode(node2->scope, node2->file);
 	convert2->node = node2;
-	convert2->type = ScopeList::Bool;
+	convert2->type = NameList::Bool;
 	convert2->isExplicit = true;
 
 	ScanResult result4 = convert2->Scan(info);
@@ -186,7 +186,7 @@ ScanResult LogicNode::Scan(ScanInfoStack& info) {
 	return result1 | result2 | result3 | result4;
 }
 
-ScopeList LogicNode::FindSideEffectScope(const bool assign) {
+NameList LogicNode::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
 }
 

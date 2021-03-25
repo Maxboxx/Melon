@@ -38,11 +38,11 @@ TypeSymbol* NameNode::Type() const {
 }
 
 Symbol* NameNode::GetSymbol() const {
-	Scope s = name.Copy();
+	Name s = name.Copy();
 
 	// Get template types
 	if (s.types) {
-		for (ScopeList& type : *s.types) {
+		for (NameList& type : *s.types) {
 			TypeSymbol* const sym = SymbolTable::Find<TypeSymbol>(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 			if (!sym) continue;
 
@@ -56,14 +56,14 @@ Symbol* NameNode::GetSymbol() const {
 	}
 
 	// Find symbol without template arguments
-	Scope noTemplateScope = s.Copy();
+	Name noTemplateScope = s.Copy();
 	noTemplateScope.types = nullptr;
 
 	Symbol* const sym = SymbolTable::Find(noTemplateScope, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 	// Check if name is template type
 	if (sym->Is<TemplateSymbol>()) {
-		ScopeList type = sym->Type()->AbsoluteName();
+		NameList type = sym->Type()->AbsoluteName();
 		type[type.Size() - 1].types = s.types;
 		return SymbolTable::FindAbsolute(type, file);
 	}
@@ -74,7 +74,7 @@ Symbol* NameNode::GetSymbol() const {
 	}
 	// Find template overload
 	else if (s.types) {
-		Scope scope = s.Copy();
+		Name scope = s.Copy();
 		scope.name  = "";
 		return sym->Find(scope, file);
 	}
@@ -115,7 +115,7 @@ ScanResult NameNode::Scan(ScanInfoStack& info) {
 	Symbol* const s = GetSymbol();
 
 	// Check if name is self
-	if (name == Scope::Self) {
+	if (name == Name::Self) {
 		result.selfUsed = true;
 	}
 	// Check if var is used
@@ -128,7 +128,7 @@ ScanResult NameNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList NameNode::FindSideEffectScope(const bool assign) {
+NameList NameNode::FindSideEffectScope(const bool assign) {
 	if (assign) {
 		Symbol* const s = GetSymbol();
 

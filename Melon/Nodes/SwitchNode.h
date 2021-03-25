@@ -82,7 +82,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
 			SwitchScanInfo ScanSetup(ScanInfo& info) const;
 

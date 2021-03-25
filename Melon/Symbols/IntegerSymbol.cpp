@@ -25,7 +25,7 @@ bool IntegerSymbol::IsSigned() const {
 IntegerSymbol* IntegerSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
 	IntegerSymbol* const sym = new IntegerSymbol(size, isSigned, file);
 	
-	for (const Pair<Scope, Symbol*>& s : symbols) {
+	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
 		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
 	}
 

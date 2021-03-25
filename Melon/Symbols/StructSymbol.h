@@ -20,11 +20,11 @@ namespace Melon {
 			virtual bool IsInitialized() override;
 			virtual void PrepareInit() override;
 			virtual void CompleteInit() override;
-			virtual Boxx::Set<Scope> UnassignedMembers() override;
+			virtual Boxx::Set<Symbols::Name> UnassignedMembers() override;
 			virtual void UpdateSize() override;
 
 			/// All non static members.
-			Boxx::List<Scope> members;
+			Boxx::List<Symbols::Name> members;
 
 			/// {true} if the scope is recursive.
 			bool isRecursive = false;

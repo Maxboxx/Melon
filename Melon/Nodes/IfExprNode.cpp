@@ -139,8 +139,8 @@ ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList IfExprNode::FindSideEffectScope(const bool assign) {
-	ScopeList list = conditions[0]->GetSideEffectScope(assign);
+NameList IfExprNode::FindSideEffectScope(const bool assign) {
+	NameList list = conditions[0]->GetSideEffectScope(assign);
 
 	for (UInt i = 1; i < conditions.Size(); i++) {
 		list = CombineSideEffects(list, conditions[i]->GetSideEffectScope(assign));

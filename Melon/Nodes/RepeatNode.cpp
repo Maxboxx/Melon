@@ -142,7 +142,7 @@ ScanResult RepeatNode::Scan(ScanInfoStack& info) {
 	return result1 | result2;
 }
 
-ScopeList RepeatNode::FindSideEffectScope(const bool assign) {
+NameList RepeatNode::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(content->GetSideEffectScope(assign), condition->GetSideEffectScope(assign));
 }
 

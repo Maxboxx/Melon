@@ -9,7 +9,7 @@ namespace Melon {
 		class NameNode : public Node {
 		public:
 			/// The name of the node.
-			Symbols::Scope name;
+			Symbols::Name name;
 
 			/// Used to ignore {ref}.
 			bool ignoreRef = false;
@@ -24,7 +24,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 	}
 }

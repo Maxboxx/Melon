@@ -26,7 +26,7 @@ NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 		}
 
 		if (info.Current().type == TokenType::Name) {
-			cn->vars.Add(Scope(info.Current().value));
+			cn->vars.Add(Name(info.Current().value));
 
 			if (info.Next().type != TokenType::Assign)
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'='", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));

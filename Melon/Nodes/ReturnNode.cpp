@@ -133,8 +133,8 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList ReturnNode::FindSideEffectScope(const bool assign) {
-	ScopeList list = nodes.IsEmpty() ? scope->AbsoluteName() : scope->Parent()->AbsoluteName();
+NameList ReturnNode::FindSideEffectScope(const bool assign) {
+	NameList list = nodes.IsEmpty() ? scope->AbsoluteName() : scope->Parent()->AbsoluteName();
 
 	for (NodePtr& node : nodes) {
 		list = CombineSideEffects(list, node->GetSideEffectScope(assign));

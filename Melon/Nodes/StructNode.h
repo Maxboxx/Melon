@@ -11,10 +11,10 @@ namespace Melon {
 		class StructNode : public Node {
 		public:
 			/// The name of the struct.
-			Symbols::Scope name;
+			Symbols::Name name;
 
 			/// The members of the struct.
-			Boxx::List<Symbols::Scope> vars;
+			Boxx::List<Symbols::Name> vars;
 
 			/// The struct symbol.
 			Symbols::StructSymbol* symbol;
@@ -27,7 +27,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign) override;
+			virtual Symbols::NameList FindSideEffectScope(const bool assign) override;
 
 		private:
 			bool IsRecursive(Symbols::StructSymbol* const symbol) const;

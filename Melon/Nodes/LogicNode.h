@@ -17,14 +17,14 @@ namespace Melon {
 			~LogicNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;
-			virtual Symbols::Scope GetOperator() const;
+			virtual Symbols::Name GetOperator() const;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
 			static CompiledNode CompileToBool(const NodePtr& node, CompileInfo& info);
 

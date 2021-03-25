@@ -392,7 +392,7 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 
 	// Compile condition
 	if (cond->conditionOperator) {
-		Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(cond->loopCondition->scope, Scope::Less, cond->loopCondition->file);
+		Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(cond->loopCondition->scope, Name::Less, cond->loopCondition->file);
 		comp->node1 = cond->loopInit.Cast<AssignNode>()->vars[0];
 		comp->node2 = cond->loopCondition;
 		compiledCond = comp->Compile(info);
@@ -604,14 +604,14 @@ void LoopNode::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const Loo
 	// Reset unassigned variables
 	if (loopInfo.init) {
 		if (!segment.also) {
-			for (const Scope& var : loopInfo.scope.unassigned) {
+			for (const Name& var : loopInfo.scope.unassigned) {
 				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
 					v->isAssigned = false;
 				}
 			}
 		}
 		else {
-			for (const Scope& var : loopInfo.mainSegment.unassigned) {
+			for (const Name& var : loopInfo.mainSegment.unassigned) {
 				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
 					v->isAssigned = false;
 				}
@@ -745,12 +745,12 @@ ScanResult LoopNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList LoopNode::FindSideEffectScope(const bool assign) {
-	ScopeList list = segments[0].statements->GetSideEffectScope(assign);
+NameList LoopNode::FindSideEffectScope(const bool assign) {
+	NameList list = segments[0].statements->GetSideEffectScope(assign);
 
 	for (LoopSegment& segment : segments) {
 		if (segment.IsLoop()) {
-			return ScopeList(true).Add(Scope::Global);
+			return NameList(true, Name::Global);
 		}
 
 		if (segment.condition) {

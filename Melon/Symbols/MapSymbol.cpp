@@ -1,7 +1,7 @@
 #include "MapSymbol.h"
 
 #include "Symbol.h"
-#include "ScopeList.h"
+#include "NameList.h"
 #include "TypeSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
@@ -19,15 +19,15 @@ MapSymbol::MapSymbol(const FileInfo& file) : Symbol(file) {
 }
 
 MapSymbol::~MapSymbol() {
-	for (const Pair<Scope, Symbol*>& symbol : symbols) {
+	for (const Pair<Symbols::Name, Symbol*>& symbol : symbols) {
 		delete symbol.value;
 	}
 }
 
-Symbol* MapSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* MapSymbol::FindSymbol(const NameList& scopeList, const UInt index, const FileInfo& file) {
 	if (index >= scopeList.Size()) return this;
 
-	const Scope& scope = scopeList[index];
+	const Symbols::Name& scope = scopeList[index];
 	Symbol* sym = nullptr;
 
 	if (symbols.Contains(scope, sym)) {

@@ -12,7 +12,7 @@ namespace Melon {
 
 		private:
 			struct EnumValue {
-				Symbols::Scope name;
+				Symbols::Name name;
 				Boxx::ULong    value;
 				Boxx::UInt     line;
 			};

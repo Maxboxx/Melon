@@ -13,14 +13,14 @@ namespace Melon {
 
 			/// An optional condition operator.
 			///p The condition is automatically compared to the loop variable if this is set.
-			Boxx::Optional<Symbols::Scope> conditionOperator;
+			Boxx::Optional<Symbols::Name> conditionOperator;
 
 			/// The loop condition.
 			NodePtr loopCondition;
 
 			/// An optional step operator.
 			///p The loop variable is automatically updated if this is set.
-			Boxx::Optional<Symbols::Scope> stepOperator;
+			Boxx::Optional<Symbols::Name> stepOperator;
 
 			/// The loop step.
 			NodePtr loopStep;
@@ -36,7 +36,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 	}
 }

@@ -6,7 +6,7 @@
 #include "Boxx/Set.h"
 #include "Boxx/Stack.h"
 
-#include "Melon/Symbols/ScopeList.h"
+#include "Melon/Symbols/NameList.h"
 
 ///N Melon::Nodes
 namespace Melon {
@@ -56,7 +56,7 @@ namespace Melon {
 			Boxx::UInt maxScopeBreakCount = 0;
 
 			/// All unassigned members.
-			Boxx::Set<Symbols::Scope> unassigned;
+			Boxx::Set<Symbols::Name> unassigned;
 
 			/// Resets the scope to default values.
 			void Reset();

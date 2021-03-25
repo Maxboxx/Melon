@@ -65,7 +65,7 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 							node = new DefaultNode(info.scope, info.GetFileInfo(token.line));
 						}
 						else {
-							node = new BinaryOperatorNode(info.scope, Scope(token.value), info.GetFileInfo(token.line));
+							node = new BinaryOperatorNode(info.scope, Name(token.value), info.GetFileInfo(token.line));
 						}
 
 						operators.Add(Pair<TokenType, Pointer<BinaryOperatorNode>>(token.type, node));
@@ -215,7 +215,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 		info.index++;
 
 		if (NodePtr node = ParseValue(info)) {
-			Pointer<UnaryOperatorNode> opNode = new UnaryOperatorNode(info.scope, Scope(token.value), info.GetFileInfo(token.line));
+			Pointer<UnaryOperatorNode> opNode = new UnaryOperatorNode(info.scope, Name(token.value), info.GetFileInfo(token.line));
 
 			opNode->node = node;
 			return opNode;
@@ -292,7 +292,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		if (NodePtr dotNode = DotParser::Parse(info)) {
 			Pointer<DotNode> dn = dotNode.Cast<DotNode>();
 			Pointer<NameNode> nn = new NameNode(nullptr, info.GetFileInfo(line));
-			nn->name = Scope::Global;
+			nn->name = Name::Global;
 			dn->node = nn;
 			return dn;
 		}
@@ -307,7 +307,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		info.index = startIndex;
 		return nullptr;
 	}
-	else if (Optional<Scope> node = TypeParser::ParseScope(info)) {
+	else if (Optional<Name> node = TypeParser::ParseScope(info)) {
 		Pointer<NameNode> nn = new NameNode(info.scope, info.GetFileInfo(startLine));
 		nn->name = *node;
 		return nn;
@@ -352,7 +352,7 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 			}
 
 			if (info.Current().type == TokenType::Exclamation) {
-				Pointer<UnaryOperatorNode> unwrap = new UnaryOperatorNode(info.scope, Scope::Unwrap, info.GetFileInfo(info.Current().line));
+				Pointer<UnaryOperatorNode> unwrap = new UnaryOperatorNode(info.scope, Name::Unwrap, info.GetFileInfo(info.Current().line));
 				unwrap->node = node;
 				info.index++;
 				node = unwrap;

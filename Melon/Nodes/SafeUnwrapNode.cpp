@@ -21,7 +21,7 @@ SafeUnwrapNode::~SafeUnwrapNode() {
 }
 
 TypeSymbol* SafeUnwrapNode::Type() const  {
-	return node->Type()->Find(Scope::Value, file)->Type();
+	return node->Type()->Find(Name::Value, file)->Type();
 }
 
 Symbol* SafeUnwrapNode::GetSymbol() const {
@@ -50,7 +50,7 @@ ScanResult SafeUnwrapNode::Scan(ScanInfoStack& info)  {
 	return node->Scan(info);
 }
 
-ScopeList SafeUnwrapNode::FindSideEffectScope(const bool assign) {
+NameList SafeUnwrapNode::FindSideEffectScope(const bool assign) {
 	return node->GetSideEffectScope(assign);
 }
 

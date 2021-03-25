@@ -22,7 +22,7 @@
 #include "Structs/ScopeInfo.h"
 #include "Structs/StackPtr.h"
 
-#include "Melon/Symbols/ScopeList.h"
+#include "Melon/Symbols/NameList.h"
 #include "Melon/Symbols/SymbolTable.h"
 #include "Melon/Symbols/TypeSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
@@ -52,7 +52,7 @@ namespace Melon {
 			FileInfo file;
 
 			/// The inner side effect scope.
-			Boxx::Optional<Symbols::ScopeList> sideEffectScope;
+			Boxx::Optional<Symbols::NameList> sideEffectScope;
 
 			/// Creates a node.
 			Node(Symbols::Symbol* const scope, const FileInfo& file);
@@ -91,10 +91,10 @@ namespace Melon {
 			bool HasSideEffects();
 
 			/// Checks if the node has side effects outside of the specified scope.
-			bool HasSideEffects(const Symbols::ScopeList& scope);
+			bool HasSideEffects(const Symbols::NameList& scope);
 
 			/// Gets the side effect scope.
-			Symbols::ScopeList GetSideEffectScope(const bool assign);
+			Symbols::NameList GetSideEffectScope(const bool assign);
 
 			/// Optimizes the node.
 			///R The optimized node. If the node was not optimized, this will be {nullptr}.
@@ -117,13 +117,13 @@ namespace Melon {
 			static bool IsEmpty(const NodePtr& node);
 
 			/// Combines two side effect scopes by returning the outer scope.
-			static Symbols::ScopeList CombineSideEffects(const Symbols::ScopeList& scope1, const Symbols::ScopeList& scope2);
+			static Symbols::NameList CombineSideEffects(const Symbols::NameList& scope1, const Symbols::NameList& scope2);
 
 			/// Pointer to the root node.
 			static RootNode* root;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 
 		///H Errors

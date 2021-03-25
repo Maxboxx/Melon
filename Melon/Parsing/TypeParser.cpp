@@ -12,11 +12,11 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
-	Optional<Scope> first = nullptr;
+Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
+	Optional<Name> first = nullptr;
 
 	if (info.Current().type == TokenType::Global) {
-		first = Scope::Global;
+		first = Name::Global;
 		info.index++;
 	}
 	else {
@@ -29,22 +29,22 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 			info.index++;
 
 			for (UInt i = 0; i < n; i++) {
-				Scope optionalScope = Scope::Optional;
-				optionalScope.types = List<ScopeList>();
-				optionalScope.types->Add(ScopeList().Add(*first));
+				Name optionalScope = Name::Optional;
+				optionalScope.types = List<NameList>();
+				optionalScope.types->Add(NameList().Add(*first));
 				first = optionalScope;
 
-				SymbolTable::SpecializeTemplate(ScopeList().Add(*first), info.scope, info.GetFileInfo(info.Current(-1).line));
+				SymbolTable::SpecializeTemplate(NameList().Add(*first), info.scope, info.GetFileInfo(info.Current(-1).line));
 			}
 		}
 
-		ScopeList type = ScopeList().Add(*first);
+		NameList type = NameList().Add(*first);
 
 		while (!info.EndOfFile()) {
 			if (info.Current().type != TokenType::Dot) break;
 			info.index++;
 
-			if (Optional<Scope> scope = ParseScope(info)) {
+			if (Optional<Name> scope = ParseScope(info)) {
 				type = type.Add(*scope);
 
 				if (scope->types) {
@@ -56,12 +56,12 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 					info.index++;
 
 					for (UInt i = 0; i < n; i++) {
-						Scope optionalScope = Scope::Optional;
-						optionalScope.types = List<ScopeList>();
-						optionalScope.types->Add(ScopeList().Add(type));
-						type = ScopeList().Add(optionalScope);
+						Name optionalScope = Name::Optional;
+						optionalScope.types = List<NameList>();
+						optionalScope.types->Add(NameList().Add(type));
+						type = NameList().Add(optionalScope);
 
-						SymbolTable::SpecializeTemplate(ScopeList().Add(type), info.scope, info.GetFileInfo(info.Current(-1).line));
+						SymbolTable::SpecializeTemplate(NameList().Add(type), info.scope, info.GetFileInfo(info.Current(-1).line));
 					}
 				}
 			}
@@ -71,7 +71,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 			}
 		}
 
-		if (type.Size() == 1 && type[0] == Scope::Global) {
+		if (type.Size() == 1 && type[0] == Name::Global) {
 			if (info.Current().type == TokenType::Dot) {
 				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'.'", "'global'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 			}
@@ -88,7 +88,7 @@ Optional<ScopeList> TypeParser::Parse(ParsingInfo& info) {
 	return nullptr;
 }
 
-Optional<Scope> TypeParser::ParseScope(ParsingInfo& info) {
+Optional<Name> TypeParser::ParseScope(ParsingInfo& info) {
 	if (
 		info.Current().type != TokenType::Name &&
 		info.Current().type != TokenType::Type &&
@@ -97,15 +97,15 @@ Optional<Scope> TypeParser::ParseScope(ParsingInfo& info) {
 		return nullptr;
 	}
 
-	Scope scope = Scope(info.Current().value);
+	Name scope = Name(info.Current().value);
 	info.index++;
 
 	if (info.EndOfFile()) return scope;
 
-	if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
+	if (Optional<List<NameList>> templateArgs = TemplateParser::Parse(info)) {
 		scope.types = templateArgs;
 
-		SymbolTable::SpecializeTemplate(ScopeList().Add(scope), info.scope, info.GetFileInfo(info.Current(-1).line));
+		SymbolTable::SpecializeTemplate(NameList().Add(scope), info.scope, info.GetFileInfo(info.Current(-1).line));
 	}
 
 	return scope;

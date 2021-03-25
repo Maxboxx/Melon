@@ -17,7 +17,7 @@ namespace Melon {
 			Boxx::List<NodePtr> values;
 
 			/// The types for new variables.
-			Boxx::List<Symbols::ScopeList> types;
+			Boxx::List<Symbols::NameList> types;
 
 			AssignNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~AssignNode();
@@ -33,7 +33,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign) override;
+			virtual Symbols::NameList FindSideEffectScope(const bool assign) override;
 		};
 	}
 }

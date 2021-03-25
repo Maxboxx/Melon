@@ -12,16 +12,16 @@ namespace Melon {
 			NodePtr node;
 
 			/// The operator to use.
-			Symbols::Scope op;
+			Symbols::Name op;
 
-			UnaryOperatorNode(Symbols::Symbol* const scope, const Symbols::Scope& op, const FileInfo& file);
+			UnaryOperatorNode(Symbols::Symbol* const scope, const Symbols::Name& op, const FileInfo& file);
 			~UnaryOperatorNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Symbols::Symbol* GetSymbol() const override;
 
 			/// Gets the operator.
-			virtual Symbols::Scope GetOperator() const;
+			virtual Symbols::Name GetOperator() const;
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
@@ -30,7 +30,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 	}
 }

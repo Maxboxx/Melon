@@ -9,7 +9,7 @@ namespace Melon {
 		class TemplateSymbol : public TypeSymbol {
 		public:
 			/// The absolute type of the template symbol.
-			ScopeList type;
+			NameList type;
 
 			TemplateSymbol(const FileInfo& file);
 			~TemplateSymbol();

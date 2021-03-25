@@ -35,7 +35,7 @@ namespace Melon {
 			virtual NodePtr Optimize(OptimizeInfo& info) override;
 
 			/// Adds a template specialization.
-			void AddTemplateSpecialization(const Symbols::ScopeList& name, const Symbols::ScopeList& scope, const FileInfo& file, const bool scan = true);
+			void AddTemplateSpecialization(const Symbols::NameList& name, const Symbols::NameList& scope, const FileInfo& file, const bool scan = true);
 
 			/// Scans for errors.
 			ScanInfoStack Scan();
@@ -47,7 +47,7 @@ namespace Melon {
 			Parsing::ParsingInfo* parsingInfo = nullptr;
 
 		private:
-			Boxx::Tuple<Symbols::TemplateTypeSymbol*, Boxx::List<Symbols::ScopeList>> FindTemplateArgs(const Symbols::ScopeList& name, const Symbols::ScopeList& scope, const FileInfo& file);
+			Boxx::Tuple<Symbols::TemplateTypeSymbol*, Boxx::List<Symbols::NameList>> FindTemplateArgs(const Symbols::NameList& name, const Symbols::NameList& scope, const FileInfo& file);
 
 			Boxx::UInt nodeIndex = 0;
 			Boxx::UInt funcIndex = 0;

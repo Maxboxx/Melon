@@ -59,7 +59,7 @@ UInt AssignNode::GetSize() const {
 	UInt size = 0;
 
 	for (UInt i = 0; i < vars.Size(); i++) {
-		if (types[i] == ScopeList::Discard || vars[i].Is<DiscardNode>()) continue;
+		if (types[i] == NameList::Discard || vars[i].Is<DiscardNode>()) continue;
 
 		if (Symbol* const s = vars[i]->GetSymbol()) {
 			if (VariableSymbol* const var = s->Cast<VariableSymbol>()) {
@@ -83,7 +83,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 	// Calculate size and stack index of variables
 	for (UInt i = 0; i < vars.Size(); i++) {
-		if (types[i] == ScopeList::Discard || vars[i].Is<DiscardNode>()) continue;
+		if (types[i] == NameList::Discard || vars[i].Is<DiscardNode>()) continue;
 		VariableSymbol* const var = vars[i]->GetSymbol()->Cast<VariableSymbol>();
 
 		// Ref variables
@@ -159,8 +159,8 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 void AssignNode::IncludeScan(ParsingInfo& info) {
 	// Check type names for includes
-	for (const ScopeList& type : types) {
-		if (type == ScopeList::Discard) continue;
+	for (const NameList& type : types) {
+		if (type == NameList::Discard) continue;
 
 		// Include multiple levels of namespaces
 		while (Symbol* s = SymbolTable::Find(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates)) {
@@ -218,7 +218,7 @@ ScanResult AssignNode::Scan(ScanInfoStack& info) {
 		}
 
 		// Check for const assign
-		if (types[i] == ScopeList::Discard && var && (var->attributes & VariableAttributes::Const) != VariableAttributes::None) {
+		if (types[i] == NameList::Discard && var && (var->attributes & VariableAttributes::Const) != VariableAttributes::None) {
 			ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
 		}
 
@@ -230,7 +230,7 @@ ScanResult AssignNode::Scan(ScanInfoStack& info) {
 		// Check for completed init
 		if (info->init) {
 			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
-				if (nn->name == Scope::Self) {
+				if (nn->name == Name::Self) {
 					info->type->CompleteInit();
 					result.selfUsed = false;
 				}
@@ -255,8 +255,8 @@ ScanResult AssignNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList AssignNode::FindSideEffectScope(const bool assign) {
-	ScopeList list = vars[0] ? vars[0]->GetSideEffectScope(true) : scope->AbsoluteName();
+NameList AssignNode::FindSideEffectScope(const bool assign) {
+	NameList list = vars[0] ? vars[0]->GetSideEffectScope(true) : scope->AbsoluteName();
 
 	for (UInt i = 1; i < vars.Size(); i++) {
 		if (vars[i]) {
@@ -359,7 +359,7 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 StringBuilder AssignNode::ToMelon(const UInt indent) const {
 	StringBuilder sb;
 
-	Optional<ScopeList> type = types[0];
+	Optional<NameList> type = types[0];
 
 	// Check if all types are equal
 	for (UInt i = 1; i < types.Size(); i++) {
@@ -370,7 +370,7 @@ StringBuilder AssignNode::ToMelon(const UInt indent) const {
 
 	// Single/No types
 	if (type) {
-		if (type != ScopeList::Discard) {
+		if (type != NameList::Discard) {
 			sb += type->ToSimpleString();
 			sb += ": ";
 		}

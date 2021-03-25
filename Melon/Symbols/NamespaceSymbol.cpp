@@ -25,7 +25,7 @@ String NamespaceSymbol::IncludedPath() const {
 NamespaceSymbol* NamespaceSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
 	NamespaceSymbol* const sym = new NamespaceSymbol(includedPath, file);
 
-	for (const Pair<Scope, Symbol*>& s : symbols) {
+	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
 		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
 	}
 

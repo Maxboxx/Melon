@@ -12,8 +12,8 @@ namespace Melon {
 	namespace Parsing {
 		class TypeParser {
 		public:
-			static Boxx::Optional<Symbols::ScopeList> Parse(ParsingInfo& info);
-			static Boxx::Optional<Symbols::Scope> ParseScope(ParsingInfo& info);
+			static Boxx::Optional<Symbols::NameList> Parse(ParsingInfo& info);
+			static Boxx::Optional<Symbols::Name> ParseScope(ParsingInfo& info);
 		};
 	}
 }

@@ -9,21 +9,21 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-Optional<List<ScopeList>> TemplateParser::Parse(ParsingInfo& info) {
+Optional<List<NameList>> TemplateParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Less) return nullptr;
 
 	const UInt startIndex = info.index;
 	info.index++;
 
-	List<ScopeList> types;
+	List<NameList> types;
 
-	if (Optional<ScopeList> type = TypeParser::Parse(info)) {
+	if (Optional<NameList> type = TypeParser::Parse(info)) {
 		types.Add(*type);
 
 		while (info.Current().type == TokenType::Comma) {
 			info.index++;
 
-			if (Optional<ScopeList> type = TypeParser::Parse(info)) {
+			if (Optional<NameList> type = TypeParser::Parse(info)) {
 				types.Add(*type);
 			}
 			else {
@@ -34,7 +34,7 @@ Optional<List<ScopeList>> TemplateParser::Parse(ParsingInfo& info) {
 
 	if (info.Current().type == TokenType::BShiftRight) {
 		info.tokens[info.index].type  = TokenType::Greater;
-		info.tokens[info.index].value = Scope::Greater.name;
+		info.tokens[info.index].value = Name::Greater.name;
 		info.tokens.Insert(info.index, info.tokens[info.index]);
 	}
 
@@ -48,23 +48,23 @@ Optional<List<ScopeList>> TemplateParser::Parse(ParsingInfo& info) {
 	return types;
 }
 
-Optional<List<ScopeList>> TemplateParser::ParseDefine(ParsingInfo& info) {
+Optional<List<NameList>> TemplateParser::ParseDefine(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Less) return nullptr;
 
 	const UInt startIndex = info.index;
 	info.index++;
 
-	List<ScopeList> types;
+	List<NameList> types;
 
 	if (info.Current().type == TokenType::Name) {
-		types.Add(ScopeList().Add(Scope("")).Add(Scope(info.Current().value)));
+		types.Add(NameList().Add(Name()).Add(Name(info.Current().value)));
 		info.index++;
 
 		while (info.Current().type == TokenType::Comma) {
 			info.index++;
 
 			if (info.Current().type == TokenType::Name) {
-				types.Add(ScopeList().Add(Scope("")).Add(Scope(info.Current().value)));
+				types.Add(NameList().Add(Name("")).Add(Name(info.Current().value)));
 				info.index++;
 			}
 			else {

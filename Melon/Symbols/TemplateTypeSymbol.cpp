@@ -27,9 +27,9 @@ void TemplateTypeSymbol::AddTemplateVariant(TemplateTypeSymbol* const sym) {
 TypeSymbol* TemplateTypeSymbol::TemplateArgument(const UInt index) {
 	if (index >= templateArguments.Size()) return nullptr;
 
-	ScopeList arg = templateArguments[index];
+	Symbols::NameList arg = templateArguments[index];
 
-	if (arg[0] == Scope("")) {
+	if (arg[0].IsEmpty()) {
 		return Symbol::Find<TypeSymbol>(arg[1], file);
 	}
 	else {
@@ -66,24 +66,23 @@ bool TemplateTypeSymbol::CanBeDeduced(TemplateTypeSymbol* const type) {
 	return true;
 }
 
-Scope TemplateTypeSymbol::Name() {
+Symbols::Name TemplateTypeSymbol::Name() {
 	if (templateArguments.IsEmpty()) {
 		return name;
 	}
 	else {
-		Scope name = Scope();
-		Scope empty = Scope("");
-		List<ScopeList> args;
+		Symbols::Name name = Symbols::Name();
+		List<Symbols::NameList> args;
 
 		for (UInt i = 0; i < templateArguments.Size(); i++) {
-			if (templateArguments[i][0] == empty) {
+			if (templateArguments[i][0].IsEmpty()) {
 				args.Add(templateArguments[i]);
 			}
 			else if (TypeSymbol* const type = TemplateArgument(i)) {
 				args.Add(type->AbsoluteName());
 			}
 			else {
-				args.Add(ScopeList::undefined);
+				args.Add(Symbols::NameList::undefined);
 			}
 		}
 
@@ -131,14 +130,14 @@ void TemplateTypeSymbol::SetTemplateValues(Symbol* const symbol) {
 	Symbol::SetTemplateValues(symbol);
 }
 
-Symbol* TemplateTypeSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
-	if (index >= scopeList.Size()) return this;
+Symbol* TemplateTypeSymbol::FindSymbol(const NameList& nameList, const UInt index, const FileInfo& file) {
+	if (index >= nameList.Size()) return this;
 
-	const Scope& scope = scopeList[index];
+	const Symbols::Name& scope = nameList[index];
 
 	if (scope.name.Size() == 0 && scope.types && !scope.arguments) {
 		for (TemplateTypeSymbol* const variant : templateVariants) {
-			const List<ScopeList> types = *scope.types;
+			const List<NameList> types = *scope.types;
 
 			if (types.Size() != variant->templateArguments.Size()) continue;
 
@@ -152,14 +151,14 @@ Symbol* TemplateTypeSymbol::FindSymbol(const ScopeList& scopeList, const UInt in
 			}
 
 			if (match) {
-				return variant->FindSymbol(scopeList, index + 1, file);
+				return variant->FindSymbol(nameList, index + 1, file);
 			}
 		}
 		
-		FindError(scopeList, index, file);
+		FindError(nameList, index, file);
 		return nullptr;
 	}
 	else {
-		return TypeSymbol::FindSymbol(scopeList, index, file);
+		return TypeSymbol::FindSymbol(nameList, index, file);
 	}
 }

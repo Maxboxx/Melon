@@ -8,7 +8,7 @@
 #include "Boxx/List.h"
 #include "Boxx/Set.h"
 
-#include "Melon/Symbols/ScopeList.h"
+#include "Melon/Symbols/NameList.h"
 
 namespace Melon {
 	namespace Symbols {
@@ -91,13 +91,13 @@ namespace Melon {
 		Boxx::UInt line;
 
 		///T Current Namespace
-		Symbols::ScopeList currentNamespace;
+		Symbols::NameList currentNamespace;
 
-		///T File Scope
-		Symbols::Scope fileScope;
+		///T File Name
+		Symbols::Name fileName;
 
 		///T Included Namespaces
-		Boxx::Set<Symbols::ScopeList> includedNamespaces;
+		Boxx::Set<Symbols::NameList> includedNamespaces;
 
 		///T Statement number
 		/// The statement number of this file location
@@ -118,7 +118,7 @@ namespace Melon {
 		}
 
 		///T Constructor with Namespaces
-		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Boxx::UInt statementNumber, const Symbols::ScopeList& currentNamespace, const Boxx::Set<Symbols::ScopeList>& includedNamespaces) {
+		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Boxx::UInt statementNumber, const Symbols::NameList& currentNamespace, const Boxx::Set<Symbols::NameList>& includedNamespaces) {
 			this->filename = filename;
 			this->line = line;
 			this->statement = statementNumber;

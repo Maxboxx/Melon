@@ -12,7 +12,7 @@ using namespace Melon::Parsing;
 NodePtr NameParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Name) {
 		Pointer<NameNode> node = new NameNode(info.scope, info.GetFileInfo(info.Current().line));
-		node->name = Scope(info.Current().value);
+		node->name = Name(info.Current().value);
 		info.index++;
 		return node;
 	}

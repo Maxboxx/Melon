@@ -1,6 +1,6 @@
 #include "OptionalToBooleanNode.h"
 
-#include "Melon/Symbols/ScopeList.h"
+#include "Melon/Symbols/NameList.h"
 
 #include "Melon/Nodes/BooleanNode.h"
 

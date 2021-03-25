@@ -82,7 +82,7 @@ ScanResult ForConditionNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList ForConditionNode::FindSideEffectScope(const bool assign) {
+NameList ForConditionNode::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(loopInit->GetSideEffectScope(assign), CombineSideEffects(loopCondition->GetSideEffectScope(assign), loopStep->GetSideEffectScope(assign)));
 }
 

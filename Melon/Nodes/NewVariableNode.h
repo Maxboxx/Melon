@@ -14,10 +14,10 @@ namespace Melon {
 		public:
 			/// List of relative types for the new variables.
 			///p If the list only contains one type all variables will be of that type.
-			Boxx::List<Symbols::ScopeList> types;
+			Boxx::List<Symbols::NameList> types;
 
 			/// All variable names to create.
-			Boxx::List<Symbols::Scope> names;
+			Boxx::List<Symbols::Name> names;
 
 			/// All attributes for each variable.
 			Boxx::List<Symbols::VariableAttributes> attributes;
@@ -26,7 +26,7 @@ namespace Melon {
 			~NewVariableNode();
 			
 			/// Gets the absolute name of the variables.
-			Boxx::List<Symbols::ScopeList> GetVariables() const;
+			Boxx::List<Symbols::NameList> GetVariables() const;
 
 			/// Get the type of the specified type index.
 			Symbols::TypeSymbol* GetType(const Boxx::UInt index) const;

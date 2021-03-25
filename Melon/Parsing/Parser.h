@@ -11,7 +11,7 @@
 
 #include "Melon/Symbols/Symbol.h"
 #include "Melon/Symbols/ScopeSymbol.h"
-#include "Melon/Symbols/ScopeList.h"
+#include "Melon/Symbols/NameList.h"
 
 #include "Melon/Nodes/Node.h"
 #include "Melon/Nodes/RootNode.h"
@@ -29,10 +29,10 @@ namespace Melon {
 			Boxx::String filename;
 
 			///T File
-			Symbols::Scope currentFile;
+			Symbols::Name currentFile;
 
 			///T Namespace
-			Symbols::ScopeList currentNamespace;
+			Symbols::NameList currentNamespace;
 
 			///T Tokens
 			/// The tokens to parse
@@ -59,7 +59,7 @@ namespace Melon {
 
 			///T Included namespaces
 			/// All namespaces included by the current file
-			Boxx::Set<Symbols::ScopeList> includedNamespaces;
+			Boxx::Set<Symbols::NameList> includedNamespaces;
 
 			///T Statement number
 			/// Used to keep track of the statement number of symbols

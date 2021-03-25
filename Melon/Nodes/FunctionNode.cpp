@@ -111,7 +111,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 	info->scopeInfo.Reset();
 	info->file = file;
 
-	if (sym->AbsoluteName().Pop().Last() == Scope::Init) {
+	if (sym->AbsoluteName().Pop().Last() == Name::Init) {
 		info->init = true;
 		info->type = sym->Parent()->Parent<TypeSymbol>();
 		info->type->PrepareInit();
@@ -122,7 +122,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 
 	// Check if member variables are initialized
 	if (info->init && !info->type->IsInitialized()) {
-		for (const Scope& var : info->type->UnassignedMembers()) {
+		for (const Name& var : info->type->UnassignedMembers()) {
 			ErrorLog::Error(CompileError(CompileError::VarNotInitStart + var.ToString() + CompileError::VarNotInitEnd, file));
 		}
 	}
@@ -212,7 +212,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 	// Create argument list
 	sb += "(";
 
-	const UInt start = (!sym->arguments.IsEmpty() && sym->arguments[0][0] == Scope::Self) ? 1 : 0;
+	const UInt start = (!sym->arguments.IsEmpty() && sym->arguments[0][0] == Name::Self) ? 1 : 0;
 
 	for (UInt i = start; i < sym->arguments.Size(); i++) {
 		if (i > start) sb += ", ";

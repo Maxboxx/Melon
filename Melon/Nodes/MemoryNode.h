@@ -12,7 +12,7 @@ namespace Melon {
 			Kiwi::MemoryLocation mem;
 
 			/// The absolute type name of the node.
-			Symbols::ScopeList type;
+			Symbols::NameList type;
 
 			MemoryNode(const Boxx::Int offset);
 			MemoryNode(const Kiwi::MemoryLocation& mem);

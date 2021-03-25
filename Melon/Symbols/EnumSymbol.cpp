@@ -23,7 +23,7 @@ EnumSymbol* EnumSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& re
 	EnumSymbol* const sym = new EnumSymbol(size, isSigned, file);
 	sym->values = values;
 
-	for (const Pair<Scope, Symbol*>& s : symbols) {
+	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
 		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
 	}
 

@@ -69,7 +69,7 @@ void SwitchNode::CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& 
 			nodeArgs.Add(switchInfo.match);
 			nodeArgs.Add(node);
 
-			CompiledNode comp = SymbolTable::FindOperator(Scope::Equal, this->match->Type(), node->Type(), node->file)->symbolNode->Compile(nodeArgs, info);
+			CompiledNode comp = SymbolTable::FindOperator(Name::Equal, this->match->Type(), node->Type(), node->file)->symbolNode->Compile(nodeArgs, info);
 			switchInfo.cn.AddInstructions(comp.instructions);
 
 			Instruction eq = Instruction(InstructionType::Ne, 1);
@@ -280,7 +280,7 @@ void SwitchNode::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) con
 		if (switchInfo.init) {
 			info.init = true;
 
-			for (const Scope& var : switchInfo.scope.unassigned) {
+			for (const Name& var : switchInfo.scope.unassigned) {
 				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
 					v->isAssigned = false;
 				}
@@ -316,13 +316,13 @@ void SwitchNode::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 		}
 
 		if (switchInfo.init) {
-			for (const Scope& var : switchInfo.scope.unassigned) {
+			for (const Name& var : switchInfo.scope.unassigned) {
 				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
 					v->isAssigned = true;
 				}
 			}
 
-			for (const Scope& var : switchInfo.scope.unassigned) {
+			for (const Name& var : switchInfo.scope.unassigned) {
 				if (VariableSymbol* const v = info.type->Find<VariableSymbol>(var, FileInfo())) {
 					v->isAssigned = false;
 				}
@@ -404,15 +404,15 @@ ScanResult SwitchNode::Scan(ScanInfoStack& info) {
 			r.SelfUseCheck(info, node->file);
 			result |= r;
 
-			SymbolTable::FindOperator(Scope::Equal, matchType, node->Type(), node->file);
+			SymbolTable::FindOperator(Name::Equal, matchType, node->Type(), node->file);
 		}
 	}
 
 	return result;
 }
 
-ScopeList SwitchNode::FindSideEffectScope(const bool assign) {
-	ScopeList list = match->GetSideEffectScope(assign);
+NameList SwitchNode::FindSideEffectScope(const bool assign) {
+	NameList list = match->GetSideEffectScope(assign);
 
 	for (NodePtr& node : nodes) {
 		list = CombineSideEffects(list, node->GetSideEffectScope(assign));

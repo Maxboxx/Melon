@@ -45,13 +45,13 @@ namespace Melon {
 			FunctionSymbol* ExplicitConversionFrom(TypeSymbol* const type);
 
 			/// Finds a method of the current type.
-			FunctionSymbol* FindMethod(const Scope& name, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindMethod(const Symbols::Name& name, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 
 			/// Finds a method of the current type.
-			FunctionSymbol* FindMethod(const Scope& name, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindMethod(const Symbols::Name& name, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 
 			/// Finds a unary operator of the current type.
-			FunctionSymbol* FindUnaryOperator(const Scope& name, const FileInfo& file);
+			FunctionSymbol* FindUnaryOperator(const Symbols::Name& name, const FileInfo& file);
 
 			/// Checks if the type is or inherits from the specified type.
 			virtual bool IsOfType(TypeSymbol* const type);
@@ -66,7 +66,7 @@ namespace Melon {
 			virtual void CompleteInit();
 
 			/// Get all unassigned members.
-			virtual Boxx::Set<Scope> UnassignedMembers();
+			virtual Boxx::Set<Symbols::Name> UnassignedMembers();
 
 			/// Calculates the size of the type and updates the internal value.
 			virtual void UpdateSize();

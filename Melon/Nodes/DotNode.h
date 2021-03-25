@@ -12,7 +12,7 @@ namespace Melon {
 			NodePtr node;
 
 			/// The name of the dot operator.
-			Symbols::Scope name;
+			Symbols::Name name;
 
 			DotNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DotNode();
@@ -26,7 +26,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 	}
 }

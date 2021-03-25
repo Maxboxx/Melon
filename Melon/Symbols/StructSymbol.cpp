@@ -23,7 +23,7 @@ StructSymbol* StructSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>
 	StructSymbol* const sym = new StructSymbol(file);
 	sym->members = members.Copy();
 
-	for (const Pair<Scope, Symbol*>& s : symbols) {
+	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
 		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
 	}
 
@@ -46,7 +46,7 @@ StructSymbol* StructSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>
 }
 
 bool StructSymbol::IsInitialized() {
-	for (const Scope& name : members) {
+	for (const Symbols::Name& name : members) {
 		if (VariableSymbol* const var = Find<VariableSymbol>(name, file)) {
 			if (!var->isAssigned) {
 				return false;
@@ -58,7 +58,7 @@ bool StructSymbol::IsInitialized() {
 }
 
 void StructSymbol::PrepareInit() {
-	for (const Scope& name : members) {
+	for (const Symbols::Name& name : members) {
 		if (VariableSymbol* const var = Find<VariableSymbol>(name, file)) {
 			var->isAssigned = false;
 		}
@@ -66,17 +66,17 @@ void StructSymbol::PrepareInit() {
 }
 
 void StructSymbol::CompleteInit() {
-	for (const Scope& name : members) {
+	for (const Symbols::Name& name : members) {
 		if (VariableSymbol* const var = Find<VariableSymbol>(name, file)) {
 			var->isAssigned = true;
 		}
 	}
 }
 
-Set<Scope> StructSymbol::UnassignedMembers() {
-	Set<Scope> vars;
+Set<Symbols::Name> StructSymbol::UnassignedMembers() {
+	Set<Symbols::Name> vars;
 
-	for (const Scope& member : members) {
+	for (const Symbols::Name& member : members) {
 		if (VariableSymbol* const var = Find<VariableSymbol>(member, file)) {
 			if (!var->isAssigned) {
 				vars.Add(member);
@@ -90,7 +90,7 @@ Set<Scope> StructSymbol::UnassignedMembers() {
 void StructSymbol::UpdateSize() {
 	size = 0;
 
-	for (const Scope& name : members) {
+	for (const Symbols::Name& name : members) {
 		if (VariableSymbol* const var = Find<VariableSymbol>(name, file)) {
 			if (TypeSymbol* const type = var->Type()) {
 				if (type->Size() == 0) {

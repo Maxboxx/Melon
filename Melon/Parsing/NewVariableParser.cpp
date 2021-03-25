@@ -21,7 +21,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 	Pointer<NewVariableNode> node = new NewVariableNode(info.scope, info.GetFileInfo(info.Current().line));
 
-	while (const Optional<ScopeList> type = ParseType(info)) {
+	while (const Optional<NameList> type = ParseType(info)) {
 		node->types.Add(*type);
 
 		if (single && node->types.Size() == 1) break;
@@ -49,7 +49,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 				break;
 			}
 
-			node->names.Add(Scope(info.Current().value));
+			node->names.Add(Name(info.Current().value));
 
 			if (info.Current().type == TokenType::Name) {
 				if (upper.Match(info.Current().value)) {
@@ -79,10 +79,10 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 	return nullptr;
 }
 
-Optional<ScopeList> NewVariableParser::ParseType(ParsingInfo& info) {
+Optional<NameList> NewVariableParser::ParseType(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Discard) {
 		info.index++;
-		return ScopeList::Discard;
+		return NameList::Discard;
 	}
 
 	return TypeParser::Parse(info);

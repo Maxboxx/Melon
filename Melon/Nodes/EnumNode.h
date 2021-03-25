@@ -13,10 +13,10 @@ namespace Melon {
 		class EnumNode : public Node {
 		public:
 			/// The name of the enum.
-			Symbols::Scope name;
+			Symbols::Name name;
 
 			/// The values of the enum.
-			Boxx::List<Symbols::Scope> values;
+			Boxx::List<Symbols::Name> values;
 
 			/// The enum symbol.
 			Symbols::EnumSymbol* symbol;

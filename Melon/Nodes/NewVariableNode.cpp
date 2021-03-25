@@ -22,9 +22,9 @@ NewVariableNode::~NewVariableNode() {
 }
 
 TypeSymbol* NewVariableNode::GetType(const UInt index) const {
-	ScopeList type = types[types.Size() > 1 ? index : 0];
+	NameList type = types[types.Size() > 1 ? index : 0];
 
-	if (type == ScopeList::Discard) {
+	if (type == NameList::Discard) {
 		return nullptr;
 	}
 
@@ -42,12 +42,12 @@ TypeSymbol* NewVariableNode::Type() const {
 	return GetType(0);
 }
 
-List<ScopeList> NewVariableNode::GetVariables() const {
-	List<ScopeList> vars{names.Size()};
+List<NameList> NewVariableNode::GetVariables() const {
+	List<NameList> vars{names.Size()};
 
-	for (const Scope& n : names) {
-		if (n == ScopeList::Discard.Last()) {
-			vars.Add(ScopeList::Discard);
+	for (const Name& n : names) {
+		if (n == NameList::Discard.Last()) {
+			vars.Add(NameList::Discard);
 		}
 		else {
 			vars.Add(scope->Find(n, file)->AbsoluteName());
@@ -61,7 +61,7 @@ UInt NewVariableNode::GetSize() const {
 	UInt size = 0;
 
 	for (UInt i = 0; i < names.Size(); i++) {
-		if (names[i] == ScopeList::Discard.Last()) continue;
+		if (names[i] == NameList::Discard.Last()) continue;
 
 		if ((attributes[i] & VariableAttributes::Ref) != VariableAttributes::None) {
 			size += StackPtr::ptrSize;
@@ -110,8 +110,8 @@ CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurat
 }
 
 void NewVariableNode::IncludeScan(ParsingInfo& info) {
-	for (const ScopeList& type : types) {
-		if (type == ScopeList::Discard) continue;
+	for (const NameList& type : types) {
+		if (type == NameList::Discard) continue;
 
 		while (true) {
 			Symbol* s = SymbolTable::Find(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);

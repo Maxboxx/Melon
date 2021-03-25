@@ -36,7 +36,7 @@ namespace Melon {
 
 			/// The method name.
 			///p Only used if {isMethod} is {true}.
-			Symbols::Scope methodName;
+			Symbols::Name methodName;
 
 			/// {true} if the call is a call operator.
 			bool op = false;
@@ -65,9 +65,9 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
-			Symbols::Scope GetFuncName() const;
+			Symbols::Name GetFuncName() const;
 
-			Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>> GetTemplateTypes(const Boxx::Optional<Boxx::List<Symbols::ScopeList>>& types) const;
+			Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>> GetTemplateTypes(const Boxx::Optional<Boxx::List<Symbols::NameList>>& types) const;
 			Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>> GetArgumentTypes() const;
 
 			Symbols::FunctionSymbol* GetFunctionSymbol(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;

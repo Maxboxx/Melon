@@ -23,7 +23,7 @@ ConvertNode::~ConvertNode() {
 }
 
 TypeSymbol* ConvertNode::Type() const {
-	TypeSymbol* const s = SymbolTable::Find<TypeSymbol>(type, scope ? scope->AbsoluteName() : ScopeList(true), file, SymbolTable::SearchOptions::ReplaceTemplates);
+	TypeSymbol* const s = SymbolTable::Find<TypeSymbol>(type, scope ? scope->AbsoluteName() : NameList(true), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 	if (s == nullptr) return nullptr;
 
@@ -81,7 +81,7 @@ ScanResult ConvertNode::Scan(ScanInfoStack& info) {
 	return node->Scan(info);
 }
 
-ScopeList ConvertNode::FindSideEffectScope(const bool assign) {
+NameList ConvertNode::FindSideEffectScope(const bool assign) {
 	// TODO: Check operator function
 	return node->GetSideEffectScope(assign);
 }

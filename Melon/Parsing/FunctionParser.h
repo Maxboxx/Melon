@@ -18,8 +18,8 @@ namespace Melon {
 
 		private:
 			struct Argument {
-				Symbols::Scope name;
-				Symbols::ScopeList type;
+				Symbols::Name name;
+				Symbols::NameList type;
 				Symbols::VariableAttributes attributes;
 			};
 
@@ -27,18 +27,18 @@ namespace Melon {
 				Symbols::FunctionAttributes attributes;
 				bool isMethod;
 				bool isOperator;
-				Symbols::Scope name;
+				Symbols::Name name;
 				Boxx::List<Argument> arguments;
-				Boxx::List<Symbols::ScopeList> templateArgs;
-				Boxx::List<Symbols::ScopeList> returnTypes;
+				Boxx::List<Symbols::NameList> templateArgs;
+				Boxx::List<Symbols::NameList> returnTypes;
 
 				~FunctionHead() {}
 			};
 
-			static Boxx::Optional<Symbols::Scope> ParseFunctionName(ParsingInfo& info, const bool isPlain);
-			static Boxx::Optional<Symbols::Scope> ParseOperatorName(ParsingInfo& info);
-			static Boxx::Optional<Symbols::Scope> ParseName        (const bool isOperator, ParsingInfo& info, const bool isPlain);
-			static Boxx::List<Symbols::ScopeList> ParseReturnTypes (ParsingInfo& info);
+			static Boxx::Optional<Symbols::Name> ParseFunctionName(ParsingInfo& info, const bool isPlain);
+			static Boxx::Optional<Symbols::Name> ParseOperatorName(ParsingInfo& info);
+			static Boxx::Optional<Symbols::Name> ParseName        (const bool isOperator, ParsingInfo& info, const bool isPlain);
+			static Boxx::List<Symbols::NameList> ParseReturnTypes (ParsingInfo& info);
 			static Symbols::FunctionAttributes    ParseAttributes  (ParsingInfo& info, const bool isPlain);
 			static Boxx::List<Argument>           ParseArguments   (ParsingInfo& info);
 			static Boxx::Optional<FunctionHead>   ParseFunctionHead(ParsingInfo& info, const bool isPlain);

@@ -27,11 +27,11 @@ SafeUnwrapEndNode::~SafeUnwrapEndNode() {
 }
 
 TypeSymbol* SafeUnwrapEndNode::Type() const  {
-	Scope scope = Scope::Optional;
-	scope.types = List<ScopeList>();
+	Name scope = Name::Optional;
+	scope.types = List<NameList>();
 	scope.types->Add(node->Type()->AbsoluteName());
 
-	return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList().Add(scope), file);
+	return SymbolTable::FindAbsolute<TypeSymbol>(NameList(scope), file);
 }
 
 CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
@@ -95,24 +95,24 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	node->IncludeScan(info);
 
-	const ScopeList nodeType = node->Type()->AbsoluteName();
+	const NameList nodeType = node->Type()->AbsoluteName();
 
-	if (nodeType == ScopeList::undefined) {
+	if (nodeType == NameList::undefined) {
 		throw IncludeScanError();
 	}
 
-	Scope type = Scope::Optional;
-	type.types = List<ScopeList>();
+	Name type = Name::Optional;
+	type.types = List<NameList>();
 	type.types->Add(nodeType);
 
-	Node::root->AddTemplateSpecialization(ScopeList(true).Add(type), scope->AbsoluteName(), file);
+	Node::root->AddTemplateSpecialization(NameList(true, type), scope->AbsoluteName(), file);
 }
 
 ScanResult SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {
 	return node->Scan(info);
 }
 
-ScopeList SafeUnwrapEndNode::FindSideEffectScope(const bool assign) {
+NameList SafeUnwrapEndNode::FindSideEffectScope(const bool assign) {
 	return node->GetSideEffectScope(assign);
 }
 

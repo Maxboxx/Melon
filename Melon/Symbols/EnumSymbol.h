@@ -8,8 +8,8 @@ namespace Melon {
 		/// Contains information about an enum.
 		class EnumSymbol : public IntegerSymbol {
 		public:
-			/// A list of all values.
-			Boxx::List<Scope> values;
+			/// A list of names for all values.
+			Boxx::List<Symbols::Name> values;
 
 			EnumSymbol(const Boxx::UInt size, const bool isSigned, const FileInfo& file);
 			~EnumSymbol();

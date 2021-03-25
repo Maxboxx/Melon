@@ -32,7 +32,7 @@ TypeSymbol* IntegerNode::Type() const {
 			return (TypeSymbol*)SymbolTable::ULong;
 		}
 		else {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Huge, file);
+			return SymbolTable::FindAbsolute<TypeSymbol>(NameList::Huge, file);
 		}
 	}
 	// Signed integers
@@ -50,7 +50,7 @@ TypeSymbol* IntegerNode::Type() const {
 			return (TypeSymbol*)SymbolTable::Long;
 		}
 		else {
-			return SymbolTable::FindAbsolute<TypeSymbol>(ScopeList::Huge, file);
+			return SymbolTable::FindAbsolute<TypeSymbol>(NameList::Huge, file);
 		}
 	}
 }

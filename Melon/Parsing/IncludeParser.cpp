@@ -16,17 +16,17 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Include) {
 		info.index++;
 
-		ScopeList include = ScopeList();
+		NameList include = NameList();
 
 		if (info.Current().type == TokenType::Name) {
-			include = include.Add(Scope(info.Current().value));
+			include = include.Add(Name(info.Current().value));
 			info.index++;
 
 			while (true) {
 				if (info.Current().type != TokenType::Dot) break;
 
 				if (info.Current(1).type == TokenType::Name) {
-					include = include.Add(Scope(info.Current(1).value));
+					include = include.Add(Name(info.Current(1).value));
 					info.index += 2;
 				}
 				else {
@@ -89,7 +89,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 	return false;
 }
 
-void IncludeParser::ParseInclude(const ScopeList& include, ParsingInfo& info) {
+void IncludeParser::ParseInclude(const NameList& include, ParsingInfo& info) {
 	if (NamespaceSymbol* const ns = SymbolTable::FindAbsolute<NamespaceSymbol>(include.Pop(), FileInfo())) {
 		String dir = ns->IncludedPath() + "/" + include.Last().ToString();
 
@@ -99,18 +99,18 @@ void IncludeParser::ParseInclude(const ScopeList& include, ParsingInfo& info) {
 	}
 }
 
-void IncludeParser::ParseFile(const String& filename, const ScopeList& include, const Scope& includeFile, ParsingInfo& info) {
+void IncludeParser::ParseFile(const String& filename, const NameList& include, const Name& includeFile, ParsingInfo& info) {
 	String file = info.filename;
 	info.filename = filename;
 
-	ScopeList currentNamespace = info.currentNamespace;
+	NameList currentNamespace = info.currentNamespace;
 	info.currentNamespace = include;
 
-	Scope currentFile = info.currentFile;
+	Name currentFile = info.currentFile;
 	info.currentFile = includeFile;
 
-	Set<ScopeList> namespaces = info.includedNamespaces;
-	info.includedNamespaces = Set<ScopeList>();
+	Set<NameList> namespaces = info.includedNamespaces;
+	info.includedNamespaces = Set<NameList>();
 
 	List<Token> tokens = info.tokens;
 	info.tokens = List<Token>();
@@ -146,9 +146,9 @@ void IncludeParser::ParseFile(const String& filename, const ScopeList& include, 
 	info.scope = scope;
 }
 
-void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList& include) {
+void IncludeParser::CreateIncludeSymbols(const String& filename, const NameList& include) {
 	for (UInt i = 0; i < include.Size(); i++) {
-		ScopeList includeScopes;
+		NameList includeScopes;
 
 		for (UInt u = 0; u <= i; u++) {
 			includeScopes = includeScopes.Add(include[u]);
@@ -168,14 +168,14 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const ScopeList
 	}
 }
 
-void IncludeParser::ParseDirectory(const String& directory, const ScopeList& include, ParsingInfo& info) {
+void IncludeParser::ParseDirectory(const String& directory, const NameList& include, ParsingInfo& info) {
 	CreateIncludeSymbols(directory, include);
 
 	for (const String& file : System::GetFilesInDirectory(directory)) {
 		Array<String> parts = file.Split(".");
 
 		if (parts.Size() == 2 && parts[1] == "melon") {
-			ParseFile(directory + "/" + file, include, Scope(parts[0]), info);
+			ParseFile(directory + "/" + file, include, Name(parts[0]), info);
 		}
 	}
 }

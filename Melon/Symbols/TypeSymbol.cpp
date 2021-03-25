@@ -26,7 +26,7 @@ UInt TypeSymbol::MemorySize() const {
 }
 
 FunctionSymbol* TypeSymbol::ImplicitConversionTo(TypeSymbol* const type) {
-	FunctionSymbol* const as = Contains<FunctionSymbol>(Scope::As);
+	FunctionSymbol* const as = Contains<FunctionSymbol>(Symbols::Name::As);
 
 	if (as == nullptr) return nullptr;
 
@@ -40,7 +40,7 @@ FunctionSymbol* TypeSymbol::ImplicitConversionTo(TypeSymbol* const type) {
 }
 
 FunctionSymbol* TypeSymbol::ExplicitConversionTo(TypeSymbol* const type) {
-	FunctionSymbol* const as = Contains<FunctionSymbol>(Scope::As);
+	FunctionSymbol* const as = Contains<FunctionSymbol>(Symbols::Name::As);
 
 	if (as == nullptr) return nullptr;
 
@@ -55,8 +55,8 @@ FunctionSymbol* TypeSymbol::ExplicitConversionTo(TypeSymbol* const type) {
 
 
 FunctionSymbol* TypeSymbol::ImplicitConversionFrom(TypeSymbol* const type) {
-	Scope as = Scope::As;
-	as.arguments = List<ScopeList>();
+	Symbols::Name as = Symbols::Name::As;
+	as.arguments = List<Symbols::NameList>();
 	as.arguments->Add(type->AbsoluteName());
 
 	FunctionSymbol* const op = Contains<FunctionSymbol>(as);
@@ -70,14 +70,14 @@ FunctionSymbol* TypeSymbol::ImplicitConversionFrom(TypeSymbol* const type) {
 }
 
 FunctionSymbol* TypeSymbol::ExplicitConversionFrom(TypeSymbol* const type) {
-	Scope as = Scope::As;
-	as.arguments = List<ScopeList>();
+	Symbols::Name as = Symbols::Name::As;
+	as.arguments = List<Symbols::NameList>();
 	as.arguments->Add(type->AbsoluteName());
 
 	return Contains<FunctionSymbol>(as);
 }
 
-FunctionSymbol* TypeSymbol::FindMethod(const Scope& name, const List<TypeSymbol*>& args, const FileInfo& file) {
+FunctionSymbol* TypeSymbol::FindMethod(const Symbols::Name& name, const List<TypeSymbol*>& args, const FileInfo& file) {
 	if (FunctionSymbol* const f = Find<FunctionSymbol>(name, file)) {
 		return f->FindMethodOverload(args, file);
 	}
@@ -85,7 +85,7 @@ FunctionSymbol* TypeSymbol::FindMethod(const Scope& name, const List<TypeSymbol*
 	return nullptr;
 }
 
-FunctionSymbol* TypeSymbol::FindMethod(const Scope& name, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+FunctionSymbol* TypeSymbol::FindMethod(const Symbols::Name& name, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
 	if (FunctionSymbol* const f = Find<FunctionSymbol>(name, file)) {
 		return f->FindMethodOverload(templateArgs, args, file);
 	}
@@ -93,7 +93,7 @@ FunctionSymbol* TypeSymbol::FindMethod(const Scope& name, const List<TypeSymbol*
 	return nullptr;
 }
 
-FunctionSymbol* TypeSymbol::FindUnaryOperator(const Scope& name, const FileInfo& file) {
+FunctionSymbol* TypeSymbol::FindUnaryOperator(const Symbols::Name& name, const FileInfo& file) {
 	return nullptr;
 }
 
@@ -113,8 +113,8 @@ void TypeSymbol::CompleteInit() {
 
 }
 
-Set<Scope> TypeSymbol::UnassignedMembers() {
-	return Set<Scope>();
+Set<Symbols::Name> TypeSymbol::UnassignedMembers() {
+	return Set<Symbols::Name>();
 }
 
 void TypeSymbol::UpdateSize() {

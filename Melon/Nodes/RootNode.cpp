@@ -102,9 +102,9 @@ List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVar
 
 	// Compile static memory
 	for (const Tuple<IntegerSymbol*, InstructionType, Long, Long>& integer : integers) {
-		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Scope("min"), file))) {
+		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Name("min"), file))) {
 			Instruction name = Instruction(InstructionType::Static);
-			name.instructionName = integer.value1->Find<VariableSymbol>(Scope("min"), file)->AbsoluteName().ToString();
+			name.instructionName = integer.value1->Find<VariableSymbol>(Name("min"), file)->AbsoluteName().ToString();
 			c.instructions.Add(name);
 
 			Instruction value = Instruction(integer.value2);
@@ -112,9 +112,9 @@ List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVar
 			c.instructions.Add(value);
 		}
 
-		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Scope("max"), file))) {
+		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Name("max"), file))) {
 			Instruction name = Instruction(InstructionType::Static);
-			name.instructionName = integer.value1->Find<VariableSymbol>(Scope("max"), file)->AbsoluteName().ToString();
+			name.instructionName = integer.value1->Find<VariableSymbol>(Name("max"), file)->AbsoluteName().ToString();
 			c.instructions.Add(name);
 
 			Instruction value = Instruction(integer.value2);
@@ -198,13 +198,13 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 	includeScanning = false;
 }
 
-void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const bool scan) {
+void RootNode::AddTemplateSpecialization(const NameList& name, const NameList& scope, const FileInfo& file, const bool scan) {
 	// Find template args
-	Tuple<TemplateTypeSymbol*, List<ScopeList>> templateInfo = FindTemplateArgs(name, scope, file);
+	Tuple<TemplateTypeSymbol*, List<NameList>> templateInfo = FindTemplateArgs(name, scope, file);
 
 	if (templateInfo.value1 == nullptr) return;
 
-	Scope templateScope = templateInfo.value1->Name().Copy();
+	Name templateScope = templateInfo.value1->Name().Copy();
 	templateScope.types = templateInfo.value2;
 
 	// Check if the type has already been specialized
@@ -231,12 +231,12 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 		templateInfo.value1->Parent()->Cast<TemplateTypeSymbol>()->AddTemplateVariant(sym);
 		sym->templateParent = templateInfo.value1;
 
-		Pointer<StructNode> sn = new StructNode(SymbolTable::FindAbsolute(ScopeList(true), file), file);
+		Pointer<StructNode> sn = new StructNode(SymbolTable::FindAbsolute(NameList(true), file), file);
 		sn->name = sym->Parent()->Name();
 
-		List<ScopeList> templateArgs;
+		List<NameList> templateArgs;
 
-		for (const ScopeList& arg : sym->templateArguments) {
+		for (const NameList& arg : sym->templateArguments) {
 			templateArgs.Add(arg);
 		}
 
@@ -245,7 +245,7 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 		sn->symbol = sym;
 		sym->node = sn;
 
-		for (const Scope& var : sym->members) {
+		for (const Name& var : sym->members) {
 			sn->vars.Add(var);
 		}
 
@@ -258,26 +258,26 @@ void RootNode::AddTemplateSpecialization(const ScopeList& name, const ScopeList&
 	}
 }
 
-Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const ScopeList& name, const ScopeList& scope, const FileInfo& file) {
-	List<ScopeList> templateArgs = name.Last().types->Copy();
+Tuple<TemplateTypeSymbol*, List<NameList>> RootNode::FindTemplateArgs(const NameList& name, const NameList& scope, const FileInfo& file) {
+	List<NameList> templateArgs = name.Last().types->Copy();
 
 	// Find absolute name for template types
-	for (ScopeList& type : templateArgs) {
+	for (NameList& type : templateArgs) {
 		if (Symbol* const s = SymbolTable::Find(type, scope, file)) {
 			type = s->AbsoluteName();
 		}
 		else {
-			return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, List<ScopeList>());
+			return Tuple<TemplateTypeSymbol*, List<NameList>>(nullptr, List<NameList>());
 		}
 	}
 
-	ScopeList list = name.Last().name.Size() == 0 ? name.Pop() : name.Pop().Add(Scope(name.Last().name));
+	NameList list = name.Last().name.Size() == 0 ? name.Pop() : name.Pop().Add(Name(name.Last().name));
 
 	// Find base template type symbol
 	TemplateTypeSymbol* const sym = SymbolTable::Find<TemplateTypeSymbol>(list, scope, file);
 
 	if (sym == nullptr) {
-		return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, templateArgs);
+		return Tuple<TemplateTypeSymbol*, List<NameList>>(nullptr, templateArgs);
 	}
 
 	bool found = false;
@@ -298,14 +298,14 @@ Tuple<TemplateTypeSymbol*, List<ScopeList>> RootNode::FindTemplateArgs(const Sco
 			}
 
 			if (match) {
-				return Tuple<TemplateTypeSymbol*, List<ScopeList>>(variant, templateArgs);
+				return Tuple<TemplateTypeSymbol*, List<NameList>>(variant, templateArgs);
 			}
 		}
 	}
 
 	// TODO: Better error
 	ErrorLog::Error(SymbolError("template error", file));
-	return Tuple<TemplateTypeSymbol*, List<ScopeList>>(nullptr, templateArgs);
+	return Tuple<TemplateTypeSymbol*, List<NameList>>(nullptr, templateArgs);
 }
 
 ScanResult RootNode::Scan(ScanInfoStack& info) {
@@ -399,7 +399,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 	const String dir = options.outputDirectory + "melon/";
 	System::CreateDirectory(options.outputDirectory + "melon");
 
-	ScopeList currentNamespace = ScopeList::undefined;
+	NameList currentNamespace = NameList::undefined;
 	String fileDir = dir;
 
 	Regex filename = Regex("~[/\\]+%.melon$");
@@ -445,7 +445,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 			sb = StringBuilder();
 
 			// Convert includes to string
-			for (const ScopeList& include : node->file.includedNamespaces) {
+			for (const NameList& include : node->file.includedNamespaces) {
 				sb += "include ";
 				sb += include.ToString();
 				sb += "\n";

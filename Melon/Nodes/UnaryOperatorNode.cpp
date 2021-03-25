@@ -18,7 +18,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-UnaryOperatorNode::UnaryOperatorNode(Symbol* const scope, const Scope& op, const FileInfo& file) : Node(scope, file) {
+UnaryOperatorNode::UnaryOperatorNode(Symbol* const scope, const Name& op, const FileInfo& file) : Node(scope, file) {
 	this->op = op;
 }
 
@@ -48,16 +48,16 @@ TypeSymbol* UnaryOperatorNode::Type() const {
 }
 
 Symbol* UnaryOperatorNode::GetSymbol() const {
-	if (op == Scope::Unwrap) {
+	if (op == Name::Unwrap) {
 		if (TypeSymbol* const type = node->Type()) {
-			return type->Find<VariableSymbol>(Scope::Value, file);
+			return type->Find<VariableSymbol>(Name::Value, file);
 		}
 	}
 
 	return nullptr;
 }
 
-Scope UnaryOperatorNode::GetOperator() const {
+Name UnaryOperatorNode::GetOperator() const {
 	return op;
 }
 
@@ -98,7 +98,7 @@ ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	ScanResult result = node->Scan(info);
 	result.SelfUseCheck(info, node->file);
 
-	if (op == Scope::Unwrap) {
+	if (op == Name::Unwrap) {
 		// TODO: fix
 		ErrorLog::Warning(WarningError("unwrap operator does not work properly for nil values", file));
 	}
@@ -110,7 +110,7 @@ ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList UnaryOperatorNode::FindSideEffectScope(const bool assign) {
+NameList UnaryOperatorNode::FindSideEffectScope(const bool assign) {
 	// TODO: Check operator function
 	return node->GetSideEffectScope(assign);
 }
@@ -120,7 +120,7 @@ NodePtr UnaryOperatorNode::Optimize(OptimizeInfo& info) {
 
 	// TODO: Add more operators
 	if (node->IsImmediate()) {
-		if (op == Scope::Not) {
+		if (op == Name::Not) {
 			Pointer<BooleanNode> bn = new BooleanNode(node->file);
 			bn->boolean = node->GetImmediate() == 0;
 			info.optimized = true;
@@ -132,7 +132,7 @@ NodePtr UnaryOperatorNode::Optimize(OptimizeInfo& info) {
 }
 
 StringBuilder UnaryOperatorNode::ToMelon(const UInt indent) const {
-	if (op == Scope::Unwrap) {
+	if (op == Name::Unwrap) {
 		StringBuilder sb = node->ToMelon(indent);
 		sb += op.ToString();
 		return sb;
@@ -140,7 +140,7 @@ StringBuilder UnaryOperatorNode::ToMelon(const UInt indent) const {
 	else {
 		StringBuilder sb = op.ToString();
 
-		if (op == Scope::Not) sb += " ";
+		if (op == Name::Not) sb += " ";
 
 		sb += node->ToMelon(indent);
 		return sb;

@@ -33,7 +33,7 @@ bool StructNode::IsRecursive(StructSymbol* const symbol) const {
 	if (symbol->isRecursive) return false;
 	if (symbol == this->symbol) return true;
 	
-	for (const Scope& name : symbol->members) {
+	for (const Name& name : symbol->members) {
 		if (VariableSymbol* const var = symbol->Find<VariableSymbol>(name, file)) {
 			if (TypeSymbol* const type = var->Type()) {
 				if (StructSymbol* const s = type->Cast<StructSymbol>()) {
@@ -48,9 +48,9 @@ bool StructNode::IsRecursive(StructSymbol* const symbol) const {
 	return false;
 }
 
-ScopeList StructNode::FindSideEffectScope(const bool assign) {
+NameList StructNode::FindSideEffectScope(const bool assign) {
 	if (scope->Is<NamespaceSymbol>()) {
-		return ScopeList().Add(Scope::Global);
+		return NameList(Name::Global);
 	}
 
 	return scope->AbsoluteName();
@@ -59,7 +59,7 @@ ScopeList StructNode::FindSideEffectScope(const bool assign) {
 ScanResult StructNode::Scan(ScanInfoStack& info) {
 	symbol->UpdateSize();
 
-	for (const Scope& var : symbol->members) {
+	for (const Name& var : symbol->members) {
 		if (VariableSymbol* const member = symbol->Find<VariableSymbol>(var, file)) {
 			if (TypeSymbol* const type = member->Type()) {
 				if (IsRecursive(type->Cast<StructSymbol>())) {
@@ -74,7 +74,7 @@ ScanResult StructNode::Scan(ScanInfoStack& info) {
 }
 
 StringBuilder StructNode::ToMelon(const UInt indent) const {
-	if (name.name == Scope::Optional.name) return "";
+	if (name.name == Name::Optional.name) return "";
 	if (symbol->templateParent != nullptr) return "";
 
 	// Check if struct is completely specialized
@@ -107,7 +107,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 	String tabs = String('\t').Repeat(indent + 1);
 
 	// Add members
-	for (const Scope& var : symbol->members) {
+	for (const Name& var : symbol->members) {
 		sb += "\n";
 		sb += tabs;
 		sb += symbol->Find<VariableSymbol>(var, file)->type.ToSimpleString();
@@ -116,7 +116,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 	}
 
 	// Add functions
-	for (const Pair<Scope, Symbol*>& syms : symbol->symbols) {
+	for (const Pair<Name, Symbol*>& syms : symbol->symbols) {
 		if (FunctionSymbol* const func = syms.value->Cast<FunctionSymbol>()) {
 			for (FunctionSymbol* const overload : func->overloads) {
 				if (overload->node && overload->node.Cast<FunctionNode>()->isUsed) {

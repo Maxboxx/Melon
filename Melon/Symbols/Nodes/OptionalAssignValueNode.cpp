@@ -1,6 +1,6 @@
 #include "OptionalAssignValueNode.h"
 
-#include "Melon/Symbols/ScopeList.h"
+#include "Melon/Symbols/NameList.h"
 #include "Melon/Symbols/TypeSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"

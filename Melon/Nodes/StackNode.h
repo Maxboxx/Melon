@@ -12,7 +12,7 @@ namespace Melon {
 			Boxx::UInt stack;
 
 			/// The absolute type name of the node.
-			Symbols::ScopeList type;
+			Symbols::NameList type;
 
 			StackNode(const Boxx::UInt stack);
 			~StackNode();

@@ -33,7 +33,7 @@ CallNode::~CallNode() {
 
 }
 
-Scope CallNode::GetFuncName() const {
+Name CallNode::GetFuncName() const {
 	if (Pointer<NameNode> nn = node.Cast<NameNode>()) {
 		return nn->name;
 	}
@@ -44,16 +44,16 @@ Scope CallNode::GetFuncName() const {
 		return methodName;
 	}
 	else {
-		return Scope();
+		return Name();
 	}
 }
 
-Optional<List<TypeSymbol*>> CallNode::GetTemplateTypes(const Optional<List<ScopeList>>& types) const {
+Optional<List<TypeSymbol*>> CallNode::GetTemplateTypes(const Optional<List<NameList>>& types) const {
 	if (!types) return nullptr;
 
 	List<TypeSymbol*> args;
 
-	for (const ScopeList& s : *types) {
+	for (const NameList& s : *types) {
 		TypeSymbol* const type = SymbolTable::Find<TypeSymbol>(s, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 		if (!type) return nullptr;
@@ -81,7 +81,7 @@ Optional<List<TypeSymbol*>> CallNode::GetArgumentTypes() const {
 
 FunctionSymbol* CallNode::GetOperatorFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (TypeSymbol* const t = node->Type()) {
-		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Scope::Call, node->file)) {
+		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name::Call, node->file)) {
 			if (templateTypes) {
 				return f->FindMethodOverload(*templateTypes, argTypes, node->file);
 			}
@@ -96,7 +96,7 @@ FunctionSymbol* CallNode::GetOperatorFunction(const Optional<List<TypeSymbol*>>&
 
 FunctionSymbol* CallNode::GetInitFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (TypeSymbol* const t = node->GetSymbol()->Cast<TypeSymbol>()) {
-		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Scope::Init, node->file)) {
+		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name::Init, node->file)) {
 			return f->FindMethodOverload(argTypes, node->file);
 		}
 	}
@@ -162,7 +162,7 @@ FunctionSymbol* CallNode::GetFunc() const {
 	Optional<List<TypeSymbol*>> templateTypes = nullptr;
 
 	// Get function name
-	Scope name = GetFuncName();
+	Name name = GetFuncName();
 
 	// Get template types
 	templateTypes = GetTemplateTypes(name.types);

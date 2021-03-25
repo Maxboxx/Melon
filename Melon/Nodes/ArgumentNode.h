@@ -12,7 +12,7 @@ namespace Melon {
 			Kiwi::Argument argument;
 
 			/// The absolute type name for the argument value.
-			Symbols::ScopeList type;
+			Symbols::NameList type;
 
 			/// Create from kiwi argument.
 			ArgumentNode(const Kiwi::Argument& arg);

@@ -12,7 +12,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DefaultNode::DefaultNode(Symbol* const scope, const FileInfo& file) : BinaryOperatorNode(scope, Scope::Default, file) {
+DefaultNode::DefaultNode(Symbol* const scope, const FileInfo& file) : BinaryOperatorNode(scope, Name::Default, file) {
 
 }
 
@@ -26,7 +26,7 @@ TypeSymbol* DefaultNode::Type() const {
 	// TODO: error?
 	if (type1 == nullptr) return nullptr;
 
-	Symbol* const value = type1->Contains(Scope::Value);
+	Symbol* const value = type1->Contains(Name::Value);
 
 	// TODO: error?
 	if (value == nullptr) return nullptr;
@@ -71,7 +71,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 
 	Pointer<MemoryNode> sn2 = new MemoryNode(c1.argument.mem);
 	sn2->mem.offset++;
-	sn2->type = node1->Type()->Find<VariableSymbol>(Scope::Value, file)->Type()->AbsoluteName();
+	sn2->type = node1->Type()->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
 
 	// Assign the optional value to the result
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
@@ -121,7 +121,7 @@ ScanResult DefaultNode::Scan(ScanInfoStack& info) {
 	return result1 | result2;
 }
 
-ScopeList DefaultNode::FindSideEffectScope(const bool assign) {
+NameList DefaultNode::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
 }
 

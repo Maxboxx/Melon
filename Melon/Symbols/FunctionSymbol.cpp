@@ -59,7 +59,7 @@ VariableSymbol* FunctionSymbol::Argument(const UInt index) {
 TypeSymbol* FunctionSymbol::TemplateArgument(const UInt index) {
 	if (index >= templateArguments.Size()) return nullptr;
 
-	ScopeList arg = templateArguments[index];
+	NameList arg = templateArguments[index];
 
 	if (arg.IsTemplate()) {
 		return Symbol::Find<TypeSymbol>(arg[1], file);
@@ -79,21 +79,21 @@ UInt FunctionSymbol::RequiredTemplateArguments() const {
 
 FunctionSymbol* FunctionSymbol::AddOverload(FunctionSymbol* const overload) {
 	overload->parent = this;
-	overload->name = Scope("");
+	overload->name = Symbols::Name();
 
-	List<ScopeList> args;
-	args.Add(ScopeList().Add(Scope(String::ToString(overloads.Size()))));
+	List<NameList> args;
+	args.Add(NameList(Symbols::Name(String::ToString(overloads.Size()))));
 	overload->name.arguments = args;
 
 	overloads.Add(overload);
 	return overload;
 }
 
-Symbol* FunctionSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* FunctionSymbol::FindSymbol(const NameList& scopeList, const UInt index, const FileInfo& file) {
 	static const Regex numReg = Regex("^%d+$");
 
 	if (index >= scopeList.Size()) return this;
-	const Scope& scope = scopeList[index];
+	const Symbols::Name& scope = scopeList[index];
 
 	if (scope.name.Size() == 0 && scope.arguments) {
 		if (scope.arguments->Size() == 1 && numReg.Match(scope.arguments.Value()[0][0].name)) {
@@ -141,13 +141,13 @@ FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& temp
 	return FindOverload(templateArgs, argList, false, file);
 }
 
-Tuple<List<TypeSymbol*>, List<ScopeList>> FunctionSymbol::FindTemplateArguments(FunctionSymbol* const func, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(FunctionSymbol* const func, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
 	Map<TemplateSymbol*, TypeSymbol*> templateMap;
-	Map<TemplateSymbol*, ScopeList> templateTypes;
+	Map<TemplateSymbol*, NameList> templateTypes;
 
 	for (UInt i = 0; i < func->templateArguments.Size(); i++) {
 		TypeSymbol* const type = func->TemplateArgument(i);
-		if (!type) return Tuple<List<TypeSymbol*>, List<ScopeList>>();
+		if (!type) return Tuple<List<TypeSymbol*>, List<NameList>>();
 
 		if (TemplateSymbol* const templateType = type->Cast<TemplateSymbol>()) {
 			templateTypes.Add(templateType, templateType->type);
@@ -178,17 +178,17 @@ Tuple<List<TypeSymbol*>, List<ScopeList>> FunctionSymbol::FindTemplateArguments(
 			}
 		}
 		else {
-			return Tuple<List<TypeSymbol*>, List<ScopeList>>();
+			return Tuple<List<TypeSymbol*>, List<NameList>>();
 		}
 	}
 
 	for (const Pair<TemplateSymbol*, TypeSymbol*>& pair : templateMap) {
 		if (pair.value == nullptr) {
-			return Tuple<List<TypeSymbol*>, List<ScopeList>>();
+			return Tuple<List<TypeSymbol*>, List<NameList>>();
 		}
 	}
 
-	Tuple<List<TypeSymbol*>, List<ScopeList>> types;
+	Tuple<List<TypeSymbol*>, List<NameList>> types;
 
 	for (UInt i = 0; i < func->templateArguments.Size(); i++) {
 		TypeSymbol* const type = func->TemplateArgument(i);
@@ -200,7 +200,7 @@ Tuple<List<TypeSymbol*>, List<ScopeList>> FunctionSymbol::FindTemplateArguments(
 				types.value1.Add(t);
 			}
 			else {
-				return Tuple<List<TypeSymbol*>, List<ScopeList>>();
+				return Tuple<List<TypeSymbol*>, List<NameList>>();
 			}
 		}
 		else {
@@ -216,7 +216,7 @@ Tuple<List<TypeSymbol*>, List<ScopeList>> FunctionSymbol::FindTemplateArguments(
 		types.value2.Add(func->ArgumentType(i)->AbsoluteName());
 	}
 
-	for (const Pair<TemplateSymbol*, ScopeList>& pair : templateTypes) {
+	for (const Pair<TemplateSymbol*, NameList>& pair : templateTypes) {
 		pair.key->type = pair.value;
 	}
 
@@ -236,7 +236,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 		bool perfect = true;
 		bool match   = true;
 
-		Tuple<List<TypeSymbol*>, List<ScopeList>> specialized = FindTemplateArguments(overload, templateArgs, args, file);
+		Tuple<List<TypeSymbol*>, List<NameList>> specialized = FindTemplateArguments(overload, templateArgs, args, file);
 		
 		if (!overload->templateArguments.IsEmpty()) {
 			if (specialized.value1.IsEmpty()) continue;
@@ -480,7 +480,7 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 			}
 		}
 
-		for (const Pair<Scope, Symbol*>& s : symbols) {
+		for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
 			sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
 		}
 

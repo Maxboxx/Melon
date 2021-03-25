@@ -85,10 +85,10 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 
 	// Check if object init is valid
 	if (StructSymbol* const s = type->Cast<StructSymbol>()) {
-		for (const Scope& member : s->members) {
+		for (const Name& member : s->members) {
 			bool found = false;
 
-			for (const Scope& var : vars) {
+			for (const Name& var : vars) {
 				if (var == member) {
 					found = true;
 					break;
@@ -128,8 +128,8 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList ObjectInitNode::FindSideEffectScope(const bool assign) {
-	ScopeList list = node->GetSideEffectScope(assign);
+NameList ObjectInitNode::FindSideEffectScope(const bool assign) {
+	NameList list = node->GetSideEffectScope(assign);
 
 	for (NodePtr expr : expressions) {
 		list = CombineSideEffects(list, expr->GetSideEffectScope(assign));

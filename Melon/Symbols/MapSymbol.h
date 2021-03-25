@@ -21,21 +21,21 @@ namespace Melon {
 			///p This value is {nullptr} if the symbol already exists.
 			///M
 			template <class T>
-			T* AddSymbol(const Scope& name, T* const symbol);
+			T* AddSymbol(const Symbols::Name& name, T* const symbol);
 			///M
 
 			virtual MapSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 
 		protected:
-			virtual Symbol* FindSymbol(const ScopeList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
+			virtual Symbol* FindSymbol(const NameList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
 
 			friend Melon::Nodes::StructNode;
 
-			Boxx::Map<Scope, Symbol*> symbols;
+			Boxx::Map<Symbols::Name, Symbol*> symbols;
 		};
 
 		template <class T>
-		inline T* MapSymbol::AddSymbol(const Scope& name, T* const symbol) {
+		inline T* MapSymbol::AddSymbol(const Symbols::Name& name, T* const symbol) {
 			try {
 				symbols.Add(name, symbol);
 				symbol->name = name;

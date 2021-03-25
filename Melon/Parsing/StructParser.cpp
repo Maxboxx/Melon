@@ -70,7 +70,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo(info.Current().line)));
 	assign1->arguments.Add(sn->symbol->AbsoluteName());
 	assign1->symbolNode = new StructAssignNode();
-	sn->symbol->AddSymbol(Scope::Assign, assign);
+	sn->symbol->AddSymbol(Name::Assign, assign);
 
 	info.index++;
 	info.scope = temp;
@@ -84,7 +84,7 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 	if (info.Current().type != TokenType::Name)
 		ErrorLog::Error(SyntaxError(SyntaxError::StructName, FileInfo(info.filename, structLine, info.statementNumber)));
 
-	Scope structName = Scope(info.Current().value);
+	Name structName = Name(info.Current().value);
 
 	if (lower.Match(info.Current().value)) {
 		ErrorLog::Info(InfoError(InfoError::UpperName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
@@ -106,10 +106,10 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 		sym = info.scope->AddSymbol(structName, new StructSymbol(info.GetFileInfo(structLine)));
 	}
 	
-	if (Optional<List<ScopeList>> templateList = TemplateParser::ParseDefine(info)) {
+	if (Optional<List<NameList>> templateList = TemplateParser::ParseDefine(info)) {
 		StructSymbol* tsym = new StructSymbol(info.GetFileInfo(structLine));
 
-		for (const ScopeList& arg : *templateList) {
+		for (const NameList& arg : *templateList) {
 			if (arg[0].IsEmpty()) {
 				tsym->AddSymbol(arg[1], new TemplateSymbol(info.GetFileInfo(structLine)));
 			}
@@ -117,7 +117,7 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 			tsym->templateArguments.Add(arg);
 		}
 
-		Scope templateScope = Scope("");
+		Name templateScope = Name("");
 		templateScope.types = *templateList;
 
 		sym->AddTemplateVariant(tsym);

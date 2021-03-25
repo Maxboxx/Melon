@@ -1,7 +1,7 @@
 #include "ScopeSymbol.h"
 
 #include "Symbol.h"
-#include "ScopeList.h"
+#include "NameList.h"
 #include "TypeSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
@@ -29,18 +29,18 @@ ScopeSymbol::~ScopeSymbol() {
 ScopeSymbol* ScopeSymbol::AddScope(const FileInfo& file) {
 	ScopeSymbol* const table = new ScopeSymbol(file);
 	table->parent = this;
-	table->name   = Scope(String::ToString(scopes.Size()));
+	table->name   = Symbols::Name(String::ToString(scopes.Size()));
 	scopes.Add(table);
 	return table;
 }
 
 void ScopeSymbol::AddScope(ScopeSymbol* const scope) {
 	scope->parent = this;
-	scope->name   = Scope(String::ToString(scopes.Size()));
+	scope->name   = Symbols::Name(String::ToString(scopes.Size()));
 	scopes.Add(scope);
 }
 
-Symbol* ScopeSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, const FileInfo& file) {
+Symbol* ScopeSymbol::FindSymbol(const NameList& scopeList, const UInt index, const FileInfo& file) {
 	static const Regex numReg = Regex("^%d+$");
 
 	if (index >= scopeList.Size()) return this;
@@ -63,7 +63,7 @@ Symbol* ScopeSymbol::FindSymbol(const ScopeList& scopeList, const UInt index, co
 ScopeSymbol* ScopeSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
 	ScopeSymbol* const sym = new ScopeSymbol(file);
 
-	for (const Pair<Scope, Symbol*>& s : symbols) {
+	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
 		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
 	}
 

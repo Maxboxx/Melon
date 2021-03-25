@@ -75,10 +75,10 @@ ScanResult StatementsNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList StatementsNode::FindSideEffectScope(const bool assign) {
+NameList StatementsNode::FindSideEffectScope(const bool assign) {
 	if (statements.IsEmpty()) return scope->AbsoluteName();
 
-	ScopeList list = statements[0]->GetSideEffectScope(assign);
+	NameList list = statements[0]->GetSideEffectScope(assign);
 
 	for (UInt i = 1; i < statements.Size(); i++) {
 		list = CombineSideEffects(list, statements[i]->GetSideEffectScope(assign));

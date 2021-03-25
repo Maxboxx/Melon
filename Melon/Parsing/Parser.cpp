@@ -57,7 +57,7 @@ Melon::Token ParsingInfo::Current(const Int offset) {
 FileInfo ParsingInfo::GetFileInfo() const {
 	FileInfo file;
 	file.filename  = filename;
-	file.fileScope = currentFile;
+	file.fileName = currentFile;
 	file.statement = statementNumber;
 	file.includedNamespaces = includedNamespaces;
 	return file;
@@ -67,7 +67,7 @@ FileInfo ParsingInfo::GetFileInfo(const UInt line) const {
 	FileInfo file;
 	file.filename  = filename;
 	file.line      = line;
-	file.fileScope = currentFile;
+	file.fileName = currentFile;
 	file.statement = statementNumber;
 	file.includedNamespaces = includedNamespaces;
 	return file;
@@ -83,7 +83,7 @@ ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options
 	info.loops = 0;
 	info.scopeCount = 0;
 	info.statementNumber = 1;
-	info.scope = SymbolTable::FindAbsolute<ScopeSymbol>(ScopeList(), FileInfo());
+	info.scope = SymbolTable::FindAbsolute<ScopeSymbol>(NameList(), FileInfo());
 
 	ParseFile(filename, info);
 

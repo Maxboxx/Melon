@@ -95,7 +95,7 @@ ScanResult DoNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-ScopeList DoNode::FindSideEffectScope(const bool assign) {
+NameList DoNode::FindSideEffectScope(const bool assign) {
 	return nodes->GetSideEffectScope(assign);
 }
 

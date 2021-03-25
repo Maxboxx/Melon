@@ -40,7 +40,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Name)
 		ErrorLog::Error(SyntaxError(SyntaxError::EnumName, FileInfo(info.filename, enumLine, info.statementNumber)));
 
-	const Scope enumName = Scope(info.Current().value);
+	const Name enumName = Name(info.Current().value);
 
 	if (lower.Match(info.Current().value)) {
 		ErrorLog::Info(InfoError(InfoError::UpperName("enum", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
@@ -80,21 +80,21 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo(info.Current().line));
 	assign->arguments.Add(enumSymbol->AbsoluteName());
 	assign->symbolNode = new IntegerAssignNode(enumSymbol->Size());
-	enumSymbol->AddSymbol(Scope::Assign, assign);
+	enumSymbol->AddSymbol(Name::Assign, assign);
 
 	FunctionSymbol* const eq = new FunctionSymbol(info.GetFileInfo(info.Current().line));
 	eq->arguments.Add(enumSymbol->AbsoluteName());
 	eq->arguments.Add(enumSymbol->AbsoluteName());
-	eq->returnValues.Add(ScopeList::Bool);
+	eq->returnValues.Add(NameList::Bool);
 	eq->symbolNode = new IntegerBinaryOperatorNode(enumSymbol->Size(), enumSymbol->IsSigned(), InstructionType::Eq);
-	enumSymbol->AddSymbol(Scope::Equal, eq);
+	enumSymbol->AddSymbol(Name::Equal, eq);
 
 	FunctionSymbol* const ne = new FunctionSymbol(info.GetFileInfo(info.Current().line));
 	ne->arguments.Add(enumSymbol->AbsoluteName());
 	ne->arguments.Add(enumSymbol->AbsoluteName());
-	ne->returnValues.Add(ScopeList::Bool);
+	ne->returnValues.Add(NameList::Bool);
 	ne->symbolNode = new IntegerBinaryOperatorNode(enumSymbol->Size(), enumSymbol->IsSigned(), InstructionType::Ne);
-	enumSymbol->AddSymbol(Scope::NotEqual, ne);
+	enumSymbol->AddSymbol(Name::NotEqual, ne);
 
 	info.index++;
 
@@ -129,7 +129,7 @@ Optional<EnumParser::EnumValue> EnumParser::ParseValue(ParsingInfo& info, ULong&
 	if (info.Current().type != TokenType::Name) return nullptr;
 
 	EnumValue value;
-	value.name = Scope(info.Current().value);
+	value.name = Name(info.Current().value);
 	value.line = info.Current().line;
 
 	if (info.Next().type == TokenType::Assign) {

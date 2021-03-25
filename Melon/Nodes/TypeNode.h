@@ -9,9 +9,9 @@ namespace Melon {
 		class TypeNode : public Node {
 		public:
 			/// The absolute type.
-			Symbols::ScopeList type;
+			Symbols::NameList type;
 
-			TypeNode(const Symbols::ScopeList& type);
+			TypeNode(const Symbols::NameList& type);
 			~TypeNode();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;

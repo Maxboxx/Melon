@@ -172,11 +172,11 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 		if (info.Current().type == TokenType::Comma) {
 			info.index++;
 
-			Optional<Scope> op;
+			Optional<Name> op;
 			NodePtr node = nullptr;
 			
 			if (ExpressionParser::IsBinaryOperator(info.Current().type)) {
-				op = Scope(info.Current().value);
+				op = Name(info.Current().value);
 				info.index++;
 
 				node = ExpressionParser::Parse(info);
@@ -202,7 +202,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 					info.index++;
 
 					if (ExpressionParser::IsBinaryOperator(info.Current().type)) {
-						fcn->stepOperator = Scope(info.Current().value);
+						fcn->stepOperator = Name(info.Current().value);
 						info.index++;
 
 						if (NodePtr step = ExpressionParser::Parse(info)) {
@@ -226,7 +226,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 					Pointer<IntegerNode> num = new IntegerNode(FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 					num->number = 1;
 					fcn->loopStep = num;
-					fcn->stepOperator = Scope::Add;
+					fcn->stepOperator = Name::Add;
 				}
 
 				if (info.Current().type == TokenType::Do) {

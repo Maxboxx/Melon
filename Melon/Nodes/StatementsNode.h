@@ -24,7 +24,7 @@ namespace Melon {
 			static bool HasSpaceAround(const NodePtr& node);
 
 		protected:
-			virtual Symbols::ScopeList FindSideEffectScope(const bool assign);
+			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 		};
 	}
 }

@@ -18,11 +18,11 @@ NodePtr DotParser::Parse(ParsingInfo& info) {
 		ErrorLog::Error(SyntaxError(SyntaxError::DotName, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 
 	Pointer<DotNode> dn = new DotNode(info.scope, info.GetFileInfo(info.Current(-1).line));
-	dn->name = Scope(info.Current().value);
+	dn->name = Name(info.Current().value);
 
 	info.index++;
 
-	if (Optional<List<ScopeList>> templateArgs = TemplateParser::Parse(info)) {
+	if (Optional<List<NameList>> templateArgs = TemplateParser::Parse(info)) {
 		dn->name.types = templateArgs;
 	}
 
