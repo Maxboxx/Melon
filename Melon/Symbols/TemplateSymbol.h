@@ -2,14 +2,13 @@
 
 #include "TypeSymbol.h"
 
+///N Melon::Symbols
 namespace Melon {
 	namespace Symbols {
-		///B TemplateSymbol
-		/// Contains information about a template symbol
+		/// Contains information about a template symbol.
 		class TemplateSymbol : public TypeSymbol {
 		public:
-			///T Type
-			/// The absolute type of the template symbol
+			/// The absolute type of the template symbol.
 			ScopeList type;
 
 			TemplateSymbol(const FileInfo& file);

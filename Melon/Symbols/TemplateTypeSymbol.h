@@ -8,26 +8,24 @@ namespace Melon {
 		class StructNode;
 	}
 
+	///N Melon::Symbols
 	namespace Symbols {
-		///B TemplateTypeSymbol
-		/// A symbol for a template type
+		/// A symbol for a template type.
 		class TemplateTypeSymbol : public TypeSymbol {
 		public:
 			TemplateTypeSymbol(const FileInfo& file);
 			~TemplateTypeSymbol();
 
-			///T Add Template Variant
-			/// Adds a template variant to the symbol
+			/// Adds a template variant to the symbol.
 			void AddTemplateVariant(TemplateTypeSymbol* const sym);
 
-			///T Template Argument
-			/// Get the template argument at the specified index
+			/// Get the template argument at the specified index.
 			TypeSymbol* TemplateArgument(const Boxx::UInt index);
 
-			///T Can Be Deduced
-			/// Checks if template arguments of the current type can be deduced by the specified type
+			/// Checks if template arguments of the current type can be deduced by the specified type.
 			bool CanBeDeduced(TemplateTypeSymbol* const type);
 
+			/// The template arguments of the symbol.
 			Boxx::List<ScopeList> templateArguments;
 
 			virtual Scope Name() override;

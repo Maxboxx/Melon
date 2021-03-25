@@ -7,9 +7,9 @@ namespace Melon {
 		class Node;
 	}
 
+	///N Melon::Symbols
 	namespace Symbols {
-		///B StructSymbol
-		/// Contains information about a struct
+		/// Contains information about a struct.
 		class StructSymbol : public TemplateTypeSymbol {
 		public:
 			StructSymbol(const FileInfo& file);
@@ -23,13 +23,13 @@ namespace Melon {
 			virtual Boxx::Set<Scope> UnassignedMembers() override;
 			virtual void UpdateSize() override;
 
-			///T Non static members
+			/// All non static members.
 			Boxx::List<Scope> members;
 
-			///T Is Recursive
+			/// {true} if the scope is recursive.
 			bool isRecursive = false;
 
-			///T Node
+			/// The struct node for this symbol.
 			Boxx::Pointer<Melon::Nodes::Node> node = nullptr;
 		};
 	}

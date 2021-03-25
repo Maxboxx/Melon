@@ -10,36 +10,32 @@ namespace Melon {
 		class RootNode;
 	}
 
+	///N Melon::Symbols
 	namespace Symbols {
 		class IntegerSymbol;
 		class VariableSymbol;
 		class FunctionSymbol;
 
-		///B SymbolTable
-		/// A table containing all symbols
+		/// A table containing all symbols.
 		class SymbolTable {
 		public:
 			///H Absolute Search
 
-			///T Find Absolute
-			/// Finds a symbol of a specific name in the table 
+			/// Finds a symbol of a specific name in the table.
 			static Symbol* FindAbsolute(const ScopeList& name, const FileInfo& file);
 
-			///T Contains Absolute
-			/// Checks if a symbol of a specific name exists in the table
-			///R Symbol*: The symbol if it exists or <code>nullptr</code> if it does not
+			/// Checks if a symbol of a specific name exists in the table.
+			///R The symbol if it exists or {nullptr} if it does not.
 			static Symbol* ContainsAbsolute(const ScopeList& name);
 
-			///T Find Absolute Cast
-			/// Finds a symbol of a specific name and symbol type in the table 
+			/// Finds a symbol of a specific name and symbol type in the table.
 			///M
 			template <class T>
 			static T* FindAbsolute(const ScopeList& name, const FileInfo& file);
 			///M
 
-			///T Contains Absolute Cast
-			/// Checks if a symbol of a specific name and symbol type exists in the table
-			///R T*: The symbol if it exists or <code>nullptr</code> if it does not
+			/// Checks if a symbol of a specific name and symbol type exists in the table.
+			///R The symbol if it exists or {nullptr} if it does not.
 			///M
 			template <class T>
 			static T* ContainsAbsolute(const ScopeList& name);
@@ -47,119 +43,152 @@ namespace Melon {
 
 			///H Relative Search
 
-			////B SearchOptions
-			//// Options for searching for symbols
+			/// Options for searching for symbols.
 			enum class SearchOptions : Boxx::UByte {
-				////H Values
-
-				////T None
+				/// No option.
 				None = 0,
 
-				////T IgnoreOrder
-				//// Accepts symbols that appear after the current statement number
+				/// Accepts symbols that appear after the current statement number.
 				IgnoreOrder = 1,
 
-				////T IgnoreIncludedNamespaces
-				//// Ignores symbols within included namespaces
+				/// Ignores symbols within included namespaces.
 				IgnoreIncludedNamespaces = 2,
 
-				////T ReplaceTemplates
-				//// Replaces the templates for both the scope and name with absolute values instead
+				/// Replaces the templates for both the scope and name with absolute values instead.
 				ReplaceTemplates = 4
 			};
 
-			///T Find
-			/// Finds a symbol of a specific name in the table
-			///A name: The relative name of the symbol
-			///A scope: The scope to find the symbol from
-			///A file: Information about the file to search from
-			///A options: Search options to use for finding the symbol
+			/// Finds a symbol of a specific name in the table.
+			///A name: The relative name of the symbol.
+			///A scope: The scope to find the symbol from.
+			///A file: Information about the file to search from.
+			///A options: Search options to use for finding the symbol.
 			static Symbol* Find(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
-			static Symbol* Find(ScopeList    name,       ScopeList  scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 
-			///T Contains
-			/// Checks if a symbol of a specific name exists in the table
-			///A name: The relative name of the symbol
-			///A scope: The scope to find the symbol from
-			///A file: Information about the file to search from
-			///A options: Search options to use for finding the symbol
-			///R Symbol*: The symbol if it exists or <code>nullptr</code> if it does not
-			static Symbol* Contains(const Scope&     name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
+			/// Finds a symbol of a specific name in the table.
+			///A name: The relative name of the symbol.
+			///A scope: The scope to find the symbol from.
+			///A file: Information about the file to search from.
+			///A options: Search options to use for finding the symbol.
+			static Symbol* Find(ScopeList name, ScopeList scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
+
+			/// Checks if a symbol of a specific name exists in the table.
+			///A name: The relative name of the symbol.
+			///A scope: The scope to find the symbol from.
+			///A file: Information about the file to search from.
+			///A options: Search options to use for finding the symbol.
+			///R The symbol if it exists or {nullptr} if it does not.
+			static Symbol* Contains(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
+
+			/// Checks if a symbol of a specific name exists in the table.
+			///A name: The relative name of the symbol.
+			///A scope: The scope to find the symbol from.
+			///A file: Information about the file to search from.
+			///A options: Search options to use for finding the symbol.
+			///R The symbol if it exists or {nullptr} if it does not.
 			static Symbol* Contains(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 
-			///T Find
-			/// Finds a symbol of a specific name and symbol type in the table
-			///A name: The relative name of the symbol
-			///A scope: The scope to find the symbol from
-			///A file: Information about the file to search from
-			///A options: Search options to use for finding the symbol
+			/// Finds a symbol of a specific name and symbol type in the table.
+			///A name: The relative name of the symbol.
+			///A scope: The scope to find the symbol from.
+			///A file: Information about the file to search from.
+			///A options: Search options to use for finding the symbol.
 			///M
 			template <class T>
 			static T* Find(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
+			///M
+
+			/// Finds a symbol of a specific name and symbol type in the table.
+			///A name: The relative name of the symbol.
+			///A scope: The scope to find the symbol from.
+			///A file: Information about the file to search from.
+			///A options: Search options to use for finding the symbol.
+			///M
 			template <class T>
 			static T* Find(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 			///M
 
-			///T Contains
-			/// Checks if a symbol of a specific name and symbol type exists in the table
-			///A name: The relative name of the symbol
-			///A scope: The scope to find the symbol from
-			///A file: Information about the file to search from
-			///A options: Search options to use for finding the symbol
-			///R T*: The symbol if it exists or <code>nullptr</code> if it does not
+			/// Checks if a symbol of a specific name and symbol type exists in the table.
+			///A name: The relative name of the symbol.
+			///A scope: The scope to find the symbol from.
+			///A file: Information about the file to search from.
+			///A options: Search options to use for finding the symbol.
+			///R The symbol if it exists or {nullptr} if it does not.
 			///M
 			template <class T>
 			static T* Contains(const Scope& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
+			///M
+
+			/// Checks if a symbol of a specific name and symbol type exists in the table.
+			///A name: The relative name of the symbol.
+			///A scope: The scope to find the symbol from.
+			///A file: Information about the file to search from.
+			///A options: Search options to use for finding the symbol.
+			///R The symbol if it exists or {nullptr} if it does not.
+			///M
 			template <class T>
 			static T* Contains(const ScopeList& name, const ScopeList& scope, const FileInfo& file, const SearchOptions options = SearchOptions::None);
 			///M
 
-			///T Find Operator Function
-			/// Finds the operator function to use for the specified types
-			///A op: The operator name
-			///A type1: The type of the first operand
-			///A type2: The type of the second operand
-			///R FunctionSymbol*: The operator function to use 
+			/// Finds the operator function to use for the specified types.
+			///A op: The operator name.
+			///A type1: The type of the first operand.
+			///A type2: The type of the second operand.
+			///R The operator function to use.
 			static FunctionSymbol* FindOperator(const Scope& op, TypeSymbol* const type1, TypeSymbol* const type2, const FileInfo& file);
 
-			///T Find Implicit Conversion
 			/// Finds the implicit conversion operator for the specified types.
 			///A from: The type to convert from.
 			///A to:   The type to convert to.
-			///R FunctionSymbol*: The conversion operator.
-			/// nullptr if the operator was not found.
+			///R The conversion operator.
+			/// {nullptr} if the operator was not found.
 			static FunctionSymbol* FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file);
 
-			///T Find Explicit Conversion
 			/// Finds the explicit conversion operator for the specified types.
 			///A from: The type to convert from.
 			///A to:   The type to convert to.
-			///R FunctionSymbol*: The conversion operator.
-			/// nullptr if the operator was not found.
+			///R The conversion operator.
+			/// {nullptr} if the operator was not found.
 			static FunctionSymbol* FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file);
 
-			///T Setup
-			/// Adds basic types to the symbol table
+			/// Adds basic types to the symbol table.
 			static void Setup();
 
-			///T Specialize Template
-			/// Specializes a template symbol
-			/// The symbols are specialized during include scan
+			/// Specializes a template symbol.
+			///p The symbols are specialized during include scan.
 			static void SpecializeTemplate(const ScopeList& name, Symbol* const scope, const FileInfo& file); 
 
-			///T Basic types
-			///M
+			///H Basic Types
+			
+			/// The symbol for the {byte} type.
 			static IntegerSymbol* Byte;
+
+			/// The symbol for the {ubyte} type.
 			static IntegerSymbol* UByte;
+
+			/// The symbol for the {short} type.
 			static IntegerSymbol* Short;
+
+			/// The symbol for the {ushort} type.
 			static IntegerSymbol* UShort;
+
+			/// The symbol for the {int} type.
 			static IntegerSymbol* Int;
+
+			/// The symbol for the {uint} type.
 			static IntegerSymbol* UInt;
+
+			/// The symbol for the {long} type.
 			static IntegerSymbol* Long;
+
+			/// The symbol for the {ulong} type.
 			static IntegerSymbol* ULong;
+
+			/// The symbol for the {bool} type.
 			static IntegerSymbol* Bool;
-			static TypeSymbol*    Nil;
-			///M
+
+			/// The symbol for the {nil} type.
+			static TypeSymbol* Nil;
 
 		private:
 			static Symbol* FindInNamespaces(const ScopeList& name, const FileInfo& file);

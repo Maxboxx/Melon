@@ -7,18 +7,18 @@ namespace Melon {
 		class StructNode;
 	}
 
+	///N Melon::Symbols
 	namespace Symbols {
-		///B MapSymbol
-		/// Contains a map of all sub symbols of the symbol
+		/// A symbol with a map of all child symbols.
 		class MapSymbol : public Symbol {
 		public:
 			MapSymbol(const FileInfo& file);
 			~MapSymbol();
 
-			///T Add Symbol
-			/// Adds a symbol to the table
-			///R Symbol*: The new symbol
-			/// <code>nullptr</code> if the symbol already exists
+			/// Adds a child symbol.
+			///[Template] T: Must inherit from {Symbol}.
+			///R The new symbol.
+			///p This value is {nullptr} if the symbol already exists.
 			///M
 			template <class T>
 			T* AddSymbol(const Scope& name, T* const symbol);

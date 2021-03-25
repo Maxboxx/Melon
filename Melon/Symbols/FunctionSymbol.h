@@ -7,6 +7,7 @@
 
 #include "Nodes/SymbolNode.h"
 
+///N Melon::Symbols
 namespace Melon {
 	namespace Nodes {
 		class Node;
@@ -14,12 +15,24 @@ namespace Melon {
 	}
 
 	namespace Symbols {
+		/// Bit flags for function attributes.
 		enum class FunctionAttributes : Boxx::UByte {
+			/// No attributes.
 			None = 0,
+
+			/// The {static} attribute.
 			Static = 1,
+
+			/// The {override} attribute.
 			Override = 2,
+
+			/// The {required} attribute.
 			Required = 4,
+
+			/// The {debug} attribute.
 			Debug = 8,
+
+			/// The {partial} attribute.
 			Partial = 16
 		};
 
@@ -27,85 +40,76 @@ namespace Melon {
 
 		class VariableSymbol;
 
-		///B FunctionSymbol
-		/// A symbol for functions
+		/// A symbol for functions.
 		class FunctionSymbol : public ScopeSymbol {
 		public:
 			FunctionSymbol(const FileInfo& file);
 			~FunctionSymbol();
 
-			///T Return Type
-			/// Get the return type at the specified index
+			/// Get the return type at the specified index.
 			TypeSymbol* ReturnType(const Boxx::UInt index);
 
-			///T Argument Type
-			/// Get the argument type at the specified index
+			/// Get the argument type at the specified index.
 			TypeSymbol* ArgumentType(const Boxx::UInt index);
 
-			///T Argument
-			/// Get the argument at the specified index
+			/// Get the argument at the specified index.
 			VariableSymbol* Argument(const Boxx::UInt index);
 
-			///T Template Argument
-			/// Get the template argument at the specified index
+			/// Get the template argument at the specified index.
 			TypeSymbol* TemplateArgument(const Boxx::UInt index);
 
-			///T Number of Required Arguments
+			/// The number of required arguments.
 			Boxx::UInt RequiredArguments() const;
 
-			///T Number of Required Template Arguments
+			/// The number of required template arguments.
 			Boxx::UInt RequiredTemplateArguments() const;
 
-			///T Add Overload
-			/// Adds an overload
+			/// Adds an overload.
 			FunctionSymbol* AddOverload(FunctionSymbol* const overload);
 
-			///T Find Overload
-			/// Finds the best match for a function overload
-			///M
+			/// Finds the best match for a function overload.
 			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+
+			/// Finds the best match for a function overload.
 			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
-			///M
 
-			///T Find Static Overload
-			/// Finds the best match for a static function overload
-			///M
+			/// Finds the best match for a static function overload.
 			FunctionSymbol* FindStaticOverload(const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+
+			/// Finds the best match for a static function overload.
 			FunctionSymbol* FindStaticOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
-			///M
 
-			///T Find Method Overload
-			/// Finds the best match for a method overload
-			///M
+			/// Finds the best match for a method overload.
 			FunctionSymbol* FindMethodOverload(const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
-			FunctionSymbol* FindMethodOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
-			///M
 
-			///T Template arguments
+			/// Finds the best match for a method overload.
+			FunctionSymbol* FindMethodOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+
+			/// The template arguments of the function.
 			Boxx::List<ScopeList> templateArguments;
 
-			///T Return values
+			/// The relative return types of the function.
 			Boxx::List<ScopeList> returnValues;
 
-			///T Arguments
-			/// Argument names
+			/// The names of the function arguments.
 			Boxx::List<ScopeList> arguments;
 
-			///T Node
-			/// The node to use for the compilation of the function
-			///M
+			/// The node to use for the compilation of the function.
+			///p Is {nullptr} if {node} should be used instead.
 			Boxx::Pointer<Nodes::SymbolNode> symbolNode;
-			Boxx::Pointer<Melon::Nodes::Node> node;
-			///M
 
-			///T Function attrubutes
+			/// The node to use for the compilation of the function.
+			///p Is {nullptr} if {symbolNode} should be used instead.
+			Boxx::Pointer<Melon::Nodes::Node> node;
+
+			/// The function attributes.
 			FunctionAttributes attributes = FunctionAttributes::None;
 
-			///T Is Explicit
-			/// Used for type conversions
+			/// {true} if the type conversion is explicit.
+			///p Only used if the function is a type conversion function.
 			bool isExplicit = false;
 
-			///T Is Operator
+			/// {true} if the function is an operator function.
 			bool isOperator = false;
 
 			virtual bool IsNotSpecialized() override;

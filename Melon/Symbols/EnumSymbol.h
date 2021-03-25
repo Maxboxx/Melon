@@ -2,19 +2,19 @@
 
 #include "IntegerSymbol.h"
 
+///N Melon::Symbols
 namespace Melon {
 	namespace Symbols {
-		///B EnumSymbol
-		/// Contains information about an enum
+		/// Contains information about an enum.
 		class EnumSymbol : public IntegerSymbol {
 		public:
+			/// A list of all values.
+			Boxx::List<Scope> values;
+
 			EnumSymbol(const Boxx::UInt size, const bool isSigned, const FileInfo& file);
 			~EnumSymbol();
 
 			virtual EnumSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
-
-			///T Values
-			Boxx::Collection<Scope> values;
 		};
 	}
 }

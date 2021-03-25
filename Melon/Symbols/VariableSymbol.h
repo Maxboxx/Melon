@@ -2,45 +2,45 @@
 
 #include "Symbol.h"
 
+///N Melon::Symbols
 namespace Melon {
 	namespace Symbols {
-
-		///B VariableAttributes
-		/// The different attributes a variable can have
+		/// Bit flags for the different attributes a variable can have.
 		enum class VariableAttributes : Boxx::UByte {
-			///T Values
-			///M
-			None   = 0,
-			Const  = 1,
-			Ref    = 2,
+			/// No attribute.
+			None = 0,
+
+			/// The {const} attribute.
+			Const = 1,
+
+			/// The {ref} attribute.
+			Ref = 2,
+
+			/// The {static} attribute.
 			Static = 4
-			///M
 		};
 
 		BOXX_ENUM_FLAGS(VariableAttributes);
 
-		///B VariableSymbol
-		/// Contains information about a variable
+		/// Contains information about a variable.
 		class VariableSymbol : public Symbol {
 		public:
-			///T Type
-			/// The relative type of the variable
+			/// The relative type of the variable.
 			ScopeList type;
 
-			///T Attributes
+			/// The attributes of the variable.
 			VariableAttributes attributes = VariableAttributes::None;
 
-			///T Is Assigned
-			/// Whether or not the variable has been assigned
+			/// {true} if the variable has been assigned.
 			bool isAssigned = false;
 
-			///T Stack Index
-			/// Offset for member variables
+			/// Stack offset for member variables.
 			Boxx::UInt stackIndex = 0;
 
 			VariableSymbol(const FileInfo& file);
 			~VariableSymbol();
 
+			/// Checks if the variable has the spceified attribute.
 			bool HasAttribute(const VariableAttributes attribute);
 
 			virtual TypeSymbol* Type() override;
