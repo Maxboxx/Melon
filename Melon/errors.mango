@@ -1,0 +1,170 @@
+messages: {
+	error: {
+		token: {
+			undefined:  "undefined token '%s'"
+			unexpected: "unexpected token '%s'"
+		}
+		
+		syntax: {
+			expected: {
+				after:    "%s expected after %s"
+				after_in: "%s expected after %s in %s"
+				in:       "%s expected in %s"
+				close:    "%s expected to close %s"
+				close_at: "%s expected to close %s at line %i"
+				end:      "'end' expected to close %s"
+				end_at:   "'end' expected to close %s at line %i"
+				
+				name: {
+					argument:    "argument name expected"
+					struct:      "name expected for struct"
+					enum:        "name expected for enum"
+					object_init: "name expected in object initializer"
+					after:       "name expected after %s"
+					var:         "variable name expected after %s"
+				}
+			}
+			
+			unexpected: {
+				eof: "unexpected end of file"
+			}
+			
+			attribute: {
+				multiple:     "multiple '%s' attributes"
+				incompatible: "attribute '%s' is incompatible with '%s'"
+			}
+			
+			switch: {
+				case: {
+					expr: "case expression expected for switch case"
+				}
+				
+				default: {
+					required: "default case required in switch expression"
+					
+					multiple: {
+						expr: "multiple default cases in switch expression"
+						stat: "multiple default cases in switch statement"
+					}
+				}
+			}
+			
+			if: {
+				required: {
+					else: "'else' required in if expression"
+				}
+			}
+			
+			assign: {
+				var: {
+					few: "not enough variables in variable list"
+				}
+			
+				expr: {
+					many: "too many expressions after '%s'"
+				}
+			}
+			
+			break: {
+				loops:   "not enough loops to break"
+				scopes:  "not enough scopes to break"
+				int_arg: "integer argument for break can not be 0"
+			}
+			
+			continue: {
+				loops:   "not enough loops to continue"
+				int_arg: "argument for continue can not be 0"
+			}
+			
+			abort: {
+				loops:   "not enough loops to abort"
+				int_arg: "argument for abort can not be 0"
+			}
+		}
+		
+		symbol: {
+			function: {
+				not_found: "function '%s' not found"
+				not_found_args: "function '%s' not found for arguments: %l"
+				
+				ambiguous: "call to '%s' is ambiguous"
+				ambiguous_args: "call to '%s' is ambiguous for arguments: %l"
+			}
+			
+			recursive_struct: "struct '%s' is recursive"
+			
+			not_found: "symbol '%s' not found"
+			ambiguous: "symbol '%s' is ambiguous"
+			redefine:  "redefinition of symbol '%s'"
+			
+			implicit: "implicit conversion from '%s' to '%s' not found"
+			explicit: "explicit conversion from '%s' to '%s' not found"
+			
+			unary:  "operator '%s' not found for '%s'"
+			binary: "operator '%s' not found for '%s' and '%s'"
+			
+			dot: "'%s' has no member '%s'"
+		}
+		
+		type: {
+			conditional_assign: "optional value for conditional assignment expected, got '%s'"
+			
+			if: "if expression type mismatch"
+			switch: "switch expression type mismatch"
+			default: "default expression type mismatch"
+		}
+		
+		scan: {
+			init: {
+				member: "member '%s' is not initialized in constructor"
+				object_member: "member '%s' is not initialized in object initializer"
+				multiple: "member '%s' is initialized more than once"
+			}
+			
+			use: {
+				self:   "'self' used before all members are initialized"
+				member: "memeber '%s' used before being initialized"
+				object: "invalid use of object initializer"
+				ref:    "invalid use of 'ref'"
+				noref:  "invalid use of 'noref'"
+			}
+			
+			guard: {
+				return: "guard must return from function"
+				main: "guard statements in main scope are not supported yet"
+			}
+			
+			assign: {
+				const: "assignment to 'const' value"
+			}
+			
+			return: {
+				value:  "function '%s' must return a value"
+				values: "function '%s' must return values"
+				few:  "not enough arguments to return"
+				many: "too many arguments to return"
+			}
+		}
+	}
+
+	warning: {
+		noref: "argument number %i to '%s' will not be referenced"
+		ref: "use 'ref' for reference arguments"
+	}
+
+	info: {
+		name: {
+			upper: "%s name: '%s' does not start with an upper case character"
+			lower: "%s name: '%s' does not start with a lower case character"
+			under: "avoid using underscores as separators in %s name: '%s'"
+		}
+	}
+	
+	success: {
+		compile: "compilation successful"
+	}
+	
+	fatal: {
+		compile: "compilation failed"
+	}
+}

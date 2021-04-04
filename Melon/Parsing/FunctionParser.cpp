@@ -98,7 +98,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 				func->node = statement;
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 		}
 		else {
@@ -112,7 +112,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		info.scopeCount = scopeCount;
 
 		if (!single && info.Current().type != TokenType::End) {
-			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("function", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.end", "function", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 
 		if (!single) info.index++;
@@ -283,17 +283,17 @@ Optional<Name> FunctionParser::ParseName(const bool isOperator, ParsingInfo& inf
 			const Name name = *fname;
 
 			if (upper.Match(name.name)) {
-				ErrorLog::Info(InfoError(InfoError::LowerName("function", name.name), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Info(LogMessage("info.name.lower", "function", name.name), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 
 			if (underscore.Match(name.name)) {
-				ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("function", name.name), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Info(LogMessage("info.name.under", "function", name.name), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 
 			return name;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("function name", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "function name", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			return nullptr;
 		}
 	}
@@ -302,7 +302,7 @@ Optional<Name> FunctionParser::ParseName(const bool isOperator, ParsingInfo& inf
 			return *name;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("operator", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "operator", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			return nullptr;
 		}
 	}
@@ -318,7 +318,7 @@ FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool
 		switch (info.Current().type) {
 			case TokenType::Static: {
 				if ((attributes & FunctionAttributes::Static) != FunctionAttributes::None) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("static"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "static"), FileInfo(info.filename, info.Current().line, info.statementNumber));
 				}
 				
 				attributes |= FunctionAttributes::Static;
@@ -326,7 +326,7 @@ FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool
 			}
 			case TokenType::Override: {
 				if ((attributes & FunctionAttributes::Override) != FunctionAttributes::None) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("override"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "override"), FileInfo(info.filename, info.Current().line, info.statementNumber));
 				}
 
 				attributes |= FunctionAttributes::Override;
@@ -334,7 +334,7 @@ FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool
 			}
 			case TokenType::Required: {
 				if ((attributes & FunctionAttributes::Required) != FunctionAttributes::None) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("required"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "required"), FileInfo(info.filename, info.Current().line, info.statementNumber));
 				}
 
 				attributes |= FunctionAttributes::Required;
@@ -342,7 +342,7 @@ FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool
 			}
 			case TokenType::Debug: {
 				if ((attributes & FunctionAttributes::Debug) != FunctionAttributes::None) {
-					ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("debug"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "debug"), FileInfo(info.filename, info.Current().line, info.statementNumber));
 				}
 
 				attributes |= FunctionAttributes::Debug;
@@ -376,7 +376,7 @@ List<NameList> FunctionParser::ParseReturnTypes(ParsingInfo& info) {
 			}
 			else {
 				if (returnTypes.Size() > 1) {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("':'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+					ErrorLog::Error(LogMessage("error.syntax.expected.after", "':'", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 				}
 
 				info.index = retIndex;
@@ -401,7 +401,7 @@ List<FunctionParser::Argument> FunctionParser::ParseArguments(ParsingInfo& info)
 	List<Argument> arguments;
 
 	if (info.Current().type != TokenType::ParenOpen) {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'('", "function name"), info.GetFileInfo(info.Current(-1).line)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "'('", LogMessage::Quote(info.Current(-1).value)), info.GetFileInfo(info.Current(-1).line));
 		return arguments;
 	}
 
@@ -410,7 +410,7 @@ List<FunctionParser::Argument> FunctionParser::ParseArguments(ParsingInfo& info)
 	while (info.Current().type != TokenType::ParenClose) {
 		if (!arguments.IsEmpty()) {
 			if (info.Current().type != TokenType::Comma) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("')'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "')'", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 
 			info.index++;
@@ -426,7 +426,7 @@ List<FunctionParser::Argument> FunctionParser::ParseArguments(ParsingInfo& info)
 			argument.attributes = VariableAttributeParser::Parse(info, true);
 
 			if (info.Current().type != TokenType::Name) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ArgNameExpected, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.name.argument"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 
 			argument.name = Name(info.Current().value);
@@ -435,7 +435,7 @@ List<FunctionParser::Argument> FunctionParser::ParseArguments(ParsingInfo& info)
 			info.index++;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("')'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "')'", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 	}
 
@@ -453,7 +453,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 
 	if (info.Current().type != TokenType::Function) {
 		if (funcHead.attributes != FunctionAttributes::None) {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'function'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "'function'", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 
 		return nullptr;

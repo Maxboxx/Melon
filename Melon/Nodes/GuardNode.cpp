@@ -294,8 +294,7 @@ void GuardNode::AddReturn(ScanInfoStack& info) {
 			end = new ReturnNode(scope, file);
 		}
 		else if (!info->scopeInfo.hasReturned) {
-			// TODO: error
-			ErrorLog::Error(CompileError("guard must return from function", file));
+			ErrorLog::Error(LogMessage("error.scan.guard.return"), file);
 		}
 	}
 
@@ -303,8 +302,7 @@ void GuardNode::AddReturn(ScanInfoStack& info) {
 }
 
 void GuardNode::AddThrow(ScanInfoStack& info) {
-	// TODO: error
-	ErrorLog::Error(CompileError("guard statements in main scope are not supported yet", file));
+	ErrorLog::Error(LogMessage("error.scan.guard.main"), file);
 }
 
 StringBuilder GuardNode::ToMelon(const UInt indent) const {

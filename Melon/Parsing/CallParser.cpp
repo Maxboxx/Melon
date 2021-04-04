@@ -23,7 +23,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 		while (info.Current().type != TokenType::ParenClose) {
 			if (!call->args.IsEmpty()) {
 				if (info.Current().type != TokenType::Comma) {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("')'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+					ErrorLog::Error(LogMessage("error.syntax.expected.after", "')'", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 				}
 
 				info.index++;
@@ -45,7 +45,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 				call->args.Add(node);
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("')'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "')'", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 				info.index++;
 			}
 		}

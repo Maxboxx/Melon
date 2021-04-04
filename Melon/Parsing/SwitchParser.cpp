@@ -27,7 +27,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 	NodePtr value = ExpressionParser::Parse(info);
 
 	if (!value) {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("match expression", "'switch'", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", "'switch'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 	}
 
 	Pointer<SwitchNode> switchNode = new SwitchNode(info.scope, info.GetFileInfo(switchLine));
@@ -41,7 +41,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		const UInt caseLine = info.Current().line;
 
 		if (isDefault && switchNode->def) {
-			ErrorLog::Error(SyntaxError(SyntaxError::MultipleDefault, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.switch.default.multiple.stat"), FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 
 		info.index++;
@@ -57,7 +57,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			}
 
 			if (caseValues.IsEmpty()) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("case expression", "'case'", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "case expression", "'case'", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 		}
 
@@ -71,7 +71,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			info.index++;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'then'", "case expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "'then'", "case expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 
 		NodePtr node;
@@ -85,7 +85,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			node = StatementParser::Parse(info);
 
 			if (!node) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "case values", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 		}
 
@@ -104,7 +104,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 				info.index++;
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch case", caseLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "switch case", caseLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 		}
 
@@ -115,7 +115,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		info.index++;
 	}
 	else {
-		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("switch statement", switchLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "switch statement", switchLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 	}
 
 	info.scope = info.scope->Parent<ScopeSymbol>();

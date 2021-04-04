@@ -190,7 +190,7 @@ FunctionSymbol* CallNode::GetFunc() const {
 			argStr.Add(type->AbsoluteName().ToString());
 		}
 
-		ErrorLog::Error(SymbolError(SymbolError::Function(f->AbsoluteName().ToString(), argStr), file));
+		ErrorLog::Error(LogMessage("error.symbol.function.not_found_args", f->ToString(), argStr), file);
 	}
 
 	return nullptr;
@@ -307,7 +307,7 @@ UInt CallNode::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 					}
 
 					if (error) {
-						ErrorLog::Warning(WarningError(WarningError::NoRefArg(callInfo.func->AbsoluteName().ToString(), i), args[i]->file));
+						ErrorLog::Warning(LogMessage("warning.noref", callInfo.func->ToString(), i), args[i]->file);
 					}
 				}
 
@@ -317,7 +317,7 @@ UInt CallNode::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 				callInfo.memoryOffsets[callInfo.memoryOffsets.Size() - 1] = tempSize;
 			}
 			else if (attributes[i] != ArgAttributes::Ref) {
-				ErrorLog::Warning(WarningError("use 'ref' for reference arguments", args[i]->file));
+				ErrorLog::Warning(LogMessage("warning.ref"), args[i]->file);
 			}
 		}
 	}
@@ -576,10 +576,10 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 
 		if (arg && (arg->attributes & VariableAttributes::Ref) == VariableAttributes::None) {
 			if (attributes[i] == ArgAttributes::NoRef) {
-				ErrorLog::Error(CompileError(CompileError::InvalidNoRef, args[i]->file));
+				ErrorLog::Error(LogMessage("error.scan.use.noref"), args[i]->file);
 			}
 			else if (attributes[i] == ArgAttributes::Ref) {
-				ErrorLog::Error(CompileError("invalid use of 'ref'", args[i]->file));
+				ErrorLog::Error(LogMessage("error.scan.use.ref"), args[i]->file);
 			}
 		}
 

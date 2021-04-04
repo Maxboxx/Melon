@@ -61,7 +61,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 			return nullptr;
 		}
 
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'='", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "'='", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		info.index = startIndex;
 		return nullptr;
 	}
@@ -73,7 +73,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 
 	// Check if there are too many expressions
 	if (assign->values.Size() > assign->vars.Size()) {
-		ErrorLog::Error(SyntaxError(SyntaxError::ManyExprAssign, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.assign.expr.many"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 	}
 
 	// Add symbols to scope
@@ -165,7 +165,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 				types.Add(last);
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::FewVariables, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.assign.var.few"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 		}
 
@@ -180,12 +180,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 				name = Name(info.Current().value);
 			}
 			else {
-				if (attributes != VariableAttributes::None) {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "attributes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-				}
-				else {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
-				}
+				ErrorLog::Error(LogMessage("error.syntax.expected.name.var", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 
 			info.index++;
@@ -235,7 +230,7 @@ void AssignmentParser::ParseExpressions(ParsingInfo& info, Pointer<AssignNode>& 
 			assign->values.Add(node);
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("expression", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "expression", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 	}
 }

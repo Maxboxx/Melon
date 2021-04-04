@@ -15,7 +15,7 @@ VariableAttributes VariableAttributeParser::Parse(ParsingInfo& info, const bool 
 	while (true) {
 		if (info.Current().type == TokenType::Const) {
 			if ((attributes & VariableAttributes::Const) != VariableAttributes::None) {
-				ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("const"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.attrubute.multiple", "const"), FileInfo(info.filename, info.Current().line, info.statementNumber));
 			}
 
 			attributes |= VariableAttributes::Const;
@@ -23,10 +23,11 @@ VariableAttributes VariableAttributeParser::Parse(ParsingInfo& info, const bool 
 		} 
 		else if (info.Current().type == TokenType::Ref) {
 			if (!includeRef) {
-				ErrorLog::Error(SyntaxError(SyntaxError::InvalidRef, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+				// TODO: Remove
+				ErrorLog::Error(LogMessage("error.scan.use.ref"), FileInfo(info.filename, info.Current().line, info.statementNumber));
 			}
 			else if ((attributes & VariableAttributes::Ref) != VariableAttributes::None) {
-				ErrorLog::Error(SyntaxError(SyntaxError::MultipleAttribute("ref"), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.attrubute.multiple", "ref"), FileInfo(info.filename, info.Current().line, info.statementNumber));
 			}
 
 			attributes |= VariableAttributes::Ref;

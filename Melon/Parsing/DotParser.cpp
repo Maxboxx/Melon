@@ -14,8 +14,9 @@ using namespace Melon::Parsing;
 NodePtr DotParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Dot) return nullptr;
 
-	if (info.Next().type != TokenType::Name)
-		ErrorLog::Error(SyntaxError(SyntaxError::DotName, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+	if (info.Next().type != TokenType::Name) {
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", "'.'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+	}
 
 	Pointer<DotNode> dn = new DotNode(info.scope, info.GetFileInfo(info.Current(-1).line));
 	dn->name = Name(info.Current().value);

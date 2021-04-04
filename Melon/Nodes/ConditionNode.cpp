@@ -107,7 +107,7 @@ ScanResult ConditionNode::Scan(ScanInfoStack& info) {
 			assign->values[0] = value;
 		}
 		else {
-			ErrorLog::Error(TypeError(TypeError::ConditionAssignment(tempValue->Type()->AbsoluteName().ToString()), tempValue->file));
+			ErrorLog::Error(LogMessage("error.type.conditional_assign", tempValue->Type()->ToString()), tempValue->file);
 		}
 
 		ScanResult result = cond->Scan(info) | tempValue->Scan(info);

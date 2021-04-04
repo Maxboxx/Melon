@@ -219,7 +219,7 @@ ScanResult AssignNode::Scan(ScanInfoStack& info) {
 
 		// Check for const assign
 		if (types[i] == NameList::Discard && var && (var->attributes & VariableAttributes::Const) != VariableAttributes::None) {
-			ErrorLog::Error(SymbolError(SymbolError::ConstAssign, node->file));
+			ErrorLog::Error(LogMessage("error.scan.assign.const"), node->file);
 		}
 
 		// Scan node

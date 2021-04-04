@@ -128,6 +128,9 @@ namespace Melon {
 			/// Gets the file info of the symbol.
 			FileInfo File() const;
 
+			/// Converts the absolute name of the symbol to a simple string.
+			Boxx::String ToString();
+
 		protected:
 			static TypeSymbol* ReplaceType(TypeSymbol* const type, const Boxx::ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file);
 			static NameList ReplaceTypeScope(TypeSymbol* const type, const Boxx::ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file);

@@ -298,10 +298,10 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		}
 
 		if (info.Current().type == TokenType::Dot) {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'.'", "'global'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "'.'", "'global'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("name", "'.'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", "'.'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 
 		info.index = startIndex;

@@ -49,7 +49,7 @@ namespace Melon {
             
 				if (!found) {
 					if (Boxx::Optional<Boxx::Match> match = undefinedToken.Match(code, i)) {
-						ErrorLog::Error(TokenError(TokenError::UndefinedStart + match->match + TokenError::UndefinedEnd, FileInfo(filename, line, 0)));
+						ErrorLog::Error(LogMessage("error.token.undefined", match->match), FileInfo(filename, line, 0));
 					}
 				}
             

@@ -167,7 +167,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 			if (nn->name == Name::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 					if (!var->isAssigned) {
-						ErrorLog::Error(CompileError(CompileError::SelfVarUseStart + name.ToString() + CompileError::SelfVarUseEnd, file));
+						ErrorLog::Error(LogMessage("error.scan.use.member", name.ToSimpleString()), file);
 					}
 				}
 

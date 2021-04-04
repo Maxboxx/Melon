@@ -39,11 +39,11 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 			return repeatNode;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'until'", "repeat loop"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", "'until'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 	}
 	else {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAtEnd("'until'", "'repeat'", repeatLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.close_at", "'until'", "repeat", repeatLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 	}
 
 	info.scope = info.scope->Parent<ScopeSymbol>();

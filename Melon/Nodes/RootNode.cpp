@@ -304,7 +304,7 @@ Tuple<TemplateTypeSymbol*, List<NameList>> RootNode::FindTemplateArgs(const Name
 	}
 
 	// TODO: Better error
-	ErrorLog::Error(SymbolError("template error", file));
+	ErrorLog::Error(LogMessage::Message("template error"), file);
 	return Tuple<TemplateTypeSymbol*, List<NameList>>(nullptr, templateArgs);
 }
 
@@ -328,7 +328,7 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 			}
 			else {
 				// TODO: Remove
-				ErrorLog::Error(CompileError("func null error", file));
+				ErrorLog::Error(LogMessage::Message("func null error (this should not happen)"), file);
 			}
 		}
 	}

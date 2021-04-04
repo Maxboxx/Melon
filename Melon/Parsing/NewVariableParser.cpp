@@ -43,7 +43,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 			if (info.Current().type != TokenType::Name && info.Current().type != TokenType::Discard) {
 				if (node->attributes.Last() != VariableAttributes::None) {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("variable name", "attributes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+					ErrorLog::Error(LogMessage("error.syntax.expected.name.var", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 				}
 
 				break;
@@ -53,11 +53,11 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 			if (info.Current().type == TokenType::Name) {
 				if (upper.Match(info.Current().value)) {
-					ErrorLog::Info(InfoError(InfoError::LowerName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+					ErrorLog::Info(LogMessage("info.name.lower", "variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
 				}
 
 				if (underscore.Match(info.Current().value)) {
-					ErrorLog::Info(InfoError(InfoError::LowerUnderscoreName("variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+					ErrorLog::Info(LogMessage("info.name.under", "variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
 				}
 			}
 
@@ -69,7 +69,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 		}
 
 		if (node->names.Size() < node->types.Size()) {
-			ErrorLog::Error(SyntaxError(SyntaxError::FewVariables, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.assign.var.few"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 
 		return node;

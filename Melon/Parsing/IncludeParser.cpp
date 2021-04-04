@@ -81,7 +81,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 			return true;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::InvalidInclude, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			return false;
 		}
 	}

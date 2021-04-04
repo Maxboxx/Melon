@@ -35,7 +35,7 @@ NodePtr AsParser::Parse(ParsingInfo& info) {
 		return cn;
 	}
 	else {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("type", "'" + asValue + "'"), info.GetFileInfo(asLine)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "type", LogMessage::Quote(asValue)), info.GetFileInfo(asLine));
 	}
 
 	info.index = startIndex;

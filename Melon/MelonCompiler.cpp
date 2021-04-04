@@ -35,7 +35,7 @@ CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 		mango = Mango::Decode(file.ReadAll());
 	}
 	catch (MangoDecodeError e) {
-		ErrorLog::Fatal(PlainError(mangoFile + ": " + e.Message()));
+		ErrorLog::Fatal(LogMessage::Message(mangoFile + ": " + e.Message()), FileInfo());
 	}
 
 	file.Close();
@@ -132,6 +132,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 	// Setup
 	CompilerOptions compOptions = SetupCompilerOptions(options);
 	SymbolTable::Setup();
+	LogMessage::LoadMessages("Melon/errors.mango");
 
 	try {
 		// Parse + Scan
@@ -157,11 +158,11 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			OutputAssembly(compOptions, optimizedInstructions);
 		}
 
-		ErrorLog::Success(PlainError("compilation successful"));
+		ErrorLog::Success(LogMessage("success.compile"), FileInfo());
 		ErrorLog::LogErrors();
 	}
-	catch (CompileError e) {
-		ErrorLog::Error(PlainError("compilation failed"));
+	catch (CompileError& e) {
+		ErrorLog::Fatal(LogMessage("fatal.compile"), FileInfo());
 		ErrorLog::LogErrors();
 	}
 }
@@ -220,7 +221,7 @@ ParsingInfo MelonCompiler::ParseProject(const CompilerOptions& options) {
 	ParsingInfo info = Parser::Parse(options.mainFile, options);
 
 	if (ErrorLog::HasError()) {
-		throw CompileError("", FileInfo());
+		throw CompileError();
 	}
 
 	Node::root = &info.root;
@@ -246,7 +247,7 @@ ScanInfoStack MelonCompiler::ScanProject(const CompilerOptions& options, Parsing
 			info.root.Optimize(opInfo);
 
 			if (ErrorLog::HasError()) {
-				throw CompileError("", FileInfo());
+				throw CompileError();
 			}
 
 			if (!opInfo.optimized) break;
@@ -257,7 +258,7 @@ ScanInfoStack MelonCompiler::ScanProject(const CompilerOptions& options, Parsing
 		scanInfo = info.root.Scan();
 
 		if (ErrorLog::HasError()) {
-			throw CompileError("", FileInfo());
+			throw CompileError();
 		}
 	}
 
@@ -268,7 +269,7 @@ List<OptimizerInstruction> MelonCompiler::CompileProject(ParsingInfo& info, Scan
 	List<OptimizerInstruction> instructions = info.root.Compile(scanInfo.usedVariables);
 
 	if (ErrorLog::HasError()) {
-		throw CompileError("", FileInfo());
+		throw CompileError();
 	}
 
 	return instructions;
@@ -279,7 +280,7 @@ void MelonCompiler::OutputKiwi(const CompilerOptions& options, const List<Instru
 
 	for (const Tuple<Logger::LogLevel, String>& err : ErrorLog::logger) {
 		if (err.value1 == Logger::LogLevel::Error) {
-			throw CompileError("", FileInfo());
+			throw CompileError();
 		}
 	}
 }
@@ -289,7 +290,7 @@ void MelonCompiler::OutputAssembly(const CompilerOptions& options, const List<In
 
 	for (const Tuple<Logger::LogLevel, String>& err : ErrorLog::logger) {
 		if (err.value1 == Logger::LogLevel::Error) {
-			throw CompileError("", FileInfo());
+			throw CompileError();
 		}
 	}
 }

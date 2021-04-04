@@ -9,6 +9,6 @@ using namespace Melon::Nodes;
 
 void ScanResult::SelfUseCheck(const ScanInfoStack& info, const FileInfo& file) {
 	if (selfUsed && info->init && !info->type->IsInitialized()) {
-		ErrorLog::Error(CompileError(CompileError::SelfInit, file));
+		ErrorLog::Error(LogMessage("error.scan.use.self"), file);
 	}
 }

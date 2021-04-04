@@ -18,10 +18,13 @@ NodePtr ContinueParser::Parse(ParsingInfo& info) {
 		if (info.Current().type == TokenType::Integer) {
 			cn->loops = info.Current().value.ToInt();
 
-			if (cn->loops == 0)
-				ErrorLog::Error(SyntaxError(SyntaxError::ContinueIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
-			if (cn->loops > info.loops)
-				ErrorLog::Error(SyntaxError(SyntaxError::ContinueLoops, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+			if (cn->loops == 0) {
+				ErrorLog::Error(LogMessage("error.syntax.continue.int_arg"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+			}
+
+			if (cn->loops > info.loops) {
+				ErrorLog::Error(LogMessage("error.syntax.continue.loops"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+			}
 
 			info.index++;
 		}

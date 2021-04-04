@@ -23,15 +23,17 @@ using namespace Melon::Symbols;
 List<Melon::TokenPattern> Parser::patterns;
 
 Melon::Token ParsingInfo::Next() {
-	if (index + 1 >= tokens.Size())
-		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line, 0)));
+	if (index + 1 >= tokens.Size()) {
+		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line, 0));
+	}
 
 	return tokens[++index];
 }
 
 Melon::Token ParsingInfo::Previous() {
-	if (index - 1 >= tokens.Size())
-		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line, 0)));
+	if (index - 1 >= tokens.Size()) {
+		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line, 0));
+	}
 
 	return tokens[--index];
 }
@@ -41,15 +43,17 @@ bool ParsingInfo::EndOfFile() const {
 }
 
 Melon::Token ParsingInfo::Current() {
-	if (index >= tokens.Size())
-		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line, 0)));
+	if (index >= tokens.Size()) {
+		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line, 0));
+	}
 
 	return tokens[index];
 }
 
 Melon::Token ParsingInfo::Current(const Int offset) {
-	if (index + offset >= tokens.Size())
-		ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedEOF, FileInfo(filename, tokens.Last().line, 0)));
+	if (index + offset >= tokens.Size()) {
+		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line, 0));
+	}
 
 	return tokens[index + offset];
 }
@@ -57,7 +61,7 @@ Melon::Token ParsingInfo::Current(const Int offset) {
 FileInfo ParsingInfo::GetFileInfo() const {
 	FileInfo file;
 	file.filename  = filename;
-	file.fileName = currentFile;
+	file.includeName = currentFile;
 	file.statement = statementNumber;
 	file.includedNamespaces = includedNamespaces;
 	return file;
@@ -67,7 +71,7 @@ FileInfo ParsingInfo::GetFileInfo(const UInt line) const {
 	FileInfo file;
 	file.filename  = filename;
 	file.line      = line;
-	file.fileName = currentFile;
+	file.includeName = currentFile;
 	file.statement = statementNumber;
 	file.includedNamespaces = includedNamespaces;
 	return file;
@@ -91,7 +95,7 @@ ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options
 }
 
 NodePtr Parser::UnexpectedToken(ParsingInfo& info) {
-	ErrorLog::Error(SyntaxError(SyntaxError::UnexpectedTokenStart + info.Current().value + SyntaxError::UnexpectedTokenEnd, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+	ErrorLog::Error(LogMessage("error.token.unexpected", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
 	return nullptr;
 }
 
@@ -101,8 +105,8 @@ void Parser::ParseFile(const String& filename, ParsingInfo& info) {
 		info.tokens = Lexer::Lex(GetTokenPatterns(), file.ReadAll(), filename);
 		file.Close();
 	}
-	catch (FileError e) {
-		ErrorLog::Error(PlainError(e.Message()));
+	catch (FileError& e) {
+		ErrorLog::Error(LogMessage::Message(e.Message()), FileInfo());
 	}
 
 	while (!info.EndOfFile()) {
@@ -151,7 +155,7 @@ void Parser::SetupTokens() {
 
 	// Compare
 	patterns.Add(TokenPattern(TokenType::Equal, "%=%=", true));
-	patterns.Add(TokenPattern(TokenType::NotEqual, "%~%=", true));
+	patterns.Add(TokenPattern(TokenType::NotEqual, "%!%=", true));
 	patterns.Add(TokenPattern(TokenType::LessEq, "%<%=", true));
 	patterns.Add(TokenPattern(TokenType::GreaterEq, "%>%=", true));
 	patterns.Add(TokenPattern(TokenType::Less, "%<", true));

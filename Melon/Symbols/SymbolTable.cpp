@@ -164,7 +164,7 @@ Symbol* SymbolTable::FindInNamespaces(const NameList& name, const FileInfo& file
 
 	for (const NameList& includedNamespace : file.includedNamespaces) {
 		if (Symbol* const s = ContainsAbsolute(includedNamespace.Pop().Add(name))) {
-			if (includedNamespace.Last() == name[0] || s->file.fileName == name[0]) {
+			if (includedNamespace.Last() == name[0] || s->file.includeName == name[0]) {
 				Symbol* ns = s->Parent();
 
 				for (Boxx::UInt i = 0; i < name.Size(); i++) {
@@ -175,7 +175,7 @@ Symbol* SymbolTable::FindInNamespaces(const NameList& name, const FileInfo& file
 
 				if (s->file.currentNamespace == ns->AbsoluteName()) {
 					if (foundSymbol && foundSymbol->AbsoluteName() != s->AbsoluteName()) {
-						ErrorLog::Error(SymbolError(SymbolError::Ambiguous(name.ToString()), file));
+						ErrorLog::Error(LogMessage("error.symbol.ambiguous", name.ToSimpleString()), file);
 					}
 
 					foundSymbol = s;
@@ -186,7 +186,7 @@ Symbol* SymbolTable::FindInNamespaces(const NameList& name, const FileInfo& file
 
 	if (foundSymbol) return foundSymbol;
 
-	ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + name.ToString() + SymbolError::NotFoundEnd, file));
+	ErrorLog::Error(LogMessage("error.symbol.not_found", name.ToSimpleString()), file);
 	return nullptr;
 }
 

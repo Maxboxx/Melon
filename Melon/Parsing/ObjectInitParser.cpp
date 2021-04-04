@@ -19,8 +19,9 @@ NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 
 	while (info.Current().type != TokenType::CurlyClose) {
 		if (!cn->vars.IsEmpty()) {
-			if (info.Current().type != TokenType::Comma)
-				ErrorLog::Error(SyntaxError(SyntaxError::Close("'}'", "custom init"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			if (info.Current().type != TokenType::Comma) {
+				ErrorLog::Error(LogMessage("error.syntax.expected.close", "'}'", "object initializer"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			}
 
 			info.index++;
 		}
@@ -28,8 +29,9 @@ NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 		if (info.Current().type == TokenType::Name) {
 			cn->vars.Add(Name(info.Current().value));
 
-			if (info.Next().type != TokenType::Assign)
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'='", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			if (info.Next().type != TokenType::Assign) {
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "'='", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			}
 
 			info.index++;
 
@@ -37,11 +39,11 @@ NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 				cn->expressions.Add(node);
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("expression", "'='"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "expression", "'='"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::CustomInitName, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.name.object_init"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 	}
 

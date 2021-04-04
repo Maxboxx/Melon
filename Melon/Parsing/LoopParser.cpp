@@ -69,8 +69,9 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 	}
 
 	if (!single) {
-		if (info.Current().type != TokenType::End)
-			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected(start, startLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		if (info.Current().type != TokenType::End) {
+			ErrorLog::Error(LogMessage("error.syntax.expected.end_at", LogMessage::Quote(start), startLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		}
 
 		info.index++;
 	}
@@ -102,18 +103,18 @@ bool LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, P
 			ls.statements = StatementParser::Parse(info);
 
 			if (!ls.statements) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 
 			info.scopeCount--;
 			return true;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'then'", "condition", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "'then'", "if condition"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 	}
 	else {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "if segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", LogMessage::Quote(value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 	}
 
 	return false;
@@ -145,7 +146,7 @@ bool LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value
 			ls.statements = StatementParser::Parse(info);
 
 			if (!ls.statements) {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.sytax.expected.after", "statement", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 
 			info.loops--;
@@ -153,11 +154,11 @@ bool LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value
 			return true;
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "'do'", "while condition"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 	}
 	else {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "'" + value + "'", "while segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", LogMessage::Quote(value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 	}
 
 	return true;
@@ -182,14 +183,14 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 				node = ExpressionParser::Parse(info);
 
 				if (!node) {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'" + info.Current(-1).value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+					ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote(info.Current(-1).value), "for loop"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 				}
 			}
 			else if (NodePtr cond = ConditionParser::Parse(info)) {
 				node = cond;
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("condition", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "condition", "','", "for loop"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 
 			if (node) {
@@ -209,7 +210,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 							fcn->loopStep = step;
 						}
 						else {
-							ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression", "'" + info.Current(-1).value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+							ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote(info.Current(-1).value), "for loop"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 						}
 					}
 					else if (NodePtr step = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
@@ -219,7 +220,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 						fcn->loopStep = step;
 					}
 					else {
-						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("expression or assignment", "','", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+						ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression or assignment", "','", "for loop"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 					}
 				}
 				else {
@@ -249,7 +250,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 					ls.statements = StatementParser::Parse(info);
 
 					if (!ls.statements) {
-						ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+						ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 					}
 
 					info.loops--;
@@ -257,16 +258,16 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 					return true;
 				}
 				else {
-					ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("'do'", "condition", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+					ErrorLog::Error(LogMessage("error.syntax.expected.after", "'do'", "for condition"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 				}
 			}
 		}
 		else {
-			ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("','", "'" + info.Current(-1).value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "','", LogMessage::Quote(info.Current(-1).value), "for loop"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		}
 	}
 	else {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("assignment", "'" + value + "'", "for segment"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "assignment", LogMessage::Quote(value), "for loop"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 	}
 
 	return false;

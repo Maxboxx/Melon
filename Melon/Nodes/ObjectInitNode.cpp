@@ -97,18 +97,18 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 
 			if (found) continue;
 
-			ErrorLog::Error(CompileError(CompileError::VarNotCustomInitStart + member.ToString() + CompileError::VarNotCustomInitEnd, file));
+			ErrorLog::Error(LogMessage("error.scan.init.object_member", member.ToSimpleString()), file);
 		}
 	}
 	else {
-		ErrorLog::Error(CompileError(CompileError::InvalidCustomInit, file));
+		ErrorLog::Error(LogMessage("error.scan.use.object"), file);
 	}
 
 	// Scan assignments
 	for (UInt i = 0; i < vars.Size(); i++) {
 		for (UInt u = i + 1; u < vars.Size(); u++) {
 			if (vars[i] == vars[u]) {
-				ErrorLog::Error(CompileError(CompileError::MultipleInitStart + vars[i].name + CompileError::MultipleInitEnd, file));
+				ErrorLog::Error(LogMessage("error.scan.init.multiple", vars[i].name), file);
 			}
 		}
 

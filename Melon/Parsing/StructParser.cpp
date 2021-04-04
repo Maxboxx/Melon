@@ -61,7 +61,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	}
 
 	if (info.Current().type != TokenType::End) {
-		ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("struct", structLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "struct", structLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		info.scope = temp;
 		return nullptr;
 	}
@@ -81,17 +81,18 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 	static Regex lower = Regex("^%l");
 	static Regex underscore = Regex("%a_+%a");
 
-	if (info.Current().type != TokenType::Name)
-		ErrorLog::Error(SyntaxError(SyntaxError::StructName, FileInfo(info.filename, structLine, info.statementNumber)));
+	if (info.Current().type != TokenType::Name) {
+		ErrorLog::Error(LogMessage("error.syntax.expected.name.struct"), FileInfo(info.filename, structLine, info.statementNumber));
+	}
 
 	Name structName = Name(info.Current().value);
 
 	if (lower.Match(info.Current().value)) {
-		ErrorLog::Info(InfoError(InfoError::UpperName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+		ErrorLog::Info(LogMessage("info.name.upper", "struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
 	}
 
 	if (underscore.Match(info.Current().value)) {
-		ErrorLog::Info(InfoError(InfoError::UpperUnderscoreName("struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber)));
+		ErrorLog::Info(LogMessage("info.name.under", "struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
 	}
 
 	info.index++;

@@ -37,7 +37,7 @@ TypeSymbol* DefaultNode::Type() const {
 	if (type == nullptr) return nullptr;
 
 	if (node2->Type()->ImplicitConversionTo(type)) {
-		ErrorLog::Error(TypeError(TypeError::DefaultType, file));
+		ErrorLog::Error(LogMessage("error.type.default"), file);
 	}
 
 	return type;

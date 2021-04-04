@@ -34,7 +34,7 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 			}
 			else {
 				info.scopeCount--;
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("statement", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 				return nullptr;
 			}
 		}
@@ -42,8 +42,9 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 		node->nodes = StatementParser::ParseMultiple(info);
 		info.scopeCount--;
 
-		if (info.Current().type != TokenType::End)
-			ErrorLog::Error(SyntaxError(SyntaxError::EndExpected("do", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		if (info.Current().type != TokenType::End) {
+			ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "do", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		}
 
 		info.index++;
 

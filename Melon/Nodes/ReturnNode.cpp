@@ -115,8 +115,11 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 	if (f == nullptr) return result;
 
 	// Check for correct number of return values
-	if (f->returnValues.Size() != nodes.Size()) {
-		ErrorLog::Error(CompileError(CompileError::Return(f->returnValues.Size(), nodes.Size()), file));
+	if (f->returnValues.Size() > nodes.Size()) {
+		ErrorLog::Error(LogMessage("error.scan.return.many"), file);
+	}
+	else if (f->returnValues.Size() < nodes.Size()) {
+		ErrorLog::Error(LogMessage("error.scan.return.few"), file);
 	}
 
 	List<TypeSymbol*> types = GetTypes();

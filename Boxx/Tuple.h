@@ -36,6 +36,13 @@ namespace Boxx {
 		///[Error] TupleError: Thrown if the tuple contains more than {8} values.
 		Tuple(T ... values);
 
+		/// Creates a tuple from values.
+		///[Error] TupleError: Thrown if the tuple contains more than {8} values.
+		///M
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values);
+		///M
+
 		~Tuple();
 	};
 
@@ -69,11 +76,22 @@ namespace Boxx {
 		
 	}
 
+	template <class ... T>
+	template <class ... Types>
+	inline Tuple<Types...> Tuple<T...>::Create(Types ... values) {
+		return Tuple<Types...>(values...);
+	}
+
 	template <>
 	class Tuple<> {
 	public:
 		Tuple() {}
 		~Tuple() {}
+
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values) {
+			return Tuple<Types...>(values...);
+		}
 	};
 
 	template <class T1>
@@ -84,6 +102,11 @@ namespace Boxx {
 		Tuple(const T1& value1)
 			:value1(value1){}
 		~Tuple() {}
+
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values) {
+			return Tuple<Types...>(values...);
+		}
 	};
 
 	template <class T1, class T2>
@@ -95,6 +118,11 @@ namespace Boxx {
 		Tuple(const T1& value1, const T2& value2)
 			:value1(value1),value2(value2){}
 		~Tuple() {}
+
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values) {
+			return Tuple<Types...>(values...);
+		}
 	};
 
 	template <class T1, class T2, class T3>
@@ -107,6 +135,11 @@ namespace Boxx {
 		Tuple(const T1& value1, const T2& value2, const T3& value3)
 			:value1(value1),value2(value2),value3(value3){}
 		~Tuple() {}
+
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values) {
+			return Tuple<Types...>(values...);
+		}
 	};
 
 	template <class T1, class T2, class T3, class T4>
@@ -120,6 +153,11 @@ namespace Boxx {
 		Tuple(const T1& value1, const T2& value2, const T3& value3, const T4& value4)
 			:value1(value1),value2(value2),value3(value3),value4(value4){}
 		~Tuple() {}
+
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values) {
+			return Tuple<Types...>(values...);
+		}
 	};
 
 	template <class T1, class T2, class T3, class T4, class T5>
@@ -134,6 +172,11 @@ namespace Boxx {
 		Tuple(const T1& value1, const T2& value2, const T3& value3, const T4& value4, const T5& value5)
 			:value1(value1),value2(value2),value3(value3),value4(value4),value5(value5){}
 		~Tuple() {}
+
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values) {
+			return Tuple<Types...>(values...);
+		}
 	};
 
 	template <class T1, class T2, class T3, class T4, class T5, class T6>
@@ -149,6 +192,11 @@ namespace Boxx {
 		Tuple(const T1& value1, const T2& value2, const T3& value3, const T4& value4, const T5& value5, const T6& value6)
 			:value1(value1),value2(value2),value3(value3),value4(value4),value5(value5),value6(value6){}
 		~Tuple() {}
+
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values) {
+			return Tuple<Types...>(values...);
+		}
 	};
 
 	template <class T1, class T2, class T3, class T4, class T5, class T6, class T7>
@@ -165,6 +213,11 @@ namespace Boxx {
 		Tuple(const T1& value1, const T2& value2, const T3& value3, const T4& value4, const T5& value5, const T6& value6, const T7& value7)
 			:value1(value1),value2(value2),value3(value3),value4(value4),value5(value5),value6(value6),value7(value7){}
 		~Tuple() {}
+
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values) {
+			return Tuple<Types...>(values...);
+		}
 	};
 
 	template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
@@ -182,5 +235,10 @@ namespace Boxx {
 		Tuple(const T1& value1, const T2& value2, const T3& value3, const T4& value4, const T5& value5, const T6& value6, const T7& value7, const T8& value8)
 			:value1(value1),value2(value2),value3(value3),value4(value4),value5(value5),value6(value6),value7(value7),value8(value8){}
 		~Tuple() {}
+
+		template <class ... Types>
+		static Tuple<Types...> Create(Types ... values) {
+			return Tuple<Types...>(values...);
+		}
 	};
 }

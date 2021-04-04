@@ -123,7 +123,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 	// Check if member variables are initialized
 	if (info->init && !info->type->IsInitialized()) {
 		for (const Name& var : info->type->UnassignedMembers()) {
-			ErrorLog::Error(CompileError(CompileError::VarNotInitStart + var.ToString() + CompileError::VarNotInitEnd, file));
+			ErrorLog::Error(LogMessage("error.scan.init.member", var.ToSimpleString()), file);
 		}
 	}
 
@@ -138,7 +138,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 
 	// Check if the function has not returned if it needs to
 	if (!info->scopeInfo.hasReturned && !sym->returnValues.IsEmpty()) {
-		ErrorLog::Error(CompileError(CompileError::FuncNotReturn(sym), file));
+		ErrorLog::Error(LogMessage(sym->returnValues.Size() == 1 ? "error.scan.return.value" : "error.scan.return.values", sym->ToString()), file);
 	}
 
 	info.Pop();

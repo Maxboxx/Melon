@@ -96,11 +96,15 @@ Symbol* Symbol::FindSymbol(const NameList& scopeList, const UInt index, const Fi
 }
 
 void Symbol::FindError(const NameList& scopeList, const UInt index, const FileInfo& file) {
-	ErrorLog::Error(SymbolError(SymbolError::NotFoundStart + scopeList[index].ToString() + SymbolError::NotFoundEnd, file));
+	ErrorLog::Error(LogMessage("error.symbol.not_found", scopeList[index].ToSimpleString()), file);
 }
 
 FileInfo Symbol::File() const {
 	return file;
+}
+
+String Symbol::ToString() {
+	return AbsoluteName().ToSimpleString();
 }
 
 TypeSymbol* Symbol::ReplaceType(TypeSymbol* const type, const ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file) {

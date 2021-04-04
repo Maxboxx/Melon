@@ -38,8 +38,9 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 
 		bn->loops++;
 
-		if (bn->loops > info.scopeCount)
-			ErrorLog::Error(SyntaxError(SyntaxError::BreakScopes, FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		if (bn->loops > info.scopeCount) {
+			ErrorLog::Error(LogMessage("error.syntax.break.scopes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		}
 	}
 	else {
 		if (info.Current().type == TokenType::Boolean) {
@@ -52,8 +53,9 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 				if (info.Current().type == TokenType::Integer) {
 					bn->loops = info.Current().value.ToInt();
 
-					if (bn->loops == 0)
-						ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+					if (bn->loops == 0) {
+						ErrorLog::Error(LogMessage("error.syntax.break.int_arg"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+					}
 
 					info.index++;
 				}
@@ -65,8 +67,9 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 		else if (info.Current().type == TokenType::Integer) {
 			bn->loops = info.Current().value.ToInt();
 
-			if (bn->loops == 0)
-				ErrorLog::Error(SyntaxError(SyntaxError::BreakIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+			if (bn->loops == 0) {
+				ErrorLog::Error(LogMessage("error.syntax.break.int_arg"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+			}
 
 			info.index++;
 
@@ -84,7 +87,7 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 		}
 
 		if (bn->loops > info.loops) {
-			ErrorLog::Error(SyntaxError(SyntaxError::BreakLoops, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+			ErrorLog::Error(LogMessage("error.syntax.break.loops"), FileInfo(info.filename, info.Current().line, info.statementNumber));
 		}
 	}
 
@@ -102,10 +105,13 @@ NodePtr BreakParser::ParseAbort(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Integer) {
 		bn->loops = info.Current().value.ToInt();
 
-		if (bn->loops == 0)
-			ErrorLog::Error(SyntaxError(SyntaxError::AbortIntLow, FileInfo(info.filename, info.Current().line, info.statementNumber)));
-		if (bn->loops > info.loops)
-			ErrorLog::Error(SyntaxError(SyntaxError::AbortLoops, FileInfo(info.filename, info.Current().line, info.statementNumber)));
+		if (bn->loops == 0) {
+			ErrorLog::Error(LogMessage("error.syntax.abort.int_arg"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+		}
+
+		if (bn->loops > info.loops) {
+			ErrorLog::Error(LogMessage("error.syntax.abort.loops"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+		}
 
 		info.index++;
 	}

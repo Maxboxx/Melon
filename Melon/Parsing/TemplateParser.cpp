@@ -27,7 +27,7 @@ Optional<List<NameList>> TemplateParser::Parse(ParsingInfo& info) {
 				types.Add(*type);
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("type", "','", "template list"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "type", "','", "template argument list"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 		}
 	}
@@ -39,7 +39,6 @@ Optional<List<NameList>> TemplateParser::Parse(ParsingInfo& info) {
 	}
 
 	if (info.Current().type != TokenType::Greater) {
-		//ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfter("'>'", "'" + info.Current(-1).value + "'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
 		info.index = startIndex;
 		return nullptr;
 	}
@@ -68,7 +67,7 @@ Optional<List<NameList>> TemplateParser::ParseDefine(ParsingInfo& info) {
 				info.index++;
 			}
 			else {
-				ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("type", "','", "template list"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "type", "','", "template argument list"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 			}
 		}
 	}
@@ -79,7 +78,7 @@ Optional<List<NameList>> TemplateParser::ParseDefine(ParsingInfo& info) {
 	}
 
 	if (types.IsEmpty()) {
-		ErrorLog::Error(SyntaxError(SyntaxError::ExpectedAfterIn("type", "'<'", "template list"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber)));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "type", "'<'", "template argument list"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
 		info.index = startIndex;
 		return nullptr;
 	}

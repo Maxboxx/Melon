@@ -36,7 +36,9 @@ TypeSymbol* SwitchNode::Type() const {
 	TypeSymbol* type = nodes[0]->Type();
 
 	for (UInt i = 1; i < nodes.Size(); i++) {
-		if (type != nodes[i]->Type()) ErrorLog::Error(TypeError(TypeError::SwitchExprType, file));
+		if (type != nodes[i]->Type()) {
+			ErrorLog::Error(LogMessage("error.type.switch"), file);
+		}
 	}
 
 	return type;

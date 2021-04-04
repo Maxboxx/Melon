@@ -18,7 +18,7 @@ using namespace Kiwi;
 using namespace Melon;
 
 int main() {
-	//*
+	/*
 	DragonfruitInfo info;
 	info.docComment = "///";
 	info.namespaceSeparator = "::";
@@ -47,12 +47,12 @@ int main() {
 
 		MelonCompiler::Compile(options);
 	}
-	catch (FatalLoggerError e) {
+	catch (FatalLoggerError& e) {
 		ErrorLog::LogErrors();
 	}
 	catch (Error& e) {
 		try {
-			ErrorLog::Fatal(PlainError(e.Name() + ": " + e.Message()));
+			ErrorLog::Fatal(LogMessage::Message(e.Name() + ": " + e.Message()), FileInfo());
 		}
 		catch (FatalLoggerError e) {
 			ErrorLog::LogErrors();

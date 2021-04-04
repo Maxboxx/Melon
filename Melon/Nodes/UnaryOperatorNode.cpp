@@ -100,7 +100,7 @@ ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
 
 	if (op == Name::Unwrap) {
 		// TODO: fix
-		ErrorLog::Warning(WarningError("unwrap operator does not work properly for nil values", file));
+		ErrorLog::Warning(LogMessage::Message("unwrap operator does not work properly for nil values"), file);
 	}
 
 	if (TypeSymbol* const type = node->Type()) {

@@ -64,7 +64,7 @@ ScanResult StructNode::Scan(ScanInfoStack& info) {
 			if (TypeSymbol* const type = member->Type()) {
 				if (IsRecursive(type->Cast<StructSymbol>())) {
 					symbol->isRecursive = true;
-					ErrorLog::Error(SymbolError(SymbolError::RecursiveStruct(this->name.ToString()), member->File()));
+					ErrorLog::Error(LogMessage("error.symbol.recursive_struct", this->name.ToSimpleString()), member->File());
 				}
 			}
 		}
