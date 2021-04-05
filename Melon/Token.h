@@ -138,7 +138,11 @@ namespace Melon {
 		/// The line number for the token
 		Boxx::UInt line;
 
-		Token() {}
+		Token() {
+			type = TokenType::None;
+			value = "";
+			line = 0;
+		}
 
 		///T Constructor
 		Token(const TokenType type, const Boxx::String& value, const Boxx::UInt line) {

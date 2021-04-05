@@ -19,7 +19,7 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 	const UInt repeatLine = info.Current().line;
 	info.index++;
 
-	Pointer<RepeatNode> repeatNode = new RepeatNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+	Pointer<RepeatNode> repeatNode = new RepeatNode(info.scope, info.GetFileInfoPrev());
 
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(repeatLine));
 
@@ -39,11 +39,11 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 			return repeatNode;
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", "'until'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", LogMessage::Quote("until")), info.GetFileInfoPrev());
 		}
 	}
 	else {
-		ErrorLog::Error(LogMessage("error.syntax.expected.close_at", "'until'", "repeat", repeatLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.close_at", LogMessage::Quote("until"), "repeat", repeatLine), info.GetFileInfoPrev());
 	}
 
 	info.scope = info.scope->Parent<ScopeSymbol>();

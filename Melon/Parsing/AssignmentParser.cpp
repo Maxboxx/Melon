@@ -61,7 +61,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 			return nullptr;
 		}
 
-		ErrorLog::Error(LogMessage("error.syntax.expected.after", "'='", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("="), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 		info.index = startIndex;
 		return nullptr;
 	}
@@ -73,7 +73,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 
 	// Check if there are too many expressions
 	if (assign->values.Size() > assign->vars.Size()) {
-		ErrorLog::Error(LogMessage("error.syntax.assign.expr.many"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.assign.expr.many"), info.GetFileInfoPrev());
 	}
 
 	// Add symbols to scope
@@ -165,7 +165,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 				types.Add(last);
 			}
 			else {
-				ErrorLog::Error(LogMessage("error.syntax.assign.var.few"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.assign.var.few"), info.GetFileInfoPrev());
 			}
 		}
 
@@ -180,13 +180,13 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 				name = Name(info.Current().value);
 			}
 			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.name.var", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.name.var", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 			}
 
 			info.index++;
 
 			if (name != NameList::Discard.Last()) {
-				FileInfo file = info.GetFileInfo(info.Current(-1).line);
+				FileInfo file = info.GetFileInfoPrev();
 				file.statement++;
 
 				Pointer<NameNode> nn = new NameNode(info.scope, file);
@@ -194,12 +194,12 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 				assign->vars.Add(nn);
 			}
 			else {
-				assign->vars.Add(new DiscardNode(info.scope, info.GetFileInfo(info.Current(-1).line)));
+				assign->vars.Add(new DiscardNode(info.scope, info.GetFileInfoPrev()));
 			}
 
 			if (name == NameList::Discard.Last()) continue;
 
-			VariableSymbol* v = new VariableSymbol(info.GetFileInfo(info.Current(-1).line));
+			VariableSymbol* v = new VariableSymbol(info.GetFileInfoPrev());
 			v->type = types[i];
 			v->attributes = attributes;
 
@@ -230,7 +230,7 @@ void AssignmentParser::ParseExpressions(ParsingInfo& info, Pointer<AssignNode>& 
 			assign->values.Add(node);
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", "expression", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "expression", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 		}
 	}
 }

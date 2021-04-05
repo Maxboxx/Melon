@@ -15,7 +15,7 @@ VariableAttributes VariableAttributeParser::Parse(ParsingInfo& info, const bool 
 	while (true) {
 		if (info.Current().type == TokenType::Const) {
 			if ((attributes & VariableAttributes::Const) != VariableAttributes::None) {
-				ErrorLog::Error(LogMessage("error.syntax.attrubute.multiple", "const"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.attrubute.multiple", "const"), info.GetFileInfo());
 			}
 
 			attributes |= VariableAttributes::Const;
@@ -24,10 +24,10 @@ VariableAttributes VariableAttributeParser::Parse(ParsingInfo& info, const bool 
 		else if (info.Current().type == TokenType::Ref) {
 			if (!includeRef) {
 				// TODO: Remove
-				ErrorLog::Error(LogMessage("error.scan.use.ref"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.scan.use.ref"), info.GetFileInfo());
 			}
 			else if ((attributes & VariableAttributes::Ref) != VariableAttributes::None) {
-				ErrorLog::Error(LogMessage("error.syntax.attrubute.multiple", "ref"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.attrubute.multiple", "ref"), info.GetFileInfo());
 			}
 
 			attributes |= VariableAttributes::Ref;

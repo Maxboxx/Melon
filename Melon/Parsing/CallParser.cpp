@@ -18,12 +18,12 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::ParenOpen) {
 		info.index++;
 
-		Pointer<CallNode> call = new CallNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+		Pointer<CallNode> call = new CallNode(info.scope, info.GetFileInfoPrev());
 
 		while (info.Current().type != TokenType::ParenClose) {
 			if (!call->args.IsEmpty()) {
 				if (info.Current().type != TokenType::Comma) {
-					ErrorLog::Error(LogMessage("error.syntax.expected.after", "')'", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+					ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(")"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 				}
 
 				info.index++;
@@ -45,7 +45,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 				call->args.Add(node);
 			}
 			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "')'", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(")"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 				info.index++;
 			}
 		}

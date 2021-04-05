@@ -22,61 +22,6 @@ using namespace Melon::Symbols;
 
 List<Melon::TokenPattern> Parser::patterns;
 
-Melon::Token ParsingInfo::Next() {
-	if (index + 1 >= tokens.Size()) {
-		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line, 0));
-	}
-
-	return tokens[++index];
-}
-
-Melon::Token ParsingInfo::Previous() {
-	if (index - 1 >= tokens.Size()) {
-		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line, 0));
-	}
-
-	return tokens[--index];
-}
-
-bool ParsingInfo::EndOfFile() const {
-	return index >= tokens.Size();
-}
-
-Melon::Token ParsingInfo::Current() {
-	if (index >= tokens.Size()) {
-		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line, 0));
-	}
-
-	return tokens[index];
-}
-
-Melon::Token ParsingInfo::Current(const Int offset) {
-	if (index + offset >= tokens.Size()) {
-		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line, 0));
-	}
-
-	return tokens[index + offset];
-}
-
-FileInfo ParsingInfo::GetFileInfo() const {
-	FileInfo file;
-	file.filename  = filename;
-	file.includeName = currentFile;
-	file.statement = statementNumber;
-	file.includedNamespaces = includedNamespaces;
-	return file;
-}
-
-FileInfo ParsingInfo::GetFileInfo(const UInt line) const {
-	FileInfo file;
-	file.filename  = filename;
-	file.line      = line;
-	file.includeName = currentFile;
-	file.statement = statementNumber;
-	file.includedNamespaces = includedNamespaces;
-	return file;
-}
-
 ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options) {
 	SetupTokens();
 
@@ -95,7 +40,7 @@ ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options
 }
 
 NodePtr Parser::UnexpectedToken(ParsingInfo& info) {
-	ErrorLog::Error(LogMessage("error.token.unexpected", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
+	ErrorLog::Error(LogMessage("error.token.unexpected", info.Current().value), info.GetFileInfo());
 	return nullptr;
 }
 

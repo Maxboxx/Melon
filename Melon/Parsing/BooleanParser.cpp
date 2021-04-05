@@ -10,7 +10,7 @@ using namespace Melon::Parsing;
 
 NodePtr BooleanParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Boolean) {
-		Pointer<BooleanNode> node = new BooleanNode(FileInfo(info.filename, info.Current().line, info.statementNumber));
+		Pointer<BooleanNode> node = new BooleanNode(info.GetFileInfoPrev());
 		node->scope   = info.scope;
 		node->boolean = info.Current().value == "true" ? true : false;
 		info.index++;

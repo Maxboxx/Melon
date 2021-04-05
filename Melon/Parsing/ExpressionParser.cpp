@@ -280,7 +280,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		return node;
 	}
 	else if (info.Current().type == TokenType::Nil) {
-		Pointer<NilNode> node = new NilNode(FileInfo(info.filename, info.Current().line, info.statementNumber));
+		Pointer<NilNode> node = new NilNode(info.GetFileInfo());
 		info.index++;
 		return node;
 	}
@@ -298,10 +298,10 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		}
 
 		if (info.Current().type == TokenType::Dot) {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", "'.'", "'global'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("."), LogMessage::Quote("global")), info.GetFileInfoPrev());
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", "'.'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(".")), info.GetFileInfoPrev());
 		}
 
 		info.index = startIndex;
@@ -352,7 +352,7 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 			}
 
 			if (info.Current().type == TokenType::Exclamation) {
-				Pointer<UnaryOperatorNode> unwrap = new UnaryOperatorNode(info.scope, Name::Unwrap, info.GetFileInfo(info.Current().line));
+				Pointer<UnaryOperatorNode> unwrap = new UnaryOperatorNode(info.scope, Name::Unwrap, info.GetFileInfo());
 				unwrap->node = node;
 				info.index++;
 				node = unwrap;
@@ -362,7 +362,7 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 			if (info.Current().type == TokenType::Question) {
 				hasSafeUnwrap = true;
 
-				Pointer<SafeUnwrapNode> unwrap = new SafeUnwrapNode(info.scope, info.GetFileInfo(info.Current().line));
+				Pointer<SafeUnwrapNode> unwrap = new SafeUnwrapNode(info.scope, info.GetFileInfo());
 				unwrap->node = node;
 				info.index++;
 				node = unwrap;
@@ -373,7 +373,7 @@ NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool stateme
 		}
 
 		if (hasSafeUnwrap) {
-			Pointer<SafeUnwrapEndNode> unwrap = new SafeUnwrapEndNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+			Pointer<SafeUnwrapEndNode> unwrap = new SafeUnwrapEndNode(info.scope, info.GetFileInfoPrev());
 			unwrap->node = node;
 			node = unwrap;
 		}

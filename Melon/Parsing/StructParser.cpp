@@ -39,7 +39,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 			Pointer<NewVariableNode> nn = node.Cast<NewVariableNode>();
 
 			for (UInt i = 0; i < nn->names.Size(); i++) {
-				VariableSymbol* const var = new VariableSymbol(info.GetFileInfo(info.Current().line));
+				VariableSymbol* const var = new VariableSymbol(info.GetFileInfo());
 
 				if (nn->types.Size() == 1)
 					var->type = nn->types[0];
@@ -61,13 +61,13 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	}
 
 	if (info.Current().type != TokenType::End) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "struct", structLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "struct", structLine), info.GetFileInfoPrev());
 		info.scope = temp;
 		return nullptr;
 	}
 
-	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo(info.Current().line));
-	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo(info.Current().line)));
+	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo());
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 	assign1->arguments.Add(sn->symbol->AbsoluteName());
 	assign1->symbolNode = new StructAssignNode();
 	sn->symbol->AddSymbol(Name::Assign, assign);
@@ -82,17 +82,17 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 	static Regex underscore = Regex("%a_+%a");
 
 	if (info.Current().type != TokenType::Name) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.name.struct"), FileInfo(info.filename, structLine, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.name.struct"), info.GetFileInfo(structLine));
 	}
 
 	Name structName = Name(info.Current().value);
 
 	if (lower.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.upper", "struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
+		ErrorLog::Info(LogMessage("info.name.upper", "struct", info.Current().value), info.GetFileInfo());
 	}
 
 	if (underscore.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.under", "struct", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
+		ErrorLog::Info(LogMessage("info.name.under", "struct", info.Current().value), info.GetFileInfo());
 	}
 
 	info.index++;

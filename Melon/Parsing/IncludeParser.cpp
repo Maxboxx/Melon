@@ -25,8 +25,8 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 			while (true) {
 				if (info.Current().type != TokenType::Dot) break;
 
-				if (info.Current(1).type == TokenType::Name) {
-					include = include.Add(Name(info.Current(1).value));
+				if (info.Peek().type == TokenType::Name) {
+					include = include.Add(Name(info.Peek().value));
 					info.index += 2;
 				}
 				else {
@@ -81,7 +81,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 			return true;
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 			return false;
 		}
 	}
@@ -163,7 +163,7 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const NameList&
 			}
 
 			NamespaceSymbol* const ns = SymbolTable::FindAbsolute<NamespaceSymbol>(includeScopes.Pop(), FileInfo());
-			ns->AddSymbol(includeScopes.Last(), new NamespaceSymbol(path, FileInfo(filename, 1, 0)));
+			ns->AddSymbol(includeScopes.Last(), new NamespaceSymbol(path, FileInfo(filename, 1)));
 		}
 	}
 }

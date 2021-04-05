@@ -12,18 +12,18 @@ NodePtr ContinueParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Continue) {
 		info.index++;
 
-		Pointer<ContinueNode> cn = new ContinueNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+		Pointer<ContinueNode> cn = new ContinueNode(info.scope, info.GetFileInfoPrev());
 		cn->loops = 1;
 
 		if (info.Current().type == TokenType::Integer) {
 			cn->loops = info.Current().value.ToInt();
 
 			if (cn->loops == 0) {
-				ErrorLog::Error(LogMessage("error.syntax.continue.int_arg"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.continue.int_arg"), info.GetFileInfo());
 			}
 
 			if (cn->loops > info.loops) {
-				ErrorLog::Error(LogMessage("error.syntax.continue.loops"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.continue.loops"), info.GetFileInfo());
 			}
 
 			info.index++;

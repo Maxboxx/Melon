@@ -19,7 +19,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 	const UInt startIndex = info.index;
 
-	Pointer<NewVariableNode> node = new NewVariableNode(info.scope, info.GetFileInfo(info.Current().line));
+	Pointer<NewVariableNode> node = new NewVariableNode(info.scope, info.GetFileInfo());
 
 	while (const Optional<NameList> type = ParseType(info)) {
 		node->types.Add(*type);
@@ -43,7 +43,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 			if (info.Current().type != TokenType::Name && info.Current().type != TokenType::Discard) {
 				if (node->attributes.Last() != VariableAttributes::None) {
-					ErrorLog::Error(LogMessage("error.syntax.expected.name.var", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+					ErrorLog::Error(LogMessage("error.syntax.expected.name.var", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 				}
 
 				break;
@@ -53,11 +53,11 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 
 			if (info.Current().type == TokenType::Name) {
 				if (upper.Match(info.Current().value)) {
-					ErrorLog::Info(LogMessage("info.name.lower", "variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
+					ErrorLog::Info(LogMessage("info.name.lower", "variable", info.Current().value), info.GetFileInfo());
 				}
 
 				if (underscore.Match(info.Current().value)) {
-					ErrorLog::Info(LogMessage("info.name.under", "variable", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
+					ErrorLog::Info(LogMessage("info.name.under", "variable", info.Current().value), info.GetFileInfo());
 				}
 			}
 
@@ -69,7 +69,7 @@ NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 		}
 
 		if (node->names.Size() < node->types.Size()) {
-			ErrorLog::Error(LogMessage("error.syntax.assign.var.few"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.assign.var.few"), info.GetFileInfoPrev());
 		}
 
 		return node;

@@ -34,7 +34,7 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 			}
 			else {
 				info.scopeCount--;
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 				return nullptr;
 			}
 		}
@@ -43,7 +43,7 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 		info.scopeCount--;
 
 		if (info.Current().type != TokenType::End) {
-			ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "do", line), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "do", line), info.GetFileInfoPrev());
 		}
 
 		info.index++;

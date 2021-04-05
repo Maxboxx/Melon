@@ -17,7 +17,7 @@ NodePtr AssignableParser::Parse(ParsingInfo& info) {
 	// Parse discard
 	if (info.Current().type == TokenType::Discard) {
 		info.index++;
-		return new DiscardNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+		return new DiscardNode(info.scope, info.GetFileInfoPrev());
 	}
 	// Parse expression
 	else if (NodePtr node = ExpressionParser::Parse(info, true)) {

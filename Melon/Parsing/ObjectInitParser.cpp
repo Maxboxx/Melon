@@ -15,12 +15,12 @@ NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::CurlyOpen) return nullptr;
 	info.index++;
 
-	Pointer<ObjectInitNode> cn = new ObjectInitNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+	Pointer<ObjectInitNode> cn = new ObjectInitNode(info.scope, info.GetFileInfoPrev());
 
 	while (info.Current().type != TokenType::CurlyClose) {
 		if (!cn->vars.IsEmpty()) {
 			if (info.Current().type != TokenType::Comma) {
-				ErrorLog::Error(LogMessage("error.syntax.expected.close", "'}'", "object initializer"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.close", LogMessage::Quote("}"), "object initializer"), info.GetFileInfoPrev());
 			}
 
 			info.index++;
@@ -30,7 +30,7 @@ NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 			cn->vars.Add(Name(info.Current().value));
 
 			if (info.Next().type != TokenType::Assign) {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "'='", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("="), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 			}
 
 			info.index++;
@@ -39,11 +39,11 @@ NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 				cn->expressions.Add(node);
 			}
 			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "expression", "'='"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "expression", LogMessage::Quote("=")), info.GetFileInfoPrev());
 			}
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.syntax.expected.name.object_init"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.name.object_init"), info.GetFileInfoPrev());
 		}
 	}
 

@@ -25,14 +25,14 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 	bool error = false;
 
 	if (!cond) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", "'if'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", LogMessage::Quote("if")), info.GetFileInfoPrev());
 		error = true;
 	}
 
 	bool single = info.Current().type == TokenType::Arrow;
 
 	if (!single && info.Current().type != TokenType::Then) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "'then'", "condition", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after_in", LogMessage::Quote("then"), "condition", "if expression"), info.GetFileInfoPrev());
 		error = true;
 	}
 
@@ -49,12 +49,12 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 			NodePtr cond = ConditionParser::Parse(info);
 
 			if (!cond) {
-				ErrorLog::Error(LogMessage("error.sytax.expected.after", "condition", "'elseif'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.sytax.expected.after", "condition", LogMessage::Quote("elseif")), info.GetFileInfoPrev());
 				error = true;
 			}
 
 			if (info.Current().type != TokenType::Then) {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "'then'", "condition", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", LogMessage::Quote("then"), "condition", "if expression"), info.GetFileInfoPrev());
 				error = true;
 			}
 
@@ -65,7 +65,7 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 				ifexpr->nodes.Add(expr);
 			}
 			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", "'then'", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote("then"), "if expression"), info.GetFileInfoPrev());
 				error = true;
 			}
 		}
@@ -82,16 +82,16 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 					return ifexpr;
 				}
 
-				ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "if expression", ifLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "if expression", ifLine), info.GetFileInfoPrev());
 				error = true;
 			}
 
-			ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", "'else'", "if expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote("else"), "if expression"), info.GetFileInfoPrev());
 			error = true;
 		}
 	}
 
-	ErrorLog::Error(LogMessage("error.syntax.if.required.else"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+	ErrorLog::Error(LogMessage("error.syntax.if.required.else"), info.GetFileInfoPrev());
 	error = true;
 	info.index = startIndex;
 	return nullptr;

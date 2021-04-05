@@ -38,17 +38,17 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	info.index++;
 
 	if (info.Current().type != TokenType::Name) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.name.enum"), FileInfo(info.filename, enumLine, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.name.enum"), info.GetFileInfo(enumLine));
 	}
 
 	const Name enumName = Name(info.Current().value);
 
 	if (lower.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.upper", "enum", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
+		ErrorLog::Info(LogMessage("info.name.upper", "enum", info.Current().value), info.GetFileInfo());
 	}
 
 	if (underscore.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.under", "enum", info.Current().value), FileInfo(info.filename, info.Current().line, info.statementNumber));
+		ErrorLog::Info(LogMessage("info.name.under", "enum", info.Current().value), info.GetFileInfo());
 	}
 
 	info.index++;
@@ -76,22 +76,22 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	while (FunctionParser::Parse(info, enumSymbol));
 
 	if (info.Current().type != TokenType::End) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "enum", enumLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "enum", enumLine), info.GetFileInfoPrev());
 	}
 
-	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo(info.Current().line));
+	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo());
 	assign->arguments.Add(enumSymbol->AbsoluteName());
 	assign->symbolNode = new IntegerAssignNode(enumSymbol->Size());
 	enumSymbol->AddSymbol(Name::Assign, assign);
 
-	FunctionSymbol* const eq = new FunctionSymbol(info.GetFileInfo(info.Current().line));
+	FunctionSymbol* const eq = new FunctionSymbol(info.GetFileInfo());
 	eq->arguments.Add(enumSymbol->AbsoluteName());
 	eq->arguments.Add(enumSymbol->AbsoluteName());
 	eq->returnValues.Add(NameList::Bool);
 	eq->symbolNode = new IntegerBinaryOperatorNode(enumSymbol->Size(), enumSymbol->IsSigned(), InstructionType::Eq);
 	enumSymbol->AddSymbol(Name::Equal, eq);
 
-	FunctionSymbol* const ne = new FunctionSymbol(info.GetFileInfo(info.Current().line));
+	FunctionSymbol* const ne = new FunctionSymbol(info.GetFileInfo());
 	ne->arguments.Add(enumSymbol->AbsoluteName());
 	ne->arguments.Add(enumSymbol->AbsoluteName());
 	ne->returnValues.Add(NameList::Bool);
@@ -118,7 +118,7 @@ List<EnumParser::EnumValue> EnumParser::ParseValues(ParsingInfo& info) {
 				values.Add(*value);
 			}
 			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", "','"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(",")), info.GetFileInfoPrev());
 				break;
 			}
 		}
@@ -141,7 +141,7 @@ Optional<EnumParser::EnumValue> EnumParser::ParseValue(ParsingInfo& info, ULong&
 			value.value = num.Cast<IntegerNode>()->number;
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", "integer", "'='"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "integer", LogMessage::Quote("=")), info.GetFileInfoPrev());
 		}
 	}
 	else {

@@ -19,7 +19,7 @@ NodePtr ReturnParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Return) {
 		info.index++;
 
-		Pointer<ReturnNode> ret = new ReturnNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+		Pointer<ReturnNode> ret = new ReturnNode(info.scope, info.GetFileInfoPrev());
 		
 		Symbol* sym = info.scope;
 

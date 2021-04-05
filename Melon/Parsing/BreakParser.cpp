@@ -22,7 +22,7 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 	info.index++;
 
-	Pointer<BreakNode> bn = new BreakNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+	Pointer<BreakNode> bn = new BreakNode(info.scope, info.GetFileInfoPrev());
 	bn->isBreak = true;
 	bn->loops = 1;
 	bn->breakBool = false;
@@ -39,7 +39,7 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 		bn->loops++;
 
 		if (bn->loops > info.scopeCount) {
-			ErrorLog::Error(LogMessage("error.syntax.break.scopes"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.break.scopes"), info.GetFileInfoPrev());
 		}
 	}
 	else {
@@ -54,7 +54,7 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 					bn->loops = info.Current().value.ToInt();
 
 					if (bn->loops == 0) {
-						ErrorLog::Error(LogMessage("error.syntax.break.int_arg"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+						ErrorLog::Error(LogMessage("error.syntax.break.int_arg"), info.GetFileInfoPrev());
 					}
 
 					info.index++;
@@ -68,7 +68,7 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 			bn->loops = info.Current().value.ToInt();
 
 			if (bn->loops == 0) {
-				ErrorLog::Error(LogMessage("error.syntax.break.int_arg"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.break.int_arg"), info.GetFileInfoPrev());
 			}
 
 			info.index++;
@@ -87,7 +87,7 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 		}
 
 		if (bn->loops > info.loops) {
-			ErrorLog::Error(LogMessage("error.syntax.break.loops"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.break.loops"), info.GetFileInfoPrev());
 		}
 	}
 
@@ -98,7 +98,7 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 NodePtr BreakParser::ParseAbort(ParsingInfo& info) {
 	info.index++;
 
-	Pointer<BreakNode> bn = new BreakNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+	Pointer<BreakNode> bn = new BreakNode(info.scope, info.GetFileInfoPrev());
 	bn->isBreak = false;
 	bn->loops = 1;
 
@@ -106,11 +106,11 @@ NodePtr BreakParser::ParseAbort(ParsingInfo& info) {
 		bn->loops = info.Current().value.ToInt();
 
 		if (bn->loops == 0) {
-			ErrorLog::Error(LogMessage("error.syntax.abort.int_arg"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.abort.int_arg"), info.GetFileInfo());
 		}
 
 		if (bn->loops > info.loops) {
-			ErrorLog::Error(LogMessage("error.syntax.abort.loops"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.abort.loops"), info.GetFileInfo());
 		}
 
 		info.index++;

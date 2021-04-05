@@ -19,7 +19,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		return nullptr;
 	}
 
-	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
+	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
 	const UInt switchLine = info.Current().line;
 	info.index++;
@@ -27,7 +27,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 	NodePtr value = ExpressionParser::Parse(info);
 
 	if (!value) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", "'switch'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", LogMessage::Quote("switch")), info.GetFileInfoPrev());
 	}
 
 	Pointer<SwitchNode> switchNode = new SwitchNode(info.scope, info.GetFileInfo(switchLine));
@@ -35,13 +35,13 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 	switchNode->match = value;
 
 	while (info.Current().type == TokenType::Case || info.Current().type == TokenType::Default) {
-		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(info.Current().line));
+		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
 		bool isDefault = info.Current().type == TokenType::Default;
 		const UInt caseLine = info.Current().line;
 
 		if (isDefault && switchNode->def) {
-			ErrorLog::Error(LogMessage("error.syntax.switch.default.multiple.stat"), FileInfo(info.filename, info.Current().line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.switch.default.multiple.stat"), info.GetFileInfo());
 		}
 
 		info.index++;
@@ -57,7 +57,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			}
 
 			if (caseValues.IsEmpty()) {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "case expression", "'case'", "switch statement"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "case expression", LogMessage::Quote("case"), "switch statement"), info.GetFileInfoPrev());
 			}
 		}
 
@@ -71,7 +71,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			info.index++;
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", "'then'", "case expression"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("then"), "case expression"), info.GetFileInfoPrev());
 		}
 
 		NodePtr node;
@@ -85,7 +85,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 			node = StatementParser::Parse(info);
 
 			if (!node) {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Current(-1).value)), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 			}
 		}
 
@@ -104,7 +104,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 				info.index++;
 			}
 			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "switch case", caseLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "switch case", caseLine), info.GetFileInfoPrev());
 			}
 		}
 
@@ -115,7 +115,7 @@ NodePtr SwitchParser::Parse(ParsingInfo& info) {
 		info.index++;
 	}
 	else {
-		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "switch statement", switchLine), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "switch statement", switchLine), info.GetFileInfoPrev());
 	}
 
 	info.scope = info.scope->Parent<ScopeSymbol>();

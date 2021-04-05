@@ -35,19 +35,10 @@ namespace Melon {
 		}
 
 		/// Constructor.
-		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Boxx::UInt statementNumber) {
+		FileInfo(const Boxx::String& filename, const Boxx::UInt line) {
 			this->filename = filename;
 			this->line = line;
-			this->statement = statementNumber;
-		}
-
-		/// Constructor with namespace information.
-		FileInfo(const Boxx::String& filename, const Boxx::UInt line, const Boxx::UInt statementNumber, const Symbols::NameList& currentNamespace, const Boxx::Set<Symbols::NameList>& includedNamespaces) {
-			this->filename = filename;
-			this->line = line;
-			this->statement = statementNumber;
-			this->currentNamespace = currentNamespace;
-			this->includedNamespaces = includedNamespaces;
+			statement = 0;
 		}
 	};
 }

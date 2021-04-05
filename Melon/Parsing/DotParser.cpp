@@ -15,10 +15,10 @@ NodePtr DotParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Dot) return nullptr;
 
 	if (info.Next().type != TokenType::Name) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", "'.'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(".")), info.GetFileInfoPrev());
 	}
 
-	Pointer<DotNode> dn = new DotNode(info.scope, info.GetFileInfo(info.Current(-1).line));
+	Pointer<DotNode> dn = new DotNode(info.scope, info.GetFileInfoPrev());
 	dn->name = Name(info.Current().value);
 
 	info.index++;

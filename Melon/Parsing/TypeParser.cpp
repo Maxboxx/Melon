@@ -34,7 +34,7 @@ Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
 				optionalScope.types->Add(NameList().Add(*first));
 				first = optionalScope;
 
-				SymbolTable::SpecializeTemplate(NameList().Add(*first), info.scope, info.GetFileInfo(info.Current(-1).line));
+				SymbolTable::SpecializeTemplate(NameList().Add(*first), info.scope, info.GetFileInfoPrev());
 			}
 		}
 
@@ -48,7 +48,7 @@ Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
 				type = type.Add(*scope);
 
 				if (scope->types) {
-					SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfo(info.Current(-1).line));
+					SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfoPrev());
 				}
 
 				while (!info.EndOfFile() && (info.Current().type == TokenType::Question || info.Current().type == TokenType::DoubleQuestion)) {
@@ -61,7 +61,7 @@ Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
 						optionalScope.types->Add(NameList().Add(type));
 						type = NameList().Add(optionalScope);
 
-						SymbolTable::SpecializeTemplate(NameList().Add(type), info.scope, info.GetFileInfo(info.Current(-1).line));
+						SymbolTable::SpecializeTemplate(NameList().Add(type), info.scope, info.GetFileInfoPrev());
 					}
 				}
 			}
@@ -73,10 +73,10 @@ Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
 
 		if (type.Size() == 1 && type[0] == Name::Global) {
 			if (info.Current().type == TokenType::Dot) {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "'.'", "'global'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("."), LogMessage::Quote("global")), info.GetFileInfoPrev());
 			}
 			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", "'.'"), FileInfo(info.filename, info.Current(-1).line, info.statementNumber));
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(".")), info.GetFileInfoPrev());
 			}
 
 			return nullptr;
@@ -105,7 +105,7 @@ Optional<Name> TypeParser::ParseScope(ParsingInfo& info) {
 	if (Optional<List<NameList>> templateArgs = TemplateParser::Parse(info)) {
 		scope.types = templateArgs;
 
-		SymbolTable::SpecializeTemplate(NameList().Add(scope), info.scope, info.GetFileInfo(info.Current(-1).line));
+		SymbolTable::SpecializeTemplate(NameList().Add(scope), info.scope, info.GetFileInfoPrev());
 	}
 
 	return scope;

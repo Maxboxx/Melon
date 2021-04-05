@@ -16,8 +16,8 @@ NodePtr MethodCallParser::Parse(ParsingInfo& info) {
 
 	const UInt startIndex = info.index;
 
-	if (info.Current().type == TokenType::Colon && info.Current(1).type == TokenType::Name) {
-		Name name = Name(info.Current(1).value);
+	if (info.Current().type == TokenType::Colon && info.Peek().type == TokenType::Name) {
+		Name name = Name(info.Peek().value);
 		info.index += 2;
 
 		if (NodePtr node = CallParser::Parse(info)) {
