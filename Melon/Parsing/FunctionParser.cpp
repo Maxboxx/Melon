@@ -2,7 +2,7 @@
 
 #include "TypeParser.h"
 #include "VariableAttributeParser.h"
-#include "StatementParser.h"
+#include "ScopeParser.h"
 #include "TemplateParser.h"
 
 #include "Melon/Nodes/FunctionNode.h"
@@ -89,33 +89,14 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		UInt scopeCount = info.scopeCount;
 		info.loops = 0;
 		info.scopeCount = 0;
-		bool single = info.Current().type == TokenType::Arrow;
-
-		if (single) {
-			info.index++;
-
-			if (NodePtr statement = StatementParser::Parse(info)) {
-				func->node = statement;
-			}
-			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
-			}
-		}
-		else {
-			func->node = StatementParser::ParseMultiple(info);
-		}
+		
+		func->node = ScopeParser::Parse(info, TokenType::None, "function", startLine);
 
 		func->sym = funcSym;
 		funcSym->node = func;
 
 		info.loops = loops;
 		info.scopeCount = scopeCount;
-
-		if (!single && info.Current().type != TokenType::End) {
-			ErrorLog::Error(LogMessage("error.syntax.expected.end", "function", line), info.GetFileInfoPrev());
-		}
-
-		if (!single) info.index++;
 
 		info.scope = temp;
 		info.root.funcs.Add(func);

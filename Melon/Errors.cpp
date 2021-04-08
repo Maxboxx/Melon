@@ -97,36 +97,40 @@ void ErrorLog::LogErrors() {
 	Map<String, List<Message>> sortedErrors;
 	List<Message> noFileErrors;
 
-	for (const Message& error : messages) {
+	for (Message error : messages) {
 		List<Message> errorList;
 
 		if (error.file.line == 0) {
 			noFileErrors.Add(error);
 		}
-		else if (sortedErrors.Contains(error.file.filename, errorList)) {
-			bool inserted = false;
+		else {
+			error.message.message = error.file.filename + ":" + error.file.line + " " + error.message.message;
 
-			for (UInt i = 0; i < errorList.Size(); i++) {
-				if (errorList[i].file.line == error.file.line) {
-					if (errorList[i].message.message == error.message.message) {
+			if (sortedErrors.Contains(error.file.filename, errorList)) {
+				bool inserted = false;
+
+				for (UInt i = 0; i < errorList.Size(); i++) {
+					if (errorList[i].file.line == error.file.line) {
+						if (errorList[i].message.message == error.message.message) {
+							inserted = true;
+							break;
+						}
+					}
+					else if (errorList[i].file.line > error.file.line) {
+						errorList.Insert(i, error);
 						inserted = true;
 						break;
 					}
 				}
-				else if (errorList[i].file.line > error.file.line) {
-					errorList.Insert(i, error);
-					inserted = true;
-					break;
+
+				if (!inserted) {
+					errorList.Add(error);
 				}
 			}
-
-			if (!inserted) {
+			else {
 				errorList.Add(error);
+				sortedErrors.Add(error.file.filename, errorList);
 			}
-		}
-		else {
-			errorList.Add(error);
-			sortedErrors.Add(error.file.filename, errorList);
 		}
 	}
 

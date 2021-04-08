@@ -86,6 +86,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 }
 
 List<NameList> AssignmentParser::ParseTypes(ParsingInfo& info) {
+	const UInt startIndex = info.index;
 	List<NameList> types;
 
 	// Parse types
@@ -113,14 +114,18 @@ List<NameList> AssignmentParser::ParseTypes(ParsingInfo& info) {
 		}
 	}
 
-	return types;
+	if (info.Current().type == TokenType::Colon) {
+		info.index++;
+		return types;
+	}
+
+	info.index = startIndex;
+	return List<NameList>();
 }
 
 bool AssignmentParser::ValidateTypes(ParsingInfo& info, List<NameList>& types, const Flags flags) {
 	// Parse colon
-	if (!types.IsEmpty() && info.Current().type == TokenType::Colon) {
-		info.index++;
-
+	if (!types.IsEmpty()) {
 		bool newVars = false;
 
 		// Check if new variables will be created

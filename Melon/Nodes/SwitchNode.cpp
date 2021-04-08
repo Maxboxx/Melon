@@ -211,12 +211,12 @@ CompiledNode SwitchNode::Compile(CompileInfo& info) {
 
 	if (expr) {
 		info.stack.PushExpr(Type()->Size(), switchInfo.cn);
+	
+		// Get result memory location
+		switchInfo.result = Argument(MemoryLocation(info.stack.Offset()));
+		switchInfo.resultNode = new MemoryNode(switchInfo.result.mem.offset);
+		switchInfo.resultNode->type = Type()->AbsoluteName();
 	}
-
-	// Get result memory location
-	switchInfo.result = Argument(MemoryLocation(info.stack.Offset()));
-	switchInfo.resultNode = new MemoryNode(switchInfo.result.mem.offset);
-	switchInfo.resultNode->type = Type()->AbsoluteName();
 
 	// Compile case bodies
 	CompileCaseBodies(switchInfo, info);

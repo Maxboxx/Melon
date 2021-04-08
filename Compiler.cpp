@@ -18,7 +18,7 @@ using namespace Kiwi;
 using namespace Melon;
 
 int main() {
-	//*
+	/*
 	DragonfruitInfo info;
 	info.docComment = "///";
 	info.namespaceSeparator = "::";

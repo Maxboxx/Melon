@@ -1,7 +1,7 @@
 #include "GuardParser.h"
 
 #include "ConditionParser.h"
-#include "StatementParser.h"
+#include "ScopeParser.h"
 
 #include "Melon/Nodes/GuardNode.h"
 
@@ -13,12 +13,11 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
 NodePtr GuardParser::Parse(ParsingInfo& info) {
-	const UInt startIndex = info.index;
-
 	if (info.Current().type != TokenType::Guard) {
 		return nullptr;
 	}
 
+	const UInt startIndex = info.index;
 	const UInt guardLine = info.Current().line;
 
 	info.index++;
@@ -28,38 +27,7 @@ NodePtr GuardParser::Parse(ParsingInfo& info) {
 
 		Pointer<GuardNode> gn = new GuardNode(info.scope, info.GetFileInfo(guardLine));
 		gn->cond = node;
-
-		if (info.Current().type == TokenType::Else) {
-			info.index++;
-			info.scopeCount++;
-
-			if (NodePtr statements = StatementParser::ParseMultiple(info)) {
-				gn->else_ = statements;
-			}
-
-			info.scopeCount--;
-
-			if (info.Current().type != TokenType::End) {
-				ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "guard statement", guardLine), info.GetFileInfoPrev());
-				info.index = startIndex;
-				return nullptr;
-			}
-
-			info.index++;
-		}
-		else if (info.Current().type == TokenType::Arrow) {
-			info.index++;
-			info.scopeCount++;
-
-			if (NodePtr statement = StatementParser::Parse(info)) {
-				gn->else_ = statement;
-			}
-			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
-			}
-
-			info.scopeCount--;
-		}
+		gn->else_ = ScopeParser::Parse(info, TokenType::Else, "guard statement", guardLine);
 
 		info.scope = info.scope->Parent<ScopeSymbol>();
 		info.statementNumber++;

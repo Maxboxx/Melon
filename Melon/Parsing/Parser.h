@@ -30,7 +30,6 @@ namespace Melon {
 			friend class IncludeParser;
 
 			static void ParseFile(const Boxx::String& filename, ParsingInfo& info);
-			static Nodes::NodePtr ParseNext(ParsingInfo& info);
 			static void SetupTokens();
 			static Boxx::List<TokenPattern> GetTokenPatterns();
 

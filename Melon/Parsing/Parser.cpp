@@ -60,20 +60,13 @@ void Parser::ParseFile(const String& filename, ParsingInfo& info) {
 		}
 	}
 
-	while (!info.EndOfFile()) {
-		if (!ParseNext(info)) {
-			break;
-		}
-	}
-}
-
-NodePtr Parser::ParseNext(ParsingInfo& info) {
 	if (NodePtr node = StatementParser::ParseMultiple(info)) {
 		info.root.nodes.Add(node);
-		return node;
 	}
 
-	return UnexpectedToken(info);
+	if (!info.EndOfFile()) {
+		UnexpectedToken(info);
+	}
 }
 
 void Parser::SetupTokens() {

@@ -35,7 +35,7 @@ NodePtr StatementParser::Parse(ParsingInfo& info, const bool single) {
 	else if (NodePtr node = LoopParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = SwitchParser::Parse(info)) {
+	else if (NodePtr node = SwitchParser::ParseStatement(info)) {
 		return node;
 	}
 	else if (NodePtr node = DoParser::Parse(info)) {
