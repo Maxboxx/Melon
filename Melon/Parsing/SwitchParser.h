@@ -19,18 +19,18 @@ namespace Melon {
 			static Nodes::NodePtr ParseStatement(ParsingInfo& info);
 
 			/// Parses a {switch} expression.
-			static Nodes::NodePtr ParseExpression(ParsingInfo& info);
+			static Nodes::NodePtr ParseExpression(ParsingInfo& info, const bool returnOnError = true);
 
 		private:
-			static Boxx::List<Nodes::NodePtr> ParseCaseExpressions(ParsingInfo& info);
+			static Boxx::List<Nodes::NodePtr> ParseCaseExpressions(ParsingInfo& info, bool& error);
 
 			static void ParseStatementCases(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode);
 			static bool ParseStatementCase(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode);
 			static bool ParseStatementDefault(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode);
 
-			static void ParseExpressionCases(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode);
-			static bool ParseExpressionCase(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode);
-			static bool ParseExpressionDefault(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode);
+			static void ParseExpressionCases(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode, bool& error);
+			static bool ParseExpressionCase(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode, bool& error);
+			static bool ParseExpressionDefault(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode, bool& error);
 		};
 	}
 }

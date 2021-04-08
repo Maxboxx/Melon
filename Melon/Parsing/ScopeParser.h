@@ -14,7 +14,7 @@ namespace Melon {
 			///A scopeStart: Used by {ParseBlock}.
 			///A block: Used by {ParseBlock}.
 			///A blockLine: Used by {ParseBlock}.
-			static Nodes::NodePtr Parse(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& block, const Boxx::UInt blockLine);
+			static Nodes::NodePtr Parse(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& expected, const Boxx::String& block, const Boxx::UInt blockLine, const bool required = false);
 
 			/// Parses a scope with multiple statements.
 			///p The scope starts with {scopeStart} and ends with {TokenType::End}.
@@ -23,12 +23,12 @@ namespace Melon {
 			///p If this value is {TokenType::None}, the scope starts with nothing and ends with {TokenType::End}.
 			///A block: The block name to use for errors.
 			///A blockLine: The block line to use for errors.
-			static Nodes::NodePtr ParseBlock(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& block, const Boxx::UInt blockLine);
+			static Nodes::NodePtr ParseBlock(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& expected, const Boxx::String& block, const Boxx::UInt blockLine, const bool required = false);
 
 			/// Parses a scope with a single statement.
 			///p The scope starts with {TokenType::Arrow} and ends after the statement.
 			///p This function does not modify {info.scope} or {info.scopeCount}.
-			static Nodes::NodePtr ParseSingle(ParsingInfo& info);
+			static Nodes::NodePtr ParseSingle(ParsingInfo& info, const bool required = false);
 
 			/// Parses an expression scope.
 			///p Uses either {ParseExpressionBlock} or {ParseExpressionSingle} to parse the scope. 
@@ -36,7 +36,7 @@ namespace Melon {
 			///A scopeStart: Used by {ParseExpressionBlock}.
 			///A block: Used by {ParseExpressionBlock}.
 			///A blockLine: Used by {ParseExpressionBlock}.
-			static Nodes::NodePtr ParseExpression(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& block, const Boxx::UInt blockLine);
+			static Nodes::NodePtr ParseExpression(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& expected, const Boxx::String& block, const Boxx::UInt blockLine, const bool required = false);
 
 			/// Parses a scope with multiple statements.
 			///p The scope starts with {scopeStart} and ends with {TokenType::End}.
@@ -45,12 +45,12 @@ namespace Melon {
 			///p If this value is {TokenType::None}, the scope starts with nothing and ends with {TokenType::End}.
 			///A block: The block name to use for errors.
 			///A blockLine: The block line to use for errors.
-			static Nodes::NodePtr ParseExpressionBlock(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& block, const Boxx::UInt blockLine);
+			static Nodes::NodePtr ParseExpressionBlock(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& expected, const Boxx::String& block, const Boxx::UInt blockLine, const bool required = false);
 
 			/// Parses a scope with a single statement.
 			///p The scope starts with {TokenType::Arrow} and ends after the statement.
 			///p This function does not modify {info.scope} or {info.scopeCount}.
-			static Nodes::NodePtr ParseExpressionSingle(ParsingInfo& info);
+			static Nodes::NodePtr ParseExpressionSingle(ParsingInfo& info, const bool required = false);
 		};
 	}
 }

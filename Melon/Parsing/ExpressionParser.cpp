@@ -3,7 +3,7 @@
 #include "IntegerParser.h"
 #include "BooleanParser.h"
 #include "IfExpressionParser.h"
-#include "SwitchExpressionParser.h"
+#include "SwitchParser.h"
 #include "NameParser.h"
 #include "CallParser.h"
 #include "MethodCallParser.h"
@@ -239,17 +239,17 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 				return node;
 			}
 		}
-		catch (CompileError e) {
+		catch (CompileError& e) {
 			info.index = startIndex;
 		}
 
 		try {
-			if (NodePtr node = SwitchExpressionParser::Parse(info, true)) {
+			if (NodePtr node = SwitchParser::ParseExpression(info, true)) {
 				ErrorLog::RemoveMarker();
 				return node;
 			}
 		}
-		catch (CompileError e) {
+		catch (CompileError& e) {
 			info.index = startIndex;
 		}
 
@@ -259,7 +259,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		if (NodePtr node = IfExpressionParser::Parse(info)) {
 			return node;
 		}
-		else if (NodePtr node = SwitchExpressionParser::Parse(info)) {
+		else if (NodePtr node = SwitchParser::ParseExpression(info)) {
 			return node;
 		}
 	}

@@ -3,7 +3,15 @@ int: i = 0
 
 switch i
 	case 0 then
-		i = 2
+		i = switch i * 2
+			case 0 -> 5
+			
+			case 2, 4, 6 then
+				3
+			end
+			
+			default -> 0
+		end
 	end
 	
 	case 1, 2, 3, 4 -> i = 4

@@ -42,7 +42,7 @@ NodePtr SwitchParser::ParseStatement(ParsingInfo& info) {
 	return switchNode;
 }
 
-NodePtr SwitchParser::ParseExpression(ParsingInfo& info) {
+NodePtr SwitchParser::ParseExpression(ParsingInfo& info, const bool returnOnError) {
 	if (info.Current().type != TokenType::Switch) return nullptr;
 
 	const UInt startIndex = info.index;
@@ -50,29 +50,37 @@ NodePtr SwitchParser::ParseExpression(ParsingInfo& info) {
 	info.index++;
 
 	NodePtr value = ExpressionParser::Parse(info);
+	bool error = false;
 
 	if (!value) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", LogMessage::Quote("switch")), info.GetFileInfoPrev());
+		error = true;
 	}
 
 	Pointer<SwitchNode> switchNode = new SwitchNode(info.scope, info.GetFileInfo(switchLine));
 	switchNode->expr = true;
 	switchNode->match = value;
 
-	ParseExpressionCases(info, switchNode);
+	ParseExpressionCases(info, switchNode, error);
 
 	if (info.Current().type != TokenType::End) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "switch expression", switchLine), info.GetFileInfoPrev());
+		error = true;
 	}
 	else {
 		info.index++;
+	}
+
+	if (returnOnError && error) {
+		info.index = startIndex;
+		return nullptr;
 	}
 
 	info.statementNumber++;
 	return switchNode;
 }
 
-List<NodePtr> SwitchParser::ParseCaseExpressions(ParsingInfo& info) {
+List<NodePtr> SwitchParser::ParseCaseExpressions(ParsingInfo& info, bool& error) {
 	List<NodePtr> expressions;
 
 	while (NodePtr node = ExpressionParser::Parse(info)) {
@@ -84,6 +92,7 @@ List<NodePtr> SwitchParser::ParseCaseExpressions(ParsingInfo& info) {
 
 	if (expressions.IsEmpty()) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after", "case expression", LogMessage::Quote("case")), info.GetFileInfoPrev());
+		error = true;
 	}
 
 	return expressions;
@@ -100,15 +109,12 @@ bool SwitchParser::ParseStatementCase(ParsingInfo& info, Pointer<SwitchNode>& sw
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 	info.index++;
 
-	List<NodePtr> cases = ParseCaseExpressions(info);
+	bool error;
+	List<NodePtr> cases = ParseCaseExpressions(info, error);
 
 	info.scopeCount++;
 
-	NodePtr node = ScopeParser::Parse(info, TokenType::Then, "switch case", line);
-
-	if (!node) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("then"), "case expression"), info.GetFileInfoPrev());
-	}
+	NodePtr node = ScopeParser::Parse(info, TokenType::Then, "then", "switch case", line, true);
 
 	switchNode->nodes.Add(node);
 	switchNode->cases.Add(cases);
@@ -131,7 +137,7 @@ bool SwitchParser::ParseStatementDefault(ParsingInfo& info, Pointer<SwitchNode>&
 	info.index++;
 	info.scopeCount++;
 
-	NodePtr node = ScopeParser::Parse(info, TokenType::None, "default case", line);
+	NodePtr node = ScopeParser::Parse(info, TokenType::None, "", "default case", line, true);
 
 	switchNode->def = node;
 	info.scopeCount--;
@@ -139,22 +145,24 @@ bool SwitchParser::ParseStatementDefault(ParsingInfo& info, Pointer<SwitchNode>&
 	return true;
 }
 
-void SwitchParser::ParseExpressionCases(ParsingInfo& info, Pointer<SwitchNode>& switchNode) {
-	while (ParseExpressionCase(info, switchNode) || ParseExpressionDefault(info, switchNode));
+void SwitchParser::ParseExpressionCases(ParsingInfo& info, Pointer<SwitchNode>& switchNode, bool& error) {
+	while (ParseExpressionCase(info, switchNode, error) || ParseExpressionDefault(info, switchNode, error));
 }
 
-bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Pointer<SwitchNode>& switchNode) {
+bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Pointer<SwitchNode>& switchNode, bool& error) {
 	if (info.Current().type != TokenType::Case) return false;
 
 	const UInt line = info.Current().line;
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 	info.index++;
 
-	List<NodePtr> cases = ParseCaseExpressions(info);
+	List<NodePtr> cases = ParseCaseExpressions(info, error);
 
 	info.scopeCount++;
 
-	NodePtr node = ScopeParser::ParseExpression(info, TokenType::Then, "switch case", line);
+	NodePtr node = ScopeParser::ParseExpression(info, TokenType::Then, "then", "switch case", line, true);
+
+	if (!node) error = true;
 
 	switchNode->nodes.Add(node);
 	switchNode->cases.Add(cases);
@@ -164,7 +172,7 @@ bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Pointer<SwitchNode>& s
 	return true;
 }
 
-bool SwitchParser::ParseExpressionDefault(ParsingInfo& info, Pointer<SwitchNode>& switchNode) {
+bool SwitchParser::ParseExpressionDefault(ParsingInfo& info, Pointer<SwitchNode>& switchNode, bool& error) {
 	if (info.Current().type != TokenType::Default) return false;
 
 	const UInt line = info.Current().line;
@@ -172,12 +180,15 @@ bool SwitchParser::ParseExpressionDefault(ParsingInfo& info, Pointer<SwitchNode>
 
 	if (switchNode->def) {
 		ErrorLog::Error(LogMessage("error.syntax.switch.default.multiple.stat"), info.GetFileInfo());
+		error = true;
 	}
 
 	info.index++;
 	info.scopeCount++;
 
-	NodePtr node = ScopeParser::ParseExpression(info, TokenType::None, "default case", line);
+	NodePtr node = ScopeParser::ParseExpression(info, TokenType::None, "", "default case", line, true);
+
+	if (!node) error = true;
 
 	switchNode->def = node;
 	info.scopeCount--;
