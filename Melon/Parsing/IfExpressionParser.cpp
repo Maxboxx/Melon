@@ -2,6 +2,7 @@
 
 #include "ConditionParser.h"
 #include "ExpressionParser.h"
+#include "ScopeParser.h"
 
 #include "Melon/Nodes/IfExprNode.h"
 
@@ -13,10 +14,9 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
 NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
-	const UInt startIndex = info.index;
-
 	if (info.Current().type != TokenType::If) return nullptr;
 
+	const UInt startIndex = info.index;
 	const UInt ifLine = info.Current().line;
 	info.index++;
 
@@ -27,72 +27,103 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 	if (!cond) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", LogMessage::Quote("if")), info.GetFileInfoPrev());
 		error = true;
+		info.index = startIndex;
+		return nullptr;
 	}
 
-	bool single = info.Current().type == TokenType::Arrow;
+	Pointer<IfExprNode> ifexpr = new IfExprNode(info.scope, info.GetFileInfo(ifLine));
+	ifexpr->conditions.Add(cond);
 
-	if (!single && info.Current().type != TokenType::Then) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.after_in", LogMessage::Quote("then"), "condition", "if expression"), info.GetFileInfoPrev());
+	if (ParseSimple(info, (IfExprNode*)ifexpr, ifLine, error)) {
+		return ifexpr;
+	}
+
+	if (ParseFull(info, (IfExprNode*)ifexpr, ifLine, error)) {
+		return ifexpr;
+	}
+
+	info.index = startIndex;
+	return nullptr;
+}
+
+bool IfExpressionParser::ParseSimple(ParsingInfo& info, IfExprNode* const node, const UInt line, bool& error) {
+	if (info.Current().type != TokenType::Arrow) return false;
+	info.index++;
+	
+	NodePtr node1 = ExpressionParser::Parse(info);
+
+	if (node1 == nullptr) {
+		ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote(":"), "if expression"), info.GetFileInfoPrev());
 		error = true;
+		return false;
+	}
+
+	if (info.Current().type != TokenType::Else) {
+		ErrorLog::Error(LogMessage("error.syntax.expected.after_in", LogMessage::Quote("else"), "expression", "if expression"), info.GetFileInfoPrev());
+		error = true;
+		return false;
 	}
 
 	info.index++;
 
-	if (NodePtr expr = ExpressionParser::Parse(info)) {
-		Pointer<IfExprNode> ifexpr = new IfExprNode(info.scope, info.GetFileInfo(ifLine));
-		ifexpr->nodes.Add(expr);
-		ifexpr->conditions.Add(cond);
+	NodePtr node2 = ExpressionParser::Parse(info);
 
-		if (!single) while (info.Current().type == TokenType::ElseIf) {
-			info.index++;
+	if (node2 == nullptr) {
+		ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote("else"), "if expression"), info.GetFileInfoPrev());
+		error = true;
+		return false;
+	}
 
-			NodePtr cond = ConditionParser::Parse(info);
+	node->nodes.Add(node1);
+	node->nodes.Add(node2);
+	return true;
+}
 
-			if (!cond) {
-				ErrorLog::Error(LogMessage("error.sytax.expected.after", "condition", LogMessage::Quote("elseif")), info.GetFileInfoPrev());
-				error = true;
-			}
+bool IfExpressionParser::ParseFull(ParsingInfo& info, IfExprNode* const node, const UInt line, bool& error) {
+	if (NodePtr expr = ScopeParser::ParseExpressionBlockNoEnd(info, TokenType::Then, "then", "if expression", line, true)) {
+		node->nodes.Add(expr);
+	}
+	else {
+		error = true;
+		return false;
+	}
 
-			if (info.Current().type != TokenType::Then) {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", LogMessage::Quote("then"), "condition", "if expression"), info.GetFileInfoPrev());
-				error = true;
-			}
+	while (info.Current().type == TokenType::ElseIf) {
+		info.index++;
 
-			info.index++;
-
-			if (NodePtr expr = ExpressionParser::Parse(info)) {
-				ifexpr->conditions.Add(cond);
-				ifexpr->nodes.Add(expr);
-			}
-			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote("then"), "if expression"), info.GetFileInfoPrev());
-				error = true;
-			}
+		if (NodePtr cond = ConditionParser::Parse(info)) {
+			node->conditions.Add(cond);
+		}
+		else {
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", LogMessage::Quote("elseif")), info.GetFileInfoPrev());
+			error = true;
+			return false;
 		}
 
-		if (info.Current().type == TokenType::Else) {
-			info.index++;
-
-			if (NodePtr expr = ExpressionParser::Parse(info)) {
-				if (single || info.Current().type == TokenType::End) {
-					if (!single) info.index++;
-					ifexpr->nodes.Add(expr);
-
-					if (error && returnOnError) return nullptr;
-					return ifexpr;
-				}
-
-				ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "if expression", ifLine), info.GetFileInfoPrev());
-				error = true;
-			}
-
-			ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote("else"), "if expression"), info.GetFileInfoPrev());
+		if (NodePtr expr = ScopeParser::ParseExpressionBlockNoEnd(info, TokenType::Then, "then", LogMessage::Quote("elseif"), line, true)) {
+			node->nodes.Add(expr);
+		}
+		else {
 			error = true;
+			return false;
 		}
 	}
 
-	ErrorLog::Error(LogMessage("error.syntax.if.required.else"), info.GetFileInfoPrev());
-	error = true;
-	info.index = startIndex;
-	return nullptr;
+	if (info.Current().type != TokenType::Else) {
+		ErrorLog::Error(LogMessage("error.syntax.if.required.else"), info.GetFileInfoPrev());
+		error = true;
+		return false;
+	}
+
+	info.index++;
+
+	if (NodePtr expr = ScopeParser::ParseExpressionBlock(info, TokenType::None, "", LogMessage::Quote("else"), info.Prev().line, true)) {
+		node->nodes.Add(expr);
+	}
+	else {
+		error = true;
+		return false;
+	}
+
+	return true;
 }

@@ -77,21 +77,12 @@ NodePtr ScopeParser::ParseExpression(ParsingInfo& info, const TokenType scopeSta
 }
 
 NodePtr ScopeParser::ParseExpressionBlock(ParsingInfo& info, const TokenType scopeStart, const String& expected, const String& block, const UInt blockLine, const bool required) {
-	if (info.Current().type == scopeStart) {
-		info.index++;
-	}
-	else if (scopeStart != TokenType::None) {
-		if (required) {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(expected), blockLine), info.GetFileInfoPrev());
-		}
+	const UInt startIndex = info.index;
 
-		return nullptr;
-	}
-
-	NodePtr node = ExpressionParser::Parse(info);
+	NodePtr node = ParseExpressionBlockNoEnd(info, scopeStart, expected, block, blockLine, required);
 
 	if (node == nullptr) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
+		info.index = startIndex;
 		return nullptr;
 	}
 
@@ -105,11 +96,14 @@ NodePtr ScopeParser::ParseExpressionBlock(ParsingInfo& info, const TokenType sco
 }
 
 NodePtr ScopeParser::ParseExpressionSingle(ParsingInfo& info, const bool required) {
+	const UInt startIndex = info.index;
+
 	if (info.Current().type != TokenType::Arrow) {
 		if (required) {
 			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("->"), info.Prev().value), info.GetFileInfoPrev());
 		}
 		
+		info.index = startIndex;
 		return nullptr;
 	}
 
@@ -120,5 +114,43 @@ NodePtr ScopeParser::ParseExpressionSingle(ParsingInfo& info, const bool require
 	}
 
 	ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
+	info.index = startIndex;
 	return nullptr;
+}
+
+NodePtr ScopeParser::ParseExpressionNoEnd(ParsingInfo& info, const TokenType scopeStart, const String& expected, const String& block, const UInt blockLine, const bool required) {
+	if (NodePtr node = ParseExpressionSingle(info)) {
+		return node;
+	}
+	else if (NodePtr node = ParseExpressionBlockNoEnd(info, scopeStart, expected, block, blockLine, required)) {
+		return node;
+	}
+
+	return nullptr;
+}
+
+NodePtr ScopeParser::ParseExpressionBlockNoEnd(ParsingInfo& info, const TokenType scopeStart, const String& expected, const String& block, const UInt blockLine, const bool required) {
+	const UInt startIndex = info.index;
+	
+	if (info.Current().type == scopeStart) {
+		info.index++;
+	}
+	else if (scopeStart != TokenType::None) {
+		if (required) {
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(expected), block), info.GetFileInfoPrev());
+		}
+
+		info.index = startIndex;
+		return nullptr;
+	}
+
+	NodePtr node = ExpressionParser::Parse(info);
+
+	if (node == nullptr) {
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
+		info.index = startIndex;
+		return nullptr;
+	}
+
+	return node;
 }

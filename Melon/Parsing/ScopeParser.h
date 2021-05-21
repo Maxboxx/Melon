@@ -38,7 +38,7 @@ namespace Melon {
 			///A blockLine: Used by {ParseExpressionBlock}.
 			static Nodes::NodePtr ParseExpression(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& expected, const Boxx::String& block, const Boxx::UInt blockLine, const bool required = false);
 
-			/// Parses a scope with multiple statements.
+			/// Parses an expression scope block.
 			///p The scope starts with {scopeStart} and ends with {TokenType::End}.
 			///p This function does not modify {info.scope} or {info.scopeCount}.
 			///A scopeStart: The start token of the scope.
@@ -47,10 +47,27 @@ namespace Melon {
 			///A blockLine: The block line to use for errors.
 			static Nodes::NodePtr ParseExpressionBlock(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& expected, const Boxx::String& block, const Boxx::UInt blockLine, const bool required = false);
 
-			/// Parses a scope with a single statement.
+			/// Parses a single expression scope.
 			///p The scope starts with {TokenType::Arrow} and ends after the statement.
 			///p This function does not modify {info.scope} or {info.scopeCount}.
 			static Nodes::NodePtr ParseExpressionSingle(ParsingInfo& info, const bool required = false);
+
+			/// Parses an expression scope.
+			///p Uses either {ParseExpressionBlockNoEnd} or {ParseExpressionSingle} to parse the scope. 
+			///p This function does not modify {info.scope} or {info.scopeCount}.
+			///A scopeStart: Used by {ParseExpressionBlock}.
+			///A block: Used by {ParseExpressionBlock}.
+			///A blockLine: Used by {ParseExpressionBlock}.
+			static Nodes::NodePtr ParseExpressionNoEnd(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& expected, const Boxx::String& block, const Boxx::UInt blockLine, const bool required = false);
+
+			/// Parses an expression scope block.
+			///p The scope starts with {scopeStart}.
+			///p This function does not modify {info.scope} or {info.scopeCount}.
+			///A scopeStart: The start token of the scope.
+			///p If this value is {TokenType::None}, the scope starts with nothing and ends with {TokenType::End}.
+			///A block: The block name to use for errors.
+			///A blockLine: The block line to use for errors.
+			static Nodes::NodePtr ParseExpressionBlockNoEnd(ParsingInfo& info, const TokenType scopeStart, const Boxx::String& expected, const Boxx::String& block, const Boxx::UInt blockLine, const bool required = false);
 		};
 	}
 }
