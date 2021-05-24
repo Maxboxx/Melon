@@ -15,11 +15,13 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 
 	const UInt startIndex = info.index;
 
+	// Parse argument list
 	if (info.Current().type == TokenType::ParenOpen) {
 		info.index++;
 
 		Pointer<CallNode> call = new CallNode(info.scope, info.GetFileInfoPrev());
 
+		// Parse arguments
 		while (info.Current().type != TokenType::ParenClose) {
 			if (!call->args.IsEmpty()) {
 				if (info.Current().type != TokenType::Comma) {
@@ -29,17 +31,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 				info.index++;
 			}
 
-			if (info.Current().type == TokenType::Ref) {
-				info.index++;
-				call->attributes.Add(CallNode::ArgAttributes::Ref);
-			}
-			else if (info.Current().type == TokenType::NoRef) {
-				info.index++;
-				call->attributes.Add(CallNode::ArgAttributes::NoRef);
-			}
-			else {
-				call->attributes.Add(CallNode::ArgAttributes::None);
-			}
+			call->attributes.Add(ParseArgumentAttributes(info));
 
 			if (NodePtr node = ExpressionParser::Parse(info)) {
 				call->args.Add(node);
@@ -57,4 +49,22 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 
 	info.index = startIndex;
 	return nullptr;
+}
+
+CallNode::ArgAttributes CallParser::ParseArgumentAttributes(ParsingInfo& info) {
+	switch (info.Current().type) {
+		case TokenType::Ref: {
+			info.index++;
+			return CallNode::ArgAttributes::Ref;
+		}
+
+		case TokenType::NoRef: {
+			info.index++;
+			return CallNode::ArgAttributes::NoRef;
+		}
+
+		default: {
+			return CallNode::ArgAttributes::None;
+		}
+	}
 }

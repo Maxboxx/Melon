@@ -90,7 +90,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		info.loops = 0;
 		info.scopeCount = 0;
 		
-		func->node = ScopeParser::Parse(info, TokenType::None, "", "function", startLine, true);
+		func->node = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("function", startLine), true);
 
 		func->sym = funcSym;
 		funcSym->node = func;
@@ -114,20 +114,13 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 }
 
 Optional<Name> FunctionParser::ParseFunctionName(ParsingInfo& info, const bool isPlain) {
-	if (isPlain) {
-		if (info.Current().type == TokenType::Name) {
-			const Name s = Name(info.Current().value);
-			info.index++;
-			return s;
-		}
+	if (info.Current().type == TokenType::Name) {
+		const Name s = Name(info.Current().value);
+		info.index++;
+		return s;
 	}
-	else {
-		if (info.Current().type == TokenType::Name) {
-			const Name s = Name(info.Current().value);
-			info.index++;
-			return s;
-		}
-		else if (info.Current().type == TokenType::Init) {
+	else if (isPlain) {
+		if (info.Current().type == TokenType::Init) {
 			const Name s = Name::Init;
 			info.index++;
 			return s;
@@ -230,14 +223,6 @@ Optional<Name> FunctionParser::ParseOperatorName(ParsingInfo& info) {
 		}
 
 		// Misc
-		case TokenType::ParenOpen: {
-			if (info.Prev().type == TokenType::ParenClose) {
-				info.index += 2;
-				return Name::Call;
-			}
-
-			return nullptr;
-		}
 		case TokenType::Len: {
 			info.index++;
 			return Name::Len;

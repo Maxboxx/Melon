@@ -114,7 +114,7 @@ bool SwitchParser::ParseStatementCase(ParsingInfo& info, Pointer<SwitchNode>& sw
 
 	info.scopeCount++;
 
-	NodePtr node = ScopeParser::Parse(info, TokenType::Then, "then", "switch case", line, true);
+	NodePtr node = ScopeParser::Parse(info, TokenType::Then, ScopeParser::Info("then", "switch case", "switch case", line), true);
 
 	switchNode->nodes.Add(node);
 	switchNode->cases.Add(cases);
@@ -137,7 +137,7 @@ bool SwitchParser::ParseStatementDefault(ParsingInfo& info, Pointer<SwitchNode>&
 	info.index++;
 	info.scopeCount++;
 
-	NodePtr node = ScopeParser::Parse(info, TokenType::None, "", "default case", line, true);
+	NodePtr node = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("default case", line), true);
 
 	switchNode->def = node;
 	info.scopeCount--;
@@ -160,7 +160,7 @@ bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Pointer<SwitchNode>& s
 
 	info.scopeCount++;
 
-	NodePtr node = ScopeParser::ParseExpression(info, TokenType::Then, "then", "switch case", line, true);
+	NodePtr node = ScopeParser::ParseExpression(info, TokenType::Then, ScopeParser::Info("then", "switch case", "switch case", line), true);
 
 	if (!node) error = true;
 
@@ -186,7 +186,7 @@ bool SwitchParser::ParseExpressionDefault(ParsingInfo& info, Pointer<SwitchNode>
 	info.index++;
 	info.scopeCount++;
 
-	NodePtr node = ScopeParser::ParseExpression(info, TokenType::None, "", "default case", line, true);
+	NodePtr node = ScopeParser::ParseExpression(info, TokenType::None, ScopeParser::Info("default case", line), true);
 
 	if (!node) error = true;
 

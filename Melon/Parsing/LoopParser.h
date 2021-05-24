@@ -2,20 +2,32 @@
 
 #include "Parser.h"
 
+#include "Boxx/Tuple.h"
+#include "Boxx/Optional.h"
+
 #include "Melon/Nodes/LoopNode.h"
 
+///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
+		/// Parser for {if}, {while}, and {for} statements.
 		class LoopParser {
 		public:
+			/// Parser for {if}, {while}, or {for} statement.
 			static Nodes::NodePtr Parse(ParsingInfo& info);
 
 		private:
-			static bool ParseIf(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const Boxx::UInt index);
-			static bool ParseWhile(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const Boxx::UInt index);
-			static bool ParseFor(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const Boxx::UInt index);
-			static void ParseNone(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info, const Boxx::UInt index);
+			static bool ParseSegment(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
 
+			static bool ParseIf(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+			static bool ParseWhile(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+			static bool ParseFor(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+			static bool ParseNone(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+
+			static Boxx::Tuple<Boxx::Optional<Symbols::Name>, Nodes::NodePtr> ParseForCondition(ParsingInfo& info);
+			static Boxx::Tuple<Boxx::Optional<Symbols::Name>, Nodes::NodePtr> ParseForStep(ParsingInfo& info);
+
+			static bool IsValidSegmentType(const TokenType t, const Boxx::Pointer<Nodes::LoopNode>& loop);
 			static bool IsLoop(const TokenType t);
 			static bool IsLoopStart(const TokenType t);
 			static bool IsLoopMiddle(const TokenType t);

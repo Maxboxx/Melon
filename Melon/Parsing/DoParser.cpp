@@ -21,7 +21,7 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 	Pointer<DoNode> node = new DoNode(info.scope, info.GetFileInfo(line));
 	info.scopeCount++;
 
-	if (NodePtr nodes = ScopeParser::Parse(info, TokenType::None, "", "do statement", line, true)) {
+	if (NodePtr nodes = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("do statement", line), true)) {
 		node->nodes = nodes;
 		info.scope = info.scope->Parent<ScopeSymbol>();
 		info.statementNumber++;

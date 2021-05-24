@@ -4,10 +4,13 @@
 
 #include "Boxx/Optional.h"
 
+///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
+		/// Parser for enums.
 		class EnumParser {
 		public:
+			/// Parses an enum.
 			static Nodes::NodePtr Parse(ParsingInfo& info);
 
 		private:

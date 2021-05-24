@@ -105,5 +105,7 @@ namespace Melon {
 			void CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
 			void CompileCall(CallInfo& callInfo, CompileInfo& info);
 		};
+
+		BOXX_ENUM_FLAGS(CallNode::ArgAttributes);
 	}
 }

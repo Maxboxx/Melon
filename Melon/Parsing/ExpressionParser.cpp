@@ -36,7 +36,7 @@ using namespace Melon::Parsing;
 NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 	const UInt startIndex = info.index;
 
-	if (NodePtr valueNode = ParseValue(info, statement)) {
+	if (NodePtr valueNode = ParseOperand(info, statement)) {
 		List<Pair<TokenType, Pointer<BinaryOperatorNode>>> operators;
 		List<NodePtr> nodes;
 		nodes.Add(valueNode);
@@ -55,7 +55,7 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 				else {
 					info.index++;
 
-					if (NodePtr valueNode2 = ParseValue(info)) {
+					if (NodePtr valueNode2 = ParseOperand(info)) {
 						Pointer<BinaryOperatorNode> node;
 
 						if (IsLogic(token.type)) {
@@ -204,17 +204,17 @@ bool ExpressionParser::IsLogic(const TokenType type) {
 		type == TokenType::Xnor;
 }	
 
-NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
+NodePtr ExpressionParser::ParseOperand(ParsingInfo& info, const bool statement) {
 	const UInt startIndex = info.index;
 	const Token token = info.Current();
 
-	if (NodePtr node = ParseSingleValue(info, statement)) {
+	if (NodePtr node = ParseValue(info, statement)) {
 		return node;
 	}
 	else if (token.type == TokenType::Minus || token.type == TokenType::BNot || token.type == TokenType::Not) {
 		info.index++;
 
-		if (NodePtr node = ParseValue(info)) {
+		if (NodePtr node = ParseOperand(info)) {
 			Pointer<UnaryOperatorNode> opNode = new UnaryOperatorNode(info.scope, Name(token.value), info.GetFileInfo(token.line));
 
 			opNode->node = node;
@@ -320,7 +320,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 	return nullptr;
 }
 
-NodePtr ExpressionParser::ParseSingleValue(ParsingInfo& info, const bool statement) {
+NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 	if (NodePtr node = ParseRawValue(info, statement)) {
 		bool hasSafeUnwrap = false;
 

@@ -10,10 +10,13 @@
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 
+///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
+		/// Parser for functions.
 		class FunctionParser {
 		public:
+			/// Parses a function.
 			static Nodes::NodePtr Parse(ParsingInfo& info, Symbols::TypeSymbol* const parent = nullptr);
 
 		private:

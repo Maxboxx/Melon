@@ -20,6 +20,7 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 	const UInt ifLine = info.Current().line;
 	info.index++;
 
+	// Parse condition
 	NodePtr cond = ConditionParser::Parse(info);
 
 	bool error = false;
@@ -31,13 +32,16 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 		return nullptr;
 	}
 
+	// Setup node
 	Pointer<IfExprNode> ifexpr = new IfExprNode(info.scope, info.GetFileInfo(ifLine));
 	ifexpr->conditions.Add(cond);
 
-	if (ParseSimple(info, (IfExprNode*)ifexpr, ifLine, error)) {
+	// Parse simple if expression
+	/*if (ParseSimple(info, (IfExprNode*)ifexpr, ifLine, error)) {
 		return ifexpr;
-	}
+	}*/
 
+	// Parse full if expression
 	if (ParseFull(info, (IfExprNode*)ifexpr, ifLine, error)) {
 		return ifexpr;
 	}
@@ -50,6 +54,7 @@ bool IfExpressionParser::ParseSimple(ParsingInfo& info, IfExprNode* const node, 
 	if (info.Current().type != TokenType::Arrow) return false;
 	info.index++;
 	
+	// Parse first expression
 	NodePtr node1 = ExpressionParser::Parse(info);
 
 	if (node1 == nullptr) {
@@ -58,6 +63,7 @@ bool IfExpressionParser::ParseSimple(ParsingInfo& info, IfExprNode* const node, 
 		return false;
 	}
 
+	// Parse else keyword
 	if (info.Current().type != TokenType::Else) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after_in", LogMessage::Quote("else"), "expression", "if expression"), info.GetFileInfoPrev());
 		error = true;
@@ -66,6 +72,7 @@ bool IfExpressionParser::ParseSimple(ParsingInfo& info, IfExprNode* const node, 
 
 	info.index++;
 
+	// Parse second expression
 	NodePtr node2 = ExpressionParser::Parse(info);
 
 	if (node2 == nullptr) {
@@ -80,7 +87,8 @@ bool IfExpressionParser::ParseSimple(ParsingInfo& info, IfExprNode* const node, 
 }
 
 bool IfExpressionParser::ParseFull(ParsingInfo& info, IfExprNode* const node, const UInt line, bool& error) {
-	if (NodePtr expr = ScopeParser::ParseExpressionBlockNoEnd(info, TokenType::Then, "then", "if expression", line, true)) {
+	// Parse if block
+	if (NodePtr expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), true)) {
 		node->nodes.Add(expr);
 	}
 	else {
@@ -88,6 +96,7 @@ bool IfExpressionParser::ParseFull(ParsingInfo& info, IfExprNode* const node, co
 		return false;
 	}
 
+	// Parse elseif blocks
 	while (info.Current().type == TokenType::ElseIf) {
 		info.index++;
 
@@ -100,7 +109,7 @@ bool IfExpressionParser::ParseFull(ParsingInfo& info, IfExprNode* const node, co
 			return false;
 		}
 
-		if (NodePtr expr = ScopeParser::ParseExpressionBlockNoEnd(info, TokenType::Then, "then", LogMessage::Quote("elseif"), line, true)) {
+		if (NodePtr expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), true)) {
 			node->nodes.Add(expr);
 		}
 		else {
@@ -109,6 +118,7 @@ bool IfExpressionParser::ParseFull(ParsingInfo& info, IfExprNode* const node, co
 		}
 	}
 
+	// Parse else block
 	if (info.Current().type != TokenType::Else) {
 		ErrorLog::Error(LogMessage("error.syntax.if.required.else"), info.GetFileInfoPrev());
 		error = true;
@@ -117,7 +127,7 @@ bool IfExpressionParser::ParseFull(ParsingInfo& info, IfExprNode* const node, co
 
 	info.index++;
 
-	if (NodePtr expr = ScopeParser::ParseExpressionBlock(info, TokenType::None, "", LogMessage::Quote("else"), info.Prev().line, true)) {
+	if (NodePtr expr = ScopeParser::ParseExpression(info, TokenType::None, ScopeParser::Info(LogMessage::Quote("else"), info.Prev().line), true)) {
 		node->nodes.Add(expr);
 	}
 	else {

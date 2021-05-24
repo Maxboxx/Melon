@@ -2,14 +2,17 @@
 
 #include "Parser.h"
 
+///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
+		/// Parser for including files.
 		class IncludeParser {
 		public:
+			/// Parses an {include}.
+			///R {true} if the parsing was successful.
 			static bool Parse(ParsingInfo& info);
 
-			///T Parse Include
-			/// Parses a file to include to the project
+			/// Parses a file to include to the project.
 			static void ParseInclude(const Symbols::NameList& include, ParsingInfo& info);
 
 		private:
