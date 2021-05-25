@@ -20,7 +20,7 @@ Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
 		info.index++;
 	}
 	else {
-		first = ParseScope(info);
+		first = ParseName(info);
 	}
 
 	if (first) {
@@ -44,7 +44,7 @@ Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
 			if (info.Current().type != TokenType::Dot) break;
 			info.index++;
 
-			if (Optional<Name> scope = ParseScope(info)) {
+			if (Optional<Name> scope = ParseName(info)) {
 				type = type.Add(*scope);
 
 				if (scope->types) {
@@ -88,7 +88,7 @@ Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
 	return nullptr;
 }
 
-Optional<Name> TypeParser::ParseScope(ParsingInfo& info) {
+Optional<Name> TypeParser::ParseName(ParsingInfo& info) {
 	if (
 		info.Current().type != TokenType::Name &&
 		info.Current().type != TokenType::Type &&

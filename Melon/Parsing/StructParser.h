@@ -2,14 +2,17 @@
 
 #include "Parser.h"
 
+///N Melon::Parsing
 namespace Melon {
 	namespace Nodes {
 		class StructNode;
 	}
 
 	namespace Parsing {
+		/// Parser for structs.
 		class StructParser {
 		public:
+			/// Parses a struct.
 			static Nodes::NodePtr Parse(ParsingInfo& info);
 
 		private:

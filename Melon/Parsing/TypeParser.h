@@ -4,16 +4,21 @@
 
 #include "Parser.h"
 
+///N Melon::Parsing
 namespace Melon {
 	namespace Nodes {
 		class TypeNode;
 	}
 
 	namespace Parsing {
+		/// Parser for types.
 		class TypeParser {
 		public:
+			/// Parses a type.
 			static Boxx::Optional<Symbols::NameList> Parse(ParsingInfo& info);
-			static Boxx::Optional<Symbols::Name> ParseScope(ParsingInfo& info);
+
+			/// Parses a type name.
+			static Boxx::Optional<Symbols::Name> ParseName(ParsingInfo& info);
 		};
 	}
 }

@@ -14,16 +14,13 @@
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
-		///B Parser
-		/// Used to parse a list of tokens
+		/// Parser for melon files.
 		class Parser {
 		public:
-			///T Parse
-			/// Parses a file and converts it to an AST
+			/// Parses a melon file.
 			static ParsingInfo Parse(const Boxx::String& filename, const CompilerOptions& options);
 
-			///T Unexpected token
-			/// Throws a <type>SyntaxError</type> for the current token
+			/// Generates an unexpected token error.
 			static Nodes::NodePtr UnexpectedToken(ParsingInfo& info);
 
 		private:
