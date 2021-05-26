@@ -307,7 +307,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		info.index = startIndex;
 		return nullptr;
 	}
-	else if (Optional<Name> node = TypeParser::ParseScope(info)) {
+	else if (Optional<Name> node = TypeParser::ParseName(info)) {
 		Pointer<NameNode> nn = new NameNode(info.scope, info.GetFileInfo(startLine));
 		nn->name = *node;
 		return nn;

@@ -37,7 +37,7 @@ int main() {
 	info.blockHeadingPatterns.Add(Pair<String, Regex>("Types", Regex("%b{enum%n+class|class|struct|enum}%n+(%w+)")));
 	info.blockHeadingPatterns.Add(Pair<String, Regex>("Values", Regex("^%n*%w+%n*{[,=]|$}")));
 	info.blockHeadingPatterns.Add(Pair<String, Regex>("Members", Regex("%w+")));
-
+	
 	Dragonfruit doc = Dragonfruit::Generate("./", info);
 	doc.GenerateHTML("../Documentation");
 	/*/

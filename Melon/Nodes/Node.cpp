@@ -18,8 +18,6 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-RootNode* Node::root = nullptr;
-
 Node::Node(Symbol* const scope, const FileInfo& file) {
 	this->scope = scope;
 	this->file = file;
@@ -29,18 +27,20 @@ Node::~Node() {
 
 }
 
-TypeSymbol* Node::Type() const {
-	return nullptr;
-}
+void Node::IncludeScan(ParsingInfo& info) {
 
-List<TypeSymbol*> Node::Types() const {
-	List<TypeSymbol*> types;
-	types.Add(Type());
-	return types;
 }
 
 ScanResult Node::Scan(ScanInfoStack& info) {
 	return ScanResult();
+}
+
+Node* Node::Optimize(OptimizeInfo& info) {
+	return nullptr;
+}
+
+UInt Node::GetSize() const {
+	return 0;
 }
 
 bool Node::HasSideEffects() {
@@ -71,10 +71,6 @@ NameList Node::GetSideEffectScope(const bool assign) {
 	return *sideEffectScope;
 }
 
-NameList Node::FindSideEffectScope(const bool assign) {
-	return scope->AbsoluteName();
-}
-
 NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2) {
 	if (scope1.Size() == 1 && scope1[0] == Name::Global) return scope1;
 	if (scope2.Size() == 1 && scope2[0] == Name::Global) return scope2;
@@ -95,35 +91,7 @@ NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2
 	}
 }
 
-NodePtr Node::Optimize(OptimizeInfo& info) {
-	return nullptr;
-}
-
-void Node::IncludeScan(ParsingInfo& info) {
-	
-}
-
-Symbol* Node::GetSymbol() const {
-	return nullptr;
-}
-
-UInt Node::GetSize() const {
-	return 0;
-}
-
-bool Node::IsScope() const {
-	return false;
-}
-
-bool Node::IsImmediate() const {
-	return false;
-}
-
-Long Node::GetImmediate() const {
-	return 0;
-}
-
-ScanResult Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
+ScanResult Node::ScanAssignment(Node* const var, Node* const value, ScanInfoStack& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
@@ -136,7 +104,7 @@ ScanResult Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info,
 	return ScanResult();
 }
 
-CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file) {
+CompiledNode Node::CompileAssignment(Node* const var, Node* const value, CompileInfo& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
@@ -164,11 +132,15 @@ CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& in
 	return CompiledNode();
 }
 
-bool Node::IsEmpty(const NodePtr& node) {
-	if (Pointer<EmptyNode> empty = node.Cast<EmptyNode>()) {
+bool Node::IsEmpty(Node* const node) {
+	if (EmptyNode* const empty = node->Cast<EmptyNode>()) {
 		return !empty->node;
 	}
 
 	return false;
+}
+
+NameList Node::FindSideEffectScope(const bool assign) {
+	return scope->AbsoluteName();
 }
 
