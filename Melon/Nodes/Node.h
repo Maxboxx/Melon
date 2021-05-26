@@ -22,6 +22,8 @@
 #include "Structs/ScopeInfo.h"
 #include "Structs/StackPtr.h"
 
+#include "Melon/Symbols/Symbol.h"
+
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
 ///N Melon::Nodes
@@ -31,7 +33,7 @@ namespace Melon {
 	}
 
 	namespace Nodes {
-		class RootNode;
+		class ExpressionNode;
 
 		/// Base for all nodes.
 		class Node {
@@ -45,10 +47,6 @@ namespace Melon {
 
 			/// Scans the node for potential errors.
 			virtual ScanResult Scan(ScanInfoStack& info);
-
-			/// Optimizes the node.
-			///R The optimized node. If the node was not optimized, this will be {nullptr}.
-			virtual Node* Optimize(OptimizeInfo& info);
 
 			/// Compiles the node.
 			virtual CompiledNode Compile(CompileInfo& info) = 0;
@@ -86,20 +84,34 @@ namespace Melon {
 				return dynamic_cast<T*>(this);
 			}
 
+			/// Gets the file info of the node.
+			FileInfo File() const;
+
+			/// Optimizes the node.
+			///A node: The node to optimize.
+			///p The optimized node will be assigned to this value.
+			///M
+			template <class T>
+			static void Optimize(T*& node, OptimizeInfo& info) {
+			///M
+				if (T* const n = node->Optimize(info)) {
+					delete node;
+					node = n;
+				}
+			}
+
 		protected:
 			Symbols::Symbol* scope;
 			FileInfo file;
 
-			/// Combines two side effect scopes by returning the outer scope.
+			virtual Node* Optimize(OptimizeInfo& info);
+
 			static Symbols::NameList CombineSideEffects(const Symbols::NameList& scope1, const Symbols::NameList& scope2);
 
-			/// Scans an assignment.
-			static ScanResult ScanAssignment(Node* const var, Node* const value, ScanInfoStack& info, const FileInfo& file);
+			static ScanResult ScanAssignment(ExpressionNode* const assignable, ExpressionNode* const value, ScanInfoStack& info, const FileInfo& file);
 
-			/// Compiles an assignment.
-			static CompiledNode CompileAssignment(Node* const var, Node* const value, CompileInfo& info, const FileInfo& file);
+			static CompiledNode CompileAssignment(ExpressionNode* const assignable, ExpressionNode* const value, CompileInfo& info, const FileInfo& file);
 
-			/// Checks if a node is an empty empty node.
 			static bool IsEmpty(Node* const node);
 
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);

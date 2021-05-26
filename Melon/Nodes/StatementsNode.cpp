@@ -19,12 +19,14 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StatementsNode::StatementsNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+StatementsNode::StatementsNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
 
 }
 
 StatementsNode::~StatementsNode() {
-
+	for (StatementNode* const statement : statements) {
+		delete statement;
+	}
 }
 
 UInt StatementsNode::GetSize() const {
@@ -44,21 +46,8 @@ UInt StatementsNode::GetSize() const {
 	return size;
 }
 
-CompiledNode StatementsNode::Compile(CompileInfo& info) {
-	CompiledNode c;
-
-	for (NodePtr node : statements) {
-		info.index = 0;
-		c.AddInstructions(node->Compile(info).instructions);
-	}
-
-	info.index = 0;
-
-	return c;
-}
-
 void StatementsNode::IncludeScan(ParsingInfo& info) {
-	for (NodePtr statement : statements) {
+	for (StatementNode* const statement : statements) {
 		statement->IncludeScan(info);
 	}
 }
@@ -66,35 +55,23 @@ void StatementsNode::IncludeScan(ParsingInfo& info) {
 ScanResult StatementsNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
 
-	for (const NodePtr& node : statements) {
-		ScanResult r = node->Scan(info);
-		r.SelfUseCheck(info, node->file);
+	for (StatementNode* const statement : statements) {
+		ScanResult r = statement->Scan(info);
+		r.SelfUseCheck(info, statement->File());
 		result |= r;
 	}
 
 	return result;
 }
 
-NameList StatementsNode::FindSideEffectScope(const bool assign) {
-	if (statements.IsEmpty()) return scope->AbsoluteName();
-
-	NameList list = statements[0]->GetSideEffectScope(assign);
-
-	for (UInt i = 1; i < statements.Size(); i++) {
-		list = CombineSideEffects(list, statements[i]->GetSideEffectScope(assign));
-	}
-
-	return list;
-}
-
-NodePtr StatementsNode::Optimize(OptimizeInfo& info) {
+StatementNode* StatementsNode::Optimize(OptimizeInfo& info) {
 	if (!HasSideEffects()) {
 		info.optimized = true;
 		return new EmptyNode();
 	}
 
-	for (NodePtr& statement : statements) {
-		if (NodePtr node = statement->Optimize(info)) statement = node;
+	for (StatementNode*& statement : statements) {
+		Node::Optimize(statement, info);
 	}
 
 	for (UInt i = 0; i < statements.Size(); i++) {
@@ -111,6 +88,31 @@ NodePtr StatementsNode::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
+}
+
+CompiledNode StatementsNode::Compile(CompileInfo& info) {
+	CompiledNode c;
+
+	for (StatementNode* const node : statements) {
+		info.index = 0;
+		c.AddInstructions(node->Compile(info).instructions);
+	}
+
+	info.index = 0;
+
+	return c;
+}
+
+NameList StatementsNode::FindSideEffectScope(const bool assign) {
+	if (statements.IsEmpty()) return scope->AbsoluteName();
+
+	NameList list = statements[0]->GetSideEffectScope(assign);
+
+	for (UInt i = 1; i < statements.Size(); i++) {
+		list = CombineSideEffects(list, statements[i]->GetSideEffectScope(assign));
+	}
+
+	return list;
 }
 
 StringBuilder StatementsNode::ToMelon(const UInt indent) const {
@@ -135,20 +137,20 @@ StringBuilder StatementsNode::ToMelon(const UInt indent) const {
 	return sb;
 }
 
-bool StatementsNode::HasSpaceAround(const NodePtr& node) {
-	if (node.Is<LoopNode>()) return true;
-	if (node.Is<SwitchNode>()) return true;
-	if (node.Is<DoNode>()) return true;
-	if (node.Is<RepeatNode>()) return true;
-	if (node.Is<FunctionNode>()) return true;
-	if (node.Is<StructNode>()) return true;
-	if (node.Is<EnumNode>()) return true;
+bool StatementsNode::HasSpaceAround(StatementNode* const node) {
+	if (node->Is<LoopNode>())     return true;
+	if (node->Is<SwitchNode>())   return true;
+	if (node->Is<DoNode>())       return true;
+	if (node->Is<RepeatNode>())   return true;
+	if (node->Is<FunctionNode>()) return true;
+	if (node->Is<StructNode>())   return true;
+	if (node->Is<EnumNode>())     return true;
 
-	if (Pointer<GuardNode> guardNode = node.Cast<GuardNode>()) {
+	if (GuardNode* const guardNode = node->Cast<GuardNode>()) {
 		return guardNode->else_ != nullptr;
 	}
 
-	if (Pointer<EmptyNode> empty = node.Cast<EmptyNode>()) {
+	if (EmptyNode* const empty = node->Cast<EmptyNode>()) {
 		return HasSpaceAround(empty->node);
 	}
 

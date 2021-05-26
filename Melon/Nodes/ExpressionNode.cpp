@@ -6,6 +6,14 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
+ExpressionNode::ExpressionNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+
+}
+
+ExpressionNode::~ExpressionNode() {
+
+}
+
 TypeSymbol* ExpressionNode::Type() const {
 	return nullptr;
 }

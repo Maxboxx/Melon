@@ -1,5 +1,6 @@
 #include "Node.h"
 
+#include "ExpressionNode.h"
 #include "ConvertNode.h"
 #include "EmptyNode.h"
 
@@ -13,6 +14,7 @@
 
 using namespace Boxx;
 
+using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
@@ -71,6 +73,10 @@ NameList Node::GetSideEffectScope(const bool assign) {
 	return *sideEffectScope;
 }
 
+FileInfo Node::File() const {
+	return file;
+}
+
 NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2) {
 	if (scope1.Size() == 1 && scope1[0] == Name::Global) return scope1;
 	if (scope2.Size() == 1 && scope2[0] == Name::Global) return scope2;
@@ -91,11 +97,11 @@ NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2
 	}
 }
 
-ScanResult Node::ScanAssignment(Node* const var, Node* const value, ScanInfoStack& info, const FileInfo& file) {
+ScanResult Node::ScanAssignment(ExpressionNode* const assignable, ExpressionNode* const value, ScanInfoStack& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
-	if (TypeSymbol* const type = var->Type()) {
+	if (TypeSymbol* const type = assignable->Type()) {
 		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
 			func->FindOverload(args, file);
 		}
@@ -104,27 +110,28 @@ ScanResult Node::ScanAssignment(Node* const var, Node* const value, ScanInfoStac
 	return ScanResult();
 }
 
-CompiledNode Node::CompileAssignment(Node* const var, Node* const value, CompileInfo& info, const FileInfo& file) {
+CompiledNode Node::CompileAssignment(ExpressionNode* const assignable, ExpressionNode* const value, CompileInfo& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
 	FunctionSymbol* assign = nullptr;
 
-	if (TypeSymbol* const type = var->Type()) {
+	if (TypeSymbol* const type = assignable->Type()) {
 		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
 			assign = func->FindOverload(args, file);
 		}
 	}
 
 	if (assign) {
-		List<NodePtr> nodes;
-		nodes.Add(var);
+		List<ExpressionNode*> nodes;
+		nodes.Add(assignable);
 
-		Pointer<ConvertNode> cn = new ConvertNode(value->scope, value->file);
+		ConvertNode* cn = new ConvertNode(value->scope, value->file);
 		cn->isExplicit = false;
 		cn->node = value;
 		cn->type = assign->ArgumentType(0)->AbsoluteName();
 		nodes.Add(cn);
+		delete cn;
 
 		return assign->symbolNode->Compile(nodes, info);
 	}

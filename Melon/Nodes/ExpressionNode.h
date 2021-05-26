@@ -10,6 +10,9 @@ namespace Melon {
 		/// The base of all expression nodes.
 		class ExpressionNode : public Node {
 		public:
+			ExpressionNode(Symbols::Symbol* const scope, const FileInfo& file);
+			~ExpressionNode();
+
 			/// Returns the type of the expression.
 			virtual Symbols::TypeSymbol* Type() const;
 
