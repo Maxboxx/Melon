@@ -27,3 +27,11 @@ List<TypeSymbol*> ExpressionNode::Types() const {
 
 	return List<TypeSymbol*>(0);
 }
+
+Symbol* ExpressionNode::Symbol() const {
+	return nullptr;
+} 
+
+ExpressionNode* ExpressionNode::Optimize(OptimizeInfo& info) {
+	return nullptr;
+}

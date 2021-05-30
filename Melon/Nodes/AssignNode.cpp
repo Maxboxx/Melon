@@ -26,7 +26,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-AssignNode::AssignNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+AssignNode::AssignNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
 
 }
 
@@ -34,46 +34,55 @@ AssignNode::~AssignNode() {
 
 }
 
-List<Pair<TypeSymbol*, NodePtr>> AssignNode::Values() const {
-	List<Pair<TypeSymbol*, NodePtr>> types;
-
-	for (UInt i = 0; i < vars.Size(); i++) {
-		if (i + 1 >= values.Size()) {
-			List<TypeSymbol*> returnTypes = values[i]->Types();
-
-			for (UInt u = 0; u < vars.Size() - i; u++) {
-				types.Add(Pair<TypeSymbol*, NodePtr>(returnTypes[u], values[i]));
-			}
-
-			break;
-		}
-		else {
-			types.Add(Pair<TypeSymbol*, NodePtr>(values[i]->Type(), values[i]));
-		}
-	}
-
-	return types;
-}
-
 UInt AssignNode::GetSize() const {
 	UInt size = 0;
 
-	for (UInt i = 0; i < vars.Size(); i++) {
-		if (types[i] == NameList::Discard || vars[i].Is<DiscardNode>()) continue;
+	for (UInt i = 0; i < assignableValues.Size(); i++) {
+		if (types[i] == NameList::Discard || assignableValues[i]->Is<DiscardNode>()) continue;
 
-		if (Symbol* const s = vars[i]->GetSymbol()) {
-			if (VariableSymbol* const var = s->Cast<VariableSymbol>()) {
-				if ((var->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
-					size += StackPtr::ptrSize;
-				}
-				else {
-					size += var->Type()->Size();
-				}
+		if (VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>()) {
+			if ((var->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+				size += StackPtr::ptrSize;
+			}
+			else {
+				size += var->Type()->Size();
 			}
 		}
 	}
 
 	return size;
+}
+
+void AssignNode::IncludeScan(ParsingInfo& info) {
+	// Check type names for includes
+	for (const NameList& type : types) {
+		if (type == NameList::Discard) continue;
+
+		Include(type, info);
+	}
+
+	// Scan assignable values
+	for (ExpressionNode* const value : assignableValues) {
+		value->IncludeScan(info);
+	}
+
+	// Scan values
+	for (ExpressionNode* const value : values) {
+		value->IncludeScan(info);
+	}
+}
+
+ScanResult AssignNode::Scan(ScanInfoStack& info) {
+	ScanResult result = ScanAssignableValues(info);
+
+	// Scan values
+	for (ExpressionNode* const node : this->values) {
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->File());
+		result |= r;
+	}
+
+	return result;
 }
 
 CompiledNode AssignNode::Compile(CompileInfo& info) {
@@ -82,9 +91,9 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 	UInt varSize = 0;
 
 	// Calculate size and stack index of variables
-	for (UInt i = 0; i < vars.Size(); i++) {
-		if (types[i] == NameList::Discard || vars[i].Is<DiscardNode>()) continue;
-		VariableSymbol* const var = vars[i]->GetSymbol()->Cast<VariableSymbol>();
+	for (UInt i = 0; i < assignableValues.Size(); i++) {
+		if (types[i] == NameList::Discard || assignableValues[i]->Is<DiscardNode>()) continue;
+		VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>();
 
 		// Ref variables
 		if (var->HasAttribute(VariableAttributes::Ref)) {
@@ -93,7 +102,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 		}
 		// Regular variables
 		else {
-			UInt size = vars[i]->Type()->Size();
+			UInt size = assignableValues[i]->Type()->Size();
 			varSize += size;
 			info.stack.Push(size);
 		}
@@ -102,20 +111,20 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 	}
 
 	// Setup
-	List<Pair<TypeSymbol*, NodePtr>> values = Values();
+	List<Value> values = Values();
 	List<UInt> returnOffsets;
 	const UInt frame = info.stack.frame;
 
 	// Compile assignments
-	for (UInt i = 0; i < vars.Size(); i++) {
+	for (UInt i = 0; i < assignableValues.Size(); i++) {
 		const UInt regIndex = info.index; 
 
 		// Assign values normally
 		if (i < this->values.Size()) {
 			// Regular assignment
-			if (!vars[i].Is<DiscardNode>()) {
+			if (!assignableValues[i]->Is<DiscardNode>()) {
 				info.important = true;
-				c.AddInstructions(CompileAssignment(vars[i], values[i].value, info, vars[i]->file).instructions);
+				c.AddInstructions(CompileAssignment(assignableValues[i], values[i].value, info, assignableValues[i]->File()).instructions);
 				info.important = false;
 			}
 			// Discard assignment
@@ -126,10 +135,10 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 			// Calculate offsets for extra return values
 			if (i + 1 >= this->values.Size()) {
-				UInt size = info.stack.top + values[i].key->Size();
+				UInt size = info.stack.top + values[i].type->Size();
 
 				for (UInt u = i + 1; u < values.Size(); u++) {
-					size += values[u].key->Size();
+					size += values[u].type->Size();
 					returnOffsets.Add(size);
 				}
 			}
@@ -138,13 +147,15 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			}
 		}
 		// Assign extra return values
-		else if (!vars[i].Is<DiscardNode>()) {
-			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
-			sn->type = values[i].key->AbsoluteName();
+		else if (!assignableValues[i]->Is<DiscardNode>()) {
+			MemoryNode* const mn = new MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
+			mn->type = values[i].type->AbsoluteName();
 
 			info.important = true;
-			c.AddInstructions(CompileAssignment(vars[i], sn, info, vars[i]->file).instructions);
+			c.AddInstructions(CompileAssignment(assignableValues[i], mn, info, assignableValues[i]->File()).instructions);
 			info.important = false;
+
+			delete mn;
 		}
 
 		// TODO: compile values for discard vars
@@ -157,110 +168,12 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-void AssignNode::IncludeScan(ParsingInfo& info) {
-	// Check type names for includes
-	for (const NameList& type : types) {
-		if (type == NameList::Discard) continue;
-
-		// Include multiple levels of namespaces
-		while (Symbol* s = SymbolTable::Find(type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates)) {
-			bool done = true;
-
-			for (UInt i = 1; i < type.Size(); i++) {
-				if (s->Is<NamespaceSymbol>()) {
-					if (Symbol* const sym = s->Contains(type[i])) {
-						s = sym;
-					}
-					else {
-						IncludeParser::ParseInclude(s->AbsoluteName().Add(type[i]), info);
-						done = false;
-						break;
-					}
-				}
-			}
-
-			if (done) break;
-		}
-	}
-
-	// Scan vars
-	for (NodePtr var : vars) {
-		var->IncludeScan(info);
-	}
-
-	// Scan values
-	for (NodePtr value : values) {
-		value->IncludeScan(info);
-	}
-}
-
-ScanResult AssignNode::Scan(ScanInfoStack& info) {
-	ScanResult result;
-	info->assign = true;
-
-	// Check for errors among values
-	UInt errorCount = ErrorLog::ErrorCount();
-	List<Pair<TypeSymbol*, NodePtr>> values = Values();
-	bool errors = errorCount < ErrorLog::ErrorCount();
-
-	// Scan all vars
-	for (UInt i = 0; i < vars.Size(); i++) {
-		if (vars[i].Is<DiscardNode>()) continue;
-
-		NodePtr node = vars[i];
-		node->Type();
-
-		// Find variable
-		VariableSymbol* var = nullptr;
-		
-		if (Symbol* const sym = node->GetSymbol()) {
-			var = sym->Cast<VariableSymbol>();
-		}
-
-		// Check for const assign
-		if (types[i] == NameList::Discard && var && (var->attributes & VariableAttributes::Const) != VariableAttributes::None) {
-			ErrorLog::Error(LogMessage("error.scan.assign.const"), node->file);
-		}
-
-		// Scan node
-		ScanResult r = node->Scan(info);
-		r.SelfUseCheck(info, node->file);
-		result |= r;
-
-		// Check for completed init
-		if (info->init) {
-			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
-				if (nn->name == Name::Self) {
-					info->type->CompleteInit();
-					result.selfUsed = false;
-				}
-			}
-		}
-
-		// Scan assignment
-		if (!errors) {
-			ScanAssignment(node, new TypeNode(values[i].key->AbsoluteName()), info, node->file);
-		}
-	}
-
-	info->assign = false;
-
-	// Scan values
-	for (const NodePtr& node : this->values) {
-		ScanResult r = node->Scan(info);
-		r.SelfUseCheck(info, node->file);
-		result |= r;
-	}
-
-	return result;
-}
-
 NameList AssignNode::FindSideEffectScope(const bool assign) {
-	NameList list = vars[0] ? vars[0]->GetSideEffectScope(true) : scope->AbsoluteName();
+	NameList list = assignableValues[0] ? assignableValues[0]->GetSideEffectScope(true) : scope->AbsoluteName();
 
-	for (UInt i = 1; i < vars.Size(); i++) {
-		if (vars[i]) {
-			list = CombineSideEffects(list, vars[i]->GetSideEffectScope(true));
+	for (UInt i = 1; i < assignableValues.Size(); i++) {
+		if (assignableValues[i]) {
+			list = CombineSideEffects(list, assignableValues[i]->GetSideEffectScope(true));
 		}
 	}
 
@@ -271,20 +184,21 @@ NameList AssignNode::FindSideEffectScope(const bool assign) {
 	return list;
 }
 
-NodePtr AssignNode::Optimize(OptimizeInfo& info) {
+StatementNode* AssignNode::Optimize(OptimizeInfo& info) {
 	bool removed = false;
 
-	// Check if removal of vars/values can be done
-	for (UInt i = 0; i < vars.Size(); i++) {
-		if (vars[i].Is<DiscardNode>()) {
+	// Check if removal of values can be done
+	for (ExpressionNode*& value : assignableValues) {
+		if (value->Is<DiscardNode>()) {
 			removed = true;
 			continue;
 		}
 
 		// Remove unused vars
-		if (Symbol* const sym = vars[i]->GetSymbol()) {
-			if (sym->Is<VariableSymbol>() && !vars[i]->HasSideEffects(scope->AbsoluteName()) && !info.usedVariables.Contains(sym->Cast<VariableSymbol>())) {
-				vars[i] = new DiscardNode(vars[i]->scope, vars[i]->file);
+		if (VariableSymbol* const sym = value->Symbol<VariableSymbol>()) {
+			if (!value->HasSideEffects(scope->AbsoluteName()) && !info.usedVariables.Contains(sym)) {
+				delete value;
+				value = new DiscardNode(value->scope, value->File());
 				info.optimized = true;
 				removed = true;
 			}
@@ -296,14 +210,14 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 		i--;
 
 		// Remove values without side effects
-		if (vars[i].Is<DiscardNode>() && !values[i]->HasSideEffects(scope->AbsoluteName())) {
+		if (assignableValues[i]->Is<DiscardNode>() && !values[i]->HasSideEffects(scope->AbsoluteName())) {
 			// Check if the value is part of a multiple return
 			if (i >= values.Size() - 1) {
 				bool isDiscard = true;
 				
 				// Only remove value if multiple return is not affected
-				for (UInt u = i + 1; u < vars.Size(); u++) {
-					if (!vars[u].Is<DiscardNode>()) {
+				for (UInt u = i + 1; u < assignableValues.Size(); u++) {
+					if (!assignableValues[u]->Is<DiscardNode>()) {
 						isDiscard = false;
 						break;
 					}
@@ -318,20 +232,20 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 	}
 
 	// Remove vars and values
-	if (removed) for (UInt i = vars.Size(); i > 0;) {
+	if (removed) for (UInt i = assignableValues.Size(); i > 0;) {
 		i--;
 
-		if (vars[i].Is<DiscardNode>()) {
+		if (assignableValues[i]->Is<DiscardNode>()) {
 			// Remove multiple return vars
 			if (i >= values.Size()) {
-				if (i == vars.Size() - 1 || !values.Last()) {
-					vars.RemoveAt(i);
+				if (i == assignableValues.Size() - 1 || !values.Last()) {
+					assignableValues.RemoveAt(i);
 					types.RemoveAt(i);
 				}
 			}
 			// Remove regular vars/values
 			else if (!values[i]) {
-				vars.RemoveAt(i);
+				assignableValues.RemoveAt(i);
 				values.RemoveAt(i);
 				types.RemoveAt(i);
 			}
@@ -339,18 +253,18 @@ NodePtr AssignNode::Optimize(OptimizeInfo& info) {
 	}
 
 	// Remove assignment if everything is removed
-	if (removed && vars.IsEmpty()) {
+	if (removed && assignableValues.IsEmpty()) {
 		return new EmptyNode();
 	}
 
-	// Optimize vars
-	for (NodePtr& var : vars) {
-		if (NodePtr node = var->Optimize(info)) var = node;
+	// Optimize assignable values
+	for (ExpressionNode*& value : assignableValues) {
+		Node::Optimize(value, info);
 	}
 
 	// Optimize values
-	for (NodePtr& value : values) {
-		if (NodePtr node = value->Optimize(info)) value = node;
+	for (ExpressionNode*& value : values) {
+		Node::Optimize(value, info);
 	}
 
 	return nullptr;
@@ -386,9 +300,9 @@ StringBuilder AssignNode::ToMelon(const UInt indent) const {
 	}
 	
 	// Vars
-	for (UInt i = 0; i < vars.Size(); i++) {
+	for (UInt i = 0; i < assignableValues.Size(); i++) {
 		if (i > 0) sb += ", ";
-		sb += vars[i]->ToMelon(indent);
+		sb += assignableValues[i]->ToMelon(indent);
 	}
 
 	sb += " = ";
@@ -400,4 +314,76 @@ StringBuilder AssignNode::ToMelon(const UInt indent) const {
 	}
 
 	return sb;
+}
+
+ScanResult AssignNode::ScanAssignableValues(ScanInfoStack& info) {
+	ScanResult result;
+	info->assign = true;
+
+	// Check for errors among values
+	UInt errorCount = ErrorLog::ErrorCount();
+	List<Value> values = Values();
+	bool errors = errorCount < ErrorLog::ErrorCount();
+
+	// Scan all vars
+	for (UInt i = 0; i < assignableValues.Size(); i++) {
+		if (assignableValues[i]->Is<DiscardNode>()) continue;
+
+		ExpressionNode* const node = assignableValues[i];
+		node->Type();
+
+		// Find variable
+		VariableSymbol* const var = node->Symbol<VariableSymbol>();
+
+		// Check for const assign
+		if (types[i] == NameList::Discard && var && var->HasAttribute(VariableAttributes::Const)) {
+			ErrorLog::Error(LogMessage("error.scan.assign.const"), node->File());
+		}
+
+		// Scan node
+		ScanResult r = node->Scan(info);
+		r.SelfUseCheck(info, node->File());
+		result |= r;
+
+		// Check for completed init
+		if (info->init) {
+			if (NameNode* const nn = node->Cast<NameNode>()) {
+				if (nn->name == Name::Self) {
+					info->type->CompleteInit();
+					result.selfUsed = false;
+				}
+			}
+		}
+
+		// Scan assignment
+		if (!errors) {
+			TypeNode* const type = new TypeNode(values[i].type->AbsoluteName());
+			ScanAssignment(node, type, info, node->File());
+			delete type;
+		}
+	}
+
+	info->assign = false;
+	return result;
+}
+
+List<AssignNode::Value> AssignNode::Values() const {
+	List<Value> types;
+
+	for (UInt i = 0; i < assignableValues.Size(); i++) {
+		if (i + 1 >= values.Size()) {
+			List<TypeSymbol*> returnTypes = values[i]->Types();
+
+			for (UInt u = 0; u < assignableValues.Size() - i; u++) {
+				types.Add(Value(returnTypes[u], values[i]));
+			}
+
+			break;
+		}
+		else {
+			types.Add(Value(values[i]->Type(), values[i]));
+		}
+	}
+
+	return types;
 }

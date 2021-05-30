@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		/// Node for a kiwi arguement.
-		class ArgumentNode : public Node {
+		/// Node for a kiwi argument.
+		class ArgumentNode : public ExpressionNode {
 		public:
 			/// The kiwi argument.
 			Kiwi::Argument argument;

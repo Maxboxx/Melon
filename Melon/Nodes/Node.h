@@ -23,6 +23,7 @@
 #include "Structs/StackPtr.h"
 
 #include "Melon/Symbols/Symbol.h"
+#include "Melon/Symbols/SymbolTable.h"
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
@@ -34,10 +35,13 @@ namespace Melon {
 
 	namespace Nodes {
 		class ExpressionNode;
+		class StatementNode;
 
 		/// Base for all nodes.
 		class Node {
 		public:
+			Symbols::Symbol* const scope;
+
 			/// Creates a node.
 			Node(Symbols::Symbol* const scope, const FileInfo& file);
 			~Node();
@@ -90,21 +94,15 @@ namespace Melon {
 			/// Optimizes the node.
 			///A node: The node to optimize.
 			///p The optimized node will be assigned to this value.
-			///M
-			template <class T>
-			static void Optimize(T*& node, OptimizeInfo& info) {
-			///M
-				if (T* const n = node->Optimize(info)) {
-					delete node;
-					node = n;
-				}
-			}
+			static void Optimize(ExpressionNode*& node, OptimizeInfo& info);
+
+			/// Optimizes the node.
+			///A node: The node to optimize.
+			///p The optimized node will be assigned to this value.
+			static void Optimize(StatementNode*& node, OptimizeInfo& info);
 
 		protected:
-			Symbols::Symbol* scope;
 			FileInfo file;
-
-			virtual Node* Optimize(OptimizeInfo& info);
 
 			static Symbols::NameList CombineSideEffects(const Symbols::NameList& scope1, const Symbols::NameList& scope2);
 
@@ -115,6 +113,9 @@ namespace Melon {
 			static bool IsEmpty(Node* const node);
 
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
+
+			void Include(const Symbols::Name& name, Parsing::ParsingInfo& info);
+			void Include(const Symbols::NameList& name, Parsing::ParsingInfo& info);
 
 		private:
 			Boxx::Optional<Symbols::NameList> sideEffectScope;

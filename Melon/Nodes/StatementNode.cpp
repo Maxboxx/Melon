@@ -17,3 +17,7 @@ StatementNode::~StatementNode() {
 bool StatementNode::IsScope() const {
 	return false;
 }
+
+StatementNode* StatementNode::Optimize(OptimizeInfo& info) {
+	return nullptr;
+}

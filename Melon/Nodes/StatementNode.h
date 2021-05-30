@@ -14,8 +14,9 @@ namespace Melon {
 			/// {true} if the statement is a scope.
 			virtual bool IsScope() const;
 
-		protected:
-			virtual StatementNode* Optimize(OptimizeInfo& info) override = 0;
+			/// Optimizes the statement.
+			///R A new optimized node or {nullptr} if the node was not optimized.
+			virtual StatementNode* Optimize(OptimizeInfo& info);
 		};
 	}
 }

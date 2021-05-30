@@ -1,12 +1,15 @@
 #include "Node.h"
 
 #include "ExpressionNode.h"
+#include "StatementNode.h"
 #include "ConvertNode.h"
 #include "EmptyNode.h"
 
 #include "Melon/Parsing/Parser.h"
+#include "Melon/Parsing/IncludeParser.h"
 
 #include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/NamespaceSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -20,8 +23,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-Node::Node(Symbol* const scope, const FileInfo& file) {
-	this->scope = scope;
+Node::Node(Symbol* const scope, const FileInfo& file) : scope(scope) {
 	this->file = file;
 }
 
@@ -75,6 +77,20 @@ NameList Node::GetSideEffectScope(const bool assign) {
 
 FileInfo Node::File() const {
 	return file;
+}
+
+void Node::Optimize(ExpressionNode*& node, OptimizeInfo& info) {
+	if (ExpressionNode* const n = node->Optimize(info)) {
+		delete node;
+		node = n;
+	}
+}
+
+void Node::Optimize(StatementNode*& node, OptimizeInfo& info) {
+	if (StatementNode* const n = node->Optimize(info)) {
+		delete node;
+		node = n;
+	}
 }
 
 NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2) {
@@ -151,3 +167,27 @@ NameList Node::FindSideEffectScope(const bool assign) {
 	return scope->AbsoluteName();
 }
 
+void Node::Include(const Symbols::Name& name, ParsingInfo& info) {
+	Include(NameList(name), info);
+}
+
+void Node::Include(const Symbols::NameList& name, ParsingInfo& info) {
+	while (Symbol* s = SymbolTable::Find(name, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates)) {
+		bool done = true;
+
+		for (UInt i = 1; i < name.Size(); i++) {
+			if (s->Is<NamespaceSymbol>()) {
+				if (Symbol* const sym = s->Contains(name[i])) {
+					s = sym;
+				}
+				else {
+					IncludeParser::ParseInclude(s->AbsoluteName().Add(name[i]), info);
+					done = false;
+					break;
+				}
+			}
+		}
+
+		if (done) break;
+	}
+}
