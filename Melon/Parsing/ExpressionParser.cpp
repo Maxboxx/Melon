@@ -293,7 +293,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 			Pointer<DotNode> dn = dotNode.Cast<DotNode>();
 			Pointer<NameNode> nn = new NameNode(nullptr, info.GetFileInfo(line));
 			nn->name = Name::Global;
-			dn->node = nn;
+			dn->expression = nn;
 			return dn;
 		}
 

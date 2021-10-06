@@ -4,6 +4,7 @@
 #include "ContinueNode.h"
 #include "ReturnNode.h"
 #include "ExpressionNode.h"
+#include "ConditionNode.h"
 #include "StatementsNode.h"
 #include "DoNode.h"
 #include "EmptyNode.h"

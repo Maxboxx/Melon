@@ -21,7 +21,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-ConditionNode::ConditionNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+ConditionNode::ConditionNode(Symbols::Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -29,8 +29,16 @@ ConditionNode::~ConditionNode() {
 	
 }
 
+bool ConditionNode::IsImmediate() const {
+	return !assign && cond->IsImmediate();
+}
+
+Boxx::Long ConditionNode::GetImmediate() const {
+	return !assign ? cond->GetImmediate() : 0;
+}
+
 TypeSymbol* ConditionNode::Type() const {
-	return cond->Type();
+	return assign ? (TypeSymbol*)SymbolTable::Bool : cond->Type();
 }
 
 UInt ConditionNode::GetSize() const {
@@ -131,7 +139,7 @@ NameList ConditionNode::FindSideEffectScope(const bool assign) {
 	return cond->GetSideEffectScope(assign);
 }
 
-Expression ConditionNode::Optimize(OptimizeInfo& info) {
+Condition ConditionNode::Optimize(OptimizeInfo& info) {
 	// Optimize assignment
 	if (assign) {
 		Expression value = assign->values[0];

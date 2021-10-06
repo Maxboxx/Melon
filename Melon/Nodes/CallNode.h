@@ -22,11 +22,11 @@ namespace Melon {
 				NoRef
 			};
 
-			/// The node to call.
-			Expression node;
+			/// The expression to call.
+			Expression expression;
 
 			/// The arguments for the call.
-			Boxx::List<Expression> args;
+			Boxx::List<Expression> arguments;
 
 			/// The argument attributes for the call.
 			Boxx::List<ArgAttributes> attributes;

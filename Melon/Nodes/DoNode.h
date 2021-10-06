@@ -9,7 +9,7 @@ namespace Melon {
 		class DoNode : public StatementNode {
 		public:
 			/// The content of the do statement.
-			Statement statements;
+			Statements statements;
 
 			DoNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DoNode();

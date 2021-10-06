@@ -1,5 +1,7 @@
 #include "FunctionNode.h"
 
+#include "StatementsNode.h"
+
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
@@ -38,7 +40,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 	func.instructionName = sym->AbsoluteName().ToString();
 	c.instructions.Add(func);
 
-	UInt funcSize = node->GetSize();
+	UInt funcSize = statements->GetSize();
 
 	// Add push if the function needs memory
 	if (funcSize > 0) {
@@ -67,7 +69,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 	}
 
 	// Compile function body
-	c.AddInstructions(node->Compile(info).instructions);
+	c.AddInstructions(statements->Compile(info).instructions);
 
 	info.stack = stack;
 
@@ -97,7 +99,7 @@ void FunctionNode::IncludeScan(ParsingInfo& info) {
 	if (sym->IsNotSpecialized()) return;
 	scope->SetTemplateValues(sym);
 
-	node->IncludeScan(info);
+	statements->IncludeScan(info);
 }
 
 ScanResult FunctionNode::Scan(ScanInfoStack& info) {
@@ -118,7 +120,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 	}
 
 	// Scan function body
-	ScanResult result = node->Scan(info);
+	ScanResult result = statements->Scan(info);
 
 	// Check if member variables are initialized
 	if (info->init && !info->type->IsInitialized()) {
@@ -148,7 +150,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 }
 
 Statement FunctionNode::Optimize(OptimizeInfo& info) {
-	Node::Optimize(node, info);
+	Node::Optimize(statements, info);
 	return nullptr;
 }
 
@@ -236,7 +238,7 @@ StringBuilder FunctionNode::ToMelon(const UInt indent) const {
 
 	// Add function body
 	sb += String('\t').Repeat(indent + 1);
-	sb += node->ToMelon(indent + 1);
+	sb += statements->ToMelon(indent + 1);
 	sb += "\n";
 	sb += String('\t').Repeat(indent);
 	sb += "end";

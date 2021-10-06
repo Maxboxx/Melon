@@ -6,6 +6,7 @@
 
 #include "BreakNode.h"
 #include "EmptyNode.h"
+#include "StatementsNode.h"
 
 using namespace Boxx;
 using namespace Kiwi;

@@ -34,7 +34,7 @@ namespace Melon {
 				bool also;
 
 				/// The condition of the segment.
-				Expression condition;
+				Condition condition;
 
 				/// The body of the segment.
 				Statement statements;

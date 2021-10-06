@@ -3,6 +3,7 @@
 #include "StackNode.h"
 #include "TypeNode.h"
 #include "ConvertNode.h"
+#include "ConditionNode.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -161,7 +162,7 @@ Expression IfExprNode::Optimize(OptimizeInfo& info) {
 		Node::Optimize(node, info);
 	}
 
-	for (Expression& cond : conditions) {
+	for (Condition& cond : conditions) {
 		Node::Optimize(cond, info);
 	}
 

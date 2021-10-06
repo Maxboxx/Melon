@@ -22,7 +22,7 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 	info.scopeCount++;
 
 	if (NodePtr nodes = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("do statement", line), true)) {
-		node->nodes = nodes;
+		node->statements = nodes;
 		info.scope = info.scope->Parent<ScopeSymbol>();
 		info.statementNumber++;
 		return node;

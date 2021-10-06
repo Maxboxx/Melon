@@ -2,6 +2,8 @@
 
 #include "ExpressionNode.h"
 #include "StatementNode.h"
+#include "StatementsNode.h"
+#include "ConditionNode.h"
 #include "ConvertNode.h"
 #include "EmptyNode.h"
 #include "RootNode.h"
@@ -84,9 +86,40 @@ void Node::Optimize(Expression& node, OptimizeInfo& info) {
 	}
 }
 
+void Node::Optimize(Condition& node, OptimizeInfo& info) {
+	if (Condition n = node->Optimize(info)) {
+		node = n;
+	}
+}
+
 void Node::Optimize(Statement& node, OptimizeInfo& info) {
 	if (Statement n = node->Optimize(info)) {
 		node = n;
+	}
+}
+
+void Node::Optimize(Statements& node, OptimizeInfo& info) {
+	if (Statements n = node->Optimize(info)) {
+		node = n;
+	}
+}
+
+void Node::Optimize(Pointer<Node>& node, OptimizeInfo& info) {
+	if (Expression expression = node.Cast<ExpressionNode>()) {
+		Node::Optimize(expression, info);
+		node = expression;
+	}
+	else if (Statement statement = node.Cast<StatementNode>()) {
+		Node::Optimize(statement, info);
+		node = statement;
+	}
+	else if (Condition condition = node.Cast<ConditionNode>()) {
+		Node::Optimize(condition, info);
+		node = condition;
+	}
+	else if (Statements statements = node.Cast<StatementsNode>()) {
+		Node::Optimize(statements, info);
+		node = statements;
 	}
 }
 
@@ -151,14 +184,6 @@ CompiledNode Node::CompileAssignment(const Expression& assignable, const Express
 	return CompiledNode();
 }
 
-bool Node::IsEmpty(const Statement& node) {
-	if (const Pointer<EmptyNode>& empty = node.Cast<EmptyNode>()) {
-		return !empty->node;
-	}
-
-	return false;
-}
-
 NameList Node::FindSideEffectScope(const bool assign) {
 	return scope->AbsoluteName();
 }
@@ -190,4 +215,12 @@ void Node::Include(const Symbols::NameList& name, ParsingInfo& info) {
 
 RootNode* Node::Root() {
 	return _root;
+}
+
+bool IsEmpty(const Statement& statement) {
+	if (const Pointer<EmptyNode>& empty = statement.Cast<EmptyNode>()) {
+		return !empty->statement;
+	}
+	
+	return false;
 }

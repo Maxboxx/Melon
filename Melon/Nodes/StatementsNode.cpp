@@ -19,14 +19,12 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StatementsNode::StatementsNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+StatementsNode::StatementsNode(Symbol* const scope, const FileInfo& file) : StatementsNode(scope, file) {
 
 }
 
 StatementsNode::~StatementsNode() {
-	for (StatementNode* const statement : statements) {
-		delete statement;
-	}
+	
 }
 
 UInt StatementsNode::GetSize() const {
@@ -47,7 +45,7 @@ UInt StatementsNode::GetSize() const {
 }
 
 void StatementsNode::IncludeScan(ParsingInfo& info) {
-	for (StatementNode* const statement : statements) {
+	for (const Statement& statement : statements) {
 		statement->IncludeScan(info);
 	}
 }
@@ -55,7 +53,7 @@ void StatementsNode::IncludeScan(ParsingInfo& info) {
 ScanResult StatementsNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
 
-	for (StatementNode* const statement : statements) {
+	for (const Statement& statement : statements) {
 		ScanResult r = statement->Scan(info);
 		r.SelfUseCheck(info, statement->File());
 		result |= r;
@@ -64,13 +62,16 @@ ScanResult StatementsNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-StatementNode* StatementsNode::Optimize(OptimizeInfo& info) {
+Statements StatementsNode::Optimize(OptimizeInfo& info) {
+	if (statements.IsEmpty()) return nullptr;
+
 	if (!HasSideEffects()) {
 		info.optimized = true;
-		return new EmptyNode();
+		statements.Clear();
+		return nullptr;
 	}
 
-	for (StatementNode*& statement : statements) {
+	for (Statement& statement : statements) {
 		Node::Optimize(statement, info);
 	}
 
@@ -84,7 +85,6 @@ StatementNode* StatementsNode::Optimize(OptimizeInfo& info) {
 
 	if (statements.IsEmpty()) {
 		info.optimized = true;
-		return new EmptyNode();
 	}
 
 	return nullptr;
@@ -93,9 +93,9 @@ StatementNode* StatementsNode::Optimize(OptimizeInfo& info) {
 CompiledNode StatementsNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 
-	for (StatementNode* const node : statements) {
+	for (const Statement& statement : statements) {
 		info.index = 0;
-		c.AddInstructions(node->Compile(info).instructions);
+		c.AddInstructions(statement->Compile(info).instructions);
 	}
 
 	info.index = 0;
@@ -137,21 +137,21 @@ StringBuilder StatementsNode::ToMelon(const UInt indent) const {
 	return sb;
 }
 
-bool StatementsNode::HasSpaceAround(StatementNode* const node) {
-	if (node->Is<LoopNode>())     return true;
-	if (node->Is<SwitchNode>())   return true;
-	if (node->Is<DoNode>())       return true;
-	if (node->Is<RepeatNode>())   return true;
-	if (node->Is<FunctionNode>()) return true;
-	if (node->Is<StructNode>())   return true;
-	if (node->Is<EnumNode>())     return true;
+bool StatementsNode::HasSpaceAround(const Statement& statement) {
+	if (statement.Is<LoopNode>())     return true;
+	if (statement.Is<SwitchNode>())   return true;
+	if (statement.Is<DoNode>())       return true;
+	if (statement.Is<RepeatNode>())   return true;
+	if (statement.Is<FunctionNode>()) return true;
+	if (statement.Is<StructNode>())   return true;
+	if (statement.Is<EnumNode>())     return true;
 
-	if (GuardNode* const guardNode = node->Cast<GuardNode>()) {
+	if (const Pointer<GuardNode>& guardNode = statement.Cast<GuardNode>()) {
 		return guardNode->else_ != nullptr;
 	}
 
-	if (EmptyNode* const empty = node->Cast<EmptyNode>()) {
-		return HasSpaceAround(empty->node);
+	if (const Pointer<EmptyNode>& empty = statement.Cast<EmptyNode>()) {
+		return HasSpaceAround(empty->statement);
 	}
 
 	return false;

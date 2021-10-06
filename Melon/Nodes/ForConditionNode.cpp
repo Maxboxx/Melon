@@ -5,6 +5,7 @@
 #include "AssignNode.h"
 #include "CallNode.h"
 #include "BinaryOperatorNode.h"
+#include "ConditionNode.h"
 
 using namespace Boxx;
 
@@ -13,7 +14,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-ForConditionNode::ForConditionNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+ForConditionNode::ForConditionNode(Symbols::Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -86,7 +87,7 @@ NameList ForConditionNode::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(loopInit->GetSideEffectScope(assign), CombineSideEffects(loopCondition->GetSideEffectScope(assign), loopStep->GetSideEffectScope(assign)));
 }
 
-Expression ForConditionNode::Optimize(OptimizeInfo& info) {
+Pointer<ForConditionNode> ForConditionNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(loopInit, info);
 	Node::Optimize(loopCondition, info);
 	Node::Optimize(loopStep, info);

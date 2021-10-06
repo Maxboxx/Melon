@@ -12,7 +12,7 @@ namespace Melon {
 			Boxx::List<Expression> nodes;
 
 			/// The conditions for the segments.
-			Boxx::List<Expression> conditions;
+			Boxx::List<Condition> conditions;
 
 			IfExprNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~IfExprNode();

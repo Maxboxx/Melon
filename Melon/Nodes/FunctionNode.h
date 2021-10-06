@@ -11,7 +11,7 @@ namespace Melon {
 		class FunctionNode : public StatementNode {
 		public:
 			/// The function body.
-			Statement node;
+			Statements statements;
 
 			/// The function symbol.
 			Symbols::FunctionSymbol* sym;

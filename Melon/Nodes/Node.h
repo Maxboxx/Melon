@@ -35,11 +35,16 @@ namespace Melon {
 
 	namespace Nodes {
 		class ExpressionNode;
+		class ConditionNode;
 		class StatementNode;
+		class StatementsNode;
+
 		class RootNode;
 
 		typedef Boxx::Pointer<ExpressionNode> Expression;
+		typedef Boxx::Pointer<ConditionNode>   Condition;
 		typedef Boxx::Pointer<StatementNode>   Statement;
+		typedef Boxx::Pointer<StatementsNode> Statements;
 
 		/// Base for all nodes.
 		class Node {
@@ -78,15 +83,30 @@ namespace Melon {
 			/// Gets the file info of the node.
 			FileInfo File() const;
 
-			/// Optimizes the node.
-			///A node: The node to optimize.
-			///p The optimized node will be assigned to this value.
+			/// Optimizes an expression.
+			///A expression: The expression to optimize.
+			///p The optimized expression will be assigned to this value.
 			static void Optimize(Expression& expression, OptimizeInfo& info);
 
-			/// Optimizes the node.
+			/// Optimizes a condition.
+			///A condition: The condition to optimize.
+			///p The optimized condition will be assigned to this value.
+			static void Optimize(Condition& condition, OptimizeInfo& info);
+
+			/// Optimizes a statement.
+			///A statement: The statement to optimize.
+			///p The optimized statement will be assigned to this value.
+			static void Optimize(Statement& statement, OptimizeInfo& info);
+
+			/// Optimizes statements.
+			///A statements: The statements to optimize.
+			///p The optimized statements will be assigned to this value.
+			static void Optimize(Statements& statements, OptimizeInfo& info);
+
+			/// Optimizes a node.
 			///A node: The node to optimize.
 			///p The optimized node will be assigned to this value.
-			static void Optimize(Statement& statement, OptimizeInfo& info);
+			static void Optimize(Pointer<Node>& node, OptimizeInfo& info);
 
 		protected:
 			FileInfo file;
@@ -97,9 +117,9 @@ namespace Melon {
 
 			static CompiledNode CompileAssignment(const Expression& assignable, const Expression& value, CompileInfo& info, const FileInfo& file);
 
-			static bool IsEmpty(const Statement& node);
-
 			static RootNode* Root();
+
+			static bool IsEmpty(const Statement& statement);
 
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 

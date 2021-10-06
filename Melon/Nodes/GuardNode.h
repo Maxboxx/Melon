@@ -9,13 +9,13 @@ namespace Melon {
 		class GuardNode : public StatementNode {
 		public:
 			/// The guard condition.
-			Expression cond;
+			Condition cond;
 
 			/// The content of the {else} block.
-			Statement else_;
+			Statements else_;
 
 			/// The statements after the {guard} statement.
-			Statement continue_;
+			Statements continue_;
 
 			/// The final break of the {else} block.
 			Statement end;

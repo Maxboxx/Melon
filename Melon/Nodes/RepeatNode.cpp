@@ -158,7 +158,7 @@ NodePtr RepeatNode::Optimize(OptimizeInfo& info) {
 		}
 
 		Pointer<DoNode> dn = new DoNode(content->scope, content->file);
-		dn->nodes = content;
+		dn->statements = content;
 		info.optimized = true;
 		return dn;
 	}

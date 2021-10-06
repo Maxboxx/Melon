@@ -6,10 +6,10 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for statements.
-		class StatementsNode final : public StatementNode {
+		class StatementsNode final : public Node {
 		public:
 			/// The list of statements.
-			Boxx::List<StatementNode*> statements;
+			Boxx::List<Statement> statements;
 
 			StatementsNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~StatementsNode();
@@ -18,7 +18,7 @@ namespace Melon {
 
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual StatementNode* Optimize(OptimizeInfo& info) override;
+			virtual Statements Optimize(OptimizeInfo& info);
 			virtual CompiledNode Compile(CompileInfo& info) override;
 
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
@@ -27,7 +27,7 @@ namespace Melon {
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
 		private:
-			static bool HasSpaceAround(StatementNode* const node);
+			static bool HasSpaceAround(const Statement& statement);
 		};
 	}
 }
