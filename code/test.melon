@@ -1,10 +1,22 @@
 
-int: i = 0
+struct A
+	int: i
+	
+	function init(int: i)
+		self.i = i
+	end
+	
+	function int: f()
+		return self.i
+	end
+end
 
-i = if i == 0 ->
-	1
-elseif i > 4 ->
-	2
-else ->
-	3
+function int: f()
+	return 3
+end
+
+A: x = A(7)
+
+int: a = f()
+int: b = x.f()
 

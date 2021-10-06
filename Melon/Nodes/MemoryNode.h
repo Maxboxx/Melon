@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for a memory location.
-		class MemoryNode : public Node {
+		class MemoryNode : public ExpressionNode {
 		public:
 			/// The memory location.
 			Kiwi::MemoryLocation mem;

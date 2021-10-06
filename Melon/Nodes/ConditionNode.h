@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
@@ -8,10 +8,13 @@ namespace Melon {
 		class AssignNode;
 
 		/// Node for conditional expressions.
-		class ConditionNode : public Node {
+		class ConditionNode : public ExpressionNode {
 		public:
-			/// The condition.
-			NodePtr cond;
+			/// The expression for a regular condition.
+			Expression cond;
+
+			/// The assign node for assign conditions.
+			Pointer<AssignNode> assign;
 
 			ConditionNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ConditionNode();
@@ -21,13 +24,13 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual NodePtr Optimize(OptimizeInfo& info) override;
+			virtual Expression Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
-			CompiledNode CompileAssignCondition(Boxx::Pointer<AssignNode>& assign, CompileInfo& info);
+			CompiledNode CompileAssignCondition(CompileInfo& info);
 		};
 	}
 }

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// A node that contains a type.
-		class TypeNode : public Node {
+		class TypeNode : public ExpressionNode {
 		public:
-			/// The absolute type.
+			/// The absolute type name.
 			Symbols::NameList type;
 
 			TypeNode(const Symbols::NameList& type);

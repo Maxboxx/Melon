@@ -36,6 +36,10 @@ namespace Melon {
 	namespace Nodes {
 		class ExpressionNode;
 		class StatementNode;
+		class RootNode;
+
+		typedef Boxx::Pointer<ExpressionNode> Expression;
+		typedef Boxx::Pointer<StatementNode>   Statement;
 
 		/// Base for all nodes.
 		class Node {
@@ -71,46 +75,31 @@ namespace Melon {
 			/// Converts the node to melon.
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const = 0;
 
-			/// Checks if the node is a specific type of node.
-			///M
-			template <class T>
-			bool Is() {
-			///M
-				return dynamic_cast<T*>(this) != nullptr;
-			}
-
-			/// Casts the node to a specific node type.
-			///p Returns {nullptr} if the cast fails.
-			///M
-			template <class T>
-			T* Cast() {
-			///M
-				return dynamic_cast<T*>(this);
-			}
-
 			/// Gets the file info of the node.
 			FileInfo File() const;
 
 			/// Optimizes the node.
 			///A node: The node to optimize.
 			///p The optimized node will be assigned to this value.
-			static void Optimize(ExpressionNode*& node, OptimizeInfo& info);
+			static void Optimize(Expression& expression, OptimizeInfo& info);
 
 			/// Optimizes the node.
 			///A node: The node to optimize.
 			///p The optimized node will be assigned to this value.
-			static void Optimize(StatementNode*& node, OptimizeInfo& info);
+			static void Optimize(Statement& statement, OptimizeInfo& info);
 
 		protected:
 			FileInfo file;
 
 			static Symbols::NameList CombineSideEffects(const Symbols::NameList& scope1, const Symbols::NameList& scope2);
 
-			static ScanResult ScanAssignment(ExpressionNode* const assignable, ExpressionNode* const value, ScanInfoStack& info, const FileInfo& file);
+			static ScanResult ScanAssignment(const Expression& assignable, const Expression& value, ScanInfoStack& info, const FileInfo& file);
 
-			static CompiledNode CompileAssignment(ExpressionNode* const assignable, ExpressionNode* const value, CompileInfo& info, const FileInfo& file);
+			static CompiledNode CompileAssignment(const Expression& assignable, const Expression& value, CompileInfo& info, const FileInfo& file);
 
-			static bool IsEmpty(Node* const node);
+			static bool IsEmpty(const Statement& node);
+
+			static RootNode* Root();
 
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
@@ -118,7 +107,11 @@ namespace Melon {
 			void Include(const Symbols::NameList& name, Parsing::ParsingInfo& info);
 
 		private:
+			friend MelonCompiler;
+
 			Boxx::Optional<Symbols::NameList> sideEffectScope;
+
+			static RootNode* _root;
 		};
 
 		///H Errors

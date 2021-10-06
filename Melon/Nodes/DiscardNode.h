@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for the discard keyword.
-		class DiscardNode : public Node {
+		class DiscardNode : public ExpressionNode {
 		public:
 			DiscardNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DiscardNode();

@@ -25,23 +25,20 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CallNode::CallNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+CallNode::CallNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
 
 }
 
 CallNode::~CallNode() {
-
+	
 }
 
 Name CallNode::GetFuncName() const {
-	if (Pointer<NameNode> nn = node.Cast<NameNode>()) {
+	if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 		return nn->name;
 	}
-	else if (Pointer<DotNode> nn = node.Cast<DotNode>()) {
+	else if (const Pointer<DotNode>& nn = node.Cast<DotNode>()) {
 		return nn->name;
-	}
-	else if (isMethod) {
-		return methodName;
 	}
 	else {
 		return Name();
@@ -67,7 +64,7 @@ Optional<List<TypeSymbol*>> CallNode::GetTemplateTypes(const Optional<List<NameL
 Optional<List<TypeSymbol*>> CallNode::GetArgumentTypes() const {
 	List<TypeSymbol*> argTypes;
 
-	for (NodePtr node : args) {
+	for (const Expression& node : args) {
 		if (TypeSymbol* const type = node->Type()) {
 			argTypes.Add(type);
 		}
@@ -79,25 +76,10 @@ Optional<List<TypeSymbol*>> CallNode::GetArgumentTypes() const {
 	return argTypes;
 }
 
-FunctionSymbol* CallNode::GetOperatorFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
-	if (TypeSymbol* const t = node->Type()) {
-		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name::Call, node->file)) {
-			if (templateTypes) {
-				return f->FindMethodOverload(*templateTypes, argTypes, node->file);
-			}
-			else {
-				return f->FindMethodOverload(argTypes, node->file);
-			}
-		}
-	}
-
-	return nullptr;
-}
-
 FunctionSymbol* CallNode::GetInitFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
-	if (TypeSymbol* const t = node->GetSymbol()->Cast<TypeSymbol>()) {
-		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name::Init, node->file)) {
-			return f->FindMethodOverload(argTypes, node->file);
+	if (TypeSymbol* const t = node->Symbol<TypeSymbol>()) {
+		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name::Init, node->File())) {
+			return f->FindMethodOverload(argTypes, node->File());
 		}
 	}
 
@@ -105,21 +87,21 @@ FunctionSymbol* CallNode::GetInitFunction(const Optional<List<TypeSymbol*>>& tem
 }
 
 FunctionSymbol* CallNode::GetStaticOrPlainFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
-	if (FunctionSymbol* const f = node->GetSymbol()->Cast<FunctionSymbol>()) {
+	if (FunctionSymbol* const f = node->Symbol<FunctionSymbol>()) {
 		if (f->Parent()->Is<TypeSymbol>()) {
 			if (templateTypes) {
-				return f->FindStaticOverload(*templateTypes, argTypes, node->file);
+				return f->FindStaticOverload(*templateTypes, argTypes, node->File());
 			}
 			else {
-				return f->FindStaticOverload(argTypes, node->file);
+				return f->FindStaticOverload(argTypes, node->File());
 			}
 		}
 		else {
 			if (templateTypes) {
-				return f->FindOverload(*templateTypes, argTypes, node->file);
+				return f->FindOverload(*templateTypes, argTypes, node->File());
 			}
 			else {
-				return f->FindOverload(argTypes, node->file);
+				return f->FindOverload(argTypes, node->File());
 			}
 		}
 	}
@@ -129,12 +111,12 @@ FunctionSymbol* CallNode::GetStaticOrPlainFunction(const Optional<List<TypeSymbo
 
 FunctionSymbol* CallNode::GetMethod(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (TypeSymbol* const t = node->Type()) {
-		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(methodName, node->file)) {
+		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(methodName, node->File())) {
 			if (templateTypes) {
-				return f->FindMethodOverload(*templateTypes, argTypes, node->file);
+				return f->FindMethodOverload(*templateTypes, argTypes, node->File());
 			}
 			else {
-				return f->FindMethodOverload(argTypes, node->file);
+				return f->FindMethodOverload(argTypes, node->File());
 			}
 		}
 	}
@@ -143,13 +125,10 @@ FunctionSymbol* CallNode::GetMethod(const Optional<List<TypeSymbol*>>& templateT
 }
 
 FunctionSymbol* CallNode::GetFunctionSymbol(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
-	if (op) {
-		return GetOperatorFunction(templateTypes, argTypes);
-	}
-	else if (IsInit()) {
+	if (IsInit()) {
 		return GetInitFunction(templateTypes, argTypes);
 	}
-	else if (!isMethod) {
+	else if (!IsMethod()) {
 		return GetStaticOrPlainFunction(templateTypes, argTypes);
 	}
 	else {
@@ -185,7 +164,7 @@ FunctionSymbol* CallNode::GetFunc() const {
 	// Handle error
 	List<String> argStr;
 
-	if (FunctionSymbol* const f = node->GetSymbol()->Cast<FunctionSymbol>()) {
+	if (FunctionSymbol* const f = node->Symbol<FunctionSymbol>()) {
 		for (TypeSymbol* const type : argTypes) {
 			argStr.Add(type->AbsoluteName().ToString());
 		}
@@ -197,14 +176,14 @@ FunctionSymbol* CallNode::GetFunc() const {
 }
 
 bool CallNode::IsSelfPassing() const {
-	return isMethod;
+	return IsMethod();
 }
 
 bool CallNode::IsInit() const {
-	Symbol* const s = node->GetSymbol();
+	Symbols::Symbol* const s = node->Symbol();
 
 	if (s->Is<StructSymbol>()) {
-		return !isMethod;
+		return !IsMethod();
 	}
 
 	return false;
@@ -302,12 +281,12 @@ UInt CallNode::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 				if (!hasNoRef && !args[i]->IsImmediate() && !args[i].Is<ObjectInitNode>()) {
 					bool error = true;
 
-					if (Pointer<CallNode> call = args[i].Cast<CallNode>()) {
+					if (const Pointer<CallNode>& call = args[i].Cast<CallNode>()) {
 						error = !call->IsInit();
 					}
 
 					if (error) {
-						ErrorLog::Warning(LogMessage("warning.noref", callInfo.func->ToString(), i), args[i]->file);
+						ErrorLog::Warning(LogMessage("warning.noref", callInfo.func->ToString(), i), args[i]->File());
 					}
 				}
 
@@ -317,7 +296,7 @@ UInt CallNode::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 				callInfo.memoryOffsets[callInfo.memoryOffsets.Size() - 1] = tempSize;
 			}
 			else if (attributes[i] != ArgAttributes::Ref) {
-				ErrorLog::Warning(LogMessage("warning.ref"), args[i]->file);
+				ErrorLog::Warning(LogMessage("warning.ref"), args[i]->File());
 			}
 		}
 	}
@@ -371,7 +350,7 @@ void CallNode::SetupStackFrame(CallInfo& callInfo, CompileInfo& info) {
 	}
 }
 
-NodePtr CallNode::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
+Expression CallNode::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	// Create self for constructor
 	if (index == -1) {
 		Pointer<MemoryNode> sn = new MemoryNode(callInfo.stackIndex);
@@ -391,7 +370,7 @@ NodePtr CallNode::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymb
 			sn->type = type->AbsoluteName();
 
 			UInt top = info.stack.top;
-			callInfo.cn.AddInstructions(CompileAssignment(sn, args[index], info, args[index]->file).instructions);
+			callInfo.cn.AddInstructions(CompileAssignment(sn, args[index], info, args[index]->File()).instructions);
 			info.stack.top = top;
 
 			return new RefNode(sn);
@@ -404,7 +383,7 @@ NodePtr CallNode::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymb
 }
 
 void CallNode::CompileRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
-	NodePtr refArg = GetRefArgument(callInfo, info, type, index);
+	Expression refArg = GetRefArgument(callInfo, info, type, index);
 
 	UInt regIndex = info.index;
 	callInfo.stackIndex -= info.stack.ptrSize;
@@ -445,7 +424,7 @@ void CallNode::CompileRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSym
 void CallNode::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	callInfo.stackIndex -= type->Size();
 
-	Pointer<MemoryNode> mn = new MemoryNode(callInfo.stackIndex);
+	MemoryNode* const mn = new MemoryNode(callInfo.stackIndex);
 	mn->type = type->AbsoluteName();
 
 	info.stack.Push(type->Size());
@@ -453,13 +432,15 @@ void CallNode::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSy
 	UInt frame = info.stack.frame;
 
 	// Compile method argument
-	if (isMethod) {
-		callInfo.cn.AddInstructions(CompileAssignment(mn, this->args[index - 1], info, node->file).instructions);
+	if (IsMethod()) {
+		callInfo.cn.AddInstructions(CompileAssignment(mn, this->args[index - 1], info, node->File()).instructions);
 	}
 	// Compile regular argument
 	else {
-		callInfo.cn.AddInstructions(CompileAssignment(mn, this->args[index], info, node->file).instructions);
+		callInfo.cn.AddInstructions(CompileAssignment(mn, this->args[index], info, node->File()).instructions);
 	}
+
+	delete mn;
 
 	info.stack.PopExpr(frame, callInfo.cn);
 }
@@ -547,7 +528,7 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 void CallNode::IncludeScan(ParsingInfo& info) {
 	node->IncludeScan(info);
 
-	for (NodePtr arg : args) {
+	for (const Expression& arg : args) {
 		arg->IncludeScan(info);
 	}
 
@@ -557,7 +538,7 @@ void CallNode::IncludeScan(ParsingInfo& info) {
 ScanResult CallNode::Scan(ScanInfoStack& info) {
 	// Scan called node
 	ScanResult result = node->Scan(info);
-	result.SelfUseCheck(info, node->file);
+	result.SelfUseCheck(info, node->File());
 
 	// Scan function
 	FunctionSymbol* const func = GetFunc();
@@ -576,15 +557,15 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 
 		if (arg && (arg->attributes & VariableAttributes::Ref) == VariableAttributes::None) {
 			if (attributes[i] == ArgAttributes::NoRef) {
-				ErrorLog::Error(LogMessage("error.scan.use.noref"), args[i]->file);
+				ErrorLog::Error(LogMessage("error.scan.use.noref"), args[i]->File());
 			}
 			else if (attributes[i] == ArgAttributes::Ref) {
-				ErrorLog::Error(LogMessage("error.scan.use.ref"), args[i]->file);
+				ErrorLog::Error(LogMessage("error.scan.use.ref"), args[i]->File());
 			}
 		}
 
 		ScanResult r = args[i]->Scan(info);
-		r.SelfUseCheck(info, args[i]->file);
+		r.SelfUseCheck(info, args[i]->File());
 		result |= r;
 	}
 
@@ -598,7 +579,7 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 		
 		if (i < 0) continue;
 
-		NodePtr arg;
+		Expression arg;
 
 		if (IsSelfPassing()) {
 			if (i == 0) {
@@ -613,18 +594,18 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 		}
 
 		if (type) {
-			ScanAssignment(new TypeNode(type->AbsoluteName()), arg, info, node->file);
+			ScanAssignment(new TypeNode(type->AbsoluteName()), arg, info, node->File());
 		}
 	}
 
 	return result;
 }
 
-NodePtr CallNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr n = node->Optimize(info)) node = n;
+Expression CallNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(node, info);
 
-	for (NodePtr& arg : args) {
-		if (NodePtr node = arg->Optimize(info)) arg = node;
+	for (Expression& arg : args) {
+		Node::Optimize(arg, info);
 	}
 
 	return nullptr;
@@ -632,11 +613,6 @@ NodePtr CallNode::Optimize(OptimizeInfo& info) {
 
 StringBuilder CallNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = node->ToMelon(indent);
-
-	if (isMethod) {
-		sb += ":";
-		sb += methodName.ToSimpleString();
-	}
 
 	sb += "(";
 

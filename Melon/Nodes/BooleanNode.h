@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for a boolean value.
-		class BooleanNode : public Node {
+		class BooleanNode : public ExpressionNode {
 		public:
 			/// The boolean value.
 			bool boolean = false;

@@ -16,7 +16,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DoNode::DoNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+DoNode::DoNode(Symbols::Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
 
 }
 
@@ -25,7 +25,7 @@ DoNode::~DoNode() {
 }
 
 UInt DoNode::GetSize() const {
-	return nodes->GetSize();
+	return statements->GetSize();
 }
 
 bool DoNode::IsScope() const {
@@ -40,7 +40,7 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 	UInt top = info.stack.top;
 
 	// Compile content
-	for (const OptimizerInstruction& in : nodes->Compile(info).instructions) {
+	for (const OptimizerInstruction& in : statements->Compile(info).instructions) {
 		// Check for custom instructions
 		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
@@ -85,24 +85,24 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 }
 
 void DoNode::IncludeScan(ParsingInfo& info) {
-	nodes->IncludeScan(info);
+	statements->IncludeScan(info);
 }
 
 ScanResult DoNode::Scan(ScanInfoStack& info) {
 	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
-	ScanResult result = nodes->Scan(info);
+	ScanResult result = statements->Scan(info);
 	info->scopeInfo.ExitScope();
 	return result;
 }
 
 NameList DoNode::FindSideEffectScope(const bool assign) {
-	return nodes->GetSideEffectScope(assign);
+	return statements->GetSideEffectScope(assign);
 }
 
-NodePtr DoNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr node = nodes->Optimize(info)) nodes = node;
+Statement DoNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(statements, info);
 
-	if (IsEmpty(nodes) || !nodes->HasSideEffects()) {
+	if (IsEmpty(statements) || !statements->HasSideEffects()) {
 		info.optimized = true;
 		return new EmptyNode();
 	}
@@ -113,7 +113,7 @@ NodePtr DoNode::Optimize(OptimizeInfo& info) {
 StringBuilder DoNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "do\n";
 	sb += String('\t').Repeat(indent + 1);
-	sb += nodes->ToMelon(indent + 1);
+	sb += statements->ToMelon(indent + 1);
 	sb += "\n";
 	sb += String('\t').Repeat(indent);
 	sb += "end";

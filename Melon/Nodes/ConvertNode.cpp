@@ -14,7 +14,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-ConvertNode::ConvertNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+ConvertNode::ConvertNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
 
 }
 
@@ -38,16 +38,16 @@ CompiledNode ConvertNode::Compile(CompileInfo& info) {
 	TypeSymbol* const convertType = Type();
 
 	// Check if the node needs conversion
-	if (node->Type() == convertType) {
-		return node->Compile(info);
+	if (expression->Type() == convertType) {
+		return expression->Compile(info);
 	}
 
 	// Find conversion operator
-	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(node->Type(), convertType, file);
+	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(expression->Type(), convertType, file);
 	if (!convert) return CompiledNode();
 
-	List<NodePtr> nodes;
-	nodes.Add(node);
+	List<Expression> nodes;
+	nodes.Add(expression);
 
 	// Compile symbol node
 	if (convert->symbolNode) {
@@ -57,43 +57,40 @@ CompiledNode ConvertNode::Compile(CompileInfo& info) {
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->args = nodes;
-		cn->isMethod = false;
 
 		Pointer<TypeNode> tn = new TypeNode(convert->ParentType()->AbsoluteName());
 		cn->node = tn;
-		cn->op = true;
 
 		return cn->Compile(info);
 	}
 }
 
 void ConvertNode::IncludeScan(ParsingInfo& info) {
-	node->IncludeScan(info);
+	expression->IncludeScan(info);
 }
 
 ScanResult ConvertNode::Scan(ScanInfoStack& info) {
 	TypeSymbol* const convertType = Type();
 
-	if (node->Type() == convertType) return node->Scan(info);
+	if (expression->Type() == convertType) return expression->Scan(info);
 
-	SymbolTable::FindExplicitConversion(node->Type(), convertType, file);
+	SymbolTable::FindExplicitConversion(expression->Type(), convertType, file);
 
-	return node->Scan(info);
+	return expression->Scan(info);
 }
 
 NameList ConvertNode::FindSideEffectScope(const bool assign) {
 	// TODO: Check operator function
-	return node->GetSideEffectScope(assign);
+	return expression->GetSideEffectScope(assign);
 }
 
-NodePtr ConvertNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr n = node->Optimize(info)) node = n;
-
+Expression ConvertNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(expression, info);
 	return nullptr;
 }
 
 StringBuilder ConvertNode::ToMelon(const UInt indent) const {
-	StringBuilder sb = node->ToMelon(indent);
+	StringBuilder sb = expression->ToMelon(indent);
 
 	if (isExplicit) {
 		sb += " as ";

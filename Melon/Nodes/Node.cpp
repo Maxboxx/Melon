@@ -4,6 +4,7 @@
 #include "StatementNode.h"
 #include "ConvertNode.h"
 #include "EmptyNode.h"
+#include "RootNode.h"
 
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
@@ -23,6 +24,8 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
+RootNode* Node::_root = nullptr;
+
 Node::Node(Symbol* const scope, const FileInfo& file) : scope(scope) {
 	this->file = file;
 }
@@ -37,10 +40,6 @@ void Node::IncludeScan(ParsingInfo& info) {
 
 ScanResult Node::Scan(ScanInfoStack& info) {
 	return ScanResult();
-}
-
-Node* Node::Optimize(OptimizeInfo& info) {
-	return nullptr;
 }
 
 UInt Node::GetSize() const {
@@ -79,16 +78,14 @@ FileInfo Node::File() const {
 	return file;
 }
 
-void Node::Optimize(ExpressionNode*& node, OptimizeInfo& info) {
-	if (ExpressionNode* const n = node->Optimize(info)) {
-		delete node;
+void Node::Optimize(Expression& node, OptimizeInfo& info) {
+	if (Expression n = node->Optimize(info)) {
 		node = n;
 	}
 }
 
-void Node::Optimize(StatementNode*& node, OptimizeInfo& info) {
-	if (StatementNode* const n = node->Optimize(info)) {
-		delete node;
+void Node::Optimize(Statement& node, OptimizeInfo& info) {
+	if (Statement n = node->Optimize(info)) {
 		node = n;
 	}
 }
@@ -113,7 +110,7 @@ NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2
 	}
 }
 
-ScanResult Node::ScanAssignment(ExpressionNode* const assignable, ExpressionNode* const value, ScanInfoStack& info, const FileInfo& file) {
+ScanResult Node::ScanAssignment(const Expression& assignable, const Expression& value, ScanInfoStack& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
@@ -126,7 +123,7 @@ ScanResult Node::ScanAssignment(ExpressionNode* const assignable, ExpressionNode
 	return ScanResult();
 }
 
-CompiledNode Node::CompileAssignment(ExpressionNode* const assignable, ExpressionNode* const value, CompileInfo& info, const FileInfo& file) {
+CompiledNode Node::CompileAssignment(const Expression& assignable, const Expression& value, CompileInfo& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
@@ -139,15 +136,14 @@ CompiledNode Node::CompileAssignment(ExpressionNode* const assignable, Expressio
 	}
 
 	if (assign) {
-		List<ExpressionNode*> nodes;
+		List<Expression> nodes;
 		nodes.Add(assignable);
 
 		ConvertNode* cn = new ConvertNode(value->scope, value->file);
 		cn->isExplicit = false;
-		cn->node = value;
+		cn->expression = value;
 		cn->type = assign->ArgumentType(0)->AbsoluteName();
 		nodes.Add(cn);
-		delete cn;
 
 		return assign->symbolNode->Compile(nodes, info);
 	}
@@ -155,8 +151,8 @@ CompiledNode Node::CompileAssignment(ExpressionNode* const assignable, Expressio
 	return CompiledNode();
 }
 
-bool Node::IsEmpty(Node* const node) {
-	if (EmptyNode* const empty = node->Cast<EmptyNode>()) {
+bool Node::IsEmpty(const Statement& node) {
+	if (const Pointer<EmptyNode>& empty = node.Cast<EmptyNode>()) {
 		return !empty->node;
 	}
 
@@ -190,4 +186,8 @@ void Node::Include(const Symbols::NameList& name, ParsingInfo& info) {
 
 		if (done) break;
 	}
+}
+
+RootNode* Node::Root() {
+	return _root;
 }

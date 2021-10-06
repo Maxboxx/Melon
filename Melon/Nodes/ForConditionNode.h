@@ -1,29 +1,31 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
+		class AssignNode;
+
 		/// Node for the conditions of for loops.
-		class ForConditionNode : public Node {
+		class ForConditionNode : public ExpressionNode {
 		public:
 			/// The init of the for condition.
-			NodePtr loopInit;
+			Statement loopInit;
 
 			/// An optional condition operator.
 			///p The condition is automatically compared to the loop variable if this is set.
 			Boxx::Optional<Symbols::Name> conditionOperator;
 
 			/// The loop condition.
-			NodePtr loopCondition;
+			Expression loopCondition;
 
 			/// An optional step operator.
 			///p The loop variable is automatically updated if this is set.
 			Boxx::Optional<Symbols::Name> stepOperator;
 
 			/// The loop step.
-			NodePtr loopStep;
+			Statement loopStep;
 
 			ForConditionNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ForConditionNode();
@@ -32,7 +34,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual NodePtr Optimize(OptimizeInfo& info) override;
+			virtual Expression Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

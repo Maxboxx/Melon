@@ -3,6 +3,8 @@
 #include "MemoryNode.h"
 #include "TypeNode.h"
 
+#include "Melon/Symbols/VariableSymbol.h"
+
 using namespace Boxx;
 using namespace Kiwi;
 
@@ -12,7 +14,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DefaultNode::DefaultNode(Symbol* const scope, const FileInfo& file) : BinaryOperatorNode(scope, Name::Default, file) {
+DefaultNode::DefaultNode(Symbols::Symbol* const scope, const FileInfo& file) : BinaryOperatorNode(scope, Name::Default, file) {
 
 }
 
@@ -21,12 +23,12 @@ DefaultNode::~DefaultNode() {
 }
 
 TypeSymbol* DefaultNode::Type() const {
-	TypeSymbol* const type1 = node1->Type();
+	TypeSymbol* const type1 = operand1->Type();
 
 	// TODO: error?
 	if (type1 == nullptr) return nullptr;
 
-	Symbol* const value = type1->Contains(Name::Value);
+	Symbols::Symbol* const value = type1->Contains(Name::Value);
 
 	// TODO: error?
 	if (value == nullptr) return nullptr;
@@ -36,7 +38,7 @@ TypeSymbol* DefaultNode::Type() const {
 	// TODO: error?
 	if (type == nullptr) return nullptr;
 
-	if (node2->Type()->ImplicitConversionTo(type)) {
+	if (SymbolTable::FindImplicitConversion(operand2->Type(), type, file)) {
 		ErrorLog::Error(LogMessage("error.type.default"), file);
 	}
 
@@ -53,7 +55,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
 	// Compile the optional value
-	CompiledNode c1 = node1->Compile(info);
+	CompiledNode c1 = operand1->Compile(info);
 	cn.AddInstructions(c1.instructions);
 	cn.size = c1.size - 1;
 
@@ -71,7 +73,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 
 	Pointer<MemoryNode> sn2 = new MemoryNode(c1.argument.mem);
 	sn2->mem.offset++;
-	sn2->type = node1->Type()->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
+	sn2->type = operand1->Type()->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
 
 	// Assign the optional value to the result
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
@@ -85,7 +87,7 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.instructions[eqIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
 
 	// Assign default value to result
-	cn.AddInstructions(CompileAssignment(sn1, node2, info, file).instructions);
+	cn.AddInstructions(CompileAssignment(sn1, operand2, info, file).instructions);
 
 	// Add label to the end
 	cn.instructions.Add(Instruction::Label(info.label));
@@ -97,23 +99,23 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 }
 
 void DefaultNode::IncludeScan(ParsingInfo& info) {
-	node1->IncludeScan(info);
-	node2->IncludeScan(info);
+	operand1->IncludeScan(info);
+	operand2->IncludeScan(info);
 }
 
 ScanResult DefaultNode::Scan(ScanInfoStack& info) {
 	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 
-	ScanResult result1 = node1->Scan(info);
-	result1.SelfUseCheck(info, node1->file);
+	ScanResult result1 = operand1->Scan(info);
+	result1.SelfUseCheck(info, operand1->File());
 
-	ScanResult result2 = node2->Scan(info);
-	result2.SelfUseCheck(info, node2->file);
+	ScanResult result2 = operand2->Scan(info);
+	result2.SelfUseCheck(info, operand2->File());
 
 	TypeSymbol* const type = Type();
 	
 	if (type) {
-		ScanAssignment(new TypeNode(type->AbsoluteName()), node2, info, file);
+		ScanAssignment(new TypeNode(type->AbsoluteName()), operand2, info, file);
 	}
 
 	info->scopeInfo = scopeInfo;
@@ -122,19 +124,18 @@ ScanResult DefaultNode::Scan(ScanInfoStack& info) {
 }
 
 NameList DefaultNode::FindSideEffectScope(const bool assign) {
-	return CombineSideEffects(node1->GetSideEffectScope(assign), node2->GetSideEffectScope(assign));
+	return CombineSideEffects(operand1->GetSideEffectScope(assign), operand2->GetSideEffectScope(assign));
 }
 
-NodePtr DefaultNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr node = node1->Optimize(info)) node1 = node;
-	if (NodePtr node = node2->Optimize(info)) node2 = node;
-
+Expression DefaultNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(operand1, info);
+	Node::Optimize(operand2, info);
 	return nullptr;
 }
 
 StringBuilder DefaultNode::ToMelon(const UInt indent) const {
-	StringBuilder sb = node1->ToMelon(indent);
+	StringBuilder sb = operand1->ToMelon(indent);
 	sb += " ?? ";
-	sb += node2->ToMelon(indent);
+	sb += operand2->ToMelon(indent);
 	return sb;
 }

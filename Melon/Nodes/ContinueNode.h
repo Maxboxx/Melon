@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "StatementNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for continuing loops.
-		class ContinueNode : public Node {
+		class ContinueNode : public StatementNode {
 		public:
 			/// The number of loops to continue.
 			Boxx::UInt loops;

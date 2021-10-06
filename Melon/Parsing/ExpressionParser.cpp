@@ -89,8 +89,8 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 				for (UInt i = 0; i < operators.Size();) {
 					if (Precedence(operators[i].key) == highestPrecedence) {
 						Pointer<BinaryOperatorNode> op = operators[i].value;
-						op->node1 = nodes[i];
-						op->node2 = nodes[i + 1];
+						op->operand1 = nodes[i];
+						op->operand2 = nodes[i + 1];
 						nodes[i] = op;
 
 						operators.RemoveAt(i);

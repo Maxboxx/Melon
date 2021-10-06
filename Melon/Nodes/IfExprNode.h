@@ -1,18 +1,18 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for {if} expressions.
-		class IfExprNode : public Node {
+		class IfExprNode : public ExpressionNode {
 		public:
 			/// The nodes for each segment of the {if} expression.
-			Boxx::List<NodePtr> nodes;
+			Boxx::List<Expression> nodes;
 
 			/// The conditions for the segments.
-			Boxx::List<NodePtr> conditions;
+			Boxx::List<Expression> conditions;
 
 			IfExprNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~IfExprNode();
@@ -21,7 +21,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual NodePtr Optimize(OptimizeInfo& info) override;
+			virtual Expression Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

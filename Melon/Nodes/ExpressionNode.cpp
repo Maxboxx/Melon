@@ -6,7 +6,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-ExpressionNode::ExpressionNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+ExpressionNode::ExpressionNode(Symbols::Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
@@ -28,10 +28,14 @@ List<TypeSymbol*> ExpressionNode::Types() const {
 	return List<TypeSymbol*>(0);
 }
 
-Symbol* ExpressionNode::Symbol() const {
+Expression ExpressionNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
-} 
+}
 
-ExpressionNode* ExpressionNode::Optimize(OptimizeInfo& info) {
-	return nullptr;
+bool ExpressionNode::IsImmediate() const {
+	return false;
+}
+
+Long ExpressionNode::GetImmediate() const {
+	return 0;
 }

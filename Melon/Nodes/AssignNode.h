@@ -10,10 +10,10 @@ namespace Melon {
 		class AssignNode : public StatementNode {
 		public:
 			/// The assignable values to assign values to.
-			Boxx::List<ExpressionNode*> assignableValues;
+			Boxx::List<Expression> assignableValues;
 
 			/// The values to assign.
-			Boxx::List<ExpressionNode*> values;
+			Boxx::List<Expression> values;
 
 			/// The types of the assignable values.
 			Boxx::List<Symbols::NameList> types;
@@ -27,7 +27,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
-			virtual StatementNode* Optimize(OptimizeInfo& info) override;
+			virtual Statement Optimize(OptimizeInfo& info) override;
 
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign) override;
@@ -35,9 +35,9 @@ namespace Melon {
 		private:
 			struct Value {
 				Symbols::TypeSymbol* type;
-				ExpressionNode* value;
+				Expression value;
 
-				Value(TypeSymbol* const type, ExpressionNode* const value) {
+				Value(TypeSymbol* const type, const Expression& value) {
 					this->type  = type;
 					this->value = value;
 				}

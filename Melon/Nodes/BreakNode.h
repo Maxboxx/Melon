@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Node.h"
+#include "StatementNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for breaking or aborting loops.
-		class BreakNode : public Node {
+		class BreakNode : public StatementNode {
 		public:
-			///[item] {true} if {break}.
-			///[item] {false} if {abort}.
+			///[item] {true} for {break}.
+			///[item] {false} for {abort}.
 			bool isBreak;
 
 			/// The number of loops to break.

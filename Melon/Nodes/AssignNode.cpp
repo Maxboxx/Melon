@@ -31,22 +31,17 @@ AssignNode::AssignNode(Symbol* const scope, const FileInfo& file) : StatementNod
 }
 
 AssignNode::~AssignNode() {
-
+	
 }
 
 UInt AssignNode::GetSize() const {
 	UInt size = 0;
 
 	for (UInt i = 0; i < assignableValues.Size(); i++) {
-		if (types[i] == NameList::Discard || assignableValues[i]->Is<DiscardNode>()) continue;
+		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardNode>()) continue;
 
 		if (VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>()) {
-			if ((var->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
-				size += StackPtr::ptrSize;
-			}
-			else {
-				size += var->Type()->Size();
-			}
+			size += var->Size();
 		}
 	}
 
@@ -54,20 +49,17 @@ UInt AssignNode::GetSize() const {
 }
 
 void AssignNode::IncludeScan(ParsingInfo& info) {
-	// Check type names for includes
 	for (const NameList& type : types) {
-		if (type == NameList::Discard) continue;
-
-		Include(type, info);
+		if (type != NameList::Discard) {
+			Include(type, info);
+		}
 	}
 
-	// Scan assignable values
-	for (ExpressionNode* const value : assignableValues) {
+	for (const Expression& value : assignableValues) {
 		value->IncludeScan(info);
 	}
 
-	// Scan values
-	for (ExpressionNode* const value : values) {
+	for (const Expression& value : values) {
 		value->IncludeScan(info);
 	}
 }
@@ -75,8 +67,7 @@ void AssignNode::IncludeScan(ParsingInfo& info) {
 ScanResult AssignNode::Scan(ScanInfoStack& info) {
 	ScanResult result = ScanAssignableValues(info);
 
-	// Scan values
-	for (ExpressionNode* const node : this->values) {
+	for (const Expression& node : values) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->File());
 		result |= r;
@@ -92,20 +83,13 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 	// Calculate size and stack index of variables
 	for (UInt i = 0; i < assignableValues.Size(); i++) {
-		if (types[i] == NameList::Discard || assignableValues[i]->Is<DiscardNode>()) continue;
+		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardNode>()) continue;
+
 		VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>();
 
-		// Ref variables
-		if (var->HasAttribute(VariableAttributes::Ref)) {
-			varSize += info.stack.ptrSize;
-			info.stack.Push(info.stack.ptrSize);
-		}
-		// Regular variables
-		else {
-			UInt size = assignableValues[i]->Type()->Size();
-			varSize += size;
-			info.stack.Push(size);
-		}
+		const UInt size = var->Size();
+		varSize += size;
+		info.stack.Push(size);
 
 		var->stackIndex = info.stack.top;
 	}
@@ -121,13 +105,11 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 
 		// Assign values normally
 		if (i < this->values.Size()) {
-			// Regular assignment
-			if (!assignableValues[i]->Is<DiscardNode>()) {
+			if (!assignableValues[i].Is<DiscardNode>()) {
 				info.important = true;
 				c.AddInstructions(CompileAssignment(assignableValues[i], values[i].value, info, assignableValues[i]->File()).instructions);
 				info.important = false;
 			}
-			// Discard assignment
 			else {
 				// TODO: Cast to type
 				c.AddInstructions(values[i].value->Compile(info).instructions);
@@ -147,7 +129,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 			}
 		}
 		// Assign extra return values
-		else if (!assignableValues[i]->Is<DiscardNode>()) {
+		else if (!assignableValues[i].Is<DiscardNode>()) {
 			MemoryNode* const mn = new MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
 			mn->type = values[i].type->AbsoluteName();
 
@@ -184,12 +166,12 @@ NameList AssignNode::FindSideEffectScope(const bool assign) {
 	return list;
 }
 
-StatementNode* AssignNode::Optimize(OptimizeInfo& info) {
+Statement AssignNode::Optimize(OptimizeInfo& info) {
 	bool removed = false;
 
 	// Check if removal of values can be done
-	for (ExpressionNode*& value : assignableValues) {
-		if (value->Is<DiscardNode>()) {
+	for (Expression& value : assignableValues) {
+		if (value.Is<DiscardNode>()) {
 			removed = true;
 			continue;
 		}
@@ -197,7 +179,6 @@ StatementNode* AssignNode::Optimize(OptimizeInfo& info) {
 		// Remove unused vars
 		if (VariableSymbol* const sym = value->Symbol<VariableSymbol>()) {
 			if (!value->HasSideEffects(scope->AbsoluteName()) && !info.usedVariables.Contains(sym)) {
-				delete value;
 				value = new DiscardNode(value->scope, value->File());
 				info.optimized = true;
 				removed = true;
@@ -210,14 +191,14 @@ StatementNode* AssignNode::Optimize(OptimizeInfo& info) {
 		i--;
 
 		// Remove values without side effects
-		if (assignableValues[i]->Is<DiscardNode>() && !values[i]->HasSideEffects(scope->AbsoluteName())) {
+		if (assignableValues[i].Is<DiscardNode>() && !values[i]->HasSideEffects(scope->AbsoluteName())) {
 			// Check if the value is part of a multiple return
 			if (i >= values.Size() - 1) {
 				bool isDiscard = true;
 				
 				// Only remove value if multiple return is not affected
 				for (UInt u = i + 1; u < assignableValues.Size(); u++) {
-					if (!assignableValues[u]->Is<DiscardNode>()) {
+					if (!assignableValues[u].Is<DiscardNode>()) {
 						isDiscard = false;
 						break;
 					}
@@ -235,7 +216,7 @@ StatementNode* AssignNode::Optimize(OptimizeInfo& info) {
 	if (removed) for (UInt i = assignableValues.Size(); i > 0;) {
 		i--;
 
-		if (assignableValues[i]->Is<DiscardNode>()) {
+		if (assignableValues[i].Is<DiscardNode>()) {
 			// Remove multiple return vars
 			if (i >= values.Size()) {
 				if (i == assignableValues.Size() - 1 || !values.Last()) {
@@ -258,12 +239,12 @@ StatementNode* AssignNode::Optimize(OptimizeInfo& info) {
 	}
 
 	// Optimize assignable values
-	for (ExpressionNode*& value : assignableValues) {
+	for (Expression& value : assignableValues) {
 		Node::Optimize(value, info);
 	}
 
 	// Optimize values
-	for (ExpressionNode*& value : values) {
+	for (Expression& value : values) {
 		Node::Optimize(value, info);
 	}
 
@@ -327,9 +308,9 @@ ScanResult AssignNode::ScanAssignableValues(ScanInfoStack& info) {
 
 	// Scan all vars
 	for (UInt i = 0; i < assignableValues.Size(); i++) {
-		if (assignableValues[i]->Is<DiscardNode>()) continue;
+		if (assignableValues[i].Is<DiscardNode>()) continue;
 
-		ExpressionNode* const node = assignableValues[i];
+		Expression node = assignableValues[i];
 		node->Type();
 
 		// Find variable
@@ -347,7 +328,7 @@ ScanResult AssignNode::ScanAssignableValues(ScanInfoStack& info) {
 
 		// Check for completed init
 		if (info->init) {
-			if (NameNode* const nn = node->Cast<NameNode>()) {
+			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
 				if (nn->name == Name::Self) {
 					info->type->CompleteInit();
 					result.selfUsed = false;

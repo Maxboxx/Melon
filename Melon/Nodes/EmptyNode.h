@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Node.h"
+#include "StatementNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// A node that does not get compiled.
-		class EmptyNode : public Node {
+		class EmptyNode : public StatementNode {
 		public:
-			/// This node does not get compiled but the {ToMelon()} method is called for it.
-			NodePtr node;
+			/// This statement does not get compiled but the {ToMelon()} method is called for it.
+			Statement statement = nullptr;
 
 			EmptyNode();
 			~EmptyNode();

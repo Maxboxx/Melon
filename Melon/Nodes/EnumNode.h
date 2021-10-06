@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Node.h"
+#include "StatementNode.h"
 
 namespace Melon {
 	namespace Symbols {
@@ -10,7 +10,7 @@ namespace Melon {
 	///N Melon::Nodes
 	namespace Nodes {
 		/// Node for enums.
-		class EnumNode : public Node {
+		class EnumNode : public StatementNode {
 		public:
 			/// The name of the enum.
 			Symbols::Name name;

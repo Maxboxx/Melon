@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for an integer.
-		class IntegerNode : public Node {
+		class IntegerNode : public ExpressionNode {
 		public:
 			/// The integer value.
 			Boxx::Long number;

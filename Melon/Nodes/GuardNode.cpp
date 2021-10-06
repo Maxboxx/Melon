@@ -3,6 +3,7 @@
 #include "BreakNode.h"
 #include "ContinueNode.h"
 #include "ReturnNode.h"
+#include "ExpressionNode.h"
 #include "StatementsNode.h"
 #include "DoNode.h"
 #include "EmptyNode.h"
@@ -25,7 +26,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-GuardNode::GuardNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+GuardNode::GuardNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
 
 }
 
@@ -128,7 +129,7 @@ void GuardNode::IncludeScan(ParsingInfo& info) {
 
 ScanResult GuardNode::Scan(ScanInfoStack& info) {
 	ScanResult result = cond->Scan(info);
-	result.SelfUseCheck(info, cond->file);
+	result.SelfUseCheck(info, cond->File());
 	
 	// Setup scope info
 	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
@@ -142,7 +143,7 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 	// Scan else
 	if (else_) {
 		ScanResult r = else_->Scan(info);
-		r.SelfUseCheck(info, else_->file);
+		r.SelfUseCheck(info, else_->File());
 		result |= r;
 	}
 
@@ -167,7 +168,7 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 
 	// Scan continue
 	ScanResult r = continue_->Scan(info);
-	r.SelfUseCheck(info, continue_->file);
+	r.SelfUseCheck(info, continue_->File());
 	result |= r;
 
 	info->scopeInfo = ScopeInfo::BranchIntersection(elseScope, info->scopeInfo);
@@ -184,15 +185,13 @@ NameList GuardNode::FindSideEffectScope(const bool assign) {
 	}
 }
 
-NodePtr GuardNode::Optimize(OptimizeInfo& info) {
+Statement GuardNode::Optimize(OptimizeInfo& info) {
 	// Optimize nodes
-	if (NodePtr node = cond->Optimize(info)) cond = node;
+	Node::Optimize(cond, info);
 
-	if (else_) {
-		if (NodePtr node = else_->Optimize(info)) else_ = node;
-	}
+	if (else_) Node::Optimize(else_, info);
 
-	if (NodePtr node = continue_->Optimize(info)) continue_ = node;
+	Node::Optimize(continue_, info);
 
 	// Optimize condition for immediate values
 	if (cond->IsImmediate()) {
@@ -209,7 +208,7 @@ NodePtr GuardNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-NodePtr GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
+Statement GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
 	// Optimize else segment if it exists
 	if (else_) {
 		if (IsEmpty(else_) || !else_->HasSideEffects()) {
@@ -217,8 +216,8 @@ NodePtr GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
 			return new EmptyNode();
 		}
 
-		Pointer<DoNode> dn = new DoNode(else_->scope, else_->file);
-		dn->nodes = else_;
+		Pointer<DoNode> dn = new DoNode(else_->scope, else_->File());
+		dn->statements = else_;
 		info.optimized = true;
 		return dn;
 	}
@@ -229,7 +228,7 @@ NodePtr GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
 	}
 }
 
-NodePtr GuardNode::OptimizeTrueCondition(OptimizeInfo& info) {
+Statement GuardNode::OptimizeTrueCondition(OptimizeInfo& info) {
 	info.optimized = true;
 
 	if (IsEmpty(continue_) || !continue_->HasSideEffects()) {

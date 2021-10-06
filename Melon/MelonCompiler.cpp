@@ -223,8 +223,8 @@ ParsingInfo MelonCompiler::ParseProject(const CompilerOptions& options) {
 	if (ErrorLog::HasError()) {
 		throw CompileError();
 	}
-
-	Node::root = &info.root;
+	
+	Node::_root = &info.root;
 
 	ErrorLog::AddMarker();
 	info.root.IncludeScan(info);

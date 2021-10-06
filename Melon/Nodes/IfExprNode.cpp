@@ -14,7 +14,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-IfExprNode::IfExprNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+IfExprNode::IfExprNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
 	
 }
 
@@ -71,7 +71,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 		UInt jump = cn.instructions.Size() - 1;
 
 		// Compile value assignment
-		cn.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
+		cn.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->File()).instructions);
 
 		info.stack.PopExpr(frame, cn);
 
@@ -86,7 +86,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	info.stack = stack;
 
 	// Compile else
-	cn.AddInstructions(CompileAssignment(sn, nodes.Last(), info, nodes.Last()->file).instructions);
+	cn.AddInstructions(CompileAssignment(sn, nodes.Last(), info, nodes.Last()->File()).instructions);
 
 	info.stack.PopExpr(frame, cn);
 
@@ -103,11 +103,11 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 }
 
 void IfExprNode::IncludeScan(ParsingInfo& info) {
-	for (NodePtr node : nodes) {
+	for (const Expression& node : nodes) {
 		node->IncludeScan(info);
 	}
 
-	for (NodePtr condition : conditions) {
+	for (const Expression& condition : conditions) {
 		condition->IncludeScan(info);
 	}
 }
@@ -120,20 +120,20 @@ ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 	Pointer<TypeNode> type = t ? new TypeNode(t->AbsoluteName()) : nullptr;
 
 	// Scan values
-	for (const NodePtr& node : nodes) {
+	for (const Expression& node : nodes) {
 		ScanResult r = node->Scan(info);
-		r.SelfUseCheck(info, node->file);
+		r.SelfUseCheck(info, node->File());
 		result |= r;
 
 		if (type) {
-			ScanAssignment(type, node, info, node->file);
+			ScanAssignment(type, node, info, node->File());
 		}
 	}
 
 	// Scan conditions
-	for (const NodePtr& node : conditions) {
+	for (const Expression& node : conditions) {
 		ScanResult r = node->Scan(info);
-		r.SelfUseCheck(info, node->file);
+		r.SelfUseCheck(info, node->File());
 		result |= r;
 	}
 
@@ -148,21 +148,21 @@ NameList IfExprNode::FindSideEffectScope(const bool assign) {
 		list = CombineSideEffects(list, conditions[i]->GetSideEffectScope(assign));
 	}
 
-	for (NodePtr& node : nodes) {
+	for (const Expression& node : nodes) {
 		list = CombineSideEffects(list, node->GetSideEffectScope(assign));
 	}
 
 	return list;
 }
 
-NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
+Expression IfExprNode::Optimize(OptimizeInfo& info) {
 	// Optimize nodes and conditions
-	for (NodePtr& node : nodes) {
-		if (NodePtr n = node->Optimize(info)) node = n;
+	for (Expression& node : nodes) {
+		Node::Optimize(node, info);
 	}
 
-	for (NodePtr& cond : conditions) {
-		if (NodePtr n = cond->Optimize(info)) cond = n;
+	for (Expression& cond : conditions) {
+		Node::Optimize(cond, info);
 	}
 
 	// TODO: save type before this
@@ -189,9 +189,9 @@ NodePtr IfExprNode::Optimize(OptimizeInfo& info) {
 	// Replcae if expression with a value if there is only one segment
 	if (nodes.Size() == 1) {
 		if (nodes[0]->Type() != Type()) {
-			Pointer<ConvertNode> cn = new ConvertNode(nodes[0]->scope, nodes[0]->file);
+			Pointer<ConvertNode> cn = new ConvertNode(nodes[0]->scope, nodes[0]->File());
 			cn->isExplicit = true;
-			cn->node = nodes[0];
+			cn->expression = nodes[0];
 			cn->type = Type()->AbsoluteName();
 			info.optimized = true;
 			return cn;

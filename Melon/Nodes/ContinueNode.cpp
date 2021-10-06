@@ -8,8 +8,8 @@ using namespace Melon::Symbols;
 
 String ContinueNode::continueInstName = "continue";
 
-ContinueNode::ContinueNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
-
+ContinueNode::ContinueNode(Symbols::Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+	
 }
 
 ContinueNode::~ContinueNode() {

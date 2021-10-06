@@ -15,7 +15,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Optimizing;
 
-FunctionNode::FunctionNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+FunctionNode::FunctionNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
 
 }
 
@@ -89,7 +89,7 @@ void FunctionNode::IncludeScan(ParsingInfo& info) {
 	for (UInt i = 0; i < sym->arguments.Size(); i++) {
 		if (VariableSymbol* const arg = sym->Argument(i)) {
 			if (!arg->Type()) {
-				Node::root->AddTemplateSpecialization(arg->type, arg->Parent()->AbsoluteName(), arg->File());
+				Root()->AddTemplateSpecialization(arg->type, arg->Parent()->AbsoluteName(), arg->File());
 			}
 		}
 	}
@@ -147,9 +147,8 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-NodePtr FunctionNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr n = node->Optimize(info)) node = n;
-
+Statement FunctionNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(node, info);
 	return nullptr;
 }
 

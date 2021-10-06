@@ -24,7 +24,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-LoopNode::LoopNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+LoopNode::LoopNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
 
 }
 
@@ -370,12 +370,12 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 
 	// Compile loop step
 	if (cond->stepOperator) {
-		Pointer<AssignNode> assign = new AssignNode(cond->loopStep->scope, cond->loopStep->file);
-		assign->vars.Add(cond->loopInit.Cast<AssignNode>()->vars[0]);
+		Pointer<AssignNode> assign = new AssignNode(cond->loopStep->scope, cond->loopStep->File());
+		assign->assignableValues.Add(cond->loopInit.Cast<AssignNode>()->assignableValues[0]);
 
-		Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(cond->loopStep->scope, *cond->stepOperator, cond->loopStep->file);
-		add->node1 = assign->vars[0];
-		add->node2 = cond->loopStep;
+		Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(cond->loopStep->scope, *cond->stepOperator, cond->loopStep->File());
+		add->operand1 = assign->assignableValues[0];
+		add->operand2 = cond->loopStep;
 
 		assign->values.Add(add);
 		compiled.AddInstructions(assign->Compile(info).instructions);
@@ -392,9 +392,9 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 
 	// Compile condition
 	if (cond->conditionOperator) {
-		Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(cond->loopCondition->scope, Name::Less, cond->loopCondition->file);
-		comp->node1 = cond->loopInit.Cast<AssignNode>()->vars[0];
-		comp->node2 = cond->loopCondition;
+		Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(cond->loopCondition->scope, Name::Less, cond->loopCondition->File());
+		comp->operand1 = cond->loopInit.Cast<AssignNode>()->assignableValues[0];
+		comp->operand2 = cond->loopCondition;
 		compiledCond = comp->Compile(info);
 	}
 	else {
@@ -711,13 +711,13 @@ ScanResult LoopNode::Scan(ScanInfoStack& info) {
 		// Scan condition
 		if (segments[i].type != LoopType::None) {
 			ScanResult r = segments[i].condition->Scan(info);
-			r.SelfUseCheck(info, segments[i].condition->file);
+			r.SelfUseCheck(info, segments[i].condition->File());
 			result |= r;
 		}
 
 		// Scan body
 		ScanResult r = segments[i].statements->Scan(info);
-		r.SelfUseCheck(info, segments[i].statements->file);
+		r.SelfUseCheck(info, segments[i].statements->File());
 		result |= r;
 
 		// Update break counts for loops
@@ -763,13 +763,13 @@ NameList LoopNode::FindSideEffectScope(const bool assign) {
 	return list;
 }
 
-NodePtr LoopNode::Optimize(OptimizeInfo& info) {
+Statement LoopNode::Optimize(OptimizeInfo& info) {
 	for (LoopSegment& segment : segments) {
 		if (segment.condition) {
-			if (NodePtr node = segment.condition->Optimize(info)) segment.condition = node;
+			Node::Optimize(segment.condition, info);
 		}
 
-		if (NodePtr node = segment.statements->Optimize(info)) segment.statements = node;
+		Node::Optimize(segment.statements, info);
 	}
 
 	// Removes also or else path
@@ -850,8 +850,8 @@ NodePtr LoopNode::Optimize(OptimizeInfo& info) {
 	// Convert plain segment to do node
 	else if (segments.Size() == 1 && (!segments[0].condition || segments[0].condition->IsImmediate())) {
 		if (!segments[0].IsLoop()) {
-			Pointer<DoNode> dn = new DoNode(segments[0].statements->scope, segments[0].statements->file);
-			dn->nodes = segments[0].statements;
+			Pointer<DoNode> dn = new DoNode(segments[0].statements->scope, segments[0].statements->File());
+			dn->statements = segments[0].statements;
 			info.optimized = true;
 			return dn;
 		}

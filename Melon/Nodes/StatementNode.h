@@ -16,7 +16,7 @@ namespace Melon {
 
 			/// Optimizes the statement.
 			///R A new optimized node or {nullptr} if the node was not optimized.
-			virtual StatementNode* Optimize(OptimizeInfo& info);
+			virtual Statement Optimize(OptimizeInfo& info);
 		};
 	}
 }

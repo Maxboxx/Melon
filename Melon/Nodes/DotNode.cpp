@@ -22,7 +22,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-DotNode::DotNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+DotNode::DotNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
 
 }
 
@@ -31,7 +31,7 @@ DotNode::~DotNode() {
 }
 
 TypeSymbol* DotNode::Type() const {
-	Symbol* const s = GetSymbol();
+	Symbols::Symbol* const s = Symbol();
 
 	if (s == nullptr) return nullptr;
 
@@ -45,8 +45,8 @@ TypeSymbol* DotNode::Type() const {
 	return nullptr;
 }
 
-Symbol* DotNode::GetSymbol() const {
-	Symbol* const nodeSym = node->GetSymbol();
+Symbol* DotNode::Symbol() const {
+	Symbols::Symbol* const nodeSym = expression->Symbol();
 
 	if (nodeSym == nullptr) {
 		return nullptr;
@@ -63,14 +63,14 @@ Symbol* DotNode::GetSymbol() const {
 	// Get other symbols
 	else {
 		if (name.types) {
-			if (Symbol* const s = nodeSym->Contains(Name(name.name))) {
+			if (Symbols::Symbol* const s = nodeSym->Contains(Name(name.name))) {
 				if (s->Is<FunctionSymbol>()) {
 					return s;
 				}
 			}
 
 			if (!nodeSym->Contains(name)) {
-				Node::root->AddTemplateSpecialization(nodeSym->AbsoluteName().Add(name), scope->AbsoluteName(), file);
+				Root()->AddTemplateSpecialization(nodeSym->AbsoluteName().Add(name), scope->AbsoluteName(), file);
 			}
 		}
 
@@ -81,9 +81,9 @@ Symbol* DotNode::GetSymbol() const {
 }
 
 CompiledNode DotNode::Compile(CompileInfo& info) {
-	TypeSymbol* const type = node->Type();
+	TypeSymbol* const type = expression->Type();
 
-	CompiledNode c = node->Compile(info);
+	CompiledNode c = expression->Compile(info);
 
 	// Compile enum value
 	if (type->Is<EnumSymbol>()) {
@@ -107,9 +107,9 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 }
 
 void DotNode::IncludeScan(ParsingInfo& info) {
-	node->IncludeScan(info);
+	expression->IncludeScan(info);
 	
-	Symbol* const s = node->GetSymbol();
+	Symbols::Symbol* const s = expression->Symbol();
 
 	if (!name.types) {
 		if (s->Is<NamespaceSymbol>() && !s->Contains(name)) {
@@ -123,13 +123,13 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	info->assign = false;
 
 	// Scan node
-	ScanResult result = node->Scan(info);
+	ScanResult result = expression->Scan(info);
 	info->assign = assign;
 
-	TypeSymbol* const type = node->Type();
+	TypeSymbol* const type = expression->Type();
 	if (type == nullptr) return result;
 
-	Symbol* sym = type->Find(Name(name.name), file);
+	Symbols::Symbol* sym = type->Find(Name(name.name), file);
 	if (sym == nullptr) return result;
 
 	if (!sym->Is<FunctionSymbol>()) {
@@ -145,7 +145,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 
 	// Scan assignment
 	if (info->assign) {
-		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
+		if (const Pointer<NameNode>& nn = expression.Cast<NameNode>()) {
 			if (nn->name == Name::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 					if (info->scopeInfo.WillContinue()) {
@@ -163,7 +163,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	}
 	// Scan init
 	else if (info->init) {
-		if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
+		if (const Pointer<NameNode>& nn = expression.Cast<NameNode>()) {
 			if (nn->name == Name::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 					if (!var->isAssigned) {
@@ -184,20 +184,19 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 
 NameList DotNode::FindSideEffectScope(const bool assign) {
 	if (assign) {
-		return node->GetSideEffectScope(assign);
+		return expression->GetSideEffectScope(assign);
 	}
 
 	return scope->AbsoluteName();
 }
 
-NodePtr DotNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr n = node->Optimize(info)) node = n;
-
+Expression DotNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(expression, info);
 	return nullptr;
 }
 
 StringBuilder DotNode::ToMelon(const UInt indent) const {
-	StringBuilder sb = node->ToMelon(indent);
+	StringBuilder sb = expression->ToMelon(indent);
 	sb += ".";
 	sb += name.ToSimpleString();
 	return sb;

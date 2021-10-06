@@ -6,6 +6,10 @@
 #include "ArgumentNode.h"
 #include "TypeNode.h"
 
+#include "Melon/Nodes/AssignNode.h"
+
+#include "Melon/Symbols/VariableSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -17,12 +21,12 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-ConditionNode::ConditionNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+ConditionNode::ConditionNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
 
 }
 
 ConditionNode::~ConditionNode() {
-
+	
 }
 
 TypeSymbol* ConditionNode::Type() const {
@@ -30,10 +34,10 @@ TypeSymbol* ConditionNode::Type() const {
 }
 
 UInt ConditionNode::GetSize() const {
-	return cond.Is<AssignNode>() ? cond->GetSize() : 0;
+	return assign ? assign->GetSize() : 0;
 }
 
-CompiledNode ConditionNode::CompileAssignCondition(Pointer<AssignNode>& assign, CompileInfo& info) {
+CompiledNode ConditionNode::CompileAssignCondition(CompileInfo& info) {
 	TypeSymbol* const type = assign->values[0]->Type();
 
 	// Compile value
@@ -45,7 +49,7 @@ CompiledNode ConditionNode::CompileAssignCondition(Pointer<AssignNode>& assign, 
 	Pointer<ArgumentNode> value = new ArgumentNode(argCopy);
 	value->type = type->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
 
-	NodePtr tempValue = assign->values[0];
+	Expression tempValue = assign->values[0];
 	assign->values[0] = value;
 
 	// Stores the condition result in a register
@@ -77,14 +81,14 @@ CompiledNode ConditionNode::CompileAssignCondition(Pointer<AssignNode>& assign, 
 
 CompiledNode ConditionNode::Compile(CompileInfo& info) {
 	// Compile assign condition
-	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
-		return CompileAssignCondition(assign, info);
+	if (assign) {
+		return CompileAssignCondition(info);
 	}
 	// Compile regular condition
 	else {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
 		convert->isExplicit = true;
-		convert->node = cond;
+		convert->expression = cond;
 		convert->type = NameList::Bool;
 		return convert->Compile(info);
 	}
@@ -96,18 +100,17 @@ void ConditionNode::IncludeScan(ParsingInfo& info) {
 
 ScanResult ConditionNode::Scan(ScanInfoStack& info) {
 	// Scan assignment condition
-	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
-		NodePtr tempValue = assign->values[0];
+	if (assign) {
+		Expression tempValue = assign->values[0];
 		
 		TypeSymbol* const type = assign->values[0]->Type();
 
 		// Check if the types match
 		if (type && type->AbsoluteName()[0].name == Name::Optional.name) {
-			Pointer<TypeNode> value = new TypeNode(type->Find(Name::Value, file)->Type()->AbsoluteName());
-			assign->values[0] = value;
+			assign->values[0] = new TypeNode(type->Find(Name::Value, file)->Type()->AbsoluteName());
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.type.conditional_assign", tempValue->Type()->ToString()), tempValue->file);
+			ErrorLog::Error(LogMessage("error.type.conditional_assign", tempValue->Type()->ToString()), tempValue->File());
 		}
 
 		ScanResult result = cond->Scan(info) | tempValue->Scan(info);
@@ -118,7 +121,7 @@ ScanResult ConditionNode::Scan(ScanInfoStack& info) {
 	else {
 		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
 		convert->isExplicit = true;
-		convert->node = cond;
+		convert->expression = cond;
 		convert->type = NameList::Bool;
 		return convert->Scan(info);
 	}
@@ -128,28 +131,29 @@ NameList ConditionNode::FindSideEffectScope(const bool assign) {
 	return cond->GetSideEffectScope(assign);
 }
 
-NodePtr ConditionNode::Optimize(OptimizeInfo& info) {
+Expression ConditionNode::Optimize(OptimizeInfo& info) {
 	// Optimize assignment
-	if (Pointer<AssignNode> assign = cond.Cast<AssignNode>()) {
-		NodePtr value = assign->values[0];
+	if (assign) {
+		Expression value = assign->values[0];
 
-		if (NodePtr node = cond->Optimize(info)) {
-			if (node.Is<AssignNode>()) {
-				cond = node;
+		if (Statement node = assign->Optimize(info)) {
+			if (const Pointer<AssignNode>& a = node.Cast<AssignNode>()) {
+				assign = a;
 			}
 			else {
+				assign = nullptr;
 				cond = value;
 			}
 		}
 	}
 	// Optimize regular condition
-	else if (NodePtr node = cond->Optimize(info)) {
-		cond = node;
+	else {
+		Node::Optimize(cond, info);
 	}
 
 	// Replace condition with immediate value
 	if (cond->IsImmediate()) {
-		Pointer<BooleanNode> bn = new BooleanNode(cond->file);
+		Pointer<BooleanNode> bn = new BooleanNode(cond->File());
 		bn->boolean = cond->GetImmediate() != 0;
 		info.optimized = true;
 		return bn;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 #include "Melon/Symbols/FunctionSymbol.h"
 
@@ -8,7 +8,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for calling a value.
-		class CallNode : public Node {
+		class CallNode : public ExpressionNode {
 		public:
 			/// Argument attributes for the call.
 			enum class ArgAttributes : Boxx::UByte {
@@ -23,29 +23,22 @@ namespace Melon {
 			};
 
 			/// The node to call.
-			NodePtr node;
+			Expression node;
 
 			/// The arguments for the call.
-			Boxx::List<NodePtr> args;
+			Boxx::List<Expression> args;
 
 			/// The argument attributes for the call.
 			Boxx::List<ArgAttributes> attributes;
-
-			/// {true} if the call is a method call.
-			bool isMethod = false;
-
-			/// The method name.
-			///p Only used if {isMethod} is {true}.
-			Symbols::Name methodName;
-
-			/// {true} if the call is a call operator.
-			bool op = false;
 
 			/// {true} if the call is a call statement.
 			bool isStatement = false;
 
 			CallNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~CallNode();
+
+			/// {true} if the call is a method call.
+			bool IsMethod() const;
 
 			/// Finds the function to call.
 			Symbols::FunctionSymbol* GetFunc() const;
@@ -61,7 +54,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual NodePtr Optimize(OptimizeInfo& info) override;
+			virtual Expression Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
@@ -71,7 +64,6 @@ namespace Melon {
 			Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>> GetArgumentTypes() const;
 
 			Symbols::FunctionSymbol* GetFunctionSymbol(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
-			Symbols::FunctionSymbol* GetOperatorFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetInitFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetStaticOrPlainFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetMethod(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
@@ -101,7 +93,7 @@ namespace Melon {
 			void SetupStackFrame(CallInfo& callInfo, CompileInfo& info);
 			void CompileArguments(CallInfo& callInfo, CompileInfo& info);
 			void CompileRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			NodePtr GetRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
+			Expression GetRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
 			void CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
 			void CompileCall(CallInfo& callInfo, CompileInfo& info);
 		};

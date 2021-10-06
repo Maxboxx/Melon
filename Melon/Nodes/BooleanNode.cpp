@@ -3,10 +3,11 @@
 using namespace Boxx;
 using namespace Kiwi;
 
+using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-BooleanNode::BooleanNode(const FileInfo& file) : Node(nullptr, file) {
+BooleanNode::BooleanNode(const FileInfo& file) : ExpressionNode(nullptr, file) {
 
 }
 
@@ -28,7 +29,7 @@ Long BooleanNode::GetImmediate() const {
 
 CompiledNode BooleanNode::Compile(CompileInfo& info) {
 	CompiledNode node;
-	node.argument = Argument(boolean ? 1 : 0);
+	node.argument = Argument(GetImmediate());
 	node.size = 1;
 	return node;
 }

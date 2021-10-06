@@ -20,7 +20,9 @@ namespace Melon {
 			virtual Boxx::List<Symbols::TypeSymbol*> Types() const;
 
 			/// Returns the symbol of the expression or {nullptr} if the expression does not have a symbol.
-			virtual Symbol* Symbol() const;
+			virtual Symbols::Symbol* Symbol() const {
+				return nullptr;
+			}
 
 			/// Returns the specific symbol type of the expression.
 			///p Returns {nullptr} if the symbol is not of the specified type.
@@ -28,7 +30,7 @@ namespace Melon {
 			template <class T>
 			T* Symbol() const {
 			///M
-				if (Symbol* const sym = Symbol()) {
+				if (Symbols::Symbol* const sym = Symbol()) {
 					return sym->Cast<T>();
 				}
 
@@ -37,7 +39,13 @@ namespace Melon {
 
 			/// Optimizes the expression.
 			///R A new optimized node or {nullptr} if the node was not optimized.
-			virtual ExpressionNode* Optimize(OptimizeInfo& info);
+			virtual Expression Optimize(OptimizeInfo& info);
+
+			/// True if the expression is an immediate Kiwi value.
+			virtual bool IsImmediate() const;
+
+			/// Returns the immediate value of the expression.
+			virtual Boxx::Long GetImmediate() const;
 		};
 	}
 }

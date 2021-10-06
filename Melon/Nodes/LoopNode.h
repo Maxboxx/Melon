@@ -2,13 +2,13 @@
 
 #include "Boxx/Tuple.h"
 
-#include "Node.h"
+#include "StatementNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for loop structures.
-		class LoopNode : public Node {
+		class LoopNode : public StatementNode {
 		public:
 			/// The different loop types.
 			enum class LoopType : Boxx::UByte {
@@ -34,10 +34,10 @@ namespace Melon {
 				bool also;
 
 				/// The condition of the segment.
-				NodePtr condition;
+				Expression condition;
 
 				/// The body of the segment.
-				NodePtr statements;
+				Statement statements;
 
 				~LoopSegment() {}
 
@@ -84,7 +84,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual NodePtr Optimize(OptimizeInfo& info) override;
+			virtual Statement Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

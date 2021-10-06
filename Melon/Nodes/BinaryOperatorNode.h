@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for binary operators.
-		class BinaryOperatorNode : public Node {
+		class BinaryOperatorNode : public ExpressionNode {
 		public:
 			/// The operands.
-			NodePtr node1, node2;
+			Expression operand1, operand2;
 
 			/// The operator.
 			Symbols::Name op;
@@ -26,7 +26,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual NodePtr Optimize(OptimizeInfo& info) override;
+			virtual Expression Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
