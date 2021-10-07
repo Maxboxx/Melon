@@ -39,6 +39,20 @@ namespace Melon {
 				/// The body of the segment.
 				Statement statements;
 
+				/// The init node of a for segment.
+				Pointer<AssignNode> init;
+
+				/// The step node of a for segment.
+				Pointer<Node> step;
+
+				/// An optional condition operator used in for segments.
+				///p The condition is automatically compared to the loop variable if this is set.
+				Boxx::Optional<Symbols::Name> conditionOperator;
+
+				/// An optional step operator used in for segments.
+				///p The loop variable is automatically updated if this is set.
+				Boxx::Optional<Symbols::Name> stepOperator;
+
 				~LoopSegment() {}
 
 				/// Checks if the segment is a loop.
@@ -96,6 +110,7 @@ namespace Melon {
 			void ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
 			void ScanPostContents(LoopScanInfo& loopInfo, ScanInfo& info, const LoopSegment& segment) const;
 			void ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const;
+			ScanResult ScanForCondition(const LoopSegment& segment, ScanInfoStack& info);
 
 			void GetNextSegments(const Boxx::UInt segment, Boxx::UInt& nextTrue, Boxx::UInt& nextFalse) const;
 			bool IsSegmentLast(const Boxx::UInt segment) const;

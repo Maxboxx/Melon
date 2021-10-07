@@ -36,14 +36,23 @@ UInt LoopNode::GetSize() const {
 	UInt size = 0;
 	
 	for (UInt i = 0; i < segments.Size(); i++) {
-		UInt segSize = segments[i].statements->GetSize();
+		const LoopSegment& segment = segments[i];
+		UInt segSize = segment.statements->GetSize();
 
-		if (segments[i].type != LoopType::None) {
-			segSize += segments[i].condition->GetSize();
+		if (segment.type != LoopType::None) {
+			segSize += segment.condition->GetSize();
 
-			if (segments[i].type == LoopType::While) {
-				if (!IsSegmentLast(i)) {
-					segSize++;
+			switch (segment.type) {
+				case LoopType::While: {
+					if (!IsSegmentLast(i)) {
+						segSize++;
+					}
+
+					break;
+				}
+
+				case LoopType::For: {
+					segSize += segment.init->GetSize() + segment.step->GetSize();
 				}
 			}
 		}
@@ -354,9 +363,10 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 
 	const UInt frame = info.stack.frame;
 
+	const LoopSegment& segment = segments[segmentInfo.index];
+
 	// Compile for init
-	Pointer<ForConditionNode> cond = segments[segmentInfo.index].condition.Cast<ForConditionNode>();
-	compiled.AddInstructions(cond->loopInit->Compile(info).instructions);
+	compiled.AddInstructions(segment.init->Compile(info).instructions);
 
 	// Add jump to loop condition
 	Instruction jmp = Instruction(InstructionType::Jmp);
@@ -369,19 +379,19 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 	compiled.instructions.Add(lbl1);
 
 	// Compile loop step
-	if (cond->stepOperator) {
-		Pointer<AssignNode> assign = new AssignNode(cond->loopStep->scope, cond->loopStep->File());
-		assign->assignableValues.Add(cond->loopInit.Cast<AssignNode>()->assignableValues[0]);
+	if (segment.stepOperator) {
+		Pointer<AssignNode> assign = new AssignNode(segment.step->scope, segment.step->File());
+		assign->assignableValues.Add(segment.init->assignableValues[0]);
 
-		Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(cond->loopStep->scope, *cond->stepOperator, cond->loopStep->File());
+		Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(segment.step->scope, *segment.stepOperator, segment.step->File());
 		add->operand1 = assign->assignableValues[0];
-		add->operand2 = cond->loopStep;
+		add->operand2 = segment.step;
 
 		assign->values.Add(add);
 		compiled.AddInstructions(assign->Compile(info).instructions);
 	}
 	else {
-		compiled.AddInstructions(cond->loopStep->Compile(info).instructions);
+		compiled.AddInstructions(segment.step->Compile(info).instructions);
 	}
 
 	// Add condition label
@@ -391,14 +401,14 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 	CompiledNode compiledCond;
 
 	// Compile condition
-	if (cond->conditionOperator) {
-		Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(cond->loopCondition->scope, Name::Less, cond->loopCondition->File());
-		comp->operand1 = cond->loopInit.Cast<AssignNode>()->assignableValues[0];
-		comp->operand2 = cond->loopCondition;
+	if (segment.conditionOperator) {
+		Pointer<BinaryOperatorNode> comp = new BinaryOperatorNode(segment.condition->scope, *segment.conditionOperator, segment.condition->File());
+		comp->operand1 = segment.init->assignableValues[0];
+		comp->operand2 = segment.condition->cond;
 		compiledCond = comp->Compile(info);
 	}
 	else {
-		compiledCond = cond->loopCondition->Compile(info);
+		compiledCond = segment.condition->Compile(info);
 	}
 
 	info.stack.PopExpr(frame, compiledCond);
@@ -556,6 +566,11 @@ void LoopNode::IncludeScan(ParsingInfo& info) {
 	for (LoopSegment& segment : segments) {
 		if (segment.type != LoopType::None) {
 			segment.condition->IncludeScan(info);
+
+			if (segment.type == LoopType::For) {
+				segment.init->IncludeScan(info);
+				segment.step->IncludeScan(info);
+			}
 		}
 
 		segment.statements->IncludeScan(info);
@@ -694,6 +709,52 @@ void LoopNode::ScanCleanup(LoopScanInfo& loopInfo, ScanInfo& info) const {
 	info.scopeInfo = loopInfo.scope;
 }
 
+ScanResult LoopNode::ScanForCondition(const LoopSegment& segment, ScanInfoStack& info) {
+	ScanResult result = segment.init->Scan(info);
+	result.SelfUseCheck(info, segment.init->File());
+
+	// Scan condition without condition operator
+	if (!segment.conditionOperator) {
+		ScanResult r = segment.condition->Scan(info);
+		r.SelfUseCheck(info, segment.condition->File());
+		result |= r;
+	}
+	// Scan condition with condition operator
+	else {
+		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(segment.condition->scope, *segment.conditionOperator, segment.condition->File());
+		op->operand1 = segment.init->assignableValues[0];
+		op->operand2 = segment.condition->cond;
+
+		ScanResult r = op->Scan(info);
+		r.SelfUseCheck(info, segment.condition->File());
+		result |= r;
+	}
+
+	// Scan step without step operator
+	if (!segment.stepOperator) {
+		ScanResult r = segment.step->Scan(info);
+		r.SelfUseCheck(info, segment.step->File());
+		result |= r;
+	}
+	// Scan step with step operator
+	else {
+		Pointer<AssignNode> assign = new AssignNode(segment.step->scope, segment.step->File());
+		assign->assignableValues.Add(segment.init->assignableValues[0]);
+
+		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(segment.step->scope, *segment.stepOperator, segment.step->File());
+		op->operand1 = assign->assignableValues[0];
+		op->operand2 = segment.step;
+
+		assign->values.Add(op);
+
+		ScanResult r = assign->Scan(info);
+		r.SelfUseCheck(info, segment.step->File());
+		result |= r;
+	}
+
+	return result;
+}
+
 ScanResult LoopNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
 
@@ -704,13 +765,15 @@ ScanResult LoopNode::Scan(ScanInfoStack& info) {
 
 	// Setup segments
 	for (UInt i = 0; i < segments.Size(); i++) {
+		const LoopSegment& segment = segments[i];
+
 		// Scan pre contents
-		info->scopeInfo.EnterScope(segments[i].IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
-		ScanPreContents(loopInfo, info.Get(), segments[i]);
+		info->scopeInfo.EnterScope(segment.IsLoop() ? ScopeInfo::ScopeType::Loop : ScopeInfo::ScopeType::Scope);
+		ScanPreContents(loopInfo, info.Get(), segment);
 
 		// Scan condition
-		if (segments[i].type != LoopType::None) {
-			ScanResult r = segments[i].condition->Scan(info);
+		if (segment.type != LoopType::None) {
+			ScanResult r = segment.type != LoopType::For ? segment.condition->Scan(info) : ScanForCondition(segment, info);
 			r.SelfUseCheck(info, segments[i].condition->File());
 			result |= r;
 		}
@@ -767,6 +830,11 @@ Statement LoopNode::Optimize(OptimizeInfo& info) {
 	for (LoopSegment& segment : segments) {
 		if (segment.condition) {
 			Node::Optimize(segment.condition, info);
+		}
+
+		if (segment.type == LoopType::For) {
+			Node::Optimize(segment.init, info);
+			Node::Optimize(segment.step, info);
 		}
 
 		Node::Optimize(segment.statements, info);
@@ -866,20 +934,43 @@ StringBuilder LoopNode::ToMelon(const UInt indent) const {
 	String tabs2 = String('\t').Repeat(indent + 1);
 
 	for (UInt i = 0; i < segments.Size(); i++) {
+		const LoopSegment& segment = segments[i];
+
 		if (i > 0) {
-			sb += segments[i].also ? "also" : "else";
+			sb += segment.also ? "also" : "else";
 		}
 
-		switch (segments[i].type) {
+		switch (segment.type) {
 			case LoopType::If:    sb += "if ";    break;
 			case LoopType::While: sb += "while "; break;
 			case LoopType::For:   sb += "for ";   break;
 		}
 
-		if (segments[i].type != LoopType::None) {
-			sb += segments[i].condition->ToMelon(indent);
+		if (segment.type != LoopType::None) {
+			if (segment.type == LoopType::For) {
+				sb += segment.init->ToMelon(indent);
+				sb += ", ";
+
+				if (segment.conditionOperator) {
+					sb += segment.conditionOperator->ToSimpleString();
+					sb += " ";
+				}
+
+				sb += segment.condition->ToMelon(indent);
+				sb += ", ";
+
+				if (segment.stepOperator) {
+					sb += segment.stepOperator->ToSimpleString();
+					sb += " ";
+				}
+
+				sb += segment.step->ToMelon(indent);
+			}
+			else {
+				sb += segment.condition->ToMelon(indent);
+			}
 			
-			if (segments[i].type == LoopType::If) {
+			if (segment.type == LoopType::If) {
 				sb += " then";
 			}
 			else {
@@ -889,7 +980,7 @@ StringBuilder LoopNode::ToMelon(const UInt indent) const {
 
 		sb += "\n";
 		sb += tabs2;
-		sb += segments[i].statements->ToMelon(indent + 1);
+		sb += segment.statements->ToMelon(indent + 1);
 		sb += "\n";
 		sb += tabs1;
 	}
