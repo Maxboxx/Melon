@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for a name.
-		class NameNode : public Node {
+		class NameNode : public ExpressionNode {
 		public:
 			/// The name of the node.
 			Symbols::Name name;
@@ -18,7 +18,7 @@ namespace Melon {
 			~NameNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;
-			virtual Symbols::Symbol* GetSymbol() const override;
+			virtual Symbols::Symbol* Symbol() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;

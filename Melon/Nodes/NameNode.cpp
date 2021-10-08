@@ -16,7 +16,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NameNode::NameNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+NameNode::NameNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
 
 }
 
@@ -25,7 +25,7 @@ NameNode::~NameNode() {
 }
 
 TypeSymbol* NameNode::Type() const {
-	Symbol* const s = GetSymbol();
+	Symbols::Symbol* const s = Symbol();
 
 	if (s == nullptr) return nullptr;
 
@@ -37,7 +37,7 @@ TypeSymbol* NameNode::Type() const {
 	}
 }
 
-Symbol* NameNode::GetSymbol() const {
+Symbol* NameNode::Symbol() const {
 	Name s = name.Copy();
 
 	// Get template types
@@ -59,7 +59,7 @@ Symbol* NameNode::GetSymbol() const {
 	Name noTemplateScope = s.Copy();
 	noTemplateScope.types = nullptr;
 
-	Symbol* const sym = SymbolTable::Find(noTemplateScope, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+	Symbols::Symbol* const sym = SymbolTable::Find(noTemplateScope, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 	// Check if name is template type
 	if (sym->Is<TemplateSymbol>()) {
@@ -88,7 +88,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
 	// Get symbol
-	VariableSymbol* const sym = GetSymbol()->Cast<VariableSymbol>();
+	VariableSymbol* const sym = Symbol()->Cast<VariableSymbol>();
 
 	if (!sym) return cn;
 
@@ -112,7 +112,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 
 ScanResult NameNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
-	Symbol* const s = GetSymbol();
+	Symbols::Symbol* const s = Symbol();
 
 	// Check if name is self
 	if (name == Name::Self) {
@@ -130,7 +130,7 @@ ScanResult NameNode::Scan(ScanInfoStack& info) {
 
 NameList NameNode::FindSideEffectScope(const bool assign) {
 	if (assign) {
-		Symbol* const s = GetSymbol();
+		Symbols::Symbol* const s = Symbol();
 
 		if (s->Is<VariableSymbol>() && (s->Cast<VariableSymbol>()->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
 			return s->Parent()->Parent()->AbsoluteName();

@@ -9,14 +9,16 @@ namespace Melon {
 
 	///N Melon::Nodes
 	namespace Nodes {
+		class FunctionNode;
+
 		/// The root node of the compiled program.
-		class RootNode : public Node {
+		class RootNode final : public Node {
 		public:
-			/// All nodes in the main scope of the program.
-			Boxx::List<NodePtr> nodes;
+			/// All statements in the main scope of the program.
+			Boxx::List<Statements> nodes;
 
 			/// All functions in the program.
-			Boxx::List<NodePtr> funcs;
+			Boxx::List<Pointer<FunctionNode>> funcs;
 
 			/// The id for the next function.
 			Boxx::UInt funcId = 0;
@@ -32,7 +34,7 @@ namespace Melon {
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual NodePtr Optimize(OptimizeInfo& info) override;
+			void Optimize(OptimizeInfo& info);
 
 			/// Adds a template specialization.
 			void AddTemplateSpecialization(const Symbols::NameList& name, const Symbols::NameList& scope, const FileInfo& file, const bool scan = true);

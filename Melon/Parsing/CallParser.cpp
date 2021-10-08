@@ -23,7 +23,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 
 		// Parse arguments
 		while (info.Current().type != TokenType::ParenClose) {
-			if (!call->args.IsEmpty()) {
+			if (!call->arguments.IsEmpty()) {
 				if (info.Current().type != TokenType::Comma) {
 					ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(")"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 				}
@@ -34,7 +34,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 			call->attributes.Add(ParseArgumentAttributes(info));
 
 			if (NodePtr node = ExpressionParser::Parse(info)) {
-				call->args.Add(node);
+				call->arguments.Add(node);
 			}
 			else {
 				ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(")"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());

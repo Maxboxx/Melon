@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Node.h"
+#include "StatementNode.h"
 
 #include "Melon/Symbols/StructSymbol.h"
 
@@ -8,7 +8,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for structs.
-		class StructNode : public Node {
+		class StructNode : public StatementNode {
 		public:
 			/// The name of the struct.
 			Symbols::Name name;

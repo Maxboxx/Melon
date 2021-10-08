@@ -42,9 +42,11 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
 	// Get size of statements
-	Pointer<StatementsNode> statements = new StatementsNode(nullptr, FileInfo());
-	statements->statements = nodes;
-	UInt size = statements->GetSize();
+	UInt size = 0;
+
+	for (const Statements& statements : nodes) {
+		size += statements->GetSize();
+	}
 
 	// Push
 	if (size > 0) {
@@ -56,8 +58,8 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	info.stack.PushFrame(size);
 
 	// Compile nodes
-	for (const NodePtr& node : nodes) {
-		for (const OptimizerInstruction& instruction : node->Compile(info).instructions) {
+	for (const Statements& statements : nodes) {
+		for (const OptimizerInstruction& instruction : statements->Compile(info).instructions) {
 			cn.instructions.Add(instruction);
 		}
 	}
@@ -77,8 +79,8 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(in);
 
 	// Compile functions
-	for (const NodePtr& node : funcs) {
-		for (const OptimizerInstruction& instruction : node->Compile(info).instructions) {
+	for (const Pointer<FunctionNode>& func : funcs) {
+		for (const OptimizerInstruction& instruction : func->Compile(info).instructions) {
 			cn.instructions.Add(instruction);
 		}
 	}
@@ -312,18 +314,18 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 	info->useFunction = true;
 
 	// Scan nodes
-	for (const NodePtr& node : nodes) {
-		node->Scan(info);
+	for (const Statements& statements : nodes) {
+		statements->Scan(info);
 	}
 
 	// Scan functions
 	while (!info.functions.IsEmpty()) {
-		Collection<NodePtr> functions = info.functions;
-		info.functions = Collection<NodePtr>();
+		Collection<Pointer<FunctionNode>> functions = info.functions;
+		info.functions = Collection<Pointer<FunctionNode>>();
 
-		for (const NodePtr& func : functions) {
+		for (const Pointer<FunctionNode>& func : functions) {
 			if (func) {
-				func.Cast<FunctionNode>()->isUsed = true;
+				func->isUsed = true;
 				func->Scan(info);
 			}
 			else {
@@ -336,9 +338,9 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 	info->useFunction = false;
 
 	// Scan unused functions
-	for (const NodePtr& node : funcs) {
+	for (const Pointer<FunctionNode>& node : funcs) {
 		if (!info.usedFunctions.Contains(node.Cast<FunctionNode>()->sym)) {
-			node.Cast<FunctionNode>()->isUsed = false;
+			node->isUsed = false;
 			node->Scan(info);
 		}
 	}
@@ -353,23 +355,21 @@ ScanInfoStack RootNode::Scan() {
 	return info;
 }
 
-NodePtr RootNode::Optimize(OptimizeInfo& info) {
+void RootNode::Optimize(OptimizeInfo& info) {
 	// Optimize nodes
 	for (UInt i = 0; i < nodes.Size(); i++) {
 		FileInfo file = nodes[i]->file;
-
-		if (NodePtr node = nodes[i]->Optimize(info)) nodes[i] = node;
-
+		Node::Optimize(nodes[i], info);
 		nodes[i]->file = file;
 	}
 
 	// Remove unused functions
 	if (info.usedFunctions.Size() < funcs.Size()) {
-		List<NodePtr> functions = funcs;
-		funcs = List<NodePtr>(info.usedFunctions.Size());
+		List<Pointer<FunctionNode>> functions = funcs;
+		funcs = List<Pointer<FunctionNode>>(info.usedFunctions.Size());
 
-		for (const NodePtr& func : functions) {
-			if (info.usedFunctions.Contains(func.Cast<FunctionNode>()->sym)) {
+		for (const Pointer<FunctionNode>& func : functions) {
+			if (info.usedFunctions.Contains(func->sym)) {
 				funcs.Add(func);
 			}
 		}
@@ -379,15 +379,8 @@ NodePtr RootNode::Optimize(OptimizeInfo& info) {
 
 	// Optimize functions
 	for (UInt i = 0; i < funcs.Size(); i++) {
-		if (NodePtr node = funcs[i]->Optimize(info)) funcs[i] = node;
-
-		if (IsEmpty(funcs[i])) {
-			funcs.RemoveAt(i);
-			i--;
-		}
+		funcs[i]->Optimize(info);
 	}
-
-	return nullptr;
 }
 
 StringBuilder RootNode::ToMelon(const UInt indent) const {
@@ -408,9 +401,9 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 	StringBuilder sb;
 
 	// Convert nodes to melon files
-	for (const NodePtr& node : nodes) {
+	for (const Statements& statements : nodes) {
 		// Check if the namespace changes
-		if (node->file.currentNamespace != currentNamespace) {
+		if (statements->file.currentNamespace != currentNamespace) {
 			// Write old namespace contents to file
 			if (writeToFile) {
 				FileWriter file = FileWriter(fileDir);
@@ -421,7 +414,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 				writeToFile = true;
 			}
 
-			currentNamespace = node->file.currentNamespace;
+			currentNamespace = statements->file.currentNamespace;
 
 			fileDir = dir;
 
@@ -438,14 +431,14 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 			// Get file name
 			if (fileDir.Size() != 0) fileDir += "/";
 
-			if (Optional<Match> match = filename.Match(node->file.filename)) {
+			if (Optional<Match> match = filename.Match(statements->file.filename)) {
 				fileDir += match->match;
 			}
 
 			sb = StringBuilder();
 
 			// Convert includes to string
-			for (const NameList& include : node->file.includedNamespaces) {
+			for (const NameList& include : statements->file.includedNamespaces) {
 				sb += "include ";
 				sb += include.ToString();
 				sb += "\n";
@@ -455,7 +448,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 		}
 
 		// Convert node to melon string
-		StringBuilder s = node->ToMelon(0);
+		StringBuilder s = statements->ToMelon(0);
 
 		if (s.Size() > 0) {
 			sb += s;

@@ -217,7 +217,7 @@ RootNode* Node::Root() {
 	return _root;
 }
 
-bool IsEmpty(const Statement& statement) {
+bool Node::IsEmpty(const Statement& statement) {
 	if (const Pointer<EmptyNode>& empty = statement.Cast<EmptyNode>()) {
 		return !empty->statement;
 	}

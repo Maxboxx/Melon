@@ -90,7 +90,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		info.loops = 0;
 		info.scopeCount = 0;
 		
-		func->node = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("function", startLine), true);
+		func->statements = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("function", startLine), true);
 
 		func->sym = funcSym;
 		funcSym->node = func;

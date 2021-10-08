@@ -8,6 +8,7 @@
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -19,7 +20,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-ReturnNode::ReturnNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+ReturnNode::ReturnNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
 
 }
 
@@ -70,14 +71,14 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	CompiledNode c;
 
 	// Compile return values
-	for (UInt i = 0; i < nodes.Size(); i++) {
+	for (UInt i = 0; i < values.Size(); i++) {
 		stackOffset -= types[i]->Size();
 
 		Pointer<MemoryNode> sn = new MemoryNode(stackOffset);
 		sn->type = types[i]->AbsoluteName();
 
 		info.important = true;
-		c.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->file).instructions);
+		c.AddInstructions(CompileAssignment(sn, values[i], info, values[i]->File()).instructions);
 		info.important = false;
 	}
 
@@ -89,8 +90,8 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 }
 
 void ReturnNode::IncludeScan(ParsingInfo& info) {
-	for (NodePtr node : nodes) {
-		node->IncludeScan(info);
+	for (Expression& value : values) {
+		value->IncludeScan(info);
 	}
 }
 
@@ -104,9 +105,9 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
 
 	// Scan nodes
-	for (const NodePtr& node : nodes) {
-		ScanResult r = node->Scan(info);
-		r.SelfUseCheck(info, node->file);
+	for (const Expression& value : values) {
+		ScanResult r = value->Scan(info);
+		r.SelfUseCheck(info, value->File());
 		result |= r;
 	}
 
@@ -115,21 +116,21 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 	if (f == nullptr) return result;
 
 	// Check for correct number of return values
-	if (f->returnValues.Size() > nodes.Size()) {
+	if (f->returnValues.Size() > values.Size()) {
 		ErrorLog::Error(LogMessage("error.scan.return.many"), file);
 	}
-	else if (f->returnValues.Size() < nodes.Size()) {
+	else if (f->returnValues.Size() < values.Size()) {
 		ErrorLog::Error(LogMessage("error.scan.return.few"), file);
 	}
 
 	List<TypeSymbol*> types = GetTypes();
 
 	// Scan assignment to return values
-	for (UInt i = 0; i < nodes.Size(); i++) {
+	for (UInt i = 0; i < values.Size(); i++) {
 		if (i >= types.Size()) break;
 
 		if (types[i]) {
-			ScanAssignment(new TypeNode(types[i]->AbsoluteName()), nodes[i], info, nodes[i]->file);
+			ScanAssignment(new TypeNode(types[i]->AbsoluteName()), values[i], info, values[i]->File());
 		}
 	}
 
@@ -137,18 +138,18 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 }
 
 NameList ReturnNode::FindSideEffectScope(const bool assign) {
-	NameList list = nodes.IsEmpty() ? scope->AbsoluteName() : scope->Parent()->AbsoluteName();
+	NameList list = values.IsEmpty() ? scope->AbsoluteName() : scope->Parent()->AbsoluteName();
 
-	for (NodePtr& node : nodes) {
-		list = CombineSideEffects(list, node->GetSideEffectScope(assign));
+	for (Expression& value : values) {
+		list = CombineSideEffects(list, value->GetSideEffectScope(assign));
 	}
 
 	return list;
 }
 
-NodePtr ReturnNode::Optimize(OptimizeInfo& info) {
-	for (NodePtr& node : nodes) {
-		if (NodePtr n = node->Optimize(info)) n = node;
+Statement ReturnNode::Optimize(OptimizeInfo& info) {
+	for (Expression& value : values) {
+		Node::Optimize(value, info);
 	}
 
 	return nullptr;
@@ -157,10 +158,10 @@ NodePtr ReturnNode::Optimize(OptimizeInfo& info) {
 StringBuilder ReturnNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "return";
 
-	for (UInt i = 0; i < nodes.Size(); i++) {
+	for (UInt i = 0; i < values.Size(); i++) {
 		if (i > 0) sb += ", ";
 		else sb += " ";
-		sb += nodes[i]->ToMelon(indent);
+		sb += values[i]->ToMelon(indent);
 	}
 
 	return sb;

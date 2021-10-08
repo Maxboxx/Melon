@@ -61,10 +61,10 @@ CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
 	// Compile operator function
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
-		cn->args = nodes;
+		cn->arguments = nodes;
 
 		Pointer<TypeNode> tn = new TypeNode(func->Parent()->Parent()->AbsoluteName());
-		cn->node = tn;
+		cn->expression = tn;
 
 		return cn->Compile(info);
 	}

@@ -18,7 +18,7 @@ using namespace Melon::Optimizing;
 
 String SafeUnwrapEndNode::jumpInstName = "?jmp";
 
-SafeUnwrapEndNode::SafeUnwrapEndNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+SafeUnwrapEndNode::SafeUnwrapEndNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
 
 }
 
@@ -29,14 +29,14 @@ SafeUnwrapEndNode::~SafeUnwrapEndNode() {
 TypeSymbol* SafeUnwrapEndNode::Type() const  {
 	Name scope = Name::Optional;
 	scope.types = List<NameList>();
-	scope.types->Add(node->Type()->AbsoluteName());
+	scope.types->Add(expression->Type()->AbsoluteName());
 
 	return SymbolTable::FindAbsolute<TypeSymbol>(NameList(scope), file);
 }
 
 CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 	// Compile node
-	CompiledNode cn = node->Compile(info);
+	CompiledNode cn = expression->Compile(info);
 
 	info.stack.PushExpr(cn.size + 1, cn);
 	Argument arg = Argument(MemoryLocation(info.stack.Offset()));
@@ -49,11 +49,11 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 
 	// Get memory location for result optional value
 	Pointer<MemoryNode> sn1 = new MemoryNode(arg.mem.offset + 1);
-	sn1->type = node->Type()->AbsoluteName();
+	sn1->type = expression->Type()->AbsoluteName();
 
 	// Get memory location of compiled value
 	Pointer<MemoryNode> sn2 = new MemoryNode(cn.argument.mem);
-	sn2->type = node->Type()->AbsoluteName();
+	sn2->type = expression->Type()->AbsoluteName();
 
 	// Compile assignment to resulting optional
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
@@ -93,9 +93,9 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 }
 
 void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
-	node->IncludeScan(info);
+	expression->IncludeScan(info);
 
-	const NameList nodeType = node->Type()->AbsoluteName();
+	const NameList nodeType = expression->Type()->AbsoluteName();
 
 	if (nodeType == NameList::undefined) {
 		throw IncludeScanError();
@@ -105,20 +105,19 @@ void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	type.types = List<NameList>();
 	type.types->Add(nodeType);
 
-	Node::root->AddTemplateSpecialization(NameList(true, type), scope->AbsoluteName(), file);
+	Root()->AddTemplateSpecialization(NameList(true, type), scope->AbsoluteName(), file);
 }
 
 ScanResult SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {
-	return node->Scan(info);
+	return expression->Scan(info);
 }
 
 NameList SafeUnwrapEndNode::FindSideEffectScope(const bool assign) {
-	return node->GetSideEffectScope(assign);
+	return expression->GetSideEffectScope(assign);
 }
 
-NodePtr SafeUnwrapEndNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr n = node->Optimize(info)) node = n;
-
+Expression SafeUnwrapEndNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(expression, info);
 	return nullptr;
 }
 

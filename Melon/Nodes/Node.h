@@ -106,9 +106,11 @@ namespace Melon {
 			/// Optimizes a node.
 			///A node: The node to optimize.
 			///p The optimized node will be assigned to this value.
-			static void Optimize(Pointer<Node>& node, OptimizeInfo& info);
+			static void Optimize(Boxx::Pointer<Node>& node, OptimizeInfo& info);
 
 		protected:
+			friend RootNode;
+
 			FileInfo file;
 
 			static Symbols::NameList CombineSideEffects(const Symbols::NameList& scope1, const Symbols::NameList& scope2);

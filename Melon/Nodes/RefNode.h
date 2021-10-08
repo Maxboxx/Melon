@@ -1,22 +1,22 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for references.
-		class RefNode : public Node {
+		class RefNode : public ExpressionNode {
 		public:
-			/// The node to reference.
-			NodePtr node;
+			/// The expression to reference.
+			Expression expression;
 
-			RefNode(const NodePtr& node);
+			RefNode(const Expression& expression);
 			~RefNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override;
-			virtual Symbols::Symbol* GetSymbol() const override;
+			virtual Symbols::Symbol* Symbol() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;

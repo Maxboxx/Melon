@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for a {nil} value.
-		class NilNode : public Node {
+		class NilNode : public ExpressionNode {
 		public:
 			NilNode(const FileInfo& file);
 			~NilNode();

@@ -454,7 +454,7 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 		if (node) {
 			Pointer<FunctionNode> fn = new FunctionNode(node->scope, node->file);
 			fn->sym = sym;
-			fn->node = node.Cast<FunctionNode>()->node;
+			fn->statements = node.Cast<FunctionNode>()->statements;
 			sym->node = fn;
 			root->funcs.Add(sym->node);
 		}

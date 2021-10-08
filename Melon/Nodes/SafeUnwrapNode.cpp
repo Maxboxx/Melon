@@ -12,7 +12,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-SafeUnwrapNode::SafeUnwrapNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+SafeUnwrapNode::SafeUnwrapNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
 
 }
 
@@ -21,15 +21,15 @@ SafeUnwrapNode::~SafeUnwrapNode() {
 }
 
 TypeSymbol* SafeUnwrapNode::Type() const  {
-	return node->Type()->Find(Name::Value, file)->Type();
+	return expression->Type()->Find(Name::Value, file)->Type();
 }
 
-Symbol* SafeUnwrapNode::GetSymbol() const {
+Symbol* SafeUnwrapNode::Symbol() const {
 	return Type();
 }
 
 CompiledNode SafeUnwrapNode::Compile(CompileInfo& info)  {
-	CompiledNode cn = node->Compile(info);
+	CompiledNode cn = expression->Compile(info);
 
 	Instruction jmp = Instruction(SafeUnwrapEndNode::jumpInstName, 1);
 	jmp.arguments.Add(cn.argument);
@@ -43,25 +43,25 @@ CompiledNode SafeUnwrapNode::Compile(CompileInfo& info)  {
 }
 
 void SafeUnwrapNode::IncludeScan(ParsingInfo& info)  {
-	node->IncludeScan(info);
+	expression->IncludeScan(info);
 }
 
 ScanResult SafeUnwrapNode::Scan(ScanInfoStack& info)  {
-	return node->Scan(info);
+	return expression->Scan(info);
 }
 
 NameList SafeUnwrapNode::FindSideEffectScope(const bool assign) {
-	return node->GetSideEffectScope(assign);
+	return expression->GetSideEffectScope(assign);
 }
 
-NodePtr SafeUnwrapNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr n = node->Optimize(info)) node = n;
-
+Expression SafeUnwrapNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(expression, info);
 	return nullptr;
 }
 
 StringBuilder SafeUnwrapNode::ToMelon(const UInt indent) const  {
-	StringBuilder sb = node->ToMelon(indent);
+	StringBuilder sb = expression->ToMelon(indent);
+	// TODO: Avoid ??
 	sb += "?";
 	return sb;
 }

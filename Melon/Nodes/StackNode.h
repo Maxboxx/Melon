@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "ExpressionNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for a stack position.
-		class StackNode : public Node {
+		class StackNode : public ExpressionNode {
 		public:
 			/// The stack position.
 			Boxx::UInt stack;

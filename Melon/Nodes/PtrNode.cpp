@@ -9,23 +9,28 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-PtrNode::PtrNode(const NodePtr& node) : Node(node->scope, node->file) {this->node = node;}
-PtrNode::~PtrNode() {}
+PtrNode::PtrNode(const Expression& address) : ExpressionNode(address->scope, address->File()) {
+	this->address = address;
+}
+
+PtrNode::~PtrNode() {
+
+}
 
 TypeSymbol* PtrNode::Type() const {
-	return node->Type();
+	return address->Type();
 }
 
 Boxx::List<TypeSymbol*> PtrNode::Types() const {
-	return node->Types();
+	return address->Types();
 }
 
-Symbol* PtrNode::GetSymbol() const {
-	return node->GetSymbol();
+Symbol* PtrNode::Symbol() const {
+	return address->Symbol();
 }
 
 CompiledNode PtrNode::Compile(CompileInfo& info) {
-	CompiledNode cn = node->Compile(info);
+	CompiledNode cn = address->Compile(info);
 
 	Register reg = Register(info.index++);
 
@@ -43,13 +48,13 @@ CompiledNode PtrNode::Compile(CompileInfo& info) {
 }
 
 void PtrNode::IncludeScan(ParsingInfo& info) {
-	node->IncludeScan(info);
+	address->IncludeScan(info);
 }
 
 ScanResult PtrNode::Scan(ScanInfoStack& info) {
-	return node->Scan(info);
+	return address->Scan(info);
 }
 
 StringBuilder PtrNode::ToMelon(const UInt indent) const {
-	return node->ToMelon(indent);
+	return address->ToMelon(indent);
 }

@@ -56,10 +56,10 @@ CompiledNode ConvertNode::Compile(CompileInfo& info) {
 	// Compile call to operator function
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
-		cn->args = nodes;
+		cn->arguments = nodes;
 
 		Pointer<TypeNode> tn = new TypeNode(convert->ParentType()->AbsoluteName());
-		cn->node = tn;
+		cn->expression = tn;
 
 		return cn->Compile(info);
 	}

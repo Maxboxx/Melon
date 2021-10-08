@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Node.h"
+#include "StatementNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for {return} statements.
-		class ReturnNode : public Node {
+		class ReturnNode : public StatementNode {
 		public:
-			/// The nodes to return from the function.
-			Boxx::List<NodePtr> nodes;
+			/// The values to return from the function.
+			Boxx::List<Expression> values;
 
 			/// The absolute name of the function to return from.
 			Symbols::NameList func;
@@ -26,7 +26,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual NodePtr Optimize(OptimizeInfo& info) override;
+			virtual Statement Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

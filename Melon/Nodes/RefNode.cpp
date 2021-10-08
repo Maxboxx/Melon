@@ -9,23 +9,28 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-RefNode::RefNode(const NodePtr& node) : Node(node->scope, node->file) {this->node = node;}
-RefNode::~RefNode() {}
+RefNode::RefNode(const Expression& expression) : ExpressionNode(expression->scope, expression->File()) {
+	this->expression = expression;
+}
+
+RefNode::~RefNode() {
+
+}
 
 TypeSymbol* RefNode::Type() const {
-	return node->Type();
+	return expression->Type();
 }
 
 Boxx::List<TypeSymbol*> RefNode::Types() const {
-	return node->Types();
+	return expression->Types();
 }
 
-Symbol* RefNode::GetSymbol() const {
-	return node->GetSymbol();
+Symbol* RefNode::Symbol() const {
+	return expression->Symbol();
 }
 
 CompiledNode RefNode::Compile(CompileInfo& info) {
-	CompiledNode cn = node->Compile(info);
+	CompiledNode cn = expression->Compile(info);
 
 	Register reg = Register(info.index++);
 
@@ -41,13 +46,13 @@ CompiledNode RefNode::Compile(CompileInfo& info) {
 }
 
 void RefNode::IncludeScan(ParsingInfo& info) {
-	node->IncludeScan(info);
+	expression->IncludeScan(info);
 }
 
 ScanResult RefNode::Scan(ScanInfoStack& info) {
-	return node->Scan(info);
+	return expression->Scan(info);
 }
 
 StringBuilder RefNode::ToMelon(const UInt indent) const {
-	return node->ToMelon(indent);
+	return expression->ToMelon(indent);
 }

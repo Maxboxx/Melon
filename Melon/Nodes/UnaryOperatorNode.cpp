@@ -79,11 +79,11 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 	// Compile operator function
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
-		cn->args = nodes;
+		cn->arguments = nodes;
 		cn->isMethod = false;
 
 		Pointer<TypeNode> tn = new TypeNode(func->ParentType()->AbsoluteName());
-		cn->node = tn;
+		cn->expression = tn;
 		cn->op = true;
 
 		return cn->Compile(info);

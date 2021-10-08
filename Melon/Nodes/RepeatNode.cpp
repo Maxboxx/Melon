@@ -4,6 +4,8 @@
 #include "ContinueNode.h"
 #include "DoNode.h"
 #include "EmptyNode.h"
+#include "StatementsNode.h"
+#include "ConditionNode.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -13,7 +15,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-RepeatNode::RepeatNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+RepeatNode::RepeatNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
 
 }
 
@@ -22,7 +24,7 @@ RepeatNode::~RepeatNode() {
 }
 
 UInt RepeatNode::GetSize() const {
-	return content->GetSize();
+	return statements->GetSize();
 }
 
 bool RepeatNode::IsScope() const {
@@ -39,7 +41,7 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 	List<UInt> condJumps;
 
 	// Compile loop body
-	for (const OptimizerInstruction& in : content->Compile(info).instructions) {
+	for (const OptimizerInstruction& in : statements->Compile(info).instructions) {
 		// Check for custom instructions
 		if (in.instruction.type != InstructionType::Custom) {
 			compiled.instructions.Add(in);
@@ -122,7 +124,7 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 }
 
 void RepeatNode::IncludeScan(ParsingInfo& info) {
-	content->IncludeScan(info);
+	statements->IncludeScan(info);
 	condition->IncludeScan(info);
 }
 
@@ -130,11 +132,11 @@ ScanResult RepeatNode::Scan(ScanInfoStack& info) {
 	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Loop);
 
-	ScanResult result1 = content->Scan(info);
-	result1.SelfUseCheck(info, content->file);
+	ScanResult result1 = statements->Scan(info);
+	result1.SelfUseCheck(info, statements->File());
 
 	ScanResult result2 = condition->Scan(info);
-	result2.SelfUseCheck(info, condition->file);
+	result2.SelfUseCheck(info, condition->File());
 
 	info->scopeInfo.ExitScope();
 	info->scopeInfo = ScopeInfo::WeakBranchUnion(scopeInfo, info->scopeInfo);
@@ -143,22 +145,22 @@ ScanResult RepeatNode::Scan(ScanInfoStack& info) {
 }
 
 NameList RepeatNode::FindSideEffectScope(const bool assign) {
-	return CombineSideEffects(content->GetSideEffectScope(assign), condition->GetSideEffectScope(assign));
+	return CombineSideEffects(statements->GetSideEffectScope(assign), condition->GetSideEffectScope(assign));
 }
 
-NodePtr RepeatNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr node = content->Optimize(info)) content = node;
-	if (NodePtr node = condition->Optimize(info)) condition = node;
+Statement RepeatNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(statements, info);
+	Node::Optimize(condition, info);
 
 	// TODO: Remove break, continue, abort and similar
 	if (condition->IsImmediate() && condition->GetImmediate() != 0) {
-		if (IsEmpty(content)) {
+		if (IsEmpty(statements)) {
 			info.optimized = true;
 			return new EmptyNode();
 		}
 
-		Pointer<DoNode> dn = new DoNode(content->scope, content->file);
-		dn->statements = content;
+		Pointer<DoNode> dn = new DoNode(statements->scope, statements->File());
+		dn->statements = statements;
 		info.optimized = true;
 		return dn;
 	}
@@ -169,7 +171,7 @@ NodePtr RepeatNode::Optimize(OptimizeInfo& info) {
 StringBuilder RepeatNode::ToMelon(const UInt indent) const {
 	StringBuilder sb = "repeat\n";
 	sb += String('\t').Repeat(indent + 1);
-	sb += content->ToMelon(indent + 1);
+	sb += statements->ToMelon(indent + 1);
 	sb += "\n";
 	sb += String('\t').Repeat(indent);
 	sb += "until ";

@@ -7,6 +7,7 @@
 
 #include "Melon/Symbols/TypeSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -18,7 +19,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-ObjectInitNode::ObjectInitNode(Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+ObjectInitNode::ObjectInitNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
 
 }
 
@@ -27,7 +28,7 @@ ObjectInitNode::~ObjectInitNode() {
 }
 
 TypeSymbol* ObjectInitNode::Type() const {
-	Symbol* const sym = node->GetSymbol();
+	Symbols::Symbol* const sym = expression->Symbol();
 
 	if (sym == nullptr) return nullptr;
 
@@ -39,7 +40,7 @@ TypeSymbol* ObjectInitNode::Type() const {
 }
 
 CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
-	CompiledNode c = node->Compile(info);
+	CompiledNode c = expression->Compile(info);
 	
 	TypeSymbol* const type = Type();
 
@@ -56,7 +57,7 @@ CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
 			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset() + var->stackIndex);
 			sn->type = var->Type()->AbsoluteName();
 
-			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->file).instructions);
+			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->File()).instructions);
 		}
 
 		info.index = index;
@@ -68,16 +69,16 @@ CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
 }
 
 void ObjectInitNode::IncludeScan(ParsingInfo& info) {
-	node->IncludeScan(info);
+	expression->IncludeScan(info);
 
-	for (NodePtr expression : expressions) {
+	for (Expression& expression : expressions) {
 		expression->IncludeScan(info);
 	}
 }
 
 ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
-	ScanResult result = node->Scan(info);
-	result.SelfUseCheck(info, node->file);
+	ScanResult result = expression->Scan(info);
+	result.SelfUseCheck(info, expression->File());
 	
 	TypeSymbol* const type = Type();
 
@@ -115,13 +116,13 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 		VariableSymbol* const v = type->Find<VariableSymbol>(vars[i], file);
 		TypeSymbol* const varType = v->Type();
 
-		ScanAssignment(new TypeNode(varType->AbsoluteName()), expressions[i], info, expressions[i]->file);
+		ScanAssignment(new TypeNode(varType->AbsoluteName()), expressions[i], info, expressions[i]->File());
 	}
 
 	// Scan expressions
-	for (const NodePtr& node : expressions) {
+	for (const Expression& node : expressions) {
 		ScanResult r = node->Scan(info);
-		r.SelfUseCheck(info, node->file);
+		r.SelfUseCheck(info, node->File());
 		result |= r;
 	}
 
@@ -129,27 +130,27 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 }
 
 NameList ObjectInitNode::FindSideEffectScope(const bool assign) {
-	NameList list = node->GetSideEffectScope(assign);
+	NameList list = expression->GetSideEffectScope(assign);
 
-	for (NodePtr expr : expressions) {
+	for (Expression& expr : expressions) {
 		list = CombineSideEffects(list, expr->GetSideEffectScope(assign));
 	}
 
 	return list;
 }
 
-NodePtr ObjectInitNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr n = node->Optimize(info)) node = n;
+Expression ObjectInitNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(expression, info);
 
-	for (NodePtr expr : expressions) {
-		if (NodePtr node = expr->Optimize(info)) expr = node;
+	for (Expression& expr : expressions) {
+		Node::Optimize(expr, info);
 	}
 
 	return nullptr;
 }
 
 StringBuilder ObjectInitNode::ToMelon(const UInt indent) const {
-	StringBuilder sb = node->ToMelon(indent);
+	StringBuilder sb = expression->ToMelon(indent);
 
 	if (vars.IsEmpty()) {
 		sb += " {}";
