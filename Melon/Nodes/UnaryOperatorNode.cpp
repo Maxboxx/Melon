@@ -8,6 +8,7 @@
 
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -18,7 +19,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-UnaryOperatorNode::UnaryOperatorNode(Symbol* const scope, const Name& op, const FileInfo& file) : Node(scope, file) {
+UnaryOperatorNode::UnaryOperatorNode(Symbols::Symbol* const scope, const Name& op, const FileInfo& file) : ExpressionNode(scope, file) {
 	this->op = op;
 }
 
@@ -28,9 +29,9 @@ UnaryOperatorNode::~UnaryOperatorNode() {
 
 TypeSymbol* UnaryOperatorNode::Type() const {
 	List<TypeSymbol*> args;
-	args.Add(node->Type());
+	args.Add(operand->Type());
 
-	TypeSymbol* const type = node->Type();
+	TypeSymbol* const type = operand->Type();
 
 	FunctionSymbol* const s = type->FindUnaryOperator(op, file);
 
@@ -47,9 +48,9 @@ TypeSymbol* UnaryOperatorNode::Type() const {
 	return nullptr;
 }
 
-Symbol* UnaryOperatorNode::GetSymbol() const {
+Symbol* UnaryOperatorNode::Symbol() const {
 	if (op == Name::Unwrap) {
-		if (TypeSymbol* const type = node->Type()) {
+		if (TypeSymbol* const type = operand->Type()) {
 			return type->Find<VariableSymbol>(Name::Value, file);
 		}
 	}
@@ -62,13 +63,13 @@ Name UnaryOperatorNode::GetOperator() const {
 }
 
 CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
-	List<NodePtr> nodes;
-	nodes.Add(node);
+	List<Expression> nodes;
+	nodes.Add(operand);
 
-	List<Symbol*> args;
-	args.Add(node->Type());
+	List<Symbols::Symbol*> args;
+	args.Add(operand->Type());
 
-	TypeSymbol* const type = node->Type();
+	TypeSymbol* const type = operand->Type();
 
 	FunctionSymbol* const func = type->FindUnaryOperator(op, file);
 
@@ -80,30 +81,28 @@ CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
 	else {
 		Pointer<CallNode> cn = new CallNode(scope, file);
 		cn->arguments = nodes;
-		cn->isMethod = false;
 
 		Pointer<TypeNode> tn = new TypeNode(func->ParentType()->AbsoluteName());
 		cn->expression = tn;
-		cn->op = true;
 
 		return cn->Compile(info);
 	}
 }
 
 void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
-	node->IncludeScan(info);
+	operand->IncludeScan(info);
 }
 
 ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
-	ScanResult result = node->Scan(info);
-	result.SelfUseCheck(info, node->file);
+	ScanResult result = operand->Scan(info);
+	result.SelfUseCheck(info, operand->File());
 
 	if (op == Name::Unwrap) {
 		// TODO: fix
 		ErrorLog::Warning(LogMessage::Message("unwrap operator does not work properly for nil values"), file);
 	}
 
-	if (TypeSymbol* const type = node->Type()) {
+	if (TypeSymbol* const type = operand->Type()) {
 		type->FindUnaryOperator(op, file);
 	}
 
@@ -112,17 +111,17 @@ ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
 
 NameList UnaryOperatorNode::FindSideEffectScope(const bool assign) {
 	// TODO: Check operator function
-	return node->GetSideEffectScope(assign);
+	return operand->GetSideEffectScope(assign);
 }
 
-NodePtr UnaryOperatorNode::Optimize(OptimizeInfo& info) {
-	if (NodePtr n = node->Optimize(info)) node = n;
+Expression UnaryOperatorNode::Optimize(OptimizeInfo& info) {
+	Node::Optimize(operand, info);
 
 	// TODO: Add more operators
-	if (node->IsImmediate()) {
+	if (operand->IsImmediate()) {
 		if (op == Name::Not) {
-			Pointer<BooleanNode> bn = new BooleanNode(node->file);
-			bn->boolean = node->GetImmediate() == 0;
+			Pointer<BooleanNode> bn = new BooleanNode(operand->File());
+			bn->boolean = operand->GetImmediate() == 0;
 			info.optimized = true;
 			return bn;
 		}
@@ -133,7 +132,7 @@ NodePtr UnaryOperatorNode::Optimize(OptimizeInfo& info) {
 
 StringBuilder UnaryOperatorNode::ToMelon(const UInt indent) const {
 	if (op == Name::Unwrap) {
-		StringBuilder sb = node->ToMelon(indent);
+		StringBuilder sb = operand->ToMelon(indent);
 		sb += op.ToString();
 		return sb;
 	}
@@ -142,7 +141,7 @@ StringBuilder UnaryOperatorNode::ToMelon(const UInt indent) const {
 
 		if (op == Name::Not) sb += " ";
 
-		sb += node->ToMelon(indent);
+		sb += operand->ToMelon(indent);
 		return sb;
 	}
 }
