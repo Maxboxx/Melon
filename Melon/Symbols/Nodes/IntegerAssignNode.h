@@ -1,24 +1,20 @@
 #pragma once
 
-#include "IntegerSymbolNode.h"
+#include "IntegerBaseNode.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-
-			///B IntegerAssignNode
-			/// Node for integer assignments
-			class IntegerAssignNode : public IntegerSymbolNode {
+			/// Node for integer assignments.
+			class IntegerAssignNode : public IntegerBaseNode<BinarySymbolNode> {
 			public:
-
-				///T Constructor
+				/// Constructor
 				IntegerAssignNode(const Boxx::UByte size);
 
-				///T Compile
-				///A nodes[0]: The node to assign a value to
-				///A nodes[1]: The value to be assigned
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::Expression& operand1, const Melon::Nodes::Expression& operand2, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}
 }
+

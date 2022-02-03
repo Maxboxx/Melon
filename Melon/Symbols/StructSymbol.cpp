@@ -2,6 +2,7 @@
 
 #include "SymbolTable.h"
 #include "TypeSymbol.h"
+#include "VariableSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
 

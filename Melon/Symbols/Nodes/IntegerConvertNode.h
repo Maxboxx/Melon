@@ -1,20 +1,21 @@
 #pragma once
 
-#include "IntegerSymbolNode.h"
+#include "IntegerBaseNode.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-			///B IntegerConvertNode
-			/// Node for converting an integer to an integer
-			class IntegerConvertNode : public IntegerSymbolNode {
+			/// Node for converting an integer to an integer.
+			class IntegerConvertNode : public IntegerBaseNode<UnarySymbolNode> {
 			public:
+				/// {true} if the result should be signed.
 				bool sign;
+
+				/// The target integer size.
 				Boxx::UByte targetSize;
 
-				///T Compile
-				///A nodes[0]: The integer value to convert to a integer
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::Expression& operand, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

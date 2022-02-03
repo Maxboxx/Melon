@@ -6,11 +6,11 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-BooleanBinaryOperatorNode::BooleanBinaryOperatorNode(const InstructionType name) {
-	op = name;
+BooleanBinaryOperatorNode::BooleanBinaryOperatorNode(const InstructionType op) {
+	this->op = op;
 }
 
-CompiledNode BooleanBinaryOperatorNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
+CompiledNode BooleanBinaryOperatorNode::Compile(const Expression& operand1, const Expression& operand2, CompileInfo& info) const {
 	return CompiledNode();
 }
 

@@ -2,18 +2,16 @@
 
 #include "SymbolNode.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-			///B BooleanToBooleanNode
-			/// Node for converting a boolean to a boolean. It's extremely useful
-			class BooleanToBooleanNode : public SymbolNode {
+			/// Node for converting a boolean to a boolean. It's extremely useful.
+			class [[deprecated("Is this useful?")]] BooleanToBooleanNode : public UnarySymbolNode {
 			public:
-
-				///T Compile
-				///A nodes[0]: The boolean value to convert to a boolean
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::Expression& operand, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}
 }
+

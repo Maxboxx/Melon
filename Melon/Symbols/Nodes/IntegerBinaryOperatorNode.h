@@ -1,31 +1,26 @@
 #pragma once
 
-#include "IntegerSymbolNode.h"
+#include "IntegerBaseNode.h"
 
 #include "Kiwi/Kiwi.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-
-			///B IntegerBinaryOperatorNode
-			/// Node for binary operators between integers
-			class IntegerBinaryOperatorNode : public IntegerSymbolNode {
+			/// Node for binary operators between integers.
+			class IntegerBinaryOperatorNode : public IntegerBaseNode<BinarySymbolNode> {
 			public:
-
-				///T Operator
+				/// The binary operation.
 				Kiwi::InstructionType op;
 
-				///T Signed result
+				/// {true} if the result should be signed.
 				bool sign;
 
-				///T Constructor
+				/// Constructor.
 				IntegerBinaryOperatorNode(const Boxx::UByte size, const bool sign, const Kiwi::InstructionType name);
 
-				///T Compile
-				///A nodes[0]: The first operand
-				///A nodes[1]: The second operand
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::Expression& operand1, const Melon::Nodes::Expression& operand2, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

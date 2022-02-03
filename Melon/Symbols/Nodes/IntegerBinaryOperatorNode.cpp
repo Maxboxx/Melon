@@ -20,9 +20,9 @@ IntegerBinaryOperatorNode::IntegerBinaryOperatorNode(const UByte size, const boo
 	this->op = name;
 }
 
-CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
+CompiledNode IntegerBinaryOperatorNode::Compile(const Expression& operand1, const Expression& operand2, CompileInfo& info) const {
 	const UInt top = info.stack.top;
-	CompiledNode c1 = nodes[0]->Compile(info);
+	CompiledNode c1 = operand1->Compile(info);
 
 	if (c1.argument.type == ArgumentType::Memory) {
 		if (c1.argument.mem.memptr.IsLeft() && c1.argument.mem.memptr.GetLeft().type == RegisterType::Stack) {
@@ -36,7 +36,7 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 
 	Argument arg1;
 
-	if (!nodes[0]->IsImmediate()) {
+	if (!operand1->IsImmediate()) {
 		arg1 = c1.argument;
 	}
 	else {
@@ -50,15 +50,15 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 
 		mov.sizes[0] = size;
 		mov.sizes[1] = size;
-		mov.signs[0] = nodes[0]->Type()->Cast<IntegerSymbol>()->IsSigned();
-		mov.signs[1] = nodes[1]->Type()->Cast<IntegerSymbol>()->IsSigned();
+		mov.signs[0] = operand1->Type()->Cast<IntegerSymbol>()->IsSigned();
+		mov.signs[1] = operand2->Type()->Cast<IntegerSymbol>()->IsSigned();
 		mov.arguments.Add(arg1);
 		mov.arguments.Add(c1.argument);
 
 		c1.instructions.Add(mov);
 	}
 
-	CompiledNode c2 = nodes[1]->Compile(info);
+	CompiledNode c2 = operand2->Compile(info);
 
 	for (const OptimizerInstruction& instruction : c2.instructions) {
 		c1.instructions.Add(instruction);
@@ -76,9 +76,9 @@ CompiledNode IntegerBinaryOperatorNode::Compile(const List<NodePtr>& nodes, Comp
 
 	Instruction inst = Instruction(op);
 	inst.sizes[0] = c1.size;
-	inst.sizes[1] = nodes[1]->IsImmediate() ? Math::Max(c1.size, c2.size) : c2.size;
-	inst.signs[0] = nodes[0]->Type()->Cast<IntegerSymbol>()->IsSigned();
-	inst.signs[1] = nodes[1]->Type()->Cast<IntegerSymbol>()->IsSigned();
+	inst.sizes[1] = operand2->IsImmediate() ? Math::Max(c1.size, c2.size) : c2.size;
+	inst.signs[0] = operand1->Type()->Cast<IntegerSymbol>()->IsSigned();
+	inst.signs[1] = operand2->Type()->Cast<IntegerSymbol>()->IsSigned();
 	inst.arguments.Add(arg1);
 	inst.arguments.Add(c2.argument);
 

@@ -8,8 +8,8 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode IntegerConvertNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
-	CompiledNode cn = nodes[0]->Compile(info);
+CompiledNode IntegerConvertNode::Compile(const Expression& operand, CompileInfo& info) const {
+	CompiledNode cn = operand->Compile(info);
 
 	if (size >= targetSize || cn.argument.type == ArgumentType::Number) {
 		cn.size = targetSize;
@@ -44,3 +44,4 @@ CompiledNode IntegerConvertNode::Compile(const List<NodePtr>& nodes, CompileInfo
 
 	return cn;
 }
+

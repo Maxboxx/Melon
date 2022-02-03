@@ -1,27 +1,23 @@
 #pragma once
 
-#include "IntegerSymbolNode.h"
+#include "IntegerBaseNode.h"
 
 #include "Kiwi/Kiwi.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-
-			///B IntegerUnaryOperator
-			/// Node for unary operators on integers
-			class IntegerUnaryOperatorNode : public IntegerSymbolNode {
+			/// Node for unary operators on integers.
+			class IntegerUnaryOperatorNode : public IntegerBaseNode<UnarySymbolNode> {
 			public:
-
-				///T Operator
+				/// The unary operation.
 				Kiwi::InstructionType op;
 
-				///T Constructor
+				/// Constructor.
 				IntegerUnaryOperatorNode(const Boxx::UByte size, const Kiwi::InstructionType name);
 
-				///T Compile
-				///A nodes[0]: The value to perform the operation on
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::Expression& operand, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

@@ -2,16 +2,16 @@
 
 #include "SymbolNode.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-
-			///B EmptySymbolNode
-			/// Does nothing
-			class EmptySymbolNode : public SymbolNode {
+			/// Does nothing.
+			class EmptySymbolNode : public ConstantSymbolNode {
 			public:
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}
 }
+

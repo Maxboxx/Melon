@@ -12,7 +12,7 @@ BooleanConstantNode::BooleanConstantNode(const bool value) {
 	this->value = value;
 }
 
-CompiledNode BooleanConstantNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
+CompiledNode BooleanConstantNode::Compile(CompileInfo& info) const {
 	CompiledNode c;
 	c.argument = Argument(value ? 1 : 0);
 	c.size = 1;
