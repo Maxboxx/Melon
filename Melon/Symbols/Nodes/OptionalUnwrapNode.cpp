@@ -12,10 +12,10 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalUnwrapNode::Compile(const Boxx::List<NodePtr>& nodes, CompileInfo& info) const {
-	CompiledNode c = nodes[0]->Compile(info);
+CompiledNode OptionalUnwrapNode::Compile(const Expression& operand, CompileInfo& info) const {
+	CompiledNode c = operand->Compile(info);
 
-	FunctionSymbol* const func = nodes[0]->Type()->FindUnaryOperator(Name::Unwrap, nodes[0]->file);
+	FunctionSymbol* const func = operand->Type()->FindUnaryOperator(Name::Unwrap, operand->File());
 	if (!func) return c;
 
 	c.size = func->ReturnType(0)->Size();

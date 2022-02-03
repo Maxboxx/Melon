@@ -8,8 +8,8 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalNotNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
-	CompiledNode c = nodes[0]->Compile(info);
+CompiledNode OptionalNotNode::Compile(const Expression& operand, CompileInfo& info) const {
+	CompiledNode c = operand->Compile(info);
 
 	Instruction eq = Instruction(InstructionType::Eq, 1);
 	eq.arguments.Add(c.argument);

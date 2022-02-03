@@ -14,7 +14,7 @@ namespace Melon {
 			Expression cond;
 
 			/// The assign node for assign conditions.
-			Pointer<AssignNode> assign;
+			Boxx::Pointer<AssignNode> assign;
 
 			ConditionNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~ConditionNode();

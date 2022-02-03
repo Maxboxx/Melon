@@ -5,7 +5,7 @@ using namespace Boxx;
 using namespace Melon;
 using namespace Melon::Nodes;
 
-SwitchNode::SwitchNode(Symbols::Symbol* const scope, const FileInfo& file) : SwitchBaseNode<Statement>(scope, file) {
+SwitchNode::SwitchNode(Symbols::Symbol* const scope, const FileInfo& file) : SwitchBaseNode<StatementNode>(scope, file) {
 	expr = false;
 }
 

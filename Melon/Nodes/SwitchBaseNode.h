@@ -121,7 +121,7 @@ namespace Melon {
 		}
 
 		template <class T>
-		inline TypeSymbol* SwitchBaseNode<T>::SwitchType() const {
+		inline Symbols::TypeSymbol* SwitchBaseNode<T>::SwitchType() const {
 			if (!expr) return nullptr;
 
 			Symbols::TypeSymbol* type = nodes[0]->Type();
@@ -574,7 +574,7 @@ namespace Melon {
 		}
 
 		template <class T>
-		inline StringBuilder SwitchBaseNode<T>::ToMelon(const Boxx::UInt indent) const {
+		inline Boxx::StringBuilder SwitchBaseNode<T>::ToMelon(const Boxx::UInt indent) const {
 			Boxx::StringBuilder sb = "switch ";
 			sb += match->ToMelon(indent);
 

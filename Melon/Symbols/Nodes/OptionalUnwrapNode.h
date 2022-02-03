@@ -2,18 +2,14 @@
 
 #include "SymbolNode.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-
-			///B OptionalUnwrapNode
-			/// Node for assigning values to optional types
-			class OptionalUnwrapNode : public SymbolNode {
+			/// Node for unwrapping optional types.
+			class OptionalUnwrapNode : public UnarySymbolNode {
 			public:
-
-				///T Compile
-				///A nodes[0]: The optional to unwrap
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::Expression& operand, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

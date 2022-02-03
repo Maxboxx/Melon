@@ -33,6 +33,12 @@ namespace Melon {
 		struct ParsingInfo;
 	}
 
+	namespace Symbols {
+		namespace Nodes {
+			class SymbolNode;
+		}
+	}
+
 	namespace Nodes {
 		class ExpressionNode;
 		class ConditionNode;
@@ -108,6 +114,8 @@ namespace Melon {
 			///p The optimized node will be assigned to this value.
 			static void Optimize(Boxx::Pointer<Node>& node, OptimizeInfo& info);
 
+			static CompiledNode CompileAssignment(const Expression& assignable, const Expression& value, CompileInfo& info, const FileInfo& file);
+
 		protected:
 			friend RootNode;
 
@@ -116,8 +124,6 @@ namespace Melon {
 			static Symbols::NameList CombineSideEffects(const Symbols::NameList& scope1, const Symbols::NameList& scope2);
 
 			static ScanResult ScanAssignment(const Expression& assignable, const Expression& value, ScanInfoStack& info, const FileInfo& file);
-
-			static CompiledNode CompileAssignment(const Expression& assignable, const Expression& value, CompileInfo& info, const FileInfo& file);
 
 			static RootNode* Root();
 
@@ -129,7 +135,7 @@ namespace Melon {
 			void Include(const Symbols::NameList& name, Parsing::ParsingInfo& info);
 
 		private:
-			friend MelonCompiler;
+			friend class Melon::MelonCompiler;
 
 			Boxx::Optional<Symbols::NameList> sideEffectScope;
 

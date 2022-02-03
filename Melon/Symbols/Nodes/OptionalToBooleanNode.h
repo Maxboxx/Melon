@@ -2,18 +2,14 @@
 
 #include "SymbolNode.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-
-			///B OptionalToBooleanNode
-			/// Node for converting an optional type to bool
-			class OptionalToBooleanNode : public SymbolNode {
+			/// Node for converting an optional type to bool.
+			class OptionalToBooleanNode : public UnarySymbolNode {
 			public:
-
-				///T Compile
-				///A nodes[0]: The optional type
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::Expression& operand, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

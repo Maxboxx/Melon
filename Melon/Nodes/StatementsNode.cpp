@@ -19,7 +19,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StatementsNode::StatementsNode(Symbol* const scope, const FileInfo& file) : StatementsNode(scope, file) {
+StatementsNode::StatementsNode(Symbols::Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 

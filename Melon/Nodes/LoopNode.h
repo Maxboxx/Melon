@@ -3,6 +3,7 @@
 #include "Boxx/Tuple.h"
 
 #include "StatementNode.h"
+#include "AssignNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
@@ -40,10 +41,10 @@ namespace Melon {
 				Statement statements;
 
 				/// The init node of a for segment.
-				Pointer<AssignNode> init;
+				Boxx::Pointer<AssignNode> init;
 
 				/// The step node of a for segment.
-				Pointer<Node> step;
+				Boxx::Pointer<Node> step;
 
 				/// An optional condition operator used in for segments.
 				///p The condition is automatically compared to the loop variable if this is set.

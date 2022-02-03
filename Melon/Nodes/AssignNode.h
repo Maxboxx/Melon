@@ -37,7 +37,7 @@ namespace Melon {
 				Symbols::TypeSymbol* type;
 				Expression value;
 
-				Value(TypeSymbol* const type, const Expression& value) {
+				Value(Symbols::TypeSymbol* const type, const Expression& value) {
 					this->type  = type;
 					this->value = value;
 				}

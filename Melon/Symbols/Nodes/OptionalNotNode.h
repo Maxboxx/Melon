@@ -2,16 +2,14 @@
 
 #include "SymbolNode.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-			///B OptionalNotNode
-			class OptionalNotNode : public SymbolNode {
+			/// Node for {not} operation on an optional value.
+			class OptionalNotNode : public UnarySymbolNode {
 			public:
-
-				///T Compile
-				///A nodes[0]: The optional typ to perform the operation on
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::Expression& operand, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}
