@@ -374,7 +374,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 
 		if (hasSafeUnwrap) {
 			Pointer<SafeUnwrapEndNode> unwrap = new SafeUnwrapEndNode(info.scope, info.GetFileInfoPrev());
-			unwrap->node = node;
+			unwrap->expression = node;
 			node = unwrap;
 		}
 

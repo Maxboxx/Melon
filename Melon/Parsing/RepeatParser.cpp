@@ -25,7 +25,7 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 
 	info.scopeCount++;
 	info.loops++;
-	repeatNode->content = StatementParser::ParseMultiple(info);
+	repeatNode->statements = StatementParser::ParseMultiple(info);
 	info.scopeCount--;
 	info.loops--;
 
