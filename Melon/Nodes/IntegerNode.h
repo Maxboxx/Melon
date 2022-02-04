@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for an integer.
-		class IntegerNode : public ExpressionNode {
+		class IntegerNode : public Expression {
 		public:
 			/// The integer value.
 			Boxx::Long number;

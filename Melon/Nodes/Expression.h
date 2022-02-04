@@ -8,10 +8,10 @@
 namespace Melon {
 	namespace Nodes {
 		/// The base of all expression nodes.
-		class ExpressionNode : public Node {
+		class Expression : public Node {
 		public:
-			ExpressionNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~ExpressionNode();
+			Expression(Symbols::Symbol* const scope, const FileInfo& file);
+			~Expression();
 
 			/// Returns the type of the expression.
 			virtual Symbols::TypeSymbol* Type() const;
@@ -39,7 +39,7 @@ namespace Melon {
 
 			/// Optimizes the expression.
 			///R A new optimized node or {nullptr} if the node was not optimized.
-			virtual Expression Optimize(OptimizeInfo& info);
+			virtual Ptr<Expression> Optimize(OptimizeInfo& info);
 
 			/// True if the expression is an immediate Kiwi value.
 			virtual bool IsImmediate() const;

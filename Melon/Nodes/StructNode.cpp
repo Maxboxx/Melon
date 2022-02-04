@@ -16,7 +16,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StructNode::StructNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+StructNode::StructNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 

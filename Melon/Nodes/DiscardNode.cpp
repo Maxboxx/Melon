@@ -6,7 +6,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-DiscardNode::DiscardNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+DiscardNode::DiscardNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 

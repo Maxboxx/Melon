@@ -20,13 +20,13 @@ namespace Melon {
 			virtual Symbols::Name GetOperator() const;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Expression Optimize(OptimizeInfo& info) override;
+			virtual _Expression_ Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
-			static CompiledNode CompileToBool(const Expression& node, CompileInfo& info);
+			static CompiledNode CompileToBool(const _Expression_& node, CompileInfo& info);
 
 			CompiledNode CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) const;
 			CompiledNode CompileAndOrOperand(CompileInfo& info, CompiledNode& cn, Boxx::List<Boxx::UInt>& jumps, const bool checkTrue) const;

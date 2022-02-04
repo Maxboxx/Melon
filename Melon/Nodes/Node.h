@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 #include "Boxx/Pointer.h"
 #include "Boxx/List.h"
 #include "Boxx/Mango.h"
@@ -40,17 +42,12 @@ namespace Melon {
 	}
 
 	namespace Nodes {
-		class ExpressionNode;
-		class ConditionNode;
-		class StatementNode;
-		class StatementsNode;
+		class Expression;
+		class Condition;
+		class Statement;
+		class Statements;
 
 		class RootNode;
-
-		typedef Boxx::Pointer<ExpressionNode> Expression;
-		typedef Boxx::Pointer<ConditionNode>   Condition;
-		typedef Boxx::Pointer<StatementNode>   Statement;
-		typedef Boxx::Pointer<StatementsNode> Statements;
 
 		/// Base for all nodes.
 		class Node {
@@ -92,29 +89,24 @@ namespace Melon {
 			/// Optimizes an expression.
 			///A expression: The expression to optimize.
 			///p The optimized expression will be assigned to this value.
-			static void Optimize(Expression& expression, OptimizeInfo& info);
+			static void Optimize(Ptr<Expression>& expression, OptimizeInfo& info);
 
 			/// Optimizes a condition.
 			///A condition: The condition to optimize.
 			///p The optimized condition will be assigned to this value.
-			static void Optimize(Condition& condition, OptimizeInfo& info);
+			static void Optimize(Ptr<Condition>& condition, OptimizeInfo& info);
 
 			/// Optimizes a statement.
 			///A statement: The statement to optimize.
 			///p The optimized statement will be assigned to this value.
-			static void Optimize(Statement& statement, OptimizeInfo& info);
+			static void Optimize(Ptr<Statement>& statement, OptimizeInfo& info);
 
 			/// Optimizes statements.
 			///A statements: The statements to optimize.
 			///p The optimized statements will be assigned to this value.
-			static void Optimize(Statements& statements, OptimizeInfo& info);
+			static void Optimize(Ptr<Statements>& statements, OptimizeInfo& info);
 
-			/// Optimizes a node.
-			///A node: The node to optimize.
-			///p The optimized node will be assigned to this value.
-			static void Optimize(Boxx::Pointer<Node>& node, OptimizeInfo& info);
-
-			static CompiledNode CompileAssignment(const Expression& assignable, const Expression& value, CompileInfo& info, const FileInfo& file);
+			static CompiledNode CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file);
 
 		protected:
 			friend RootNode;
@@ -123,11 +115,11 @@ namespace Melon {
 
 			static Symbols::NameList CombineSideEffects(const Symbols::NameList& scope1, const Symbols::NameList& scope2);
 
-			static ScanResult ScanAssignment(const Expression& assignable, const Expression& value, ScanInfoStack& info, const FileInfo& file);
+			static ScanResult ScanAssignment(Weak<Expression> assignable, Weak<Expression> value, ScanInfoStack& info, const FileInfo& file);
 
 			static RootNode* Root();
 
-			static bool IsEmpty(const Statement& statement);
+			static bool IsEmpty(Weak<Statement> statement);
 
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 

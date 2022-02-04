@@ -1,25 +1,25 @@
 #pragma once
 
-#include "StatementNode.h"
-#include "ExpressionNode.h"
+#include "Statement.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		/// Node for assignment.
-		class AssignNode : public StatementNode {
+		/// Assignment statement.
+		class Assignment : public Statement {
 		public:
 			/// The assignable values to assign values to.
-			Boxx::List<Expression> assignableValues;
+			Boxx::List<Ptr<Expression>> assignableValues;
 
 			/// The values to assign.
-			Boxx::List<Expression> values;
+			Boxx::List<Ptr<Expression>> values;
 
 			/// The types of the assignable values.
 			Boxx::List<Symbols::NameList> types;
 
-			AssignNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~AssignNode();
+			Assignment(Symbols::Symbol* const scope, const FileInfo& file);
+			~Assignment();
 
 			virtual Boxx::UInt GetSize() const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
@@ -27,7 +27,8 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
-			virtual Statement Optimize(OptimizeInfo& info) override;
+			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;
+			void OptimizeAsCondition(OptimizeInfo& info);
 
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign) override;
@@ -35,9 +36,9 @@ namespace Melon {
 		private:
 			struct Value {
 				Symbols::TypeSymbol* type;
-				Expression value;
+				Weak<Expression> value;
 
-				Value(Symbols::TypeSymbol* const type, const Expression& value) {
+				Value(Symbols::TypeSymbol* const type, const Weak<Expression>& value) {
 					this->type  = type;
 					this->value = value;
 				}

@@ -6,10 +6,10 @@
 namespace Melon {
 	namespace Nodes {
 		/// A node that does not get compiled.
-		class EmptyNode : public StatementNode {
+		class EmptyNode : public Statement {
 		public:
 			/// This statement does not get compiled but the {ToMelon()} method is called for it.
-			Statement statement = nullptr;
+			_Statement_ statement = nullptr;
 
 			EmptyNode();
 			~EmptyNode();

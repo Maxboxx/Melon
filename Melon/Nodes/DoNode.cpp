@@ -17,7 +17,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DoNode::DoNode(Symbols::Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+DoNode::DoNode(Symbols::Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
@@ -100,7 +100,7 @@ NameList DoNode::FindSideEffectScope(const bool assign) {
 	return statements->GetSideEffectScope(assign);
 }
 
-Statement DoNode::Optimize(OptimizeInfo& info) {
+_Statement_ DoNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(statements, info);
 
 	if (IsEmpty(statements) || !statements->HasSideEffects()) {

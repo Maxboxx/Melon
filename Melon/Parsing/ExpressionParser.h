@@ -9,7 +9,7 @@ namespace Melon {
 		class ExpressionParser {
 		public:
 			/// Parses an expression.
-			static Nodes::NodePtr Parse(ParsingInfo& info, const bool statement = false);
+			static Nodes::_Expression_ Parse(ParsingInfo& info, const bool statement = false);
 
 			/// Gets the precedence of a specific operator.
 			static Boxx::UByte Precedence(const TokenType op);
@@ -21,9 +21,9 @@ namespace Melon {
 			static bool IsLogic(const TokenType type);
 
 		private:
-			static Nodes::NodePtr ParseOperand(ParsingInfo& info, const bool statement = false);
-			static Nodes::NodePtr ParseRawValue(ParsingInfo& info, const bool statement = false);
-			static Nodes::NodePtr ParseValue(ParsingInfo& info, const bool statement = false);
+			static Nodes::_Expression_ ParseOperand(ParsingInfo& info, const bool statement = false);
+			static Nodes::_Expression_ ParseRawValue(ParsingInfo& info, const bool statement = false);
+			static Nodes::_Expression_ ParseValue(ParsingInfo& info, const bool statement = false);
 		};
 	}
 }

@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for a memory location.
-		class MemoryNode : public ExpressionNode {
+		class MemoryNode : public Expression {
 		public:
 			/// The memory location.
 			Kiwi::MemoryLocation mem;

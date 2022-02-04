@@ -15,7 +15,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-RepeatNode::RepeatNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+RepeatNode::RepeatNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
@@ -148,7 +148,7 @@ NameList RepeatNode::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(statements->GetSideEffectScope(assign), condition->GetSideEffectScope(assign));
 }
 
-Statement RepeatNode::Optimize(OptimizeInfo& info) {
+_Statement_ RepeatNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(statements, info);
 	Node::Optimize(condition, info);
 

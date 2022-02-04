@@ -127,7 +127,7 @@ NameList DefaultNode::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(operand1->GetSideEffectScope(assign), operand2->GetSideEffectScope(assign));
 }
 
-Expression DefaultNode::Optimize(OptimizeInfo& info) {
+_Expression_ DefaultNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(operand1, info);
 	Node::Optimize(operand2, info);
 	return nullptr;

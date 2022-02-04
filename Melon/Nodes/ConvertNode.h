@@ -6,10 +6,10 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for converting a value to a different type.
-		class ConvertNode : public ExpressionNode {
+		class ConvertNode : public Expression {
 		public:
 			/// The expression to convert to a different type.
-			Expression expression;
+			_Expression_ expression;
 
 			/// The absolute name of the type to convert to.
 			Symbols::NameList type;
@@ -24,7 +24,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Expression Optimize(OptimizeInfo& info) override;
+			virtual _Expression_ Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

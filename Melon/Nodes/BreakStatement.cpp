@@ -1,4 +1,4 @@
-#include "BreakNode.h"
+#include "BreakStatement.h"
 
 #include "Boxx/Math.h"
 
@@ -8,20 +8,20 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-String BreakNode::abortInstName      = "abort";
-String BreakNode::scopeBreakInstName = "break!";
-String BreakNode::breakTrueInstName  = "breaktrue";
-String BreakNode::breakFalseInstName = "breakfalse";
+String BreakStatement::abortInstName      = "abort";
+String BreakStatement::scopeBreakInstName = "break!";
+String BreakStatement::breakTrueInstName  = "breaktrue";
+String BreakStatement::breakFalseInstName = "breakfalse";
 
-BreakNode::BreakNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+BreakStatement::BreakStatement(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 	
 }
 
-BreakNode::~BreakNode() {
+BreakStatement::~BreakStatement() {
 
 }
 
-CompiledNode BreakNode::Compile(CompileInfo& info) {
+CompiledNode BreakStatement::Compile(CompileInfo& info) {
 	CompiledNode c;
 
 	Instruction in = Instruction(InstructionType::Custom, loops);
@@ -39,7 +39,7 @@ CompiledNode BreakNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-ScanResult BreakNode::Scan(ScanInfoStack& info) {
+ScanResult BreakStatement::Scan(ScanInfoStack& info) {
 	// Regular break or abort
 	if (!scopewise) {
 		if (info->scopeInfo.CanContinue()) {
@@ -64,7 +64,7 @@ ScanResult BreakNode::Scan(ScanInfoStack& info) {
 	return ScanResult();
 };
 
-StringBuilder BreakNode::ToMelon(const UInt indent) const {
+StringBuilder BreakStatement::ToMelon(const UInt indent) const {
 	StringBuilder sb = String(scopewise ? "break!" : (isBreak ? "break" : "abort"));
 	sb += " ";
 	sb += String::ToString(scopewise ? (Int)loops - 1 : (Int)loops);

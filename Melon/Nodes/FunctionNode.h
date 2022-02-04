@@ -8,10 +8,10 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for functions.
-		class FunctionNode : public StatementNode {
+		class FunctionNode : public Statement {
 		public:
 			/// The function body.
-			Statements statements;
+			_Statements_ statements;
 
 			/// The function symbol.
 			Symbols::FunctionSymbol* sym;
@@ -26,7 +26,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Statement Optimize(OptimizeInfo& info) override;
+			virtual _Statement_ Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

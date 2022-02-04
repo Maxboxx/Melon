@@ -16,7 +16,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NameNode::NameNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+NameNode::NameNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 

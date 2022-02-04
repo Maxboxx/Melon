@@ -8,7 +8,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for structs.
-		class StructNode : public StatementNode {
+		class StructNode : public Statement {
 		public:
 			/// The name of the struct.
 			Symbols::Name name;

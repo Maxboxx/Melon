@@ -1,4 +1,4 @@
-#include "BinaryOperatorNode.h"
+#include "BinaryOperatorExpression.h"
 
 #include "CallNode.h"
 #include "TypeNode.h"
@@ -18,15 +18,15 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-BinaryOperatorNode::BinaryOperatorNode(Symbols::Symbol* const scope, const Name& op, const FileInfo& file) : ExpressionNode(scope, file) {
+BinaryOperatorExpression::BinaryOperatorExpression(Symbols::Symbol* const scope, const Name& op, const FileInfo& file) : Expression(scope, file) {
 	this->op = op;
 }
 
-BinaryOperatorNode::~BinaryOperatorNode() {
+BinaryOperatorExpression::~BinaryOperatorExpression() {
 	
 }
 
-TypeSymbol* BinaryOperatorNode::Type() const {
+TypeSymbol* BinaryOperatorExpression::Type() const {
 	FunctionSymbol* const s = SymbolTable::FindOperator(GetOperator(), operand1->Type(), operand2->Type(), file);
 
 	if (s && !s->returnValues.IsEmpty()) {
@@ -42,40 +42,41 @@ TypeSymbol* BinaryOperatorNode::Type() const {
 	return nullptr;
 }
 
-Name BinaryOperatorNode::GetOperator() const {
+Name BinaryOperatorExpression::GetOperator() const {
 	return op;
 }
 
-CompiledNode BinaryOperatorNode::Compile(CompileInfo& info) {
+CompiledNode BinaryOperatorExpression::Compile(CompileInfo& info) {
 	FunctionSymbol* const func = SymbolTable::FindOperator(GetOperator(), operand1->Type(), operand2->Type(), file);
 	if (!func) return CompiledNode();
 
-	List<Expression> nodes;
-	nodes.Add(operand1);
-	nodes.Add(operand2);
-
 	// Compile symbol node
 	if (func->symbolNode) {
-		return func->symbolNode->Compile(nodes, info);
+		return func->symbolNode->Compile(operand1, operand2, info);
 	}
 	// Compile operator function
 	else {
-		Pointer<CallNode> cn = new CallNode(scope, file);
-		cn->arguments = nodes;
+		List<Ptr<Expression>> args;
+		args.Add(operand1);
+		args.Add(operand2);
 
-		Pointer<TypeNode> tn = new TypeNode(func->Parent()->Parent()->AbsoluteName());
-		cn->expression = tn;
+		Fixed<CallNode> cn = CallNode(scope, file);
+		cn->arguments  = args;
+		cn->expression = new TypeNode(func->Parent()->Parent()->AbsoluteName());
 
-		return cn->Compile(info);
+		CompiledNode c = cn->Compile(info);
+		operand1 = args[0];
+		operand2 = args[1];
+		return c;
 	}
 }
 
-void BinaryOperatorNode::IncludeScan(ParsingInfo& info) {
+void BinaryOperatorExpression::IncludeScan(ParsingInfo& info) {
 	operand1->IncludeScan(info);
 	operand2->IncludeScan(info);
 }
 
-ScanResult BinaryOperatorNode::Scan(ScanInfoStack& info) {
+ScanResult BinaryOperatorExpression::Scan(ScanInfoStack& info) {
 	ScanResult result1 = operand1->Scan(info);
 	result1.SelfUseCheck(info, operand1->File());
 
@@ -87,7 +88,7 @@ ScanResult BinaryOperatorNode::Scan(ScanInfoStack& info) {
 	return result1 | result2;
 }
 
-NameList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
+NameList BinaryOperatorExpression::FindSideEffectScope(const bool assign) {
 	FunctionSymbol* const f = SymbolTable::FindOperator(GetOperator(), operand1->Type(), operand2->Type(), file);
 
 	if (f->symbolNode) {
@@ -101,7 +102,7 @@ NameList BinaryOperatorNode::FindSideEffectScope(const bool assign) {
 	return NameList();
 }
 
-Expression BinaryOperatorNode::Optimize(OptimizeInfo& info) {
+Ptr<Expression> BinaryOperatorExpression::Optimize(OptimizeInfo& info) {
 	Node::Optimize(operand1, info);
 	Node::Optimize(operand2, info);
 
@@ -130,7 +131,7 @@ Expression BinaryOperatorNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-StringBuilder BinaryOperatorNode::ToMelon(const UInt indent) const {
+StringBuilder BinaryOperatorExpression::ToMelon(const UInt indent) const {
 	StringBuilder sb = operand1->ToMelon(indent);
 	sb += " ";
 	sb += op.ToString();

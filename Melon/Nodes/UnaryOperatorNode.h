@@ -6,10 +6,10 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for unary operators.
-		class UnaryOperatorNode : public ExpressionNode {
+		class UnaryOperatorNode : public Expression {
 		public:
 			/// The operand.
-			Expression operand;
+			_Expression_ operand;
 
 			/// The operator to use.
 			Symbols::Name op;
@@ -26,7 +26,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Expression Optimize(OptimizeInfo& info) override;
+			virtual _Expression_ Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

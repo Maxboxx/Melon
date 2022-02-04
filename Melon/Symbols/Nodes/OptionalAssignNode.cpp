@@ -18,7 +18,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalAssignNode::Compile(const Expression& operand1, const Expression& operand2, CompileInfo& info) const {
+CompiledNode OptionalAssignNode::Compile(const _Expression_& operand1, const _Expression_& operand2, CompileInfo& info) const {
 	bool important = info.important;
 	info.important = false;
 

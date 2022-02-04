@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for a name.
-		class NameNode : public ExpressionNode {
+		class NameNode : public Expression {
 		public:
 			/// The name of the node.
 			Symbols::Name name;

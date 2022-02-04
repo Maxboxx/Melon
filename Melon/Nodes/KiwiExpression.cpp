@@ -1,4 +1,4 @@
-#include "ArgumentNode.h"
+#include "KiwiExpression.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -7,25 +7,25 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-ArgumentNode::ArgumentNode(const Argument& arg) : ExpressionNode(nullptr, FileInfo()) {
+KiwiExpression::KiwiExpression(const Argument& arg) : Expression(nullptr, FileInfo()) {
 	argument = arg;
 }
 
-ArgumentNode::~ArgumentNode() {
+KiwiExpression::~KiwiExpression() {
 
 }
 
-TypeSymbol* ArgumentNode::Type() const {
+TypeSymbol* KiwiExpression::Type() const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
-CompiledNode ArgumentNode::Compile(CompileInfo& info) {
+CompiledNode KiwiExpression::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = argument;
 	c.size = Type()->Size();
 	return c;
 }
 
-StringBuilder ArgumentNode::ToMelon(const UInt indent) const {
+StringBuilder KiwiExpression::ToMelon(const UInt indent) const {
 	return StringBuilder();
 }

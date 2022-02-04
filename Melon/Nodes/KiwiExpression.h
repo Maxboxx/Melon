@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for a kiwi argument.
-		class ArgumentNode : public ExpressionNode {
+		class KiwiExpression : public Expression {
 		public:
 			/// The kiwi argument.
 			Kiwi::Argument argument;
@@ -15,8 +15,8 @@ namespace Melon {
 			Symbols::NameList type;
 
 			/// Create from kiwi argument.
-			ArgumentNode(const Kiwi::Argument& arg);
-			~ArgumentNode();
+			KiwiExpression(const Kiwi::Argument& arg);
+			~KiwiExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;

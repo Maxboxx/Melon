@@ -24,13 +24,13 @@ namespace Melon {
 		class SwitchBaseNode : public T {
 		public:
 			/// The match expression.
-			Expression match;
+			_Expression_ match;
 
 			/// The nodes for all the cases.
 			Boxx::List<Boxx::Pointer<T>> nodes;
 
 			/// All case expressions.
-			Boxx::List<Boxx::List<Expression>> cases;
+			Boxx::List<Boxx::List<_Expression_>> cases;
 
 			/// The default node.
 			Boxx::Pointer<T> def;
@@ -155,8 +155,8 @@ namespace Melon {
 				Boxx::List<Boxx::UInt> jumps;
 
 				// Compile case values
-				for (Expression node : values) {
-					Boxx::List<Expression> nodeArgs;
+				for (_Expression_ node : values) {
+					Boxx::List<_Expression_> nodeArgs;
 					nodeArgs.Add(switchInfo.match);
 					nodeArgs.Add(node);
 
@@ -541,8 +541,8 @@ namespace Melon {
 				Node::Optimize(node, info);
 			}
 
-			for (Boxx::List<Expression>& caseList : cases) {
-				for (Expression& node : caseList) {
+			for (Boxx::List<_Expression_>& caseList : cases) {
+				for (_Expression_& node : caseList) {
 					Node::Optimize(node, info);
 				}
 			}

@@ -5,19 +5,19 @@
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		class AssignNode;
+		class Assignment;
 
 		/// Node for conditional expressions.
-		class ConditionNode : public Node {
+		class Condition : public Node {
 		public:
 			/// The expression for a regular condition.
-			Expression cond;
+			Ptr<Expression> cond;
 
-			/// The assign node for assign conditions.
-			Boxx::Pointer<AssignNode> assign;
+			/// The assignment for assign conditions.
+			Ptr<Assignment> assign;
 
-			ConditionNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~ConditionNode();
+			Condition(Symbols::Symbol* const scope, const FileInfo& file);
+			~Condition();
 
 			/// True if the expression is an immediate Kiwi value.
 			virtual bool IsImmediate() const;
@@ -32,7 +32,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Condition Optimize(OptimizeInfo& info);
+			virtual Ptr<Condition> Optimize(OptimizeInfo& info);
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

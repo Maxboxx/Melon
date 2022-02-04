@@ -27,7 +27,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-GuardNode::GuardNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+GuardNode::GuardNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
@@ -186,7 +186,7 @@ NameList GuardNode::FindSideEffectScope(const bool assign) {
 	}
 }
 
-Statement GuardNode::Optimize(OptimizeInfo& info) {
+_Statement_ GuardNode::Optimize(OptimizeInfo& info) {
 	// Optimize nodes
 	Node::Optimize(cond, info);
 
@@ -209,7 +209,7 @@ Statement GuardNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-Statement GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
+_Statement_ GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
 	// Optimize else segment if it exists
 	if (else_) {
 		if (IsEmpty(else_) || !else_->HasSideEffects()) {
@@ -229,7 +229,7 @@ Statement GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
 	}
 }
 
-Statement GuardNode::OptimizeTrueCondition(OptimizeInfo& info) {
+_Statement_ GuardNode::OptimizeTrueCondition(OptimizeInfo& info) {
 	info.optimized = true;
 
 	if (IsEmpty(continue_) || !continue_->HasSideEffects()) {
@@ -318,7 +318,7 @@ StringBuilder GuardNode::ToMelon(const UInt indent) const {
 		sb += "end";
 	}
 
-	if (!continue_.Cast<StatementsNode>()->statements.IsEmpty()) {
+	if (!continue_.Cast<Statements>()->statements.IsEmpty()) {
 		sb += "\n\n";
 		sb += String('\t').Repeat(indent);
 		sb += continue_->ToMelon(indent);

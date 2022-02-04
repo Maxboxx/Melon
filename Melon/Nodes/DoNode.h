@@ -6,10 +6,10 @@
 namespace Melon {
 	namespace Nodes {
 		/// A node for {do} statements.
-		class DoNode : public StatementNode {
+		class DoNode : public Statement {
 		public:
 			/// The content of the do statement.
-			Statements statements;
+			_Statements_ statements;
 
 			DoNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DoNode();
@@ -19,7 +19,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Statement Optimize(OptimizeInfo& info) override;
+			virtual _Statement_ Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

@@ -22,7 +22,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-DotNode::DotNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+DotNode::DotNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
@@ -190,7 +190,7 @@ NameList DotNode::FindSideEffectScope(const bool assign) {
 	return scope->AbsoluteName();
 }
 
-Expression DotNode::Optimize(OptimizeInfo& info) {
+_Expression_ DotNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 	return nullptr;
 }

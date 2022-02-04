@@ -17,7 +17,7 @@ namespace Melon {
 				/// Constructor.
 				BooleanCompareNode(const Kiwi::InstructionType op);
 
-				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::Expression& operand1, const Melon::Nodes::Expression& operand2, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::_Expression_& operand1, const Melon::Nodes::_Expression_& operand2, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

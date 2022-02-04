@@ -15,7 +15,7 @@ namespace Melon {
 		class RootNode final : public Node {
 		public:
 			/// All statements in the main scope of the program.
-			Boxx::List<Statements> nodes;
+			Boxx::List<_Statements_> nodes;
 
 			/// All functions in the program.
 			Boxx::List<Boxx::Pointer<FunctionNode>> funcs;

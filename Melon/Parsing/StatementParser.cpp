@@ -70,7 +70,7 @@ NodePtr StatementParser::Parse(ParsingInfo& info, const bool single) {
 }
 
 NodePtr StatementParser::ParseMultiple(ParsingInfo& info) {
-	Pointer<StatementsNode> sn = new StatementsNode(info.scope, info.GetFileInfo());
+	Pointer<Statements> sn = new Statements(info.scope, info.GetFileInfo());
 
 	while (NodePtr stat = StatementParser::Parse(info)) {
 		if (Pointer<GuardNode> gn = stat.Cast<GuardNode>()) {

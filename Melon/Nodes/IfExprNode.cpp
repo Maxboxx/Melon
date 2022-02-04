@@ -15,7 +15,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-IfExprNode::IfExprNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+IfExprNode::IfExprNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 	
 }
 
@@ -104,11 +104,11 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 }
 
 void IfExprNode::IncludeScan(ParsingInfo& info) {
-	for (const Expression& node : nodes) {
+	for (const _Expression_& node : nodes) {
 		node->IncludeScan(info);
 	}
 
-	for (const Expression& condition : conditions) {
+	for (const _Expression_& condition : conditions) {
 		condition->IncludeScan(info);
 	}
 }
@@ -121,7 +121,7 @@ ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 	Pointer<TypeNode> type = t ? new TypeNode(t->AbsoluteName()) : nullptr;
 
 	// Scan values
-	for (const Expression& node : nodes) {
+	for (const _Expression_& node : nodes) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->File());
 		result |= r;
@@ -132,7 +132,7 @@ ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 	}
 
 	// Scan conditions
-	for (const Expression& node : conditions) {
+	for (const _Expression_& node : conditions) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->File());
 		result |= r;
@@ -149,20 +149,20 @@ NameList IfExprNode::FindSideEffectScope(const bool assign) {
 		list = CombineSideEffects(list, conditions[i]->GetSideEffectScope(assign));
 	}
 
-	for (const Expression& node : nodes) {
+	for (const _Expression_& node : nodes) {
 		list = CombineSideEffects(list, node->GetSideEffectScope(assign));
 	}
 
 	return list;
 }
 
-Expression IfExprNode::Optimize(OptimizeInfo& info) {
+_Expression_ IfExprNode::Optimize(OptimizeInfo& info) {
 	// Optimize nodes and conditions
-	for (Expression& node : nodes) {
+	for (_Expression_& node : nodes) {
 		Node::Optimize(node, info);
 	}
 
-	for (Condition& cond : conditions) {
+	for (_Condition_& cond : conditions) {
 		Node::Optimize(cond, info);
 	}
 

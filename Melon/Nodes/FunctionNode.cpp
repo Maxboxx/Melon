@@ -17,7 +17,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Optimizing;
 
-FunctionNode::FunctionNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+FunctionNode::FunctionNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
@@ -149,7 +149,7 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-Statement FunctionNode::Optimize(OptimizeInfo& info) {
+_Statement_ FunctionNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(statements, info);
 	return nullptr;
 }

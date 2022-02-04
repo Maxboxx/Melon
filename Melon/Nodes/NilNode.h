@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for a {nil} value.
-		class NilNode : public ExpressionNode {
+		class NilNode : public Expression {
 		public:
 			NilNode(const FileInfo& file);
 			~NilNode();

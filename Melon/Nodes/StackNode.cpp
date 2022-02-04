@@ -7,7 +7,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-StackNode::StackNode(const UInt stack) : ExpressionNode(nullptr, FileInfo()) {
+StackNode::StackNode(const UInt stack) : Expression(nullptr, FileInfo()) {
 	this->stack = stack;
 }
 

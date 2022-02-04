@@ -9,7 +9,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for loop structures.
-		class LoopNode : public StatementNode {
+		class LoopNode : public Statement {
 		public:
 			/// The different loop types.
 			enum class LoopType : Boxx::UByte {
@@ -35,13 +35,13 @@ namespace Melon {
 				bool also;
 
 				/// The condition of the segment.
-				Condition condition;
+				_Condition_ condition;
 
 				/// The body of the segment.
-				Statement statements;
+				_Statement_ statements;
 
 				/// The init node of a for segment.
-				Boxx::Pointer<AssignNode> init;
+				Boxx::Pointer<Assignment> init;
 
 				/// The step node of a for segment.
 				Boxx::Pointer<Node> step;
@@ -99,7 +99,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Statement Optimize(OptimizeInfo& info) override;
+			virtual _Statement_ Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

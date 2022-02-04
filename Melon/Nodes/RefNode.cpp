@@ -9,7 +9,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-RefNode::RefNode(const Expression& expression) : ExpressionNode(expression->scope, expression->File()) {
+RefNode::RefNode(Ptr<Expression> expression) : Expression(expression->scope, expression->File()) {
 	this->expression = expression;
 }
 
@@ -54,5 +54,53 @@ ScanResult RefNode::Scan(ScanInfoStack& info) {
 }
 
 StringBuilder RefNode::ToMelon(const UInt indent) const {
+	return expression->ToMelon(indent);
+}
+
+WeakRefNode::WeakRefNode(Weak<Expression> expression) : Expression(expression->scope, expression->File()) {
+	this->expression = expression;
+}
+
+WeakRefNode::~WeakRefNode() {
+
+}
+
+TypeSymbol* WeakRefNode::Type() const {
+	return expression->Type();
+}
+
+Boxx::List<TypeSymbol*> WeakRefNode::Types() const {
+	return expression->Types();
+}
+
+Symbol* WeakRefNode::Symbol() const {
+	return expression->Symbol();
+}
+
+CompiledNode WeakRefNode::Compile(CompileInfo& info) {
+	CompiledNode cn = expression->Compile(info);
+
+	Register reg = Register(info.index++);
+
+	Instruction adr = Instruction(InstructionType::Adr, info.stack.ptrSize);
+	adr.arguments.Add(reg);
+	adr.arguments.Add(cn.argument);
+
+	cn.instructions.Add(adr);
+
+	cn.argument = reg;
+	cn.size = info.stack.ptrSize;
+	return cn;
+}
+
+void WeakRefNode::IncludeScan(ParsingInfo& info) {
+	expression->IncludeScan(info);
+}
+
+ScanResult WeakRefNode::Scan(ScanInfoStack& info) {
+	return expression->Scan(info);
+}
+
+StringBuilder WeakRefNode::ToMelon(const UInt indent) const {
 	return expression->ToMelon(indent);
 }

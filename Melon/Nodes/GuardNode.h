@@ -6,19 +6,19 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for {guard} statements.
-		class GuardNode : public StatementNode {
+		class GuardNode : public Statement {
 		public:
 			/// The guard condition.
-			Condition cond;
+			_Condition_ cond;
 
 			/// The content of the {else} block.
-			Statements else_;
+			_Statements_ else_;
 
 			/// The statements after the {guard} statement.
-			Statements continue_;
+			_Statements_ continue_;
 
 			/// The final break of the {else} block.
-			Statement end;
+			_Statement_ end;
 
 			GuardNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~GuardNode();
@@ -28,7 +28,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Statement Optimize(OptimizeInfo& info) override;
+			virtual _Statement_ Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
@@ -38,8 +38,8 @@ namespace Melon {
 
 			void CompileElse(CompiledNode& compiled, CompileInfo& info, Boxx::List<Boxx::UInt>& jumps);
 
-			Statement OptimizeFalseCondition(OptimizeInfo& info);
-			Statement OptimizeTrueCondition(OptimizeInfo& info);
+			_Statement_ OptimizeFalseCondition(OptimizeInfo& info);
+			_Statement_ OptimizeTrueCondition(OptimizeInfo& info);
 
 			void AddScopeWiseBreak(ScanInfoStack& info);
 			void AddContinue(ScanInfoStack& info);

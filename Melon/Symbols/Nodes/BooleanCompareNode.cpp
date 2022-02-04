@@ -12,7 +12,7 @@ BooleanCompareNode::BooleanCompareNode(const InstructionType op) {
 	this->op = op;
 }
 
-CompiledNode BooleanCompareNode::Compile(const Expression& operand1, const Expression& operand2, CompileInfo& info) const {
+CompiledNode BooleanCompareNode::Compile(const _Expression_& operand1, const _Expression_& operand2, CompileInfo& info) const {
 	const UInt top = info.stack.top;
 	CompiledNode c1 = operand1->Compile(info);
 

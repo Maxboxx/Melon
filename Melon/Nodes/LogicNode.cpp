@@ -39,7 +39,7 @@ Name LogicNode::GetOperator() const {
 	return Name("logic");
 }
 
-CompiledNode LogicNode::CompileToBool(const Expression& node, CompileInfo& info) {
+CompiledNode LogicNode::CompileToBool(const _Expression_& node, CompileInfo& info) {
 	Pointer<ConvertNode> convert = new ConvertNode(node->scope, node->File());
 	convert->expression = node;
 	convert->type = NameList::Bool;
@@ -190,7 +190,7 @@ NameList LogicNode::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(operand1->GetSideEffectScope(assign), operand2->GetSideEffectScope(assign));
 }
 
-Expression LogicNode::Optimize(OptimizeInfo& info) {
+_Expression_ LogicNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(operand1, info);
 	Node::Optimize(operand2, info);
 

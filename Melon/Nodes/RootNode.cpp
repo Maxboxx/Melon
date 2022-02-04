@@ -44,7 +44,7 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	// Get size of statements
 	UInt size = 0;
 
-	for (const Statements& statements : nodes) {
+	for (const _Statements_& statements : nodes) {
 		size += statements->GetSize();
 	}
 
@@ -58,7 +58,7 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	info.stack.PushFrame(size);
 
 	// Compile nodes
-	for (const Statements& statements : nodes) {
+	for (const _Statements_& statements : nodes) {
 		for (const OptimizerInstruction& instruction : statements->Compile(info).instructions) {
 			cn.instructions.Add(instruction);
 		}
@@ -314,7 +314,7 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 	info->useFunction = true;
 
 	// Scan nodes
-	for (const Statements& statements : nodes) {
+	for (const _Statements_& statements : nodes) {
 		statements->Scan(info);
 	}
 
@@ -401,7 +401,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 	StringBuilder sb;
 
 	// Convert nodes to melon files
-	for (const Statements& statements : nodes) {
+	for (const _Statements_& statements : nodes) {
 		// Check if the namespace changes
 		if (statements->file.currentNamespace != currentNamespace) {
 			// Write old namespace contents to file

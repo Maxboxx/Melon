@@ -12,7 +12,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-SafeUnwrapNode::SafeUnwrapNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+SafeUnwrapNode::SafeUnwrapNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
@@ -54,7 +54,7 @@ NameList SafeUnwrapNode::FindSideEffectScope(const bool assign) {
 	return expression->GetSideEffectScope(assign);
 }
 
-Expression SafeUnwrapNode::Optimize(OptimizeInfo& info) {
+_Expression_ SafeUnwrapNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 	return nullptr;
 }

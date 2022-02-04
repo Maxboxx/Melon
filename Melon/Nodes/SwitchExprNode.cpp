@@ -5,7 +5,7 @@ using namespace Boxx;
 using namespace Melon;
 using namespace Melon::Nodes;
 
-SwitchExprNode::SwitchExprNode(Symbols::Symbol* const scope, const FileInfo& file) : SwitchBaseNode<ExpressionNode>(scope, file) {
+SwitchExprNode::SwitchExprNode(Symbols::Symbol* const scope, const FileInfo& file) : SwitchBaseNode<Expression>(scope, file) {
 	expr = true;
 }
 
@@ -17,6 +17,6 @@ Symbols::TypeSymbol* SwitchExprNode::Type() const {
 	return SwitchType();
 }
 
-Expression SwitchExprNode::Optimize(OptimizeInfo& info) {
+_Expression_ SwitchExprNode::Optimize(OptimizeInfo& info) {
 	return OptimizeSwitch(info);
 }

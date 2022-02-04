@@ -1,4 +1,4 @@
-#include "CallNode.h"
+#include "BaseCallNode.h"
 
 #include "RefNode.h"
 #include "MemoryNode.h"
@@ -25,19 +25,23 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CallNode::CallNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+template <class T>
+inline BaseCallNode<T>::BaseCallNode(Symbols::Symbol* const scope, const FileInfo& file) : T(scope, file) {
 
 }
 
-CallNode::~CallNode() {
+
+template <class T>
+inline BaseCallNode<T>::~BaseCallNode() {
 	
 }
 
-Name CallNode::GetFuncName() const {
-	if (const Pointer<NameNode>& nn = expression.Cast<NameNode>()) {
+template <class T>
+inline Name BaseCallNode<T>::GetFuncName() const {
+	if (Weak<NameNode> nn = expression.As<NameNode>()) {
 		return nn->name;
 	}
-	else if (const Pointer<DotNode>& nn = expression.Cast<DotNode>()) {
+	else if (Weak<DotNode> nn = expression.As<DotNode>()) {
 		return nn->name;
 	}
 	else {
@@ -45,7 +49,8 @@ Name CallNode::GetFuncName() const {
 	}
 }
 
-Optional<List<TypeSymbol*>> CallNode::GetTemplateTypes(const Optional<List<NameList>>& types) const {
+template <class T>
+inline Optional<List<TypeSymbol*>> BaseCallNode<T>::GetTemplateTypes(const Optional<List<NameList>>& types) const {
 	if (!types) return nullptr;
 
 	List<TypeSymbol*> args;
@@ -61,11 +66,12 @@ Optional<List<TypeSymbol*>> CallNode::GetTemplateTypes(const Optional<List<NameL
 	return args;
 }
 
-Optional<List<TypeSymbol*>> CallNode::GetArgumentTypes() const {
+template <class T>
+inline Optional<List<TypeSymbol*>> BaseCallNode<T>::GetArgumentTypes() const {
 	List<TypeSymbol*> argTypes;
 
-	for (const Expression& node : arguments) {
-		if (TypeSymbol* const type = node->Type()) {
+	for (Weak<Expression> arg : arguments) {
+		if (TypeSymbol* const type = arg->Type()) {
 			argTypes.Add(type);
 		}
 		else {
@@ -76,7 +82,8 @@ Optional<List<TypeSymbol*>> CallNode::GetArgumentTypes() const {
 	return argTypes;
 }
 
-FunctionSymbol* CallNode::GetInitFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
+template <class T>
+inline FunctionSymbol* BaseCallNode<T>::GetInitFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (TypeSymbol* const t = expression->Symbol<TypeSymbol>()) {
 		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name::Init, expression->File())) {
 			return f->FindMethodOverload(argTypes, expression->File());
@@ -86,7 +93,8 @@ FunctionSymbol* CallNode::GetInitFunction(const Optional<List<TypeSymbol*>>& tem
 	return nullptr;
 }
 
-FunctionSymbol* CallNode::GetStaticOrPlainFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
+template <class T>
+inline FunctionSymbol* BaseCallNode<T>::GetStaticOrPlainFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (FunctionSymbol* const f = expression->Symbol<FunctionSymbol>()) {
 		if (f->Parent()->Is<TypeSymbol>()) {
 			if (templateTypes) {
@@ -109,7 +117,8 @@ FunctionSymbol* CallNode::GetStaticOrPlainFunction(const Optional<List<TypeSymbo
 	return nullptr;
 }
 
-FunctionSymbol* CallNode::GetMethod(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
+template <class T>
+inline FunctionSymbol* BaseCallNode<T>::GetMethod(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (TypeSymbol* const t = expression->Type()) {
 		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(methodName, expression->File())) {
 			if (templateTypes) {
@@ -124,7 +133,8 @@ FunctionSymbol* CallNode::GetMethod(const Optional<List<TypeSymbol*>>& templateT
 	return nullptr;
 }
 
-FunctionSymbol* CallNode::GetFunctionSymbol(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
+template <class T>
+inline FunctionSymbol* BaseCallNode<T>::GetFunctionSymbol(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (IsInit()) {
 		return GetInitFunction(templateTypes, argTypes);
 	}
@@ -136,7 +146,8 @@ FunctionSymbol* CallNode::GetFunctionSymbol(const Optional<List<TypeSymbol*>>& t
 	}
 }
 
-FunctionSymbol* CallNode::GetFunc() const {
+template <class T>
+inline FunctionSymbol* BaseCallNode<T>::GetFunc() const {
 	List<TypeSymbol*> argTypes;
 	Optional<List<TypeSymbol*>> templateTypes = nullptr;
 
@@ -175,11 +186,13 @@ FunctionSymbol* CallNode::GetFunc() const {
 	return nullptr;
 }
 
-bool CallNode::IsSelfPassing() const {
+template <class T>
+inline bool BaseCallNode<T>::IsSelfPassing() const {
 	return IsMethod();
 }
 
-bool CallNode::IsInit() const {
+template <class T>
+inline bool BaseCallNode<T>::IsInit() const {
 	Symbols::Symbol* const s = expression->Symbol();
 
 	if (s->Is<StructSymbol>()) {
@@ -189,35 +202,8 @@ bool CallNode::IsInit() const {
 	return false;
 }
 
-TypeSymbol* CallNode::Type() const {
-	return Types()[0];
-}
-
-List<TypeSymbol*> CallNode::Types() const {
-	FunctionSymbol* const f = GetFunc();
-
-	List<TypeSymbol*> types;
-
-	if (f == nullptr) {
-		types.Add(nullptr);
-		return types;
-	}
-
-	if (IsInit()) {
-		types.Add(expression->Type());
-	}
-	else for (UInt i = 0; i < f->returnValues.Size(); i++) {
-		types.Add(f->ReturnType(i));
-	}
-
-	if (types.IsEmpty()) {
-		types.Add(nullptr);
-	}
-
-	return types;
-}
-
-UInt CallNode::CalculateReturnSize(CallInfo& callInfo) {
+template <class T>
+inline UInt BaseCallNode<T>::CalculateReturnSize(CallInfo& callInfo) {
 	if (callInfo.isInit) return Type()->Size();
 
 	UInt retSize = 0; 
@@ -229,7 +215,8 @@ UInt CallNode::CalculateReturnSize(CallInfo& callInfo) {
 	return retSize;
 }
 
-UInt CallNode::CalculateArgumentSize(CallInfo& callInfo, CompileInfo& info) {
+template <class T>
+inline UInt BaseCallNode<T>::CalculateArgumentSize(CallInfo& callInfo, CompileInfo& info) {
 	UInt argSize = 0;
 
 	for (UInt i = 0; i < callInfo.func->arguments.Size(); i++) {
@@ -246,7 +233,8 @@ UInt CallNode::CalculateArgumentSize(CallInfo& callInfo, CompileInfo& info) {
 	return argSize;
 }
 
-UInt CallNode::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
+template <class T>
+inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 	UInt tempSize = 0;
 
 	// Check all arguments
@@ -281,7 +269,7 @@ UInt CallNode::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 				if (!hasNoRef && !arguments[i]->IsImmediate() && !arguments[i].Is<ObjectInitNode>()) {
 					bool error = true;
 
-					if (const Pointer<CallNode>& call = arguments[i].Cast<CallNode>()) {
+					if (const Pointer<BaseCallNode>& call = arguments[i].Cast<BaseCallNode>()) {
 						error = !call->IsInit();
 					}
 
@@ -304,7 +292,8 @@ UInt CallNode::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 	return tempSize;
 }
 
-UInt CallNode::CalculatePushSize(CallInfo& callInfo, CompileInfo& info) {
+template <class T>
+inline UInt BaseCallNode<T>::CalculatePushSize(CallInfo& callInfo, CompileInfo& info) {
 	UInt pushSize = 0;
 
 	// Changes stack top if push is not needed
@@ -328,7 +317,8 @@ UInt CallNode::CalculatePushSize(CallInfo& callInfo, CompileInfo& info) {
 	return pushSize;
 }
 
-void CallNode::SetupStackFrame(CallInfo& callInfo, CompileInfo& info) {
+template <class T>
+inline void BaseCallNode<T>::SetupStackFrame(CallInfo& callInfo, CompileInfo& info) {
 	// Calculate sizes
 	callInfo.retSize  = CalculateReturnSize(callInfo);
 	callInfo.argSize  = CalculateArgumentSize(callInfo, info);
@@ -350,11 +340,11 @@ void CallNode::SetupStackFrame(CallInfo& callInfo, CompileInfo& info) {
 	}
 }
 
-Expression CallNode::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
+template <class T>
+inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	// Create self for constructor
 	if (index == -1) {
-		Pointer<MemoryNode> sn = new MemoryNode(callInfo.stackIndex);
-		return new RefNode(sn);
+		return new RefNode(new MemoryNode(callInfo.stackIndex));
 	}
 	// Create reference to self
 	else if (index == 0 && IsSelfPassing()) {
@@ -366,7 +356,7 @@ Expression CallNode::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeS
 
 		// Assign argument to temporary memory
 		if (callInfo.assignFirst[index]) {
-			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)callInfo.initialTop + callInfo.memoryOffsets[index]));
+			Ptr<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)callInfo.initialTop + callInfo.memoryOffsets[index]));
 			sn->type = type->AbsoluteName();
 
 			UInt top = info.stack.top;
@@ -377,13 +367,14 @@ Expression CallNode::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeS
 		}
 		// Reference the argument normally
 		else {
-			return new RefNode(arguments[index]);
+			return new WeakRefNode(arguments[index]);
 		}
 	}
 }
 
-void CallNode::CompileRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
-	Expression refArg = GetRefArgument(callInfo, info, type, index);
+template <class T>
+inline void BaseCallNode<T>::CompileRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
+	Ptr<Expression> refArg = GetRefArgument(callInfo, info, type, index);
 
 	UInt regIndex = info.index;
 	callInfo.stackIndex -= info.stack.ptrSize;
@@ -421,10 +412,11 @@ void CallNode::CompileRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSym
 	info.index = regIndex;
 }
 
-void CallNode::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
+template <class T>
+inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	callInfo.stackIndex -= type->Size();
 
-	MemoryNode* const mn = new MemoryNode(callInfo.stackIndex);
+	Fixed<MemoryNode> mn = MemoryNode(callInfo.stackIndex);
 	mn->type = type->AbsoluteName();
 
 	info.stack.Push(type->Size());
@@ -440,12 +432,11 @@ void CallNode::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSy
 		callInfo.cn.AddInstructions(CompileAssignment(mn, this->arguments[index], info, expression->File()).instructions);
 	}
 
-	delete mn;
-
 	info.stack.PopExpr(frame, callInfo.cn);
 }
 
-void CallNode::CompileArguments(CallInfo& callInfo, CompileInfo& info) {
+template <class T>
+inline void BaseCallNode<T>::CompileArguments(CallInfo& callInfo, CompileInfo& info) {
 	for (UInt i = 0; i < callInfo.func->arguments.Size(); i++) {
 		TypeSymbol* const type = callInfo.func->ArgumentType(i);
 
@@ -460,7 +451,8 @@ void CallNode::CompileArguments(CallInfo& callInfo, CompileInfo& info) {
 	}
 }
 
-void CallNode::CompileCall(CallInfo& callInfo, CompileInfo& info) {
+template <class T>
+inline void BaseCallNode<T>::CompileCall(CallInfo& callInfo, CompileInfo& info) {
 	// Create call instruction
 	Instruction inst = Instruction(InstructionType::Call);
 	inst.arguments.Add(Argument(ArgumentType::Name, callInfo.func->AbsoluteName().ToString()));
@@ -493,7 +485,8 @@ void CallNode::CompileCall(CallInfo& callInfo, CompileInfo& info) {
 	}
 }
 
-CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+template <class T>
+inline CompiledNode BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
 	// Setup call info
 	CallInfo callInfo;
 	callInfo.func   = GetFunc();
@@ -525,17 +518,19 @@ CompiledNode CallNode::Compile(CompileInfo& info) { // TODO: more accurate arg e
 	return callInfo.cn;
 }
 
-void CallNode::IncludeScan(ParsingInfo& info) {
+template <class T>
+inline void BaseCallNode<T>::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 
-	for (const Expression& arg : arguments) {
+	for (Weak<Expression> arg : arguments) {
 		arg->IncludeScan(info);
 	}
 
 	GetFunc();
 }
 
-ScanResult CallNode::Scan(ScanInfoStack& info) {
+template <class T>
+inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 	// Scan called node
 	ScanResult result = expression->Scan(info);
 	result.SelfUseCheck(info, expression->File());
@@ -579,7 +574,7 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 		
 		if (i < 0) continue;
 
-		Expression arg;
+		Weak<Expression> arg;
 
 		if (IsSelfPassing()) {
 			if (i == 0) {
@@ -601,17 +596,19 @@ ScanResult CallNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-Expression CallNode::Optimize(OptimizeInfo& info) {
+template <class T>
+inline Ptr<T> BaseCallNode<T>::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 
-	for (Expression& arg : arguments) {
+	for (Ptr<Expression>& arg : arguments) {
 		Node::Optimize(arg, info);
 	}
 
 	return nullptr;
 }
 
-StringBuilder CallNode::ToMelon(const UInt indent) const {
+template <class T>
+inline StringBuilder BaseCallNode<T>::ToMelon(const UInt indent) const {
 	StringBuilder sb = expression->ToMelon(indent);
 
 	sb += "(";

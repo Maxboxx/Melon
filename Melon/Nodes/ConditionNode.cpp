@@ -1,12 +1,11 @@
 #include "ConditionNode.h"
 
 #include "ConvertNode.h"
-#include "AssignNode.h"
+#include "Assignment.h"
 #include "BooleanNode.h"
 #include "ArgumentNode.h"
 #include "TypeNode.h"
-
-#include "Melon/Nodes/AssignNode.h"
+#include "DiscardNode.h"
 
 #include "Melon/Symbols/VariableSymbol.h"
 
@@ -21,31 +20,31 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-ConditionNode::ConditionNode(Symbols::Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+Condition::Condition(Symbols::Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
-ConditionNode::~ConditionNode() {
+Condition::~Condition() {
 	
 }
 
-bool ConditionNode::IsImmediate() const {
+bool Condition::IsImmediate() const {
 	return !assign && cond->IsImmediate();
 }
 
-Boxx::Long ConditionNode::GetImmediate() const {
+Boxx::Long Condition::GetImmediate() const {
 	return !assign ? cond->GetImmediate() : 0;
 }
 
-TypeSymbol* ConditionNode::Type() const {
+TypeSymbol* Condition::Type() const {
 	return assign ? (TypeSymbol*)SymbolTable::Bool : cond->Type();
 }
 
-UInt ConditionNode::GetSize() const {
+UInt Condition::GetSize() const {
 	return assign ? assign->GetSize() : 0;
 }
 
-CompiledNode ConditionNode::CompileAssignCondition(CompileInfo& info) {
+CompiledNode Condition::CompileAssignCondition(CompileInfo& info) {
 	TypeSymbol* const type = assign->values[0]->Type();
 
 	// Compile value
@@ -54,10 +53,10 @@ CompiledNode ConditionNode::CompileAssignCondition(CompileInfo& info) {
 	argCopy.mem.offset++;
 
 	// Temporary replaces the value node with argCopy
-	Pointer<ArgumentNode> value = new ArgumentNode(argCopy);
+	Ptr<ArgumentNode> value = new ArgumentNode(argCopy);
 	value->type = type->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
 
-	Expression tempValue = assign->values[0];
+	Ptr<Expression> tempValue = assign->values[0];
 	assign->values[0] = value;
 
 	// Stores the condition result in a register
@@ -87,7 +86,7 @@ CompiledNode ConditionNode::CompileAssignCondition(CompileInfo& info) {
 	return c;
 }
 
-CompiledNode ConditionNode::Compile(CompileInfo& info) {
+CompiledNode Condition::Compile(CompileInfo& info) {
 	// Compile assign condition
 	if (assign) {
 		return CompileAssignCondition(info);
@@ -102,14 +101,14 @@ CompiledNode ConditionNode::Compile(CompileInfo& info) {
 	}
 }
 
-void ConditionNode::IncludeScan(ParsingInfo& info) {
+void Condition::IncludeScan(ParsingInfo& info) {
 	cond->IncludeScan(info);
 }
 
-ScanResult ConditionNode::Scan(ScanInfoStack& info) {
+ScanResult Condition::Scan(ScanInfoStack& info) {
 	// Scan assignment condition
 	if (assign) {
-		Expression tempValue = assign->values[0];
+		Ptr<Expression> tempValue = assign->values[0];
 		
 		TypeSymbol* const type = assign->values[0]->Type();
 
@@ -135,23 +134,18 @@ ScanResult ConditionNode::Scan(ScanInfoStack& info) {
 	}
 }
 
-NameList ConditionNode::FindSideEffectScope(const bool assign) {
+NameList Condition::FindSideEffectScope(const bool assign) {
 	return cond->GetSideEffectScope(assign);
 }
 
-Condition ConditionNode::Optimize(OptimizeInfo& info) {
+Ptr<Condition> Condition::Optimize(OptimizeInfo& info) {
 	// Optimize assignment
 	if (assign) {
-		Expression value = assign->values[0];
+		assign->OptimizeAsCondition(info);
 
-		if (Statement node = assign->Optimize(info)) {
-			if (const Pointer<AssignNode>& a = node.Cast<AssignNode>()) {
-				assign = a;
-			}
-			else {
-				assign = nullptr;
-				cond = value;
-			}
+		if (assign->assignableValues.IsEmpty() || assign->assignableValues[0].Is<DiscardNode>()) {
+			cond   = assign->values[0];
+			assign = nullptr;
 		}
 	}
 	// Optimize regular condition
@@ -161,7 +155,7 @@ Condition ConditionNode::Optimize(OptimizeInfo& info) {
 
 	// Replace condition with immediate value
 	if (cond->IsImmediate()) {
-		Pointer<BooleanNode> bn = new BooleanNode(cond->File());
+		Ptr<BooleanNode> bn = new BooleanNode(cond->File());
 		bn->boolean = cond->GetImmediate() != 0;
 		info.optimized = true;
 		return bn;
@@ -170,6 +164,6 @@ Condition ConditionNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-StringBuilder ConditionNode::ToMelon(const UInt indent) const {
+StringBuilder Condition::ToMelon(const UInt indent) const {
 	return cond->ToMelon(indent);
 }

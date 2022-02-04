@@ -1,19 +1,19 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for a boolean value.
-		class BooleanNode : public ExpressionNode {
+		class Boolean : public Expression {
 		public:
 			/// The boolean value.
-			bool boolean = false;
+			bool value = false;
 
 			/// Creates a boolean node.
-			BooleanNode(const FileInfo& file);
-			~BooleanNode();
+			Boolean(const FileInfo& file);
+			~Boolean();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual bool IsImmediate() const override;

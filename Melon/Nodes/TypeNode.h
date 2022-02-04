@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// A node that contains a type.
-		class TypeNode : public ExpressionNode {
+		class TypeNode : public Expression {
 		public:
 			/// The absolute type name.
 			Symbols::NameList type;

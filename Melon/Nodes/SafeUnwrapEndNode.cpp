@@ -18,7 +18,7 @@ using namespace Melon::Optimizing;
 
 String SafeUnwrapEndNode::jumpInstName = "?jmp";
 
-SafeUnwrapEndNode::SafeUnwrapEndNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+SafeUnwrapEndNode::SafeUnwrapEndNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
@@ -116,7 +116,7 @@ NameList SafeUnwrapEndNode::FindSideEffectScope(const bool assign) {
 	return expression->GetSideEffectScope(assign);
 }
 
-Expression SafeUnwrapEndNode::Optimize(OptimizeInfo& info) {
+_Expression_ SafeUnwrapEndNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 	return nullptr;
 }

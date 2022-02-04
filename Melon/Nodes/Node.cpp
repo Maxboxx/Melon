@@ -80,46 +80,27 @@ FileInfo Node::File() const {
 	return file;
 }
 
-void Node::Optimize(Expression& node, OptimizeInfo& info) {
-	if (Expression n = node->Optimize(info)) {
+void Node::Optimize(Ptr<Expression>& node, OptimizeInfo& info) {
+	if (Ptr<Expression> n = node->Optimize(info)) {
 		node = n;
 	}
 }
 
-void Node::Optimize(Condition& node, OptimizeInfo& info) {
-	if (Condition n = node->Optimize(info)) {
+void Node::Optimize(Ptr<Condition>& node, OptimizeInfo& info) {
+	if (Ptr<Condition> n = node->Optimize(info)) {
 		node = n;
 	}
 }
 
-void Node::Optimize(Statement& node, OptimizeInfo& info) {
-	if (Statement n = node->Optimize(info)) {
+void Node::Optimize(Ptr<Statement>& node, OptimizeInfo& info) {
+	if (Ptr<Statement> n = node->Optimize(info)) {
 		node = n;
 	}
 }
 
-void Node::Optimize(Statements& node, OptimizeInfo& info) {
-	if (Statements n = node->Optimize(info)) {
+void Node::Optimize(Ptr<Statements>& node, OptimizeInfo& info) {
+	if (Ptr<Statements> n = node->Optimize(info)) {
 		node = n;
-	}
-}
-
-void Node::Optimize(Pointer<Node>& node, OptimizeInfo& info) {
-	if (Expression expression = node.Cast<ExpressionNode>()) {
-		Node::Optimize(expression, info);
-		node = expression;
-	}
-	else if (Statement statement = node.Cast<StatementNode>()) {
-		Node::Optimize(statement, info);
-		node = statement;
-	}
-	else if (Condition condition = node.Cast<ConditionNode>()) {
-		Node::Optimize(condition, info);
-		node = condition;
-	}
-	else if (Statements statements = node.Cast<StatementsNode>()) {
-		Node::Optimize(statements, info);
-		node = statements;
 	}
 }
 
@@ -143,7 +124,7 @@ NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2
 	}
 }
 
-ScanResult Node::ScanAssignment(const Expression& assignable, const Expression& value, ScanInfoStack& info, const FileInfo& file) {
+ScanResult Node::ScanAssignment(Weak<Expression> assignable, Weak<Expression> value, ScanInfoStack& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
@@ -156,7 +137,7 @@ ScanResult Node::ScanAssignment(const Expression& assignable, const Expression& 
 	return ScanResult();
 }
 
-CompiledNode Node::CompileAssignment(const Expression& assignable, const Expression& value, CompileInfo& info, const FileInfo& file) {
+CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
@@ -169,16 +150,12 @@ CompiledNode Node::CompileAssignment(const Expression& assignable, const Express
 	}
 
 	if (assign) {
-		List<Expression> nodes;
-		nodes.Add(assignable);
-
-		ConvertNode* cn = new ConvertNode(value->scope, value->file);
+		Fixed<ConvertNode> cn = ConvertNode(value->scope, value->file);
 		cn->isExplicit = false;
 		cn->expression = value;
 		cn->type = assign->ArgumentType(0)->AbsoluteName();
-		nodes.Add(cn);
 
-		return assign->symbolNode->Compile(nodes, info);
+		return assign->symbolNode->Compile(assignable, cn, info);
 	}
 
 	return CompiledNode();
@@ -217,8 +194,8 @@ RootNode* Node::Root() {
 	return _root;
 }
 
-bool Node::IsEmpty(const Statement& statement) {
-	if (const Pointer<EmptyNode>& empty = statement.Cast<EmptyNode>()) {
+bool Node::IsEmpty(Weak<Statement> statement) {
+	if (Weak<EmptyNode> empty = statement.As<EmptyNode>()) {
 		return !empty->statement;
 	}
 	

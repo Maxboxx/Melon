@@ -13,6 +13,6 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalToBooleanNode::Compile(const Expression& operand, CompileInfo& info) const {
+CompiledNode OptionalToBooleanNode::Compile(const _Expression_& operand, CompileInfo& info) const {
 	return operand->Compile(info);
 }

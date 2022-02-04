@@ -6,10 +6,10 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for the dot operator.
-		class DotNode : public ExpressionNode {
+		class DotNode : public Expression {
 		public:
 			/// The expression to perform the dot operation on.
-			Expression expression;
+			_Expression_ expression;
 
 			/// The name of the dot operator.
 			Symbols::Name name;
@@ -22,7 +22,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Expression Optimize(OptimizeInfo& info) override;
+			virtual _Expression_ Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

@@ -34,7 +34,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	bool singleType = types.Size() == 1;
 
 	// Create assign node
-	Pointer<AssignNode> assign = new AssignNode(info.scope, info.GetFileInfo(startLine));
+	Pointer<Assignment> assign = new Assignment(info.scope, info.GetFileInfo(startLine));
 	List<Tuple<Name, Symbol*>> symbols;
 
 	// Parse variables
@@ -154,7 +154,7 @@ bool AssignmentParser::ValidateTypes(ParsingInfo& info, List<NameList>& types, c
 	return true;
 }
 
-void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, Pointer<AssignNode>& assign, List<Tuple<Name, Symbol*>>& symbols, const bool singleType) {
+void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, Pointer<Assignment>& assign, List<Tuple<Name, Symbol*>>& symbols, const bool singleType) {
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
 			if (info.Current().type != TokenType::Comma) {
@@ -221,7 +221,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 	}
 }
 
-void AssignmentParser::ParseExpressions(ParsingInfo& info, Pointer<AssignNode>& assign) {
+void AssignmentParser::ParseExpressions(ParsingInfo& info, Pointer<Assignment>& assign) {
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
 			if (info.EndOfFile() || info.Current().type != TokenType::Comma) {

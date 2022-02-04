@@ -20,7 +20,7 @@ IntegerBinaryOperatorNode::IntegerBinaryOperatorNode(const UByte size, const boo
 	this->op = name;
 }
 
-CompiledNode IntegerBinaryOperatorNode::Compile(const Expression& operand1, const Expression& operand2, CompileInfo& info) const {
+CompiledNode IntegerBinaryOperatorNode::Compile(const _Expression_& operand1, const _Expression_& operand2, CompileInfo& info) const {
 	const UInt top = info.stack.top;
 	CompiledNode c1 = operand1->Compile(info);
 

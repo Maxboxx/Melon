@@ -8,7 +8,7 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-IntegerNode::IntegerNode(const FileInfo& file) : ExpressionNode(nullptr, file) {
+IntegerNode::IntegerNode(const FileInfo& file) : Expression(nullptr, file) {
 
 }
 

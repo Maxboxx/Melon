@@ -8,7 +8,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-TypeNode::TypeNode(const NameList& type) : ExpressionNode(nullptr, FileInfo()) {
+TypeNode::TypeNode(const NameList& type) : Expression(nullptr, FileInfo()) {
 	this->type = type;
 }
 

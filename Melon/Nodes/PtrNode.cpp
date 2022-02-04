@@ -9,7 +9,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-PtrNode::PtrNode(const Expression& address) : ExpressionNode(address->scope, address->File()) {
+PtrNode::PtrNode(const _Expression_& address) : Expression(address->scope, address->File()) {
 	this->address = address;
 }
 

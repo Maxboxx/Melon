@@ -9,7 +9,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-EnumNode::EnumNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+EnumNode::EnumNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 

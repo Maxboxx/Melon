@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for the discard keyword.
-		class DiscardNode : public ExpressionNode {
+		class DiscardNode : public Expression {
 		public:
 			DiscardNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~DiscardNode();

@@ -24,7 +24,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-LoopNode::LoopNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+LoopNode::LoopNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
@@ -380,7 +380,7 @@ void LoopNode::CompileForStart(CompiledNode& compiled, CompileInfo& info, Segmen
 
 	// Compile loop step
 	if (segment.stepOperator) {
-		Pointer<AssignNode> assign = new AssignNode(segment.step->scope, segment.step->File());
+		Pointer<Assignment> assign = new Assignment(segment.step->scope, segment.step->File());
 		assign->assignableValues.Add(segment.init->assignableValues[0]);
 
 		Pointer<BinaryOperatorNode> add = new BinaryOperatorNode(segment.step->scope, *segment.stepOperator, segment.step->File());
@@ -738,7 +738,7 @@ ScanResult LoopNode::ScanForCondition(const LoopSegment& segment, ScanInfoStack&
 	}
 	// Scan step with step operator
 	else {
-		Pointer<AssignNode> assign = new AssignNode(segment.step->scope, segment.step->File());
+		Pointer<Assignment> assign = new Assignment(segment.step->scope, segment.step->File());
 		assign->assignableValues.Add(segment.init->assignableValues[0]);
 
 		Pointer<BinaryOperatorNode> op = new BinaryOperatorNode(segment.step->scope, *segment.stepOperator, segment.step->File());
@@ -826,7 +826,7 @@ NameList LoopNode::FindSideEffectScope(const bool assign) {
 	return list;
 }
 
-Statement LoopNode::Optimize(OptimizeInfo& info) {
+_Statement_ LoopNode::Optimize(OptimizeInfo& info) {
 	for (LoopSegment& segment : segments) {
 		if (segment.condition) {
 			Node::Optimize(segment.condition, info);

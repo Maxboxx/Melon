@@ -7,13 +7,13 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for {switch} expressions.
-		class SwitchExprNode : public SwitchBaseNode<ExpressionNode> {
+		class SwitchExprNode : public SwitchBaseNode<Expression> {
 		public:
 			SwitchExprNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~SwitchExprNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;
-			virtual Expression Optimize(OptimizeInfo& info) override;
+			virtual _Expression_ Optimize(OptimizeInfo& info) override;
 		};
 	}
 }

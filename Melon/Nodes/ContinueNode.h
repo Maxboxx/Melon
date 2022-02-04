@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for continuing loops.
-		class ContinueNode : public StatementNode {
+		class ContinueNode : public Statement {
 		public:
 			/// The number of loops to continue.
 			Boxx::UInt loops;

@@ -10,7 +10,7 @@ namespace Melon {
 	///N Melon::Nodes
 	namespace Nodes {
 		/// Node for enums.
-		class EnumNode : public StatementNode {
+		class EnumNode : public Statement {
 		public:
 			/// The name of the enum.
 			Symbols::Name name;

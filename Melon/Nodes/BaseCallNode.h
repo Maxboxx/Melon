@@ -1,63 +1,63 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 #include "Melon/Symbols/FunctionSymbol.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		/// Node for calling a value.
-		class CallNode : public ExpressionNode {
+		/// Argument attributes for function calls.
+		enum class CallArgAttributes : Boxx::UByte {
+			/// No attribute.
+			None,
+
+			/// {ref} attribute.
+			Ref,
+
+			/// {noref} attribute.
+			NoRef
+		};
+
+		BOXX_ENUM_FLAGS(CallArgAttributes);
+
+		/// Base node for call nodes.
+		template <class T>
+		class BaseCallNode : public T {
 		public:
-			/// Argument attributes for the call.
-			enum class ArgAttributes : Boxx::UByte {
-				/// No attribute.
-				None,
-
-				/// {ref} attribute.
-				Ref,
-
-				/// {noref} attribute.
-				NoRef
-			};
-
 			/// The expression to call.
-			Expression expression;
+			Ptr<Expression> expression;
 
 			/// The arguments for the call.
-			Boxx::List<Expression> arguments;
+			Boxx::List<Ptr<Expression>> arguments;
 
 			/// The argument attributes for the call.
-			Boxx::List<ArgAttributes> attributes;
+			Boxx::List<CallArgAttributes> attributes;
 
-			/// {true} if the call is a call statement.
-			bool isStatement = false;
-
-			CallNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~CallNode();
+			BaseCallNode(Symbols::Symbol* const scope, const FileInfo& file);
+			~BaseCallNode();
 
 			/// {true} if the call is a method call.
 			bool IsMethod() const;
 
-			/// Finds the function to call.
+			/// Gets the function to call.
 			Symbols::FunctionSymbol* GetFunc() const;
 
-			/// Checks if the function should pass self as an argument.
+			/// {true} if {self} should be passed as an argument.
 			bool IsSelfPassing() const;
 
-			/// Checks if the function is a constructor.
+			/// {true} if the function is a constructor.
 			bool IsInit() const;
 
-			virtual Symbols::TypeSymbol* Type() const override;
-			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual Expression Optimize(OptimizeInfo& info) override;
+			virtual Ptr<T> Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
+			bool isStatement;
+
 			Symbols::Name GetFuncName() const;
 
 			Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>> GetTemplateTypes(const Boxx::Optional<Boxx::List<Symbols::NameList>>& types) const;
@@ -93,11 +93,9 @@ namespace Melon {
 			void SetupStackFrame(CallInfo& callInfo, CompileInfo& info);
 			void CompileArguments(CallInfo& callInfo, CompileInfo& info);
 			void CompileRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			Expression GetRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
+			Ptr<Expression> GetRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
 			void CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
 			void CompileCall(CallInfo& callInfo, CompileInfo& info);
 		};
-
-		BOXX_ENUM_FLAGS(CallNode::ArgAttributes);
 	}
 }

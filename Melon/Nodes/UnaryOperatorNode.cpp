@@ -19,7 +19,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-UnaryOperatorNode::UnaryOperatorNode(Symbols::Symbol* const scope, const Name& op, const FileInfo& file) : ExpressionNode(scope, file) {
+UnaryOperatorNode::UnaryOperatorNode(Symbols::Symbol* const scope, const Name& op, const FileInfo& file) : Expression(scope, file) {
 	this->op = op;
 }
 
@@ -63,7 +63,7 @@ Name UnaryOperatorNode::GetOperator() const {
 }
 
 CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
-	List<Expression> nodes;
+	List<_Expression_> nodes;
 	nodes.Add(operand);
 
 	List<Symbols::Symbol*> args;
@@ -114,7 +114,7 @@ NameList UnaryOperatorNode::FindSideEffectScope(const bool assign) {
 	return operand->GetSideEffectScope(assign);
 }
 
-Expression UnaryOperatorNode::Optimize(OptimizeInfo& info) {
+_Expression_ UnaryOperatorNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(operand, info);
 
 	// TODO: Add more operators

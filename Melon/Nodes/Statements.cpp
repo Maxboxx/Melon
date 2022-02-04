@@ -1,4 +1,4 @@
-#include "StatementsNode.h"
+#include "Statements.h"
 
 #include "LoopNode.h";
 #include "SwitchNode.h";
@@ -19,15 +19,15 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StatementsNode::StatementsNode(Symbols::Symbol* const scope, const FileInfo& file) : Node(scope, file) {
+Statements::Statements(Symbols::Symbol* const scope, const FileInfo& file) : Node(scope, file) {
 
 }
 
-StatementsNode::~StatementsNode() {
+Statements::~Statements() {
 	
 }
 
-UInt StatementsNode::GetSize() const {
+UInt Statements::GetSize() const {
 	UInt size = 0;
 
 	for (UInt i = statements.Size(); i > 0;) {
@@ -44,16 +44,16 @@ UInt StatementsNode::GetSize() const {
 	return size;
 }
 
-void StatementsNode::IncludeScan(ParsingInfo& info) {
-	for (const Statement& statement : statements) {
+void Statements::IncludeScan(ParsingInfo& info) {
+	for (Weak<Statement> statement : statements) {
 		statement->IncludeScan(info);
 	}
 }
 
-ScanResult StatementsNode::Scan(ScanInfoStack& info) {
+ScanResult Statements::Scan(ScanInfoStack& info) {
 	ScanResult result;
 
-	for (const Statement& statement : statements) {
+	for (Weak<Statement> statement : statements) {
 		ScanResult r = statement->Scan(info);
 		r.SelfUseCheck(info, statement->File());
 		result |= r;
@@ -62,7 +62,7 @@ ScanResult StatementsNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-Statements StatementsNode::Optimize(OptimizeInfo& info) {
+Ptr<Statements> Statements::Optimize(OptimizeInfo& info) {
 	if (statements.IsEmpty()) return nullptr;
 
 	if (!HasSideEffects()) {
@@ -71,7 +71,7 @@ Statements StatementsNode::Optimize(OptimizeInfo& info) {
 		return nullptr;
 	}
 
-	for (Statement& statement : statements) {
+	for (Ptr<Statement>& statement : statements) {
 		Node::Optimize(statement, info);
 	}
 
@@ -90,10 +90,10 @@ Statements StatementsNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-CompiledNode StatementsNode::Compile(CompileInfo& info) {
+CompiledNode Statements::Compile(CompileInfo& info) {
 	CompiledNode c;
 
-	for (const Statement& statement : statements) {
+	for (Weak<Statement> statement : statements) {
 		info.index = 0;
 		c.AddInstructions(statement->Compile(info).instructions);
 	}
@@ -103,7 +103,7 @@ CompiledNode StatementsNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-NameList StatementsNode::FindSideEffectScope(const bool assign) {
+NameList Statements::FindSideEffectScope(const bool assign) {
 	if (statements.IsEmpty()) return scope->AbsoluteName();
 
 	NameList list = statements[0]->GetSideEffectScope(assign);
@@ -115,14 +115,14 @@ NameList StatementsNode::FindSideEffectScope(const bool assign) {
 	return list;
 }
 
-StringBuilder StatementsNode::ToMelon(const UInt indent) const {
+StringBuilder Statements::ToMelon(const UInt indent) const {
 	StringBuilder sb;
 	String tabs = String('\t').Repeat(indent);
 
 	bool prevSpace = false;
 
 	for (UInt i = 0; i < statements.Size(); i++) {
-		bool hasSpace = StatementsNode::HasSpaceAround(statements[i]);
+		bool hasSpace = Statements::HasSpaceAround(statements[i]);
 
 		if (i > 0) {
 			if (hasSpace || prevSpace) sb += "\n";
@@ -137,7 +137,7 @@ StringBuilder StatementsNode::ToMelon(const UInt indent) const {
 	return sb;
 }
 
-bool StatementsNode::HasSpaceAround(const Statement& statement) {
+bool Statements::HasSpaceAround(Weak<Statement> statement) {
 	if (statement.Is<LoopNode>())     return true;
 	if (statement.Is<SwitchNode>())   return true;
 	if (statement.Is<DoNode>())       return true;
@@ -146,11 +146,11 @@ bool StatementsNode::HasSpaceAround(const Statement& statement) {
 	if (statement.Is<StructNode>())   return true;
 	if (statement.Is<EnumNode>())     return true;
 
-	if (const Pointer<GuardNode>& guardNode = statement.Cast<GuardNode>()) {
+	if (Weak<GuardNode> guardNode = statement.As<GuardNode>()) {
 		return guardNode->else_ != nullptr;
 	}
 
-	if (const Pointer<EmptyNode>& empty = statement.Cast<EmptyNode>()) {
+	if (Weak<EmptyNode> empty = statement.As<EmptyNode>()) {
 		return HasSpaceAround(empty->statement);
 	}
 

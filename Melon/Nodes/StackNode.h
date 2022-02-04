@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for a stack position.
-		class StackNode : public ExpressionNode {
+		class StackNode : public Expression {
 		public:
 			/// The stack position.
 			Boxx::UInt stack;

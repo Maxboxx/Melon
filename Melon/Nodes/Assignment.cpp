@@ -1,4 +1,4 @@
-#include "AssignNode.h"
+#include "Assignment.h"
 
 #include "NewVariableNode.h"
 #include "RefNode.h"
@@ -6,7 +6,7 @@
 #include "NameNode.h"
 #include "TypeNode.h"
 #include "EmptyNode.h"
-#include "StatementsNode.h"
+#include "Statements.h"
 #include "DiscardNode.h"
 
 #include "Melon/Parsing/Parser.h"
@@ -26,15 +26,15 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-AssignNode::AssignNode(Symbol* const scope, const FileInfo& file) : StatementNode(scope, file) {
+Assignment::Assignment(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
-AssignNode::~AssignNode() {
+Assignment::~Assignment() {
 	
 }
 
-UInt AssignNode::GetSize() const {
+UInt Assignment::GetSize() const {
 	UInt size = 0;
 
 	for (UInt i = 0; i < assignableValues.Size(); i++) {
@@ -48,26 +48,26 @@ UInt AssignNode::GetSize() const {
 	return size;
 }
 
-void AssignNode::IncludeScan(ParsingInfo& info) {
+void Assignment::IncludeScan(ParsingInfo& info) {
 	for (const NameList& type : types) {
 		if (type != NameList::Discard) {
 			Include(type, info);
 		}
 	}
 
-	for (const Expression& value : assignableValues) {
+	for (Weak<Expression> value : assignableValues) {
 		value->IncludeScan(info);
 	}
 
-	for (const Expression& value : values) {
+	for (Weak<Expression> value : values) {
 		value->IncludeScan(info);
 	}
 }
 
-ScanResult AssignNode::Scan(ScanInfoStack& info) {
+ScanResult Assignment::Scan(ScanInfoStack& info) {
 	ScanResult result = ScanAssignableValues(info);
 
-	for (const Expression& node : values) {
+	for (const Ptr<Expression>& node : values) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->File());
 		result |= r;
@@ -76,7 +76,7 @@ ScanResult AssignNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-CompiledNode AssignNode::Compile(CompileInfo& info) {
+CompiledNode Assignment::Compile(CompileInfo& info) {
 	CompiledNode c;
 
 	UInt varSize = 0;
@@ -130,14 +130,12 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 		}
 		// Assign extra return values
 		else if (!assignableValues[i].Is<DiscardNode>()) {
-			MemoryNode* const mn = new MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
-			mn->type = values[i].type->AbsoluteName();
+			Fixed<MemoryNode> memory = MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
+			memory->type = values[i].type->AbsoluteName();
 
 			info.important = true;
-			c.AddInstructions(CompileAssignment(assignableValues[i], mn, info, assignableValues[i]->File()).instructions);
+			c.AddInstructions(CompileAssignment(assignableValues[i], memory, info, assignableValues[i]->File()).instructions);
 			info.important = false;
-
-			delete mn;
 		}
 
 		// TODO: compile values for discard vars
@@ -150,7 +148,7 @@ CompiledNode AssignNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-NameList AssignNode::FindSideEffectScope(const bool assign) {
+NameList Assignment::FindSideEffectScope(const bool assign) {
 	NameList list = assignableValues[0] ? assignableValues[0]->GetSideEffectScope(true) : scope->AbsoluteName();
 
 	for (UInt i = 1; i < assignableValues.Size(); i++) {
@@ -166,11 +164,11 @@ NameList AssignNode::FindSideEffectScope(const bool assign) {
 	return list;
 }
 
-Statement AssignNode::Optimize(OptimizeInfo& info) {
+Ptr<Statement> Assignment::Optimize(OptimizeInfo& info) {
 	bool removed = false;
 
 	// Check if removal of values can be done
-	for (Expression& value : assignableValues) {
+	for (Ptr<Expression>& value : assignableValues) {
 		if (value.Is<DiscardNode>()) {
 			removed = true;
 			continue;
@@ -239,19 +237,46 @@ Statement AssignNode::Optimize(OptimizeInfo& info) {
 	}
 
 	// Optimize assignable values
-	for (Expression& value : assignableValues) {
+	for (Ptr<Expression>& value : assignableValues) {
 		Node::Optimize(value, info);
 	}
 
 	// Optimize values
-	for (Expression& value : values) {
+	for (Ptr<Expression>& value : values) {
 		Node::Optimize(value, info);
 	}
 
 	return nullptr;
 }
 
-StringBuilder AssignNode::ToMelon(const UInt indent) const {
+void Assignment::OptimizeAsCondition(OptimizeInfo& info) {
+	// Check if removal of values can be done
+	for (Ptr<Expression>& value : assignableValues) {
+		if (value.Is<DiscardNode>()) {
+			continue;
+		}
+
+		// Remove unused vars
+		if (VariableSymbol* const sym = value->Symbol<VariableSymbol>()) {
+			if (!value->HasSideEffects(scope->AbsoluteName()) && !info.usedVariables.Contains(sym)) {
+				value = new DiscardNode(value->scope, value->File());
+				info.optimized = true;
+			}
+		}
+	}
+
+	// Optimize assignable values
+	for (Ptr<Expression>& value : assignableValues) {
+		Node::Optimize(value, info);
+	}
+
+	// Optimize values
+	for (Ptr<Expression>& value : values) {
+		Node::Optimize(value, info);
+	}
+}
+
+StringBuilder Assignment::ToMelon(const UInt indent) const {
 	StringBuilder sb;
 
 	Optional<NameList> type = types[0];
@@ -297,7 +322,7 @@ StringBuilder AssignNode::ToMelon(const UInt indent) const {
 	return sb;
 }
 
-ScanResult AssignNode::ScanAssignableValues(ScanInfoStack& info) {
+ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 	ScanResult result;
 	info->assign = true;
 
@@ -310,7 +335,7 @@ ScanResult AssignNode::ScanAssignableValues(ScanInfoStack& info) {
 	for (UInt i = 0; i < assignableValues.Size(); i++) {
 		if (assignableValues[i].Is<DiscardNode>()) continue;
 
-		Expression node = assignableValues[i];
+		Weak<Expression> node = assignableValues[i];
 		node->Type();
 
 		// Find variable
@@ -328,7 +353,7 @@ ScanResult AssignNode::ScanAssignableValues(ScanInfoStack& info) {
 
 		// Check for completed init
 		if (info->init) {
-			if (const Pointer<NameNode>& nn = node.Cast<NameNode>()) {
+			if (Weak<NameNode> nn = node.As<NameNode>()) {
 				if (nn->name == Name::Self) {
 					info->type->CompleteInit();
 					result.selfUsed = false;
@@ -338,9 +363,8 @@ ScanResult AssignNode::ScanAssignableValues(ScanInfoStack& info) {
 
 		// Scan assignment
 		if (!errors) {
-			TypeNode* const type = new TypeNode(values[i].type->AbsoluteName());
+			Fixed<TypeNode> type = TypeNode(values[i].type->AbsoluteName());
 			ScanAssignment(node, type, info, node->File());
-			delete type;
 		}
 	}
 
@@ -348,7 +372,7 @@ ScanResult AssignNode::ScanAssignableValues(ScanInfoStack& info) {
 	return result;
 }
 
-List<AssignNode::Value> AssignNode::Values() const {
+List<Assignment::Value> Assignment::Values() const {
 	List<Value> types;
 
 	for (UInt i = 0; i < assignableValues.Size(); i++) {

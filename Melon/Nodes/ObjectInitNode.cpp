@@ -19,7 +19,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-ObjectInitNode::ObjectInitNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+ObjectInitNode::ObjectInitNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
@@ -71,7 +71,7 @@ CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
 void ObjectInitNode::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 
-	for (Expression& expression : expressions) {
+	for (_Expression_& expression : expressions) {
 		expression->IncludeScan(info);
 	}
 }
@@ -120,7 +120,7 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 	}
 
 	// Scan expressions
-	for (const Expression& node : expressions) {
+	for (const _Expression_& node : expressions) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->File());
 		result |= r;
@@ -132,17 +132,17 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 NameList ObjectInitNode::FindSideEffectScope(const bool assign) {
 	NameList list = expression->GetSideEffectScope(assign);
 
-	for (Expression& expr : expressions) {
+	for (_Expression_& expr : expressions) {
 		list = CombineSideEffects(list, expr->GetSideEffectScope(assign));
 	}
 
 	return list;
 }
 
-Expression ObjectInitNode::Optimize(OptimizeInfo& info) {
+_Expression_ ObjectInitNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 
-	for (Expression& expr : expressions) {
+	for (_Expression_& expr : expressions) {
 		Node::Optimize(expr, info);
 	}
 

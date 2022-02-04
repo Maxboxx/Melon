@@ -12,18 +12,18 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 
 NodePtr ConditionParser::Parse(ParsingInfo& info, const bool includeAssign) {
-	Pointer<ConditionNode> cond = nullptr;
+	Pointer<Condition> cond = nullptr;
 
 	if (includeAssign) {
 		if (NodePtr node = AssignmentParser::Parse(info, AssignmentParser::Flags::Single | AssignmentParser::Flags::MethodCall)) {
-			cond = new ConditionNode(info.scope, node->file);
+			cond = new Condition(info.scope, node->file);
 			cond->cond = node;
 			return cond;
 		}
 	}
 
 	if (NodePtr node = ExpressionParser::Parse(info)) {
-		cond = new ConditionNode(info.scope, node->file);
+		cond = new Condition(info.scope, node->file);
 		cond->cond = node;
 		return cond;
 	}

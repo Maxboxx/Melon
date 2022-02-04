@@ -14,7 +14,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-ConvertNode::ConvertNode(Symbols::Symbol* const scope, const FileInfo& file) : ExpressionNode(scope, file) {
+ConvertNode::ConvertNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
@@ -46,7 +46,7 @@ CompiledNode ConvertNode::Compile(CompileInfo& info) {
 	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(expression->Type(), convertType, file);
 	if (!convert) return CompiledNode();
 
-	List<Expression> nodes;
+	List<_Expression_> nodes;
 	nodes.Add(expression);
 
 	// Compile symbol node
@@ -84,7 +84,7 @@ NameList ConvertNode::FindSideEffectScope(const bool assign) {
 	return expression->GetSideEffectScope(assign);
 }
 
-Expression ConvertNode::Optimize(OptimizeInfo& info) {
+_Expression_ ConvertNode::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 	return nullptr;
 }

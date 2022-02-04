@@ -6,12 +6,12 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for pointers.
-		class PtrNode : public ExpressionNode {
+		class PtrNode : public Expression {
 		public:
 			/// The address to point to.
-			Expression address;
+			_Expression_ address;
 
-			PtrNode(const Expression& address);
+			PtrNode(const _Expression_& address);
 			~PtrNode();
 
 			virtual Symbols::TypeSymbol* Type() const override;
