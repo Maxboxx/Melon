@@ -52,11 +52,11 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 
 		// Check for break instructions
 		if (
-			type != BreakNode::abortInstName &&
-			type != BreakNode::scopeBreakInstName &&
-			type != BreakNode::breakTrueInstName &&
-			type != BreakNode::breakFalseInstName &&
-			type != ContinueNode::continueInstName
+			type != BreakStatement::abortInstName &&
+			type != BreakStatement::scopeBreakInstName &&
+			type != BreakStatement::breakTrueInstName &&
+			type != BreakStatement::breakFalseInstName &&
+			type != ContinueStatement::continueInstName
 		) {
 			compiled.instructions.Add(in);
 			continue;
@@ -70,17 +70,17 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 		}
 		// Compile breaks
 		else if (
-			type == BreakNode::abortInstName || 
-			type == BreakNode::breakTrueInstName || 
-			type == BreakNode::breakFalseInstName || 
-			type == BreakNode::scopeBreakInstName
+			type == BreakStatement::abortInstName || 
+			type == BreakStatement::breakTrueInstName || 
+			type == BreakStatement::breakFalseInstName || 
+			type == BreakStatement::scopeBreakInstName
 		) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
 			endJumps.Add(compiled.instructions.Size());
 			compiled.instructions.Add(jmp);
 		}
 		// Compile continue
-		else if (type == ContinueNode::continueInstName) {
+		else if (type == ContinueStatement::continueInstName) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
 			condJumps.Add(compiled.instructions.Size());
 			compiled.instructions.Add(jmp);
@@ -156,10 +156,10 @@ _Statement_ RepeatNode::Optimize(OptimizeInfo& info) {
 	if (condition->IsImmediate() && condition->GetImmediate() != 0) {
 		if (IsEmpty(statements)) {
 			info.optimized = true;
-			return new EmptyNode();
+			return new EmptyStatement();
 		}
 
-		Pointer<DoNode> dn = new DoNode(statements->scope, statements->File());
+		Pointer<DoStatement> dn = new DoStatement(statements->scope, statements->File());
 		dn->statements = statements;
 		info.optimized = true;
 		return dn;

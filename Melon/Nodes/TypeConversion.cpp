@@ -1,7 +1,8 @@
-#include "ConvertNode.h"
+#include "TypeConversion.h"
 
-#include "CallNode.h"
+#include "CallExpression.h"
 #include "TypeNode.h"
+#include "Expression.h"
 
 #include "Melon/Symbols/TemplateSymbol.h"
 
@@ -14,15 +15,15 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-ConvertNode::ConvertNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
+TypeConversion::TypeConversion(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
-ConvertNode::~ConvertNode() {
+TypeConversion::~TypeConversion() {
 
 }
 
-TypeSymbol* ConvertNode::Type() const {
+TypeSymbol* TypeConversion::Type() const {
 	TypeSymbol* const s = SymbolTable::Find<TypeSymbol>(type, scope ? scope->AbsoluteName() : NameList(true), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 	if (s == nullptr) return nullptr;
@@ -34,7 +35,7 @@ TypeSymbol* ConvertNode::Type() const {
 	return s;
 }
 
-CompiledNode ConvertNode::Compile(CompileInfo& info) {
+CompiledNode TypeConversion::Compile(CompileInfo& info) {
 	TypeSymbol* const convertType = Type();
 
 	// Check if the node needs conversion
@@ -46,30 +47,31 @@ CompiledNode ConvertNode::Compile(CompileInfo& info) {
 	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(expression->Type(), convertType, file);
 	if (!convert) return CompiledNode();
 
-	List<_Expression_> nodes;
-	nodes.Add(expression);
 
 	// Compile symbol node
 	if (convert->symbolNode) {
-		return convert->symbolNode->Compile(nodes, info);
+		return convert->symbolNode->Compile(expression, info);
 	}
 	// Compile call to operator function
 	else {
-		Pointer<CallNode> cn = new CallNode(scope, file);
-		cn->arguments = nodes;
+		List<Ptr<Expression>> args;
+		args.Add(expression);
 
-		Pointer<TypeNode> tn = new TypeNode(convert->ParentType()->AbsoluteName());
-		cn->expression = tn;
+		Fixed<CallExpression> cn = CallExpression(scope, file);
+		cn->arguments  = args;
+		cn->expression = new TypeNode(convert->ParentType()->AbsoluteName());
 
-		return cn->Compile(info);
+		CompiledNode c = cn->Compile(info);
+		expression = args[0];
+		return c;
 	}
 }
 
-void ConvertNode::IncludeScan(ParsingInfo& info) {
+void TypeConversion::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 }
 
-ScanResult ConvertNode::Scan(ScanInfoStack& info) {
+ScanResult TypeConversion::Scan(ScanInfoStack& info) {
 	TypeSymbol* const convertType = Type();
 
 	if (expression->Type() == convertType) return expression->Scan(info);
@@ -79,17 +81,17 @@ ScanResult ConvertNode::Scan(ScanInfoStack& info) {
 	return expression->Scan(info);
 }
 
-NameList ConvertNode::FindSideEffectScope(const bool assign) {
+NameList TypeConversion::FindSideEffectScope(const bool assign) {
 	// TODO: Check operator function
 	return expression->GetSideEffectScope(assign);
 }
 
-_Expression_ ConvertNode::Optimize(OptimizeInfo& info) {
+Ptr<Expression> TypeConversion::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 	return nullptr;
 }
 
-StringBuilder ConvertNode::ToMelon(const UInt indent) const {
+StringBuilder TypeConversion::ToMelon(const UInt indent) const {
 	StringBuilder sb = expression->ToMelon(indent);
 
 	if (isExplicit) {

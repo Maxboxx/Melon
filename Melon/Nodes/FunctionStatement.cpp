@@ -1,6 +1,6 @@
-#include "FunctionNode.h"
+#include "FunctionStatement.h"
 
-#include "StatementsNode.h"
+#include "Statements.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -17,19 +17,19 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Optimizing;
 
-FunctionNode::FunctionNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
+FunctionStatement::FunctionStatement(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
-FunctionNode::~FunctionNode() {
+FunctionStatement::~FunctionStatement() {
 
 }
 
-bool FunctionNode::IsScope() const {
+bool FunctionStatement::IsScope() const {
 	return true;
 }
 
-CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+CompiledNode FunctionStatement::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
 	if (sym->IsNotSpecialized()) return CompiledNode();
 	scope->SetTemplateValues(sym);
 
@@ -87,7 +87,7 @@ CompiledNode FunctionNode::Compile(CompileInfo& info) { // TODO: more accurate a
 	return c;
 }
 
-void FunctionNode::IncludeScan(ParsingInfo& info) {
+void FunctionStatement::IncludeScan(ParsingInfo& info) {
 	for (UInt i = 0; i < sym->arguments.Size(); i++) {
 		if (VariableSymbol* const arg = sym->Argument(i)) {
 			if (!arg->Type()) {
@@ -102,7 +102,7 @@ void FunctionNode::IncludeScan(ParsingInfo& info) {
 	statements->IncludeScan(info);
 }
 
-ScanResult FunctionNode::Scan(ScanInfoStack& info) {
+ScanResult FunctionStatement::Scan(ScanInfoStack& info) {
 	if (sym->IsNotSpecialized()) return ScanResult();
 	scope->SetTemplateValues(sym);
 
@@ -149,12 +149,12 @@ ScanResult FunctionNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-_Statement_ FunctionNode::Optimize(OptimizeInfo& info) {
+Ptr<Statement> FunctionStatement::Optimize(OptimizeInfo& info) {
 	Node::Optimize(statements, info);
 	return nullptr;
 }
 
-StringBuilder FunctionNode::ToMelon(const UInt indent) const {
+StringBuilder FunctionStatement::ToMelon(const UInt indent) const {
 	StringBuilder sb = "";
 
 	// Get attribute names

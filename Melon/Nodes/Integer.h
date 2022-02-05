@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for an integer.
-		class IntegerNode : public Expression {
+		class Integer : public Expression {
 		public:
 			/// The integer value.
 			Boxx::Long number;
@@ -14,8 +14,8 @@ namespace Melon {
 			/// {true} if the integer is unsigned.
 			bool isUnsigned = true;
 
-			IntegerNode(const FileInfo& file);
-			~IntegerNode();
+			Integer(const FileInfo& file);
+			~Integer();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual bool IsImmediate() const override;

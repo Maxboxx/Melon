@@ -18,7 +18,7 @@ NodePtr DotParser::Parse(ParsingInfo& info) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(".")), info.GetFileInfoPrev());
 	}
 
-	Pointer<DotNode> dn = new DotNode(info.scope, info.GetFileInfoPrev());
+	Pointer<DotExpression> dn = new DotExpression(info.scope, info.GetFileInfoPrev());
 	dn->name = Name(info.Current().value);
 
 	info.index++;

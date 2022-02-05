@@ -22,7 +22,7 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 	info.index++;
 
-	Pointer<BreakNode> bn = new BreakNode(info.scope, info.GetFileInfoPrev());
+	Pointer<BreakStatement> bn = new BreakStatement(info.scope, info.GetFileInfoPrev());
 	bn->isBreak = true;
 	bn->loops = 1;
 	bn->breakBool = false;
@@ -98,7 +98,7 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 NodePtr BreakParser::ParseAbort(ParsingInfo& info) {
 	info.index++;
 
-	Pointer<BreakNode> bn = new BreakNode(info.scope, info.GetFileInfoPrev());
+	Pointer<BreakStatement> bn = new BreakStatement(info.scope, info.GetFileInfoPrev());
 	bn->isBreak = false;
 	bn->loops = 1;
 

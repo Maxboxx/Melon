@@ -17,12 +17,12 @@ NodePtr AssignableParser::Parse(ParsingInfo& info) {
 	// Parse discard
 	if (info.Current().type == TokenType::Discard) {
 		info.index++;
-		return new DiscardNode(info.scope, info.GetFileInfoPrev());
+		return new DiscardExpression(info.scope, info.GetFileInfoPrev());
 	}
 	// Parse expression
 	else if (NodePtr node = ExpressionParser::Parse(info, true)) {
 		if (node.Cast<NameNode>()) return node;
-		if (node.Cast<DotNode>())  return node;
+		if (node.Cast<DotExpression>())  return node;
 
 		info.index = startIndex;
 		return nullptr;

@@ -7,7 +7,7 @@
 ///N Melon::Parsing
 namespace Melon {
 	namespace Nodes {
-		class IfExprNode;
+		class IfExpression;
 	}
 
 	namespace Parsing {
@@ -18,8 +18,8 @@ namespace Melon {
 			static Nodes::NodePtr Parse(ParsingInfo& info, const bool returnOnError = false);
 
 		private:
-			static bool ParseSimple(ParsingInfo& info, Nodes::IfExprNode* const node, const Boxx::UInt line, bool& error);
-			static bool ParseFull(ParsingInfo& info, Nodes::IfExprNode* const node, const Boxx::UInt line, bool& error);
+			static bool ParseSimple(ParsingInfo& info, Nodes::IfExpression* const node, const Boxx::UInt line, bool& error);
+			static bool ParseFull(ParsingInfo& info, Nodes::IfExpression* const node, const Boxx::UInt line, bool& error);
 		};
 	}
 }

@@ -1,6 +1,6 @@
-#include "LogicNode.h"
+#include "LogicExpression.h"
 
-#include "ConvertNode.h"
+#include "TypeConversion.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -14,19 +14,19 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols::Nodes;
 
-LogicNode::LogicNode(Symbols::Symbol* const scope, const TokenType type, const FileInfo& file) : BinaryOperatorNode(scope, Name(), file) {
+LogicExpression::LogicExpression(Symbols::Symbol* const scope, const TokenType type, const FileInfo& file) : BinaryOperatorExpression(scope, Name(), file) {
 	this->type = type;
 }
 
-LogicNode::~LogicNode() {
+LogicExpression::~LogicExpression() {
 
 }
 
-TypeSymbol* LogicNode::Type() const {
+TypeSymbol* LogicExpression::Type() const {
 	return (TypeSymbol*)SymbolTable::Bool;
 }
 
-Name LogicNode::GetOperator() const {
+Name LogicExpression::GetOperator() const {
 	switch (type) {
 		case TokenType::Or:   return Name::Or;
 		case TokenType::And:  return Name::And;
@@ -39,15 +39,18 @@ Name LogicNode::GetOperator() const {
 	return Name("logic");
 }
 
-CompiledNode LogicNode::CompileToBool(const _Expression_& node, CompileInfo& info) {
-	Pointer<ConvertNode> convert = new ConvertNode(node->scope, node->File());
+CompiledNode LogicExpression::CompileToBool(Ptr<Expression>& node, CompileInfo& info) {
+	Fixed<TypeConversion> convert = TypeConversion(node->scope, node->File());
 	convert->expression = node;
 	convert->type = NameList::Bool;
 	convert->isExplicit = true;
-	return convert->Compile(info);
+
+	CompiledNode cn = convert->Compile(info);
+	node = convert->expression;
+	return cn;
 }
 
-CompiledNode LogicNode::CompileAndOrOperand(CompileInfo& info, CompiledNode& cn, List<UInt>& jumps, const bool checkTrue) const {
+CompiledNode LogicExpression::CompileAndOrOperand(CompileInfo& info, CompiledNode& cn, List<UInt>& jumps, const bool checkTrue) {
 	// Compile operand
 	CompiledNode operand = CompileToBool(operand1, info);
 	cn.AddInstructions(operand.instructions);
@@ -69,7 +72,7 @@ CompiledNode LogicNode::CompileAndOrOperand(CompileInfo& info, CompiledNode& cn,
 	return operand;
 }
 
-CompiledNode LogicNode::CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) const {
+CompiledNode LogicExpression::CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) {
 	CompiledNode cn;
 	cn.size = 1;
 
@@ -115,7 +118,7 @@ CompiledNode LogicNode::CompileAndOr(CompileInfo& info, const bool checkTrue, co
 	return cn;
 }
 
-CompiledNode LogicNode::CompileXor(CompileInfo& info, const bool checkEqual) const {
+CompiledNode LogicExpression::CompileXor(CompileInfo& info, const bool checkEqual) {
 	CompiledNode cn;
 	cn.argument = Argument(Register(info.index++));
 	cn.size = 1;
@@ -147,7 +150,7 @@ CompiledNode LogicNode::CompileXor(CompileInfo& info, const bool checkEqual) con
 	return cn;
 }
 
-CompiledNode LogicNode::Compile(CompileInfo& info) {
+CompiledNode LogicExpression::Compile(CompileInfo& info) {
 	switch (type) {
 		case TokenType::Or:   return CompileAndOr(info, true, true);
 		case TokenType::And:  return CompileAndOr(info, false, false);
@@ -160,7 +163,7 @@ CompiledNode LogicNode::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-ScanResult LogicNode::Scan(ScanInfoStack& info) {
+ScanResult LogicExpression::Scan(ScanInfoStack& info) {
 	// Scan operands
 	ScanResult result1 = operand1->Scan(info);
 	result1.SelfUseCheck(info, operand1->File());
@@ -169,14 +172,14 @@ ScanResult LogicNode::Scan(ScanInfoStack& info) {
 	result2.SelfUseCheck(info, operand2->File());
 
 	// Scan conversion to bool for both operands
-	Pointer<ConvertNode> convert1 = new ConvertNode(operand1->scope, operand1->File());
+	Pointer<TypeConversion> convert1 = new TypeConversion(operand1->scope, operand1->File());
 	convert1->expression = operand1;
 	convert1->type = NameList::Bool;
 	convert1->isExplicit = true;
 
 	ScanResult result3 = convert1->Scan(info);
 
-	Pointer<ConvertNode> convert2 = new ConvertNode(operand2->scope, operand2->File());
+	Pointer<TypeConversion> convert2 = new TypeConversion(operand2->scope, operand2->File());
 	convert2->expression = operand2;
 	convert2->type = NameList::Bool;
 	convert2->isExplicit = true;
@@ -186,11 +189,11 @@ ScanResult LogicNode::Scan(ScanInfoStack& info) {
 	return result1 | result2 | result3 | result4;
 }
 
-NameList LogicNode::FindSideEffectScope(const bool assign) {
+NameList LogicExpression::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(operand1->GetSideEffectScope(assign), operand2->GetSideEffectScope(assign));
 }
 
-_Expression_ LogicNode::Optimize(OptimizeInfo& info) {
+Ptr<Expression> LogicExpression::Optimize(OptimizeInfo& info) {
 	Node::Optimize(operand1, info);
 	Node::Optimize(operand2, info);
 
@@ -199,7 +202,7 @@ _Expression_ LogicNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-StringBuilder LogicNode::ToMelon(const UInt indent) const {
+StringBuilder LogicExpression::ToMelon(const UInt indent) const {
 	StringBuilder sb = operand1->ToMelon(indent);
 	sb += " ";
 	sb += GetOperator().ToString();

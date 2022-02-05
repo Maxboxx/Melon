@@ -1,4 +1,4 @@
-#include "IntegerNode.h"
+#include "Integer.h"
 
 #include "Boxx/Math.h"
 
@@ -8,15 +8,15 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-IntegerNode::IntegerNode(const FileInfo& file) : Expression(nullptr, file) {
+Integer::Integer(const FileInfo& file) : Expression(nullptr, file) {
 
 }
 
-IntegerNode::~IntegerNode() {
+Integer::~Integer() {
 
 }
 
-TypeSymbol* IntegerNode::Type() const {
+TypeSymbol* Integer::Type() const {
 	// Unsigned integers
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {
@@ -55,15 +55,15 @@ TypeSymbol* IntegerNode::Type() const {
 	}
 }
 
-bool IntegerNode::IsImmediate() const {
+bool Integer::IsImmediate() const {
 	return true;
 }
 
-Long IntegerNode::GetImmediate() const {
+Long Integer::GetImmediate() const {
 	return number;
 }
 
-CompiledNode IntegerNode::Compile(CompileInfo& info) {
+CompiledNode Integer::Compile(CompileInfo& info) {
 	CompiledNode node;
 	node.argument = Argument(number);
 	
@@ -101,6 +101,6 @@ CompiledNode IntegerNode::Compile(CompileInfo& info) {
 	return node;
 }
 
-StringBuilder IntegerNode::ToMelon(const UInt indent) const {
+StringBuilder Integer::ToMelon(const UInt indent) const {
 	return isUnsigned ? String::ToString((ULong)number) : String::ToString(number);
 }

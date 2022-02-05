@@ -1,11 +1,11 @@
 #include "Node.h"
 
-#include "ExpressionNode.h"
-#include "StatementNode.h"
-#include "StatementsNode.h"
-#include "ConditionNode.h"
-#include "ConvertNode.h"
-#include "EmptyNode.h"
+#include "Expression.h"
+#include "Statement.h"
+#include "Statements.h"
+#include "Condition.h"
+#include "TypeConversion.h"
+#include "EmptyStatement.h"
 #include "RootNode.h"
 
 #include "Melon/Parsing/Parser.h"
@@ -104,6 +104,25 @@ void Node::Optimize(Ptr<Statements>& node, OptimizeInfo& info) {
 	}
 }
 
+void Node::Optimize(Ptr<Node>& node, OptimizeInfo& info) {
+	if (Ptr<Expression> n = node.AsPtr<Expression>()) {
+		Optimize(n, info);
+		node = n;
+	}
+	else if (Ptr<Condition> n = node.AsPtr<Condition>()) {
+		Optimize(n, info);
+		node = n;
+	}
+	else if (Ptr<Statement> n = node.AsPtr<Statement>()) {
+		Optimize(n, info);
+		node = n;
+	}
+	else if (Ptr<Statements> n = node.AsPtr<Statements>()) {
+		Optimize(n, info);
+		node = n;
+	}
+}
+
 NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2) {
 	if (scope1.Size() == 1 && scope1[0] == Name::Global) return scope1;
 	if (scope2.Size() == 1 && scope2[0] == Name::Global) return scope2;
@@ -150,9 +169,9 @@ CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expressio
 	}
 
 	if (assign) {
-		Fixed<ConvertNode> cn = ConvertNode(value->scope, value->file);
+		Fixed<TypeConversion> cn = TypeConversion(value->scope, value->file);
 		cn->isExplicit = false;
-		cn->expression = value;
+		cn->expression = new WeakExpression(value);
 		cn->type = assign->ArgumentType(0)->AbsoluteName();
 
 		return assign->symbolNode->Compile(assignable, cn, info);
@@ -195,7 +214,7 @@ RootNode* Node::Root() {
 }
 
 bool Node::IsEmpty(Weak<Statement> statement) {
-	if (Weak<EmptyNode> empty = statement.As<EmptyNode>()) {
+	if (Weak<EmptyStatement> empty = statement.As<EmptyStatement>()) {
 		return !empty->statement;
 	}
 	

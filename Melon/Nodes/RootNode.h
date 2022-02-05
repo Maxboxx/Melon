@@ -9,7 +9,7 @@ namespace Melon {
 
 	///N Melon::Nodes
 	namespace Nodes {
-		class FunctionNode;
+		class FunctionStatement;
 
 		/// The root node of the compiled program.
 		class RootNode final : public Node {
@@ -18,7 +18,7 @@ namespace Melon {
 			Boxx::List<_Statements_> nodes;
 
 			/// All functions in the program.
-			Boxx::List<Boxx::Pointer<FunctionNode>> funcs;
+			Boxx::List<Boxx::Pointer<FunctionStatement>> funcs;
 
 			/// The id for the next function.
 			Boxx::UInt funcId = 0;

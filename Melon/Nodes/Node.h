@@ -106,6 +106,11 @@ namespace Melon {
 			///p The optimized statements will be assigned to this value.
 			static void Optimize(Ptr<Statements>& statements, OptimizeInfo& info);
 
+			/// Optimizes a node.
+			///A node: The node to optimize.
+			///p The optimized node will be assigned to this value.
+			static void Optimize(Ptr<Node>& node, OptimizeInfo& info);
+
 			static CompiledNode CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file);
 
 		protected:

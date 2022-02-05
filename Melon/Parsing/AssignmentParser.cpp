@@ -199,7 +199,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 				assign->vars.Add(nn);
 			}
 			else {
-				assign->vars.Add(new DiscardNode(info.scope, info.GetFileInfoPrev()));
+				assign->vars.Add(new DiscardExpression(info.scope, info.GetFileInfoPrev()));
 			}
 
 			if (name == NameList::Discard.Last()) continue;

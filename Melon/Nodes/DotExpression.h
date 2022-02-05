@@ -1,28 +1,28 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for the dot operator.
-		class DotNode : public Expression {
+		class DotExpression : public Expression {
 		public:
 			/// The expression to perform the dot operation on.
-			_Expression_ expression;
+			Ptr<Expression> expression;
 
 			/// The name of the dot operator.
 			Symbols::Name name;
 
-			DotNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~DotNode();
+			DotExpression(Symbols::Symbol* const scope, const FileInfo& file);
+			~DotExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Symbols::Symbol* Symbol() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual _Expression_ Optimize(OptimizeInfo& info) override;
+			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

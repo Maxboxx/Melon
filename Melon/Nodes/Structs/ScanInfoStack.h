@@ -14,7 +14,7 @@ namespace Melon {
 
 	///N Melon::Nodes
 	namespace Nodes {
-		class FunctionNode;
+		class FunctionStatement;
 
 		///H Structs
 
@@ -64,7 +64,7 @@ namespace Melon {
 			Boxx::Set<Symbols::FunctionSymbol*> usedFunctions;
 
 			/// All function nodes.
-			Boxx::Collection<Boxx::Pointer<FunctionNode>> functions;
+			Boxx::Collection<Boxx::Pointer<FunctionStatement>> functions;
 
 		private:
 			Boxx::Stack<ScanInfo> stack;

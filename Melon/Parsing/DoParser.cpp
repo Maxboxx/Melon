@@ -18,7 +18,7 @@ NodePtr DoParser::Parse(ParsingInfo& info) {
 	info.index++;
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(line));
 
-	Pointer<DoNode> node = new DoNode(info.scope, info.GetFileInfo(line));
+	Pointer<DoStatement> node = new DoStatement(info.scope, info.GetFileInfo(line));
 	info.scopeCount++;
 
 	if (NodePtr nodes = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("do statement", line), true)) {

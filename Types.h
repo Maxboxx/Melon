@@ -50,6 +50,13 @@ public:
 		return Weak<T>(*this).As<Type>();
 	}
 
+	template <class Type>
+	Ptr<Type> AsPtr() {
+		Type* t = dynamic_cast<Type*>(ptr);
+		ptr = nullptr;
+		return t;
+	}
+
 	void operator=(T* const ptr) {
 		Free();
 		this->ptr = ptr;

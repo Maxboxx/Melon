@@ -1,9 +1,9 @@
-#include "ConditionNode.h"
+#include "Condition.h"
 
 #include "ConvertNode.h"
 #include "Assignment.h"
-#include "BooleanNode.h"
-#include "ArgumentNode.h"
+#include "Boolean.h"
+#include "KiwiExpression.h"
 #include "TypeNode.h"
 #include "DiscardNode.h"
 
@@ -53,7 +53,7 @@ CompiledNode Condition::CompileAssignCondition(CompileInfo& info) {
 	argCopy.mem.offset++;
 
 	// Temporary replaces the value node with argCopy
-	Ptr<ArgumentNode> value = new ArgumentNode(argCopy);
+	Ptr<KiwiExpression> value = new KiwiExpression(argCopy);
 	value->type = type->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
 
 	Ptr<Expression> tempValue = assign->values[0];
@@ -93,7 +93,7 @@ CompiledNode Condition::Compile(CompileInfo& info) {
 	}
 	// Compile regular condition
 	else {
-		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
+		Pointer<TypeConversion> convert = new TypeConversion(scope, file);
 		convert->isExplicit = true;
 		convert->expression = cond;
 		convert->type = NameList::Bool;
@@ -126,7 +126,7 @@ ScanResult Condition::Scan(ScanInfoStack& info) {
 	}
 	// Scan regular condition
 	else {
-		Pointer<ConvertNode> convert = new ConvertNode(scope, file);
+		Pointer<TypeConversion> convert = new TypeConversion(scope, file);
 		convert->isExplicit = true;
 		convert->expression = cond;
 		convert->type = NameList::Bool;
@@ -143,7 +143,7 @@ Ptr<Condition> Condition::Optimize(OptimizeInfo& info) {
 	if (assign) {
 		assign->OptimizeAsCondition(info);
 
-		if (assign->assignableValues.IsEmpty() || assign->assignableValues[0].Is<DiscardNode>()) {
+		if (assign->assignableValues.IsEmpty() || assign->assignableValues[0].Is<DiscardExpression>()) {
 			cond   = assign->values[0];
 			assign = nullptr;
 		}

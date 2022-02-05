@@ -1,12 +1,12 @@
-#include "DoNode.h"
+#include "DoStatement.h"
 
 #include "Kiwi/Kiwi.h"
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
-#include "BreakNode.h"
+#include "BreakStatement.h"
 #include "EmptyNode.h"
-#include "StatementsNode.h"
+#include "Statements.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -17,23 +17,23 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DoNode::DoNode(Symbols::Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
+DoStatement::DoStatement(Symbols::Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
-DoNode::~DoNode() {
+DoStatement::~DoStatement() {
 
 }
 
-UInt DoNode::GetSize() const {
+UInt DoStatement::GetSize() const {
 	return statements->GetSize();
 }
 
-bool DoNode::IsScope() const {
+bool DoStatement::IsScope() const {
 	return true;
 }
 
-CompiledNode DoNode::Compile(CompileInfo& info) {
+CompiledNode DoStatement::Compile(CompileInfo& info) {
 	CompiledNode compiled;
 
 	List<UInt> jumps;
@@ -51,7 +51,7 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 		const String type = in.instruction.instructionName;
 
 		// Check for scope wise break
-		if (type != BreakNode::scopeBreakInstName) {
+		if (type != BreakStatement::scopeBreakInstName) {
 			compiled.instructions.Add(in);
 			continue;
 		}
@@ -85,33 +85,33 @@ CompiledNode DoNode::Compile(CompileInfo& info) {
 	return compiled;
 }
 
-void DoNode::IncludeScan(ParsingInfo& info) {
+void DoStatement::IncludeScan(ParsingInfo& info) {
 	statements->IncludeScan(info);
 }
 
-ScanResult DoNode::Scan(ScanInfoStack& info) {
+ScanResult DoStatement::Scan(ScanInfoStack& info) {
 	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Scope);
 	ScanResult result = statements->Scan(info);
 	info->scopeInfo.ExitScope();
 	return result;
 }
 
-NameList DoNode::FindSideEffectScope(const bool assign) {
+NameList DoStatement::FindSideEffectScope(const bool assign) {
 	return statements->GetSideEffectScope(assign);
 }
 
-_Statement_ DoNode::Optimize(OptimizeInfo& info) {
+Ptr<Statement> DoStatement::Optimize(OptimizeInfo& info) {
 	Node::Optimize(statements, info);
 
 	if (IsEmpty(statements) || !statements->HasSideEffects()) {
 		info.optimized = true;
-		return new EmptyNode();
+		return new EmptyStatement();
 	}
 
 	return nullptr;
 }
 
-StringBuilder DoNode::ToMelon(const UInt indent) const {
+StringBuilder DoStatement::ToMelon(const UInt indent) const {
 	StringBuilder sb = "do\n";
 	sb += String('\t').Repeat(indent + 1);
 	sb += statements->ToMelon(indent + 1);

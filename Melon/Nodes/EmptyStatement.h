@@ -1,18 +1,18 @@
 #pragma once
 
-#include "StatementNode.h"
+#include "Statement.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// A node that does not get compiled.
-		class EmptyNode : public Statement {
+		class EmptyStatement : public Statement {
 		public:
 			/// This statement does not get compiled but the {ToMelon()} method is called for it.
-			_Statement_ statement = nullptr;
+			Ptr<Statement> statement = nullptr;
 
-			EmptyNode();
-			~EmptyNode();
+			EmptyStatement();
+			~EmptyStatement();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;

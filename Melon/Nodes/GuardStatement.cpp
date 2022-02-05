@@ -1,13 +1,13 @@
-#include "GuardNode.h"
+#include "GuardStatement.h"
 
-#include "BreakNode.h"
-#include "ContinueNode.h"
+#include "BreakStatement.h"
+#include "ContinueStatement.h"
 #include "ReturnNode.h"
-#include "ExpressionNode.h"
-#include "ConditionNode.h"
-#include "StatementsNode.h"
-#include "DoNode.h"
-#include "EmptyNode.h"
+#include "Expression.h"
+#include "Condition.h"
+#include "Statements.h"
+#include "DoStatement.h"
+#include "EmptyStatement.h"
 
 #include "Boxx/Math.h"
 
@@ -27,23 +27,23 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-GuardNode::GuardNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
+GuardStatement::GuardStatement(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
-GuardNode::~GuardNode() {
+GuardStatement::~GuardStatement() {
 
 }
 
-UInt GuardNode::GetSize() const {
+UInt GuardStatement::GetSize() const {
 	return Math::Max(cond->GetSize() + continue_->GetSize(), else_ ? else_->GetSize() : 0);
 }
 
-bool GuardNode::IsScope() const {
+bool GuardStatement::IsScope() const {
 	return true;
 }
 
-void GuardNode::CompileElse(CompiledNode& compiled, CompileInfo& info, List<UInt>& jumps) {
+void GuardStatement::CompileElse(CompiledNode& compiled, CompileInfo& info, List<UInt>& jumps) {
 	for (const OptimizerInstruction& in : else_->Compile(info).instructions) {
 		// Check for custom instructions
 		if (in.instruction.type != InstructionType::Custom) {
@@ -54,7 +54,7 @@ void GuardNode::CompileElse(CompiledNode& compiled, CompileInfo& info, List<UInt
 		const String type = in.instruction.instructionName;
 
 		// Check for scope wise breaks
-		if (type != BreakNode::scopeBreakInstName) {
+		if (type != BreakStatement::scopeBreakInstName) {
 			compiled.instructions.Add(in);
 			continue;
 		}
@@ -73,7 +73,7 @@ void GuardNode::CompileElse(CompiledNode& compiled, CompileInfo& info, List<UInt
 	}
 }
 
-CompiledNode GuardNode::Compile(CompileInfo& info) {
+CompiledNode GuardStatement::Compile(CompileInfo& info) {
 	const UInt frame = info.stack.frame;
 
 	// Compile condition
@@ -121,14 +121,14 @@ CompiledNode GuardNode::Compile(CompileInfo& info) {
 	return compiled;
 }
 
-void GuardNode::IncludeScan(ParsingInfo& info) {
+void GuardStatement::IncludeScan(ParsingInfo& info) {
 	cond->IncludeScan(info);
 
 	if (else_) else_->IncludeScan(info);
 	continue_->IncludeScan(info);
 }
 
-ScanResult GuardNode::Scan(ScanInfoStack& info) {
+ScanResult GuardStatement::Scan(ScanInfoStack& info) {
 	ScanResult result = cond->Scan(info);
 	result.SelfUseCheck(info, cond->File());
 	
@@ -177,7 +177,7 @@ ScanResult GuardNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-NameList GuardNode::FindSideEffectScope(const bool assign) {
+NameList GuardStatement::FindSideEffectScope(const bool assign) {
 	if (else_) {
 		return CombineSideEffects(cond->GetSideEffectScope(assign), CombineSideEffects(else_->GetSideEffectScope(assign), continue_->GetSideEffectScope(assign)));
 	}
@@ -186,7 +186,7 @@ NameList GuardNode::FindSideEffectScope(const bool assign) {
 	}
 }
 
-_Statement_ GuardNode::Optimize(OptimizeInfo& info) {
+Ptr<Statement> GuardStatement::Optimize(OptimizeInfo& info) {
 	// Optimize nodes
 	Node::Optimize(cond, info);
 
@@ -209,15 +209,15 @@ _Statement_ GuardNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-_Statement_ GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
+Ptr<Statement> GuardStatement::OptimizeFalseCondition(OptimizeInfo& info) {
 	// Optimize else segment if it exists
 	if (else_) {
 		if (IsEmpty(else_) || !else_->HasSideEffects()) {
 			info.optimized = true;
-			return new EmptyNode();
+			return new EmptyStatement();
 		}
 
-		Pointer<DoNode> dn = new DoNode(else_->scope, else_->File());
+		Ptr<DoStatement> dn = new DoStatement(else_->scope, else_->File());
 		dn->statements = else_;
 		info.optimized = true;
 		return dn;
@@ -225,22 +225,22 @@ _Statement_ GuardNode::OptimizeFalseCondition(OptimizeInfo& info) {
 	// Replace guard with empty node
 	else {
 		info.optimized = true;
-		return new EmptyNode();
+		return new EmptyStatement();
 	}
 }
 
-_Statement_ GuardNode::OptimizeTrueCondition(OptimizeInfo& info) {
+Ptr<Statement> GuardStatement::OptimizeTrueCondition(OptimizeInfo& info) {
 	info.optimized = true;
 
 	if (IsEmpty(continue_) || !continue_->HasSideEffects()) {
-		return new EmptyNode();
+		return new EmptyStatement();
 	}
 	else {
 		return continue_;
 	}
 }
 
-void GuardNode::AddScopeBreak(ScanInfoStack& info) {
+void GuardStatement::AddScopeBreak(ScanInfoStack& info) {
 	if (info->scopeInfo.CanContinue()) {
 		switch (info->scopeInfo.type) {
 			case ScopeInfo::ScopeType::Scope: {
@@ -268,8 +268,8 @@ void GuardNode::AddScopeBreak(ScanInfoStack& info) {
 	}
 }
 
-void GuardNode::AddScopeWiseBreak(ScanInfoStack& info) {
-	Pointer<BreakNode> bn = new BreakNode(scope, file);
+void GuardStatement::AddScopeWiseBreak(ScanInfoStack& info) {
+	Ptr<BreakStatement> bn = new BreakStatement(scope, file);
 	bn->isBreak = true;
 	bn->loops = 1;
 	bn->scopewise = true;
@@ -278,15 +278,15 @@ void GuardNode::AddScopeWiseBreak(ScanInfoStack& info) {
 	info->scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info->scopeInfo.maxScopeBreakCount);
 }
 
-void GuardNode::AddContinue(ScanInfoStack& info) {
-	Pointer<ContinueNode> cn = new ContinueNode(scope, file);
+void GuardStatement::AddContinue(ScanInfoStack& info) {
+	Ptr<ContinueStatement> cn = new ContinueStatement(scope, file);
 	cn->loops = 1;
 	end = cn;
 
 	info->scopeInfo.maxLoopBreakCount = Math::Max(cn->loops, info->scopeInfo.maxLoopBreakCount);
 }
 
-void GuardNode::AddReturn(ScanInfoStack& info) {
+void GuardStatement::AddReturn(ScanInfoStack& info) {
 	FunctionSymbol* func = SymbolTable::Find<FunctionSymbol>(scope->CurrentFunction()->AbsoluteName(), scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 	if (func) {
@@ -301,11 +301,11 @@ void GuardNode::AddReturn(ScanInfoStack& info) {
 	info->scopeInfo.willNotReturn = false;
 }
 
-void GuardNode::AddThrow(ScanInfoStack& info) {
+void GuardStatement::AddThrow(ScanInfoStack& info) {
 	ErrorLog::Error(LogMessage("error.scan.guard.main"), file);
 }
 
-StringBuilder GuardNode::ToMelon(const UInt indent) const {
+StringBuilder GuardStatement::ToMelon(const UInt indent) const {
 	StringBuilder sb = "guard ";
 	sb += cond->ToMelon(indent);
 
@@ -318,7 +318,7 @@ StringBuilder GuardNode::ToMelon(const UInt indent) const {
 		sb += "end";
 	}
 
-	if (!continue_.Cast<Statements>()->statements.IsEmpty()) {
+	if (!continue_->statements.IsEmpty()) {
 		sb += "\n\n";
 		sb += String('\t').Repeat(indent);
 		sb += continue_->ToMelon(indent);

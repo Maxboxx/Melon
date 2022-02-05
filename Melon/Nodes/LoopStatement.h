@@ -2,27 +2,27 @@
 
 #include "Boxx/Tuple.h"
 
-#include "StatementNode.h"
-#include "AssignNode.h"
+#include "Statement.h"
+#include "Assignment.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		/// Node for loop structures.
-		class LoopNode : public Statement {
+		/// Node for loop statements.
+		class LoopStatement : public Statement {
 		public:
 			/// The different loop types.
 			enum class LoopType : Boxx::UByte {
 				/// Used for {also} and {else}.
 				None,
 
-				/// Used for {if}, {alsoif} and {elseif}.
+				/// Used for {if}, {alif} and {elif}.
 				If,
 
-				/// Used for {while}, {alsowhile} and {elsewhile}.
+				/// Used for {while}, {alwhile} and {elwhile}.
 				While,
 
-				/// Used for {for}, {alsofor} and {elsefor}.
+				/// Used for {for}, {alfor} and {elfor}.
 				For
 			};
 
@@ -35,16 +35,16 @@ namespace Melon {
 				bool also;
 
 				/// The condition of the segment.
-				_Condition_ condition;
+				Ptr<Condition> condition;
 
 				/// The body of the segment.
-				_Statement_ statements;
+				Ptr<Statement> statements;
 
 				/// The init node of a for segment.
-				Boxx::Pointer<Assignment> init;
+				Ptr<Assignment> init;
 
 				/// The step node of a for segment.
-				Boxx::Pointer<Node> step;
+				Ptr<Node> step;
 
 				/// An optional condition operator used in for segments.
 				///p The condition is automatically compared to the loop variable if this is set.
@@ -88,8 +88,8 @@ namespace Melon {
 			/// All segments of the loop structure.
 			Boxx::List<LoopSegment> segments;
 
-			LoopNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~LoopNode();
+			LoopStatement(Symbols::Symbol* const scope, const FileInfo& file);
+			~LoopStatement();
 
 			/// {true} if at least one segment will run.
 			bool WillASegmentRun() const;
@@ -99,7 +99,7 @@ namespace Melon {
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual _Statement_ Optimize(OptimizeInfo& info) override;
+			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

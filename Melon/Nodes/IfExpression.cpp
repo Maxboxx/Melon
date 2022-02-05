@@ -1,9 +1,9 @@
-#include "IfExprNode.h"
+#include "IfExpression.h"
 
 #include "StackNode.h"
 #include "TypeNode.h"
-#include "ConvertNode.h"
-#include "ConditionNode.h"
+#include "TypeConversion.h"
+#include "Condition.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -15,15 +15,15 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-IfExprNode::IfExprNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
+IfExpression::IfExpression(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 	
 }
 
-IfExprNode::~IfExprNode() {
+IfExpression::~IfExpression() {
 
 }
 
-TypeSymbol* IfExprNode::Type() const {
+TypeSymbol* IfExpression::Type() const {
 	TypeSymbol* type = nodes[0]->Type();
 
 	for (UInt i = 1; i < nodes.Size(); i++) {
@@ -35,7 +35,7 @@ TypeSymbol* IfExprNode::Type() const {
 	return type;
 }
 
-CompiledNode IfExprNode::Compile(CompileInfo& info) {
+CompiledNode IfExpression::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
 	// Setup return value
@@ -48,7 +48,7 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
-	Pointer<StackNode> sn = new StackNode(info.stack.top);
+	Fixed<StackNode> sn = StackNode(info.stack.top);
 	sn->type = Type()->AbsoluteName();
 
 	StackPtr stack = info.stack;
@@ -103,25 +103,25 @@ CompiledNode IfExprNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-void IfExprNode::IncludeScan(ParsingInfo& info) {
-	for (const _Expression_& node : nodes) {
+void IfExpression::IncludeScan(ParsingInfo& info) {
+	for (Weak<Expression> node : nodes) {
 		node->IncludeScan(info);
 	}
 
-	for (const _Expression_& condition : conditions) {
+	for (Weak<Expression> condition : conditions) {
 		condition->IncludeScan(info);
 	}
 }
 
-ScanResult IfExprNode::Scan(ScanInfoStack& info) {
+ScanResult IfExpression::Scan(ScanInfoStack& info) {
 	ScanResult result;
 	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 
 	TypeSymbol* const t = Type();
-	Pointer<TypeNode> type = t ? new TypeNode(t->AbsoluteName()) : nullptr;
+	Ptr<TypeNode> type = t ? new TypeNode(t->AbsoluteName()) : nullptr;
 
 	// Scan values
-	for (const _Expression_& node : nodes) {
+	for (Weak<Expression> node : nodes) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->File());
 		result |= r;
@@ -132,7 +132,7 @@ ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 	}
 
 	// Scan conditions
-	for (const _Expression_& node : conditions) {
+	for (Weak<Expression> node : conditions) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->File());
 		result |= r;
@@ -142,27 +142,27 @@ ScanResult IfExprNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-NameList IfExprNode::FindSideEffectScope(const bool assign) {
+NameList IfExpression::FindSideEffectScope(const bool assign) {
 	NameList list = conditions[0]->GetSideEffectScope(assign);
 
 	for (UInt i = 1; i < conditions.Size(); i++) {
 		list = CombineSideEffects(list, conditions[i]->GetSideEffectScope(assign));
 	}
 
-	for (const _Expression_& node : nodes) {
+	for (Weak<Expression> node : nodes) {
 		list = CombineSideEffects(list, node->GetSideEffectScope(assign));
 	}
 
 	return list;
 }
 
-_Expression_ IfExprNode::Optimize(OptimizeInfo& info) {
+Ptr<Expression> IfExpression::Optimize(OptimizeInfo& info) {
 	// Optimize nodes and conditions
-	for (_Expression_& node : nodes) {
+	for (Ptr<Expression>& node : nodes) {
 		Node::Optimize(node, info);
 	}
 
-	for (_Condition_& cond : conditions) {
+	for (Ptr<Condition>& cond : conditions) {
 		Node::Optimize(cond, info);
 	}
 
@@ -190,7 +190,7 @@ _Expression_ IfExprNode::Optimize(OptimizeInfo& info) {
 	// Replcae if expression with a value if there is only one segment
 	if (nodes.Size() == 1) {
 		if (nodes[0]->Type() != Type()) {
-			Pointer<ConvertNode> cn = new ConvertNode(nodes[0]->scope, nodes[0]->File());
+			Ptr<TypeConversion> cn = new TypeConversion(nodes[0]->scope, nodes[0]->File());
 			cn->isExplicit = true;
 			cn->expression = nodes[0];
 			cn->type = Type()->AbsoluteName();
@@ -206,7 +206,7 @@ _Expression_ IfExprNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-StringBuilder IfExprNode::ToMelon(const UInt indent) const {
+StringBuilder IfExpression::ToMelon(const UInt indent) const {
 	StringBuilder sb;
 	String tabs1 = String('\t').Repeat(indent);
 	String tabs2 = String('\t').Repeat(indent + 1);

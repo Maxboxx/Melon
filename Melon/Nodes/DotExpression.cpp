@@ -1,4 +1,4 @@
-#include "DotNode.h"
+#include "DotExpression.h"
 
 #include "NameNode.h"
 
@@ -22,15 +22,15 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-DotNode::DotNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
+DotExpression::DotExpression(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
-DotNode::~DotNode() {
+DotExpression::~DotExpression() {
 
 }
 
-TypeSymbol* DotNode::Type() const {
+TypeSymbol* DotExpression::Type() const {
 	Symbols::Symbol* const s = Symbol();
 
 	if (s == nullptr) return nullptr;
@@ -45,7 +45,7 @@ TypeSymbol* DotNode::Type() const {
 	return nullptr;
 }
 
-Symbol* DotNode::Symbol() const {
+Symbol* DotExpression::Symbol() const {
 	Symbols::Symbol* const nodeSym = expression->Symbol();
 
 	if (nodeSym == nullptr) {
@@ -80,7 +80,7 @@ Symbol* DotNode::Symbol() const {
 	return nullptr;
 }
 
-CompiledNode DotNode::Compile(CompileInfo& info) {
+CompiledNode DotExpression::Compile(CompileInfo& info) {
 	TypeSymbol* const type = expression->Type();
 
 	CompiledNode c = expression->Compile(info);
@@ -106,7 +106,7 @@ CompiledNode DotNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-void DotNode::IncludeScan(ParsingInfo& info) {
+void DotExpression::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 	
 	Symbols::Symbol* const s = expression->Symbol();
@@ -118,7 +118,7 @@ void DotNode::IncludeScan(ParsingInfo& info) {
 	}
 }
 
-ScanResult DotNode::Scan(ScanInfoStack& info) {
+ScanResult DotExpression::Scan(ScanInfoStack& info) {
 	const bool assign = info->assign;
 	info->assign = false;
 
@@ -145,7 +145,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 
 	// Scan assignment
 	if (info->assign) {
-		if (const Pointer<NameNode>& nn = expression.Cast<NameNode>()) {
+		if (Weak<NameNode> nn = expression.As<NameNode>()) {
 			if (nn->name == Name::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 					if (info->scopeInfo.WillContinue()) {
@@ -163,7 +163,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	}
 	// Scan init
 	else if (info->init) {
-		if (const Pointer<NameNode>& nn = expression.Cast<NameNode>()) {
+		if (Weak<NameNode> nn = expression.As<NameNode>()) {
 			if (nn->name == Name::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 					if (!var->isAssigned) {
@@ -182,7 +182,7 @@ ScanResult DotNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-NameList DotNode::FindSideEffectScope(const bool assign) {
+NameList DotExpression::FindSideEffectScope(const bool assign) {
 	if (assign) {
 		return expression->GetSideEffectScope(assign);
 	}
@@ -190,12 +190,12 @@ NameList DotNode::FindSideEffectScope(const bool assign) {
 	return scope->AbsoluteName();
 }
 
-_Expression_ DotNode::Optimize(OptimizeInfo& info) {
+Ptr<Expression> DotExpression::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 	return nullptr;
 }
 
-StringBuilder DotNode::ToMelon(const UInt indent) const {
+StringBuilder DotExpression::ToMelon(const UInt indent) const {
 	StringBuilder sb = expression->ToMelon(indent);
 	sb += ".";
 	sb += name.ToSimpleString();

@@ -133,7 +133,7 @@ bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, 
 					fcn->loopStep = step.value2;
 				}
 				else {
-					Pointer<IntegerNode> num = new IntegerNode(info.GetFileInfoPrev());
+					Pointer<Integer> num = new Integer(info.GetFileInfoPrev());
 					num->number = 1;
 					fcn->loopStep = num;
 					fcn->stepOperator = Name::Add;

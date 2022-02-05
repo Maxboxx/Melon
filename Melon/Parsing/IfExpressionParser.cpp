@@ -33,7 +33,7 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 	}
 
 	// Setup node
-	Pointer<IfExprNode> ifexpr = new IfExprNode(info.scope, info.GetFileInfo(ifLine));
+	Pointer<IfExpression> ifexpr = new IfExpression(info.scope, info.GetFileInfo(ifLine));
 	ifexpr->conditions.Add(cond);
 
 	// Parse simple if expression
@@ -42,7 +42,7 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 	}*/
 
 	// Parse full if expression
-	if (ParseFull(info, (IfExprNode*)ifexpr, ifLine, error)) {
+	if (ParseFull(info, (IfExpression*)ifexpr, ifLine, error)) {
 		return ifexpr;
 	}
 
@@ -50,7 +50,7 @@ NodePtr IfExpressionParser::Parse(ParsingInfo& info, const bool returnOnError) {
 	return nullptr;
 }
 
-bool IfExpressionParser::ParseSimple(ParsingInfo& info, IfExprNode* const node, const UInt line, bool& error) {
+bool IfExpressionParser::ParseSimple(ParsingInfo& info, IfExpression* const node, const UInt line, bool& error) {
 	if (info.Current().type != TokenType::Arrow) return false;
 	info.index++;
 	
@@ -86,7 +86,7 @@ bool IfExpressionParser::ParseSimple(ParsingInfo& info, IfExprNode* const node, 
 	return true;
 }
 
-bool IfExpressionParser::ParseFull(ParsingInfo& info, IfExprNode* const node, const UInt line, bool& error) {
+bool IfExpressionParser::ParseFull(ParsingInfo& info, IfExpression* const node, const UInt line, bool& error) {
 	// Parse if block
 	if (NodePtr expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), true)) {
 		node->nodes.Add(expr);

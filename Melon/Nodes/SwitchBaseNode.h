@@ -202,7 +202,7 @@ namespace Melon {
 
 						const Boxx::String type = in.instruction.instructionName;
 
-						if (type != BreakNode::scopeBreakInstName) {
+						if (type != BreakStatement::scopeBreakInstName) {
 							switchInfo.cn.instructions.Add(in);
 							continue;
 						}
@@ -245,7 +245,7 @@ namespace Melon {
 
 						const Boxx::String type = in.instruction.instructionName;
 
-						if (type != BreakNode::scopeBreakInstName) {
+						if (type != BreakStatement::scopeBreakInstName) {
 							switchInfo.cn.instructions.Add(in);
 							continue;
 						}

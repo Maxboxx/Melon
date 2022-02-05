@@ -37,7 +37,7 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 	const UInt startIndex = info.index;
 
 	if (NodePtr valueNode = ParseOperand(info, statement)) {
-		List<Pair<TokenType, Pointer<BinaryOperatorNode>>> operators;
+		List<Pair<TokenType, Pointer<BinaryOperatorExpression>>> operators;
 		List<NodePtr> nodes;
 		nodes.Add(valueNode);
 		UByte highestPrecedence = 0;
@@ -48,7 +48,7 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 			if (IsBinaryOperator(token.type)) {
 				if (token.type == TokenType::As) {
 					if (NodePtr node = AsParser::Parse(info)) {
-						node.Cast<ConvertNode>()->node = nodes.Last();
+						node.Cast<TypeConversion>()->node = nodes.Last();
 						nodes[nodes.Size() - 1] = node;
 					}
 				}
@@ -56,19 +56,19 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 					info.index++;
 
 					if (NodePtr valueNode2 = ParseOperand(info)) {
-						Pointer<BinaryOperatorNode> node;
+						Pointer<BinaryOperatorExpression> node;
 
 						if (IsLogic(token.type)) {
-							node = new LogicNode(info.scope, token.type, info.GetFileInfo(token.line));
+							node = new LogicExpression(info.scope, token.type, info.GetFileInfo(token.line));
 						}
 						else if (token.type == TokenType::DoubleQuestion) {
-							node = new DefaultNode(info.scope, info.GetFileInfo(token.line));
+							node = new DefaultExpression(info.scope, info.GetFileInfo(token.line));
 						}
 						else {
-							node = new BinaryOperatorNode(info.scope, Name(token.value), info.GetFileInfo(token.line));
+							node = new BinaryOperatorExpression(info.scope, Name(token.value), info.GetFileInfo(token.line));
 						}
 
-						operators.Add(Pair<TokenType, Pointer<BinaryOperatorNode>>(token.type, node));
+						operators.Add(Pair<TokenType, Pointer<BinaryOperatorExpression>>(token.type, node));
 						nodes.Add(valueNode2);
 
 						if (highestPrecedence < Precedence(token.type)) highestPrecedence = Precedence(token.type);
@@ -88,7 +88,7 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 			while (!operators.IsEmpty()) {
 				for (UInt i = 0; i < operators.Size();) {
 					if (Precedence(operators[i].key) == highestPrecedence) {
-						Pointer<BinaryOperatorNode> op = operators[i].value;
+						Pointer<BinaryOperatorExpression> op = operators[i].value;
 						op->operand1 = nodes[i];
 						op->operand2 = nodes[i + 1];
 						nodes[i] = op;
@@ -290,7 +290,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		info.index++;
 		
 		if (NodePtr dotNode = DotParser::Parse(info)) {
-			Pointer<DotNode> dn = dotNode.Cast<DotNode>();
+			Pointer<DotExpression> dn = dotNode.Cast<DotExpression>();
 			Pointer<NameNode> nn = new NameNode(nullptr, info.GetFileInfo(line));
 			nn->name = Name::Global;
 			dn->expression = nn;
@@ -340,7 +340,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 			}
 
 			if (NodePtr dot = DotParser::Parse(info)) {
-				dot.Cast<DotNode>()->node = node;
+				dot.Cast<DotExpression>()->node = node;
 				node = dot;
 				continue;
 			}

@@ -1,4 +1,4 @@
-#include "EnumNode.h"
+#include "EnumStatement.h"
 
 #include "Melon/Symbols/EnumSymbol.h"
 #include "Melon/Symbols/ValueSymbol.h"
@@ -9,19 +9,19 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-EnumNode::EnumNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
+EnumStatement::EnumStatement(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
-EnumNode::~EnumNode() {
+EnumStatement::~EnumStatement() {
 
 }
 
-CompiledNode EnumNode::Compile(CompileInfo& info) {
+CompiledNode EnumStatement::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-StringBuilder EnumNode::ToMelon(const UInt indent) const {
+StringBuilder EnumStatement::ToMelon(const UInt indent) const {
 	StringBuilder sb = "enum ";
 	sb += name.ToString();
 	sb += "\n";

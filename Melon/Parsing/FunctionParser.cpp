@@ -31,7 +31,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, parent == nullptr)) {
 		const FunctionHead funcHead = *fh;
-		Pointer<FunctionNode> func = new FunctionNode(info.scope, info.GetFileInfo(startLine));
+		Pointer<FunctionStatement> func = new FunctionStatement(info.scope, info.GetFileInfo(startLine));
 
 		UInt line = 0;
 
@@ -102,7 +102,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		info.root.funcs.Add(func);
 		info.statementNumber++;
 
-		Pointer<EmptyNode> en = new EmptyNode();
+		Pointer<EmptyStatement> en = new EmptyStatement();
 		en->node = func;
 		return en;
 	}

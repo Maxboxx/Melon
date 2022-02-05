@@ -119,7 +119,7 @@ StringBuilder StructNode::ToMelon(const UInt indent) const {
 	for (const Pair<Name, Symbol*>& syms : symbol->symbols) {
 		if (FunctionSymbol* const func = syms.value->Cast<FunctionSymbol>()) {
 			for (FunctionSymbol* const overload : func->overloads) {
-				if (overload->node && overload->node.Cast<FunctionNode>()->isUsed) {
+				if (overload->node && overload->node.Cast<FunctionStatement>()->isUsed) {
 					sb += "\n\n";
 					sb += tabs;
 					sb += overload->node->ToMelon(indent + 1);

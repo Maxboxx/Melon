@@ -1,4 +1,4 @@
-#include "ContinueNode.h"
+#include "ContinueStatement.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -6,17 +6,17 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-String ContinueNode::continueInstName = "continue";
+String ContinueStatement::continueInstName = "continue";
 
-ContinueNode::ContinueNode(Symbols::Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
+ContinueStatement::ContinueStatement(Symbols::Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 	
 }
 
-ContinueNode::~ContinueNode() {
+ContinueStatement::~ContinueStatement() {
 
 }
 
-CompiledNode ContinueNode::Compile(CompileInfo& info) {
+CompiledNode ContinueStatement::Compile(CompileInfo& info) {
 	CompiledNode c;
 
 	Instruction in = Instruction(InstructionType::Custom, loops);
@@ -26,7 +26,7 @@ CompiledNode ContinueNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-ScanResult ContinueNode::Scan(ScanInfoStack& info) {
+ScanResult ContinueStatement::Scan(ScanInfoStack& info) {
 	if (info->scopeInfo.CanContinue()) {
 		info->scopeInfo.loopBreakCount = Math::Max(info->scopeInfo.loopBreakCount, loops);
 	}
@@ -36,7 +36,7 @@ ScanResult ContinueNode::Scan(ScanInfoStack& info) {
 	return ScanResult();
 };
 
-StringBuilder ContinueNode::ToMelon(const UInt indent) const {
+StringBuilder ContinueStatement::ToMelon(const UInt indent) const {
 	StringBuilder sb = String("continue ");
 	sb += String::ToString((Int)loops);
 	return sb;

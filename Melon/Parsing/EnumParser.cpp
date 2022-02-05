@@ -56,7 +56,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	// TODO: size
 	EnumSymbol* enumSymbol = new EnumSymbol(1, false, info.GetFileInfo(enumLine));
 
-	Pointer<EnumNode> en = new EnumNode(info.scope, info.GetFileInfo(enumLine));
+	Pointer<EnumStatement> en = new EnumStatement(info.scope, info.GetFileInfo(enumLine));
 
 	en->name = enumName;
 
@@ -138,7 +138,7 @@ Optional<EnumParser::EnumValue> EnumParser::ParseValue(ParsingInfo& info, ULong&
 		info.index++;
 
 		if (NodePtr num = IntegerParser::Parse(info)) {
-			value.value = num.Cast<IntegerNode>()->number;
+			value.value = num.Cast<Integer>()->number;
 		}
 		else {
 			ErrorLog::Error(LogMessage("error.syntax.expected.after", "integer", LogMessage::Quote("=")), info.GetFileInfoPrev());

@@ -10,7 +10,7 @@ using namespace Melon::Parsing;
 
 NodePtr IntegerParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Integer) {
-		Pointer<IntegerNode> node = new IntegerNode(info.GetFileInfo());
+		Pointer<Integer> node = new Integer(info.GetFileInfo());
 		node->scope  = info.scope;
 		node->number = info.Current().value.ToULong();
 		node->isUnsigned = true;
@@ -18,7 +18,7 @@ NodePtr IntegerParser::Parse(ParsingInfo& info) {
 		return node;
 	}
 	else if (info.Current().type == TokenType::Minus && info.Peek().type == TokenType::Integer) {
-		Pointer<IntegerNode> node = new IntegerNode(info.GetFileInfo());
+		Pointer<Integer> node = new Integer(info.GetFileInfo());
 		node->scope  = info.scope;
 		node->number = -(Long)info.Peek().value.ToULong();
 		node->isUnsigned = false;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StatementNode.h"
+#include "Statement.h"
 
 namespace Melon {
 	namespace Symbols {
@@ -10,7 +10,7 @@ namespace Melon {
 	///N Melon::Nodes
 	namespace Nodes {
 		/// Node for enums.
-		class EnumNode : public Statement {
+		class EnumStatement : public Statement {
 		public:
 			/// The name of the enum.
 			Symbols::Name name;
@@ -21,8 +21,8 @@ namespace Melon {
 			/// The enum symbol.
 			Symbols::EnumSymbol* symbol;
 
-			EnumNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~EnumNode();
+			EnumStatement(Symbols::Symbol* const scope, const FileInfo& file);
+			~EnumStatement();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;

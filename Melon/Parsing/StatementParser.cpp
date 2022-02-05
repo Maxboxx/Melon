@@ -73,7 +73,7 @@ NodePtr StatementParser::ParseMultiple(ParsingInfo& info) {
 	Pointer<Statements> sn = new Statements(info.scope, info.GetFileInfo());
 
 	while (NodePtr stat = StatementParser::Parse(info)) {
-		if (Pointer<GuardNode> gn = stat.Cast<GuardNode>()) {
+		if (Pointer<GuardStatement> gn = stat.Cast<GuardStatement>()) {
 			gn->continue_ = StatementParser::ParseMultiple(info);
 			sn->statements.Add(gn);
 		}

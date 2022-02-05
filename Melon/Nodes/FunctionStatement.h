@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StatementNode.h"
+#include "Statement.h"
 
 #include "Melon/Symbols/FunctionSymbol.h"
 
@@ -8,10 +8,10 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for functions.
-		class FunctionNode : public Statement {
+		class FunctionStatement : public Statement {
 		public:
 			/// The function body.
-			_Statements_ statements;
+			Ptr<Statements> statements;
 
 			/// The function symbol.
 			Symbols::FunctionSymbol* sym;
@@ -19,14 +19,14 @@ namespace Melon {
 			/// {true} if the function is used.
 			bool isUsed = true;
 
-			FunctionNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~FunctionNode();
+			FunctionStatement(Symbols::Symbol* const scope, const FileInfo& file);
+			~FunctionStatement();
 
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual _Statement_ Optimize(OptimizeInfo& info) override;
+			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

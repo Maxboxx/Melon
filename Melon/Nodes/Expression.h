@@ -47,5 +47,27 @@ namespace Melon {
 			/// Returns the immediate value of the expression.
 			virtual Boxx::Long GetImmediate() const;
 		};
+
+		/// A weak expression.
+		class WeakExpression : public Expression {
+		public:
+			/// The weak expression.
+			Weak<Expression> expression;
+
+			WeakExpression(Weak<Expression> expr) : Expression(expr->scope, expr->File()) {expression = expr;}
+			~WeakExpression() {}
+
+			virtual Symbols::TypeSymbol* Type() const override {return expression->Type();}
+			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override {return expression->Types();}
+			virtual Symbols::Symbol* Symbol() const override {return expression->Symbol();}
+			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override {return nullptr;}
+			virtual bool IsImmediate() const override {return expression->IsImmediate();}
+			virtual Boxx::Long GetImmediate() const override {return expression->GetImmediate();}
+			virtual void IncludeScan(Parsing::ParsingInfo& info) override {expression->IncludeScan(info);}
+			virtual ScanResult Scan(ScanInfoStack& info) override {return expression->Scan(info);}
+			virtual CompiledNode Compile(CompileInfo& info) override {return expression->Compile(info);}
+			virtual Boxx::UInt GetSize() const override {return expression->GetSize();}
+			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override {return expression->ToMelon(indent);}
+		};
 	}
 }

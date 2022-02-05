@@ -29,7 +29,7 @@ NodePtr AsParser::Parse(ParsingInfo& info) {
 
 	// Parse type
 	if (Optional<NameList> type = TypeParser::Parse(info)) {
-		Pointer<ConvertNode> cn = new ConvertNode(info.scope, info.GetFileInfo(asLine));
+		Pointer<TypeConversion> cn = new TypeConversion(info.scope, info.GetFileInfo(asLine));
 		cn->isExplicit = true;
 		cn->type = *type;
 		return cn;

@@ -1,4 +1,4 @@
-#include "DefaultNode.h"
+#include "DefaultExpression.h"
 
 #include "MemoryNode.h"
 #include "TypeNode.h"
@@ -14,15 +14,15 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-DefaultNode::DefaultNode(Symbols::Symbol* const scope, const FileInfo& file) : BinaryOperatorNode(scope, Name::Default, file) {
+DefaultExpression::DefaultExpression(Symbols::Symbol* const scope, const FileInfo& file) : BinaryOperatorExpression(scope, Name::Default, file) {
 
 }
 
-DefaultNode::~DefaultNode() {
+DefaultExpression::~DefaultExpression() {
 
 }
 
-TypeSymbol* DefaultNode::Type() const {
+TypeSymbol* DefaultExpression::Type() const {
 	TypeSymbol* const type1 = operand1->Type();
 
 	// TODO: error?
@@ -45,7 +45,7 @@ TypeSymbol* DefaultNode::Type() const {
 	return type;
 }
 
-CompiledNode DefaultNode::Compile(CompileInfo& info) {
+CompiledNode DefaultExpression::Compile(CompileInfo& info) {
 	CompiledNode cn;
 	cn.size = info.stack.ptrSize;
 
@@ -68,10 +68,10 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(eq);
 
 	// Get memory location for the result and the optional value
-	Pointer<MemoryNode> sn1 = new MemoryNode(cn.argument.mem);
+	Fixed<MemoryNode> sn1 = MemoryNode(cn.argument.mem);
 	sn1->type = Type()->AbsoluteName();
 
-	Pointer<MemoryNode> sn2 = new MemoryNode(c1.argument.mem);
+	Fixed<MemoryNode> sn2 = MemoryNode(c1.argument.mem);
 	sn2->mem.offset++;
 	sn2->type = operand1->Type()->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
 
@@ -98,12 +98,12 @@ CompiledNode DefaultNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-void DefaultNode::IncludeScan(ParsingInfo& info) {
+void DefaultExpression::IncludeScan(ParsingInfo& info) {
 	operand1->IncludeScan(info);
 	operand2->IncludeScan(info);
 }
 
-ScanResult DefaultNode::Scan(ScanInfoStack& info) {
+ScanResult DefaultExpression::Scan(ScanInfoStack& info) {
 	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 
 	ScanResult result1 = operand1->Scan(info);
@@ -115,7 +115,8 @@ ScanResult DefaultNode::Scan(ScanInfoStack& info) {
 	TypeSymbol* const type = Type();
 	
 	if (type) {
-		ScanAssignment(new TypeNode(type->AbsoluteName()), operand2, info, file);
+		Fixed<TypeNode> tn = TypeNode(type->AbsoluteName());
+		ScanAssignment(tn, operand2, info, file);
 	}
 
 	info->scopeInfo = scopeInfo;
@@ -123,17 +124,17 @@ ScanResult DefaultNode::Scan(ScanInfoStack& info) {
 	return result1 | result2;
 }
 
-NameList DefaultNode::FindSideEffectScope(const bool assign) {
+NameList DefaultExpression::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(operand1->GetSideEffectScope(assign), operand2->GetSideEffectScope(assign));
 }
 
-_Expression_ DefaultNode::Optimize(OptimizeInfo& info) {
+Ptr<Expression> DefaultExpression::Optimize(OptimizeInfo& info) {
 	Node::Optimize(operand1, info);
 	Node::Optimize(operand2, info);
 	return nullptr;
 }
 
-StringBuilder DefaultNode::ToMelon(const UInt indent) const {
+StringBuilder DefaultExpression::ToMelon(const UInt indent) const {
 	StringBuilder sb = operand1->ToMelon(indent);
 	sb += " ?? ";
 	sb += operand2->ToMelon(indent);

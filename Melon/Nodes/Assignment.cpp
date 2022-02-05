@@ -38,7 +38,7 @@ UInt Assignment::GetSize() const {
 	UInt size = 0;
 
 	for (UInt i = 0; i < assignableValues.Size(); i++) {
-		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardNode>()) continue;
+		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardExpression>()) continue;
 
 		if (VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>()) {
 			size += var->Size();
@@ -83,7 +83,7 @@ CompiledNode Assignment::Compile(CompileInfo& info) {
 
 	// Calculate size and stack index of variables
 	for (UInt i = 0; i < assignableValues.Size(); i++) {
-		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardNode>()) continue;
+		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardExpression>()) continue;
 
 		VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>();
 
@@ -105,7 +105,7 @@ CompiledNode Assignment::Compile(CompileInfo& info) {
 
 		// Assign values normally
 		if (i < this->values.Size()) {
-			if (!assignableValues[i].Is<DiscardNode>()) {
+			if (!assignableValues[i].Is<DiscardExpression>()) {
 				info.important = true;
 				c.AddInstructions(CompileAssignment(assignableValues[i], values[i].value, info, assignableValues[i]->File()).instructions);
 				info.important = false;
@@ -129,7 +129,7 @@ CompiledNode Assignment::Compile(CompileInfo& info) {
 			}
 		}
 		// Assign extra return values
-		else if (!assignableValues[i].Is<DiscardNode>()) {
+		else if (!assignableValues[i].Is<DiscardExpression>()) {
 			Fixed<MemoryNode> memory = MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
 			memory->type = values[i].type->AbsoluteName();
 
@@ -169,7 +169,7 @@ Ptr<Statement> Assignment::Optimize(OptimizeInfo& info) {
 
 	// Check if removal of values can be done
 	for (Ptr<Expression>& value : assignableValues) {
-		if (value.Is<DiscardNode>()) {
+		if (value.Is<DiscardExpression>()) {
 			removed = true;
 			continue;
 		}
@@ -177,7 +177,7 @@ Ptr<Statement> Assignment::Optimize(OptimizeInfo& info) {
 		// Remove unused vars
 		if (VariableSymbol* const sym = value->Symbol<VariableSymbol>()) {
 			if (!value->HasSideEffects(scope->AbsoluteName()) && !info.usedVariables.Contains(sym)) {
-				value = new DiscardNode(value->scope, value->File());
+				value = new DiscardExpression(value->scope, value->File());
 				info.optimized = true;
 				removed = true;
 			}
@@ -189,14 +189,14 @@ Ptr<Statement> Assignment::Optimize(OptimizeInfo& info) {
 		i--;
 
 		// Remove values without side effects
-		if (assignableValues[i].Is<DiscardNode>() && !values[i]->HasSideEffects(scope->AbsoluteName())) {
+		if (assignableValues[i].Is<DiscardExpression>() && !values[i]->HasSideEffects(scope->AbsoluteName())) {
 			// Check if the value is part of a multiple return
 			if (i >= values.Size() - 1) {
 				bool isDiscard = true;
 				
 				// Only remove value if multiple return is not affected
 				for (UInt u = i + 1; u < assignableValues.Size(); u++) {
-					if (!assignableValues[u].Is<DiscardNode>()) {
+					if (!assignableValues[u].Is<DiscardExpression>()) {
 						isDiscard = false;
 						break;
 					}
@@ -214,7 +214,7 @@ Ptr<Statement> Assignment::Optimize(OptimizeInfo& info) {
 	if (removed) for (UInt i = assignableValues.Size(); i > 0;) {
 		i--;
 
-		if (assignableValues[i].Is<DiscardNode>()) {
+		if (assignableValues[i].Is<DiscardExpression>()) {
 			// Remove multiple return vars
 			if (i >= values.Size()) {
 				if (i == assignableValues.Size() - 1 || !values.Last()) {
@@ -233,7 +233,7 @@ Ptr<Statement> Assignment::Optimize(OptimizeInfo& info) {
 
 	// Remove assignment if everything is removed
 	if (removed && assignableValues.IsEmpty()) {
-		return new EmptyNode();
+		return new EmptyStatement();
 	}
 
 	// Optimize assignable values
@@ -252,14 +252,14 @@ Ptr<Statement> Assignment::Optimize(OptimizeInfo& info) {
 void Assignment::OptimizeAsCondition(OptimizeInfo& info) {
 	// Check if removal of values can be done
 	for (Ptr<Expression>& value : assignableValues) {
-		if (value.Is<DiscardNode>()) {
+		if (value.Is<DiscardExpression>()) {
 			continue;
 		}
 
 		// Remove unused vars
 		if (VariableSymbol* const sym = value->Symbol<VariableSymbol>()) {
 			if (!value->HasSideEffects(scope->AbsoluteName()) && !info.usedVariables.Contains(sym)) {
-				value = new DiscardNode(value->scope, value->File());
+				value = new DiscardExpression(value->scope, value->File());
 				info.optimized = true;
 			}
 		}
@@ -333,7 +333,7 @@ ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 
 	// Scan all vars
 	for (UInt i = 0; i < assignableValues.Size(); i++) {
-		if (assignableValues[i].Is<DiscardNode>()) continue;
+		if (assignableValues[i].Is<DiscardExpression>()) continue;
 
 		Weak<Expression> node = assignableValues[i];
 		node->Type();

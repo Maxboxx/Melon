@@ -25,7 +25,7 @@ NodePtr GuardParser::Parse(ParsingInfo& info) {
 	if (NodePtr node = ConditionParser::Parse(info)) {
 		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(guardLine));
 
-		Pointer<GuardNode> gn = new GuardNode(info.scope, info.GetFileInfo(guardLine));
+		Pointer<GuardStatement> gn = new GuardStatement(info.scope, info.GetFileInfo(guardLine));
 		gn->cond = node;
 		gn->else_ = ScopeParser::Parse(info, TokenType::Else, ScopeParser::Info("else", "guard condition", "guard statement", guardLine), false);
 
