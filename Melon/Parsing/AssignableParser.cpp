@@ -21,7 +21,7 @@ NodePtr AssignableParser::Parse(ParsingInfo& info) {
 	}
 	// Parse expression
 	else if (NodePtr node = ExpressionParser::Parse(info, true)) {
-		if (node.Cast<NameNode>()) return node;
+		if (node.Cast<NameExpression>()) return node;
 		if (node.Cast<DotExpression>())  return node;
 
 		info.index = startIndex;

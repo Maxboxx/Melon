@@ -74,7 +74,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	for (UInt i = 0; i < values.Size(); i++) {
 		stackOffset -= types[i]->Size();
 
-		Pointer<MemoryNode> sn = new MemoryNode(stackOffset);
+		Pointer<KiwiMemoryExpression> sn = new KiwiMemoryExpression(stackOffset);
 		sn->type = types[i]->AbsoluteName();
 
 		info.important = true;

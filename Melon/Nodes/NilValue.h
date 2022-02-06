@@ -1,15 +1,15 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for a {nil} value.
-		class NilNode : public Expression {
+		class NilValue : public Expression {
 		public:
-			NilNode(const FileInfo& file);
-			~NilNode();
+			NilValue(const FileInfo& file);
+			~NilValue();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual bool IsImmediate() const override;

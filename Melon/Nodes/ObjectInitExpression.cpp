@@ -1,6 +1,6 @@
-#include "ObjectInitNode.h"
+#include "ObjectInitExpression.h"
 
-#include "MemoryNode.h"
+#include "KiwiMemoryExpression.h"
 #include "TypeNode.h"
 
 #include "Melon/Parsing/Parser.h"
@@ -19,15 +19,15 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-ObjectInitNode::ObjectInitNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
+ObjectInitExpression::ObjectInitExpression(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
-ObjectInitNode::~ObjectInitNode() {
+ObjectInitExpression::~ObjectInitExpression() {
 
 }
 
-TypeSymbol* ObjectInitNode::Type() const {
+TypeSymbol* ObjectInitExpression::Type() const {
 	Symbols::Symbol* const sym = expression->Symbol();
 
 	if (sym == nullptr) return nullptr;
@@ -39,7 +39,7 @@ TypeSymbol* ObjectInitNode::Type() const {
 	return nullptr;
 }
 
-CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
+CompiledNode ObjectInitExpression::Compile(CompileInfo& info) {
 	CompiledNode c = expression->Compile(info);
 	
 	TypeSymbol* const type = Type();
@@ -54,7 +54,7 @@ CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
 		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
 
 		if (type->Is<StructSymbol>()) {
-			Pointer<MemoryNode> sn = new MemoryNode(info.stack.Offset() + var->stackIndex);
+			Fixed<KiwiMemoryExpression> sn = KiwiMemoryExpression(info.stack.Offset() + var->stackIndex);
 			sn->type = var->Type()->AbsoluteName();
 
 			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->File()).instructions);
@@ -68,15 +68,15 @@ CompiledNode ObjectInitNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-void ObjectInitNode::IncludeScan(ParsingInfo& info) {
+void ObjectInitExpression::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 
-	for (_Expression_& expression : expressions) {
+	for (Weak<Expression> expression : expressions) {
 		expression->IncludeScan(info);
 	}
 }
 
-ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
+ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 	ScanResult result = expression->Scan(info);
 	result.SelfUseCheck(info, expression->File());
 	
@@ -116,11 +116,12 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 		VariableSymbol* const v = type->Find<VariableSymbol>(vars[i], file);
 		TypeSymbol* const varType = v->Type();
 
-		ScanAssignment(new TypeNode(varType->AbsoluteName()), expressions[i], info, expressions[i]->File());
+		Fixed<TypeNode> tn = TypeNode(varType->AbsoluteName());
+		ScanAssignment(tn, expressions[i], info, expressions[i]->File());
 	}
 
 	// Scan expressions
-	for (const _Expression_& node : expressions) {
+	for (Weak<Expression> node : expressions) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->File());
 		result |= r;
@@ -129,27 +130,27 @@ ScanResult ObjectInitNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-NameList ObjectInitNode::FindSideEffectScope(const bool assign) {
+NameList ObjectInitExpression::FindSideEffectScope(const bool assign) {
 	NameList list = expression->GetSideEffectScope(assign);
 
-	for (_Expression_& expr : expressions) {
+	for (Weak<Expression> expr : expressions) {
 		list = CombineSideEffects(list, expr->GetSideEffectScope(assign));
 	}
 
 	return list;
 }
 
-_Expression_ ObjectInitNode::Optimize(OptimizeInfo& info) {
+Ptr<Expression> ObjectInitExpression::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 
-	for (_Expression_& expr : expressions) {
+	for (Ptr<Expression>& expr : expressions) {
 		Node::Optimize(expr, info);
 	}
 
 	return nullptr;
 }
 
-StringBuilder ObjectInitNode::ToMelon(const UInt indent) const {
+StringBuilder ObjectInitExpression::ToMelon(const UInt indent) const {
 	StringBuilder sb = expression->ToMelon(indent);
 
 	if (vars.IsEmpty()) {

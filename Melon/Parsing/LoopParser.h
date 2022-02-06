@@ -17,21 +17,21 @@ namespace Melon {
 			static Nodes::NodePtr Parse(ParsingInfo& info);
 
 		private:
-			static bool ParseSegment(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+			static bool ParseSegment(Nodes::LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
 
-			static bool ParseIf(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
-			static bool ParseWhile(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
-			static bool ParseFor(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
-			static bool ParseNone(Nodes::LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+			static bool ParseIf(Nodes::LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+			static bool ParseWhile(Nodes::LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+			static bool ParseFor(Nodes::LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
+			static bool ParseNone(Nodes::LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
 
 			static Boxx::Tuple<Boxx::Optional<Symbols::Name>, Nodes::NodePtr> ParseForCondition(ParsingInfo& info);
 			static Boxx::Tuple<Boxx::Optional<Symbols::Name>, Nodes::NodePtr> ParseForStep(ParsingInfo& info);
 
-			static bool IsValidSegmentType(const TokenType t, const Boxx::Pointer<Nodes::LoopNode>& loop);
+			static bool IsValidSegmentType(const TokenType t, const Boxx::Pointer<Nodes::LoopStatement>& loop);
 			static bool IsLoop(const TokenType t);
 			static bool IsLoopStart(const TokenType t);
 			static bool IsLoopMiddle(const TokenType t);
-			static Nodes::LoopNode::LoopType GetLoopType(const TokenType t);
+			static Nodes::LoopStatement::LoopType GetLoopType(const TokenType t);
 			static bool IsLoopAlso(const TokenType t);
 		};
 	}

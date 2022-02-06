@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for a name.
-		class NameNode : public Expression {
+		class NameExpression : public Expression {
 		public:
 			/// The name of the node.
 			Symbols::Name name;
@@ -14,8 +14,8 @@ namespace Melon {
 			/// Used to ignore {ref}.
 			bool ignoreRef = false;
 
-			NameNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~NameNode();
+			NameExpression(Symbols::Symbol* const scope, const FileInfo& file);
+			~NameExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Symbols::Symbol* Symbol() const override;

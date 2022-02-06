@@ -31,11 +31,11 @@ CompiledNode StructAssignNode::Compile(const _Expression_& operand1, const _Expr
 	for (UInt i = 0; i < type->members.Size(); i++) {
 		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], operand1->File());
 
-		Pointer<MemoryNode> mn1 = new MemoryNode(c1.argument.mem);
+		Pointer<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
 		mn1->mem.offset += member->stackIndex;
 		mn1->type = member->Type()->AbsoluteName();
 
-		Pointer<MemoryNode> mn2 = new MemoryNode(c2.argument.mem);
+		Pointer<KiwiMemoryExpression> mn2 = new KiwiMemoryExpression(c2.argument.mem);
 		mn2->mem.offset += member->stackIndex;
 		mn2->type = member->Type()->AbsoluteName();
 

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		/// Node for a memory location.
-		class MemoryNode : public Expression {
+		/// Expression for a memory location.
+		class KiwiMemoryExpression : public Expression {
 		public:
 			/// The memory location.
 			Kiwi::MemoryLocation mem;
@@ -14,9 +14,9 @@ namespace Melon {
 			/// The absolute type name of the node.
 			Symbols::NameList type;
 
-			MemoryNode(const Boxx::Int offset);
-			MemoryNode(const Kiwi::MemoryLocation& mem);
-			~MemoryNode();
+			KiwiMemoryExpression(const Boxx::Int offset);
+			KiwiMemoryExpression(const Kiwi::MemoryLocation& mem);
+			~KiwiMemoryExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;

@@ -130,7 +130,7 @@ CompiledNode Assignment::Compile(CompileInfo& info) {
 		}
 		// Assign extra return values
 		else if (!assignableValues[i].Is<DiscardExpression>()) {
-			Fixed<MemoryNode> memory = MemoryNode(info.stack.Offset(returnOffsets[i - this->values.Size()]));
+			Fixed<KiwiMemoryExpression> memory = KiwiMemoryExpression(info.stack.Offset(returnOffsets[i - this->values.Size()]));
 			memory->type = values[i].type->AbsoluteName();
 
 			info.important = true;
@@ -353,7 +353,7 @@ ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 
 		// Check for completed init
 		if (info->init) {
-			if (Weak<NameNode> nn = node.As<NameNode>()) {
+			if (Weak<NameExpression> nn = node.As<NameExpression>()) {
 				if (nn->name == Name::Self) {
 					info->type->CompleteInit();
 					result.selfUsed = false;

@@ -8,8 +8,6 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for creating new variables.
-		///T NewVariableNode
-		///B NewVariableNode
 		class [[deprecated]] NewVariableNode : public Node {
 		public:
 			/// List of relative types for the new variables.

@@ -19,14 +19,14 @@ using namespace Melon::Parsing;
 NodePtr LoopParser::Parse(ParsingInfo& info) {
 	if (!IsLoopStart(info.Current().type)) return nullptr;
 
-	Pointer<LoopNode> loop = new LoopNode(info.scope, info.GetFileInfo());
+	Pointer<LoopStatement> loop = new LoopStatement(info.scope, info.GetFileInfo());
 
 	const UInt startLine = info.Current().line;
 	const String start = info.Current().value;
 	bool single = false;
 
 	while (IsValidSegmentType(info.Current().type, loop)) {
-		LoopNode::LoopSegment ls;
+		LoopStatement::LoopSegment ls;
 		TokenType type = info.Current().type;
 		String value = info.Current().value;
 
@@ -54,17 +54,17 @@ NodePtr LoopParser::Parse(ParsingInfo& info) {
 	return loop;
 }
 
-bool LoopParser::ParseSegment(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+bool LoopParser::ParseSegment(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	switch (ls.type) {
-		case LoopNode::LoopType::If:    return ParseIf(ls, value, info);
-		case LoopNode::LoopType::While: return ParseWhile(ls, value, info);
-		case LoopNode::LoopType::For:   return ParseFor(ls, value, info);
+		case LoopStatement::LoopType::If:    return ParseIf(ls, value, info);
+		case LoopStatement::LoopType::While: return ParseWhile(ls, value, info);
+		case LoopStatement::LoopType::For:   return ParseFor(ls, value, info);
 
 		default: return ParseNone(ls, value, info);
 	}
 }
 
-bool LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+bool LoopParser::ParseIf(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
 	if (NodePtr cond = ConditionParser::Parse(info)) {
@@ -86,7 +86,7 @@ bool LoopParser::ParseIf(LoopNode::LoopSegment& ls, const Boxx::String& value, P
 	return false;
 }
 
-bool LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+bool LoopParser::ParseWhile(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
 	if (NodePtr cond = ConditionParser::Parse(info)) {
@@ -108,7 +108,7 @@ bool LoopParser::ParseWhile(LoopNode::LoopSegment& ls, const Boxx::String& value
 	return false;
 }
 
-bool LoopParser::ParseFor(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+bool LoopParser::ParseFor(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
 	if (NodePtr init = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
@@ -211,7 +211,7 @@ Tuple<Optional<Name>, NodePtr> LoopParser::ParseForStep(ParsingInfo& info) {
 	return Tuple<>::Create(op, node);
 }
 
-bool LoopParser::ParseNone(LoopNode::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
+bool LoopParser::ParseNone(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
 	const bool single = info.Current().type == TokenType::Arrow;
@@ -223,7 +223,7 @@ bool LoopParser::ParseNone(LoopNode::LoopSegment& ls, const Boxx::String& value,
 	return single;
 }
 
-bool LoopParser::IsValidSegmentType(const TokenType t, const Boxx::Pointer<Nodes::LoopNode>& loop) {
+bool LoopParser::IsValidSegmentType(const TokenType t, const Boxx::Pointer<Nodes::LoopStatement>& loop) {
 	if (!IsLoop(t)) return false;
 
 	if (IsLoopStart(t)) {
@@ -233,10 +233,10 @@ bool LoopParser::IsValidSegmentType(const TokenType t, const Boxx::Pointer<Nodes
 		return false;
 	}
 	else if (IsLoopAlso(t)) {
-		return loop->segments.Last().type != LoopNode::LoopType::None && (loop->segments.Size() == 1 || loop->segments.Last().also);
+		return loop->segments.Last().type != LoopStatement::LoopType::None && (loop->segments.Size() == 1 || loop->segments.Last().also);
 	}
 	else {
-		return loop->segments.Last().also || loop->segments.Last().type != LoopNode::LoopType::None;
+		return loop->segments.Last().also || loop->segments.Last().type != LoopStatement::LoopType::None;
 	}
 }
 
@@ -263,18 +263,18 @@ bool LoopParser::IsLoopMiddle(const TokenType t) {
 		t == TokenType::Else;
 }
 
-LoopNode::LoopType LoopParser::GetLoopType(const TokenType t) {
+LoopStatement::LoopType LoopParser::GetLoopType(const TokenType t) {
 	if (t == TokenType::If || t == TokenType::AlsoIf || t == TokenType::ElseIf) {
-		return LoopNode::LoopType::If;
+		return LoopStatement::LoopType::If;
 	}
 	else if (t == TokenType::While || t == TokenType::AlsoWhile || t == TokenType::ElseWhile) {
-		return LoopNode::LoopType::While;
+		return LoopStatement::LoopType::While;
 	}
 	else if (t == TokenType::For || t == TokenType::AlsoFor || t == TokenType::ElseFor) {
-		return LoopNode::LoopType::For;
+		return LoopStatement::LoopType::For;
 	}
 
-	return LoopNode::LoopType::None;
+	return LoopStatement::LoopType::None;
 }
 
 bool LoopParser::IsLoopAlso(const TokenType t) {

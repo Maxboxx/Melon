@@ -33,7 +33,7 @@ CompiledNode OptionalAssignValueNode::Compile(const _Expression_& operand1, cons
 
 		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], operand1->File());
 		
-		Pointer<MemoryNode> mn1 = new MemoryNode(c1.argument.mem);
+		Pointer<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
 		mn1->mem.offset += offset;
 		mn1->type = member->Type()->AbsoluteName();
 		offset++;

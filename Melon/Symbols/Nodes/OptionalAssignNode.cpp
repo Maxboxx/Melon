@@ -44,11 +44,11 @@ CompiledNode OptionalAssignNode::Compile(const _Expression_& operand1, const _Ex
 	c1.instructions.Add(mov1);
 	c1.instructions.Last().important = important;
 
-	Pointer<MemoryNode> mn1 = new MemoryNode(c1.argument.mem);
+	Pointer<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
 	mn1->mem.offset++;
 	mn1->type = type1->Find<VariableSymbol>(Name::Value, operand1->File())->Type()->AbsoluteName();
 
-	Pointer<MemoryNode> mn2 = new MemoryNode(c2.argument.mem);
+	Pointer<KiwiMemoryExpression> mn2 = new KiwiMemoryExpression(c2.argument.mem);
 	mn2->mem.offset++;
 	mn2->type = type2->Find<VariableSymbol>(Name::Value, operand2->File())->Type()->AbsoluteName();
 

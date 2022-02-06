@@ -280,7 +280,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		return node;
 	}
 	else if (info.Current().type == TokenType::Nil) {
-		Pointer<NilNode> node = new NilNode(info.GetFileInfo());
+		Pointer<NilValue> node = new NilValue(info.GetFileInfo());
 		info.index++;
 		return node;
 	}
@@ -291,7 +291,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		
 		if (NodePtr dotNode = DotParser::Parse(info)) {
 			Pointer<DotExpression> dn = dotNode.Cast<DotExpression>();
-			Pointer<NameNode> nn = new NameNode(nullptr, info.GetFileInfo(line));
+			Pointer<NameExpression> nn = new NameExpression(nullptr, info.GetFileInfo(line));
 			nn->name = Name::Global;
 			dn->expression = nn;
 			return dn;
@@ -308,7 +308,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		return nullptr;
 	}
 	else if (Optional<Name> node = TypeParser::ParseName(info)) {
-		Pointer<NameNode> nn = new NameNode(info.scope, info.GetFileInfo(startLine));
+		Pointer<NameExpression> nn = new NameExpression(info.scope, info.GetFileInfo(startLine));
 		nn->name = *node;
 		return nn;
 	}
@@ -346,7 +346,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 			}
 
 			if (NodePtr dot = ObjectInitParser::Parse(info)) {
-				dot.Cast<ObjectInitNode>()->node = node;
+				dot.Cast<ObjectInitExpression>()->node = node;
 				node = dot;
 				continue;
 			}

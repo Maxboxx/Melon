@@ -145,7 +145,7 @@ ScanResult DotExpression::Scan(ScanInfoStack& info) {
 
 	// Scan assignment
 	if (info->assign) {
-		if (Weak<NameNode> nn = expression.As<NameNode>()) {
+		if (Weak<NameExpression> nn = expression.As<NameExpression>()) {
 			if (nn->name == Name::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 					if (info->scopeInfo.WillContinue()) {
@@ -163,7 +163,7 @@ ScanResult DotExpression::Scan(ScanInfoStack& info) {
 	}
 	// Scan init
 	else if (info->init) {
-		if (Weak<NameNode> nn = expression.As<NameNode>()) {
+		if (Weak<NameExpression> nn = expression.As<NameExpression>()) {
 			if (nn->name == Name::Self) {
 				if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
 					if (!var->isAssigned) {

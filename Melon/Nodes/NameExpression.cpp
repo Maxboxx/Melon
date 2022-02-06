@@ -1,4 +1,4 @@
-#include "NameNode.h"
+#include "NameExpression.h"
 
 #include "PtrNode.h"
 
@@ -16,15 +16,15 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NameNode::NameNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
+NameExpression::NameExpression(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
-NameNode::~NameNode() {
+NameExpression::~NameExpression() {
 
 }
 
-TypeSymbol* NameNode::Type() const {
+TypeSymbol* NameExpression::Type() const {
 	Symbols::Symbol* const s = Symbol();
 
 	if (s == nullptr) return nullptr;
@@ -37,7 +37,7 @@ TypeSymbol* NameNode::Type() const {
 	}
 }
 
-Symbol* NameNode::Symbol() const {
+Symbol* NameExpression::Symbol() const {
 	Name s = name.Copy();
 
 	// Get template types
@@ -84,7 +84,7 @@ Symbol* NameNode::Symbol() const {
 	}
 }
 
-CompiledNode NameNode::Compile(CompileInfo& info) {
+CompiledNode NameExpression::Compile(CompileInfo& info) {
 	CompiledNode cn;
 
 	// Get symbol
@@ -94,7 +94,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 
 	// Compile reference variable
 	if (!ignoreRef && sym->HasAttribute(VariableAttributes::Ref)) {
-		Pointer<NameNode> name = new NameNode(scope, file);
+		Pointer<NameExpression> name = new NameExpression(scope, file);
 		name->name = this->name;
 		name->ignoreRef = true;
 		Pointer<PtrNode> ptr = new PtrNode(name);
@@ -110,7 +110,7 @@ CompiledNode NameNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-ScanResult NameNode::Scan(ScanInfoStack& info) {
+ScanResult NameExpression::Scan(ScanInfoStack& info) {
 	ScanResult result;
 	Symbols::Symbol* const s = Symbol();
 
@@ -128,7 +128,7 @@ ScanResult NameNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-NameList NameNode::FindSideEffectScope(const bool assign) {
+NameList NameExpression::FindSideEffectScope(const bool assign) {
 	if (assign) {
 		Symbols::Symbol* const s = Symbol();
 
@@ -143,6 +143,6 @@ NameList NameNode::FindSideEffectScope(const bool assign) {
 	return scope->AbsoluteName();
 }
 
-StringBuilder NameNode::ToMelon(const UInt indent) const {
+StringBuilder NameExpression::ToMelon(const UInt indent) const {
 	return name.ToSimpleString();
 }

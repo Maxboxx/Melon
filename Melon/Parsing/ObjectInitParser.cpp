@@ -15,7 +15,7 @@ NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::CurlyOpen) return nullptr;
 	info.index++;
 
-	Pointer<ObjectInitNode> cn = new ObjectInitNode(info.scope, info.GetFileInfoPrev());
+	Pointer<ObjectInitExpression> cn = new ObjectInitExpression(info.scope, info.GetFileInfoPrev());
 
 	while (info.Current().type != TokenType::CurlyClose) {
 		if (!cn->vars.IsEmpty()) {

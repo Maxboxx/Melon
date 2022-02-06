@@ -59,7 +59,7 @@ namespace Melon {
 				CompiledNode cn;
 
 				/// The memory location of the match value.
-				Boxx::Pointer<MemoryNode> match;
+				Boxx::Pointer<KiwiMemoryExpression> match;
 
 				/// Indices for jump to end.
 				Boxx::List<Boxx::UInt> endJumps;
@@ -77,7 +77,7 @@ namespace Melon {
 				Kiwi::Argument result;
 
 				/// Result node.
-				Boxx::Pointer<MemoryNode> resultNode;
+				Boxx::Pointer<KiwiMemoryExpression> resultNode;
 			};
 
 
@@ -281,7 +281,7 @@ namespace Melon {
 
 			// Compile match expression
 			info.stack.PushExpr(this->match->Type()->Size(), switchInfo.cn);
-			switchInfo.match = new MemoryNode(info.stack.Offset());
+			switchInfo.match = new KiwiMemoryExpression(info.stack.Offset());
 			switchInfo.match->type = this->match->Type()->AbsoluteName();
 
 			const Boxx::UInt frame = info.stack.frame;
@@ -306,7 +306,7 @@ namespace Melon {
 
 				// Get result memory location
 				switchInfo.result = Kiwi::Argument(Kiwi::MemoryLocation(info.stack.Offset()));
-				switchInfo.resultNode = new MemoryNode(switchInfo.result.mem.offset);
+				switchInfo.resultNode = new KiwiMemoryExpression(switchInfo.result.mem.offset);
 				switchInfo.resultNode->type = SwitchType()->AbsoluteName();
 			}
 

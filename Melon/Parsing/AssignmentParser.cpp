@@ -194,7 +194,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 				FileInfo file = info.GetFileInfoPrev();
 				file.statement++;
 
-				Pointer<NameNode> nn = new NameNode(info.scope, file);
+				Pointer<NameExpression> nn = new NameExpression(info.scope, file);
 				nn->name = name;
 				assign->vars.Add(nn);
 			}
