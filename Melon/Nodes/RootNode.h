@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Node.h"
+#include "Statements.h"
 
 #include "Melon/Symbols/TemplateTypeSymbol.h"
 
@@ -15,7 +16,7 @@ namespace Melon {
 		class RootNode final : public Node {
 		public:
 			/// All statements in the main scope of the program.
-			Boxx::List<_Statements_> nodes;
+			Boxx::List<Ptr<Statements>> nodes;
 
 			/// All functions in the program.
 			Boxx::List<Boxx::Pointer<FunctionStatement>> funcs;

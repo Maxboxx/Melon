@@ -1,18 +1,18 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		/// A node that contains a type.
-		class TypeNode : public Expression {
+		/// An expression that represents an empty value of a specific type.
+		class TypeExpression : public Expression {
 		public:
 			/// The absolute type name.
 			Symbols::NameList type;
 
-			TypeNode(const Symbols::NameList& type);
-			~TypeNode();
+			TypeExpression(const Symbols::NameList& type);
+			~TypeExpression();
 
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual Symbols::TypeSymbol* Type() const override;

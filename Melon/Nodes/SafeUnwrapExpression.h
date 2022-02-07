@@ -1,32 +1,25 @@
 #pragma once
 
-#include "ExpressionNode.h"
+#include "Expression.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		/// Node for unary operators.
-		class UnaryOperatorNode : public Expression {
+		/// Node for the safe unwrap opertator.
+		class SafeUnwrapExpression : public Expression {
 		public:
-			/// The operand.
-			_Expression_ operand;
+			/// The expression to perform the unwrap operation on.
+			Ptr<Expression> expression;
 
-			/// The operator to use.
-			Symbols::Name op;
-
-			UnaryOperatorNode(Symbols::Symbol* const scope, const Symbols::Name& op, const FileInfo& file);
-			~UnaryOperatorNode();
+			SafeUnwrapExpression(Symbols::Symbol* const scope, const FileInfo& file);
+			~SafeUnwrapExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Symbols::Symbol* Symbol() const override;
-
-			/// Gets the operator.
-			virtual Symbols::Name GetOperator() const;
-
 			virtual CompiledNode Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual _Expression_ Optimize(OptimizeInfo& info) override;
+			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:

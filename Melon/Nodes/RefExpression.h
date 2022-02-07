@@ -6,13 +6,13 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for references.
-		class RefNode : public Expression {
+		class RefExpression : public Expression {
 		public:
 			/// The expression to reference.
 			Ptr<Expression> expression;
 
-			RefNode(Ptr<Expression> expression);
-			~RefNode();
+			RefExpression(Ptr<Expression> expression);
+			~RefExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override;
@@ -24,13 +24,13 @@ namespace Melon {
 		};
 
 		/// Node for weak references.
-		class WeakRefNode : public Expression {
+		class WeakRefExpression : public Expression {
 		public:
 			/// The expression to reference.
 			Weak<Expression> expression;
 
-			WeakRefNode(Weak<Expression> expression);
-			~WeakRefNode();
+			WeakRefExpression(Weak<Expression> expression);
+			~WeakRefExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override;

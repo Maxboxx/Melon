@@ -11,7 +11,7 @@
 namespace Melon {
 	namespace Nodes {
 		class Node;
-		class StructNode;
+		class StructStatement;
 	}
 
 	namespace Symbols {
@@ -130,7 +130,7 @@ namespace Melon {
 		private:
 			friend TypeSymbol;
 			friend SymbolTable;
-			friend Melon::Nodes::StructNode;
+			friend Melon::Nodes::StructStatement;
 			Boxx::List<FunctionSymbol*> overloads;
 		};
 	}

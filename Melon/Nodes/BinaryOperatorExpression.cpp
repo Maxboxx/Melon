@@ -62,7 +62,7 @@ CompiledNode BinaryOperatorExpression::Compile(CompileInfo& info) {
 
 		Fixed<CallNode> cn = CallNode(scope, file);
 		cn->arguments  = args;
-		cn->expression = new TypeNode(func->Parent()->Parent()->AbsoluteName());
+		cn->expression = new TypeExpression(func->Parent()->Parent()->AbsoluteName());
 
 		CompiledNode c = cn->Compile(info);
 		operand1 = args[0];

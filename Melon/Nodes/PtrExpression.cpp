@@ -1,4 +1,4 @@
-#include "PtrNode.h"
+#include "PtrExpression.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -9,27 +9,27 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-PtrNode::PtrNode(const _Expression_& address) : Expression(address->scope, address->File()) {
+PtrExpression::PtrExpression(Ptr<Expression> address) : Expression(address->scope, address->File()) {
 	this->address = address;
 }
 
-PtrNode::~PtrNode() {
+PtrExpression::~PtrExpression() {
 
 }
 
-TypeSymbol* PtrNode::Type() const {
+TypeSymbol* PtrExpression::Type() const {
 	return address->Type();
 }
 
-Boxx::List<TypeSymbol*> PtrNode::Types() const {
+Boxx::List<TypeSymbol*> PtrExpression::Types() const {
 	return address->Types();
 }
 
-Symbol* PtrNode::Symbol() const {
+Symbol* PtrExpression::Symbol() const {
 	return address->Symbol();
 }
 
-CompiledNode PtrNode::Compile(CompileInfo& info) {
+CompiledNode PtrExpression::Compile(CompileInfo& info) {
 	CompiledNode cn = address->Compile(info);
 
 	Register reg = Register(info.index++);
@@ -47,14 +47,14 @@ CompiledNode PtrNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-void PtrNode::IncludeScan(ParsingInfo& info) {
+void PtrExpression::IncludeScan(ParsingInfo& info) {
 	address->IncludeScan(info);
 }
 
-ScanResult PtrNode::Scan(ScanInfoStack& info) {
+ScanResult PtrExpression::Scan(ScanInfoStack& info) {
 	return address->Scan(info);
 }
 
-StringBuilder PtrNode::ToMelon(const UInt indent) const {
+StringBuilder PtrExpression::ToMelon(const UInt indent) const {
 	return address->ToMelon(indent);
 }

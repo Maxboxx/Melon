@@ -1,8 +1,8 @@
-#include "UnaryOperatorNode.h"
+#include "UnaryOperatorExpression.h"
 
-#include "CallNode.h"
-#include "TypeNode.h"
-#include "BooleanNode.h"
+#include "CallExpression.h"
+#include "TypeExpression.h"
+#include "Boolean.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -19,15 +19,15 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-UnaryOperatorNode::UnaryOperatorNode(Symbols::Symbol* const scope, const Name& op, const FileInfo& file) : Expression(scope, file) {
+UnaryOperatorExpression::UnaryOperatorExpression(Symbols::Symbol* const scope, const Name& op, const FileInfo& file) : Expression(scope, file) {
 	this->op = op;
 }
 
-UnaryOperatorNode::~UnaryOperatorNode() {
+UnaryOperatorExpression::~UnaryOperatorExpression() {
 
 }
 
-TypeSymbol* UnaryOperatorNode::Type() const {
+TypeSymbol* UnaryOperatorExpression::Type() const {
 	List<TypeSymbol*> args;
 	args.Add(operand->Type());
 
@@ -48,7 +48,7 @@ TypeSymbol* UnaryOperatorNode::Type() const {
 	return nullptr;
 }
 
-Symbol* UnaryOperatorNode::Symbol() const {
+Symbol* UnaryOperatorExpression::Symbol() const {
 	if (op == Name::Unwrap) {
 		if (TypeSymbol* const type = operand->Type()) {
 			return type->Find<VariableSymbol>(Name::Value, file);
@@ -58,42 +58,37 @@ Symbol* UnaryOperatorNode::Symbol() const {
 	return nullptr;
 }
 
-Name UnaryOperatorNode::GetOperator() const {
+Name UnaryOperatorExpression::GetOperator() const {
 	return op;
 }
 
-CompiledNode UnaryOperatorNode::Compile(CompileInfo& info) {
-	List<_Expression_> nodes;
-	nodes.Add(operand);
-
-	List<Symbols::Symbol*> args;
-	args.Add(operand->Type());
-
+CompiledNode UnaryOperatorExpression::Compile(CompileInfo& info) {
 	TypeSymbol* const type = operand->Type();
 
 	FunctionSymbol* const func = type->FindUnaryOperator(op, file);
 
 	// Compile symbol node
 	if (func->symbolNode) {
-		return func->symbolNode->Compile(nodes, info);
+		return func->symbolNode->Compile(operand, info);
 	}
 	// Compile operator function
 	else {
-		Pointer<CallNode> cn = new CallNode(scope, file);
-		cn->arguments = nodes;
+		List<Ptr<Expression>> args;
+		args.Add(new WeakExpression(operand));
 
-		Pointer<TypeNode> tn = new TypeNode(func->ParentType()->AbsoluteName());
-		cn->expression = tn;
+		Fixed<CallExpression> cn = CallExpression(scope, file);
+		cn->arguments  = args;
+		cn->expression = new TypeExpression(func->ParentType()->AbsoluteName());
 
 		return cn->Compile(info);
 	}
 }
 
-void UnaryOperatorNode::IncludeScan(ParsingInfo& info) {
+void UnaryOperatorExpression::IncludeScan(ParsingInfo& info) {
 	operand->IncludeScan(info);
 }
 
-ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
+ScanResult UnaryOperatorExpression::Scan(ScanInfoStack& info) {
 	ScanResult result = operand->Scan(info);
 	result.SelfUseCheck(info, operand->File());
 
@@ -109,19 +104,19 @@ ScanResult UnaryOperatorNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-NameList UnaryOperatorNode::FindSideEffectScope(const bool assign) {
+NameList UnaryOperatorExpression::FindSideEffectScope(const bool assign) {
 	// TODO: Check operator function
 	return operand->GetSideEffectScope(assign);
 }
 
-_Expression_ UnaryOperatorNode::Optimize(OptimizeInfo& info) {
+Ptr<Expression> UnaryOperatorExpression::Optimize(OptimizeInfo& info) {
 	Node::Optimize(operand, info);
 
 	// TODO: Add more operators
 	if (operand->IsImmediate()) {
 		if (op == Name::Not) {
-			Pointer<BooleanNode> bn = new BooleanNode(operand->File());
-			bn->boolean = operand->GetImmediate() == 0;
+			Ptr<Boolean> bn = new Boolean(operand->File());
+			bn->value = operand->GetImmediate() == 0;
 			info.optimized = true;
 			return bn;
 		}
@@ -130,7 +125,7 @@ _Expression_ UnaryOperatorNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-StringBuilder UnaryOperatorNode::ToMelon(const UInt indent) const {
+StringBuilder UnaryOperatorExpression::ToMelon(const UInt indent) const {
 	if (op == Name::Unwrap) {
 		StringBuilder sb = operand->ToMelon(indent);
 		sb += op.ToString();

@@ -5,7 +5,7 @@
 namespace Melon {
 	namespace Nodes {
 		class RootNode;
-		class StructNode;
+		class StructStatement;
 	}
 
 	///N Melon::Symbols
@@ -37,7 +37,7 @@ namespace Melon {
 			virtual Symbol* FindSymbol(const NameList& nameList, const Boxx::UInt index, const FileInfo& file);
 
 			friend Melon::Nodes::RootNode;
-			friend Melon::Nodes::StructNode;
+			friend Melon::Nodes::StructStatement;
 
 			Boxx::List<TemplateTypeSymbol*> templateVariants;
 

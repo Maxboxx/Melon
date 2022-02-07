@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Node.h"
-#include "MemoryNode.h"
 
 #include "Boxx/Math.h"
 
-#include "MemoryNode.h"
-#include "BreakNode.h"
+#include "KiwiMemoryExpression.h"
+#include "BreakStatement.h"
 #include "TypeNode.h"
 
 #include "Melon/Parsing/Parser.h"
@@ -24,16 +23,16 @@ namespace Melon {
 		class SwitchBaseNode : public T {
 		public:
 			/// The match expression.
-			_Expression_ match;
+			Ptr<Expression> match;
 
 			/// The nodes for all the cases.
-			Boxx::List<Boxx::Pointer<T>> nodes;
+			Boxx::List<Ptr<T>> nodes;
 
 			/// All case expressions.
-			Boxx::List<Boxx::List<_Expression_>> cases;
+			Boxx::List<Boxx::List<Ptr<Expression>>> cases;
 
 			/// The default node.
-			Boxx::Pointer<T> def;
+			Ptr<T> def;
 
 			SwitchBaseNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~SwitchBaseNode();
@@ -59,7 +58,7 @@ namespace Melon {
 				CompiledNode cn;
 
 				/// The memory location of the match value.
-				Boxx::Pointer<KiwiMemoryExpression> match;
+				Ptr<KiwiMemoryExpression> match;
 
 				/// Indices for jump to end.
 				Boxx::List<Boxx::UInt> endJumps;
@@ -77,7 +76,7 @@ namespace Melon {
 				Kiwi::Argument result;
 
 				/// Result node.
-				Boxx::Pointer<KiwiMemoryExpression> resultNode;
+				Ptr<KiwiMemoryExpression> resultNode;
 			};
 
 
@@ -89,7 +88,7 @@ namespace Melon {
 
 		protected:
 			Symbols::TypeSymbol* SwitchType() const;
-			Boxx::Pointer<T> OptimizeSwitch(OptimizeInfo& info);
+			Ptr<T> OptimizeSwitch(OptimizeInfo& info);
 
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
@@ -126,7 +125,7 @@ namespace Melon {
 
 			Symbols::TypeSymbol* type = nodes[0]->Type();
 
-			for (Boxx::Pointer<T>& node : nodes) {
+			for (Weak<T> node : nodes) {
 				if (type != node->Type()) {
 					ErrorLog::Error(LogMessage("error.type.switch"), File());
 				}
@@ -141,7 +140,7 @@ namespace Melon {
 
 			Boxx::UInt size = 0;
 
-			for (const Boxx::Pointer<Node>& node : nodes) {
+			for (Weak<T> node : nodes) {
 				size = Boxx::Math::Max(size, node->GetSize());
 			}
 
@@ -151,16 +150,13 @@ namespace Melon {
 		template <class T>
 		inline void SwitchBaseNode<T>::CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info) {
 			// Compile cases
-			for (const Boxx::List<Boxx::Pointer<Node>>& values : cases) {
+			for (const Boxx::List<Ptr<Expression>>& values : cases) {
 				Boxx::List<Boxx::UInt> jumps;
 
 				// Compile case values
-				for (_Expression_ node : values) {
-					Boxx::List<_Expression_> nodeArgs;
-					nodeArgs.Add(switchInfo.match);
-					nodeArgs.Add(node);
-
-					CompiledNode comp = Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, this->match->Type(), node->Type(), node->File())->symbolNode->Compile(nodeArgs, info);
+				for (Weak<Expression> node : values) {
+					Symbols::FunctionSymbol* const sym = Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, this->match->Type(), node->Type(), node->File());
+					CompiledNode comp = sym->symbolNode->Compile(switchInfo.match, node, info);
 					switchInfo.cn.AddInstructions(comp.instructions);
 
 					Kiwi::Instruction eq = Kiwi::Instruction(Kiwi::InstructionType::Ne, 1);
@@ -178,7 +174,7 @@ namespace Melon {
 		template <class T>
 		inline void SwitchBaseNode<T>::CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info) {
 			// Compile nodes
-			for (Boxx::Pointer<Node> expr : nodes) {
+			for (Ptr<T> expr : nodes) {
 				// Add label for case
 				switchInfo.cn.instructions.Add(Kiwi::Instruction::Label(info.label));
 
@@ -343,12 +339,12 @@ namespace Melon {
 		inline void SwitchBaseNode<T>::IncludeScan(Parsing::ParsingInfo& info) {
 			match->IncludeScan(info);
 
-			for (Boxx::Pointer<Node> node : nodes) {
+			for (Weak<T> node : nodes) {
 				node->IncludeScan(info);
 			}
 
-			for (Boxx::List<Boxx::Pointer<Node>>& caseList : cases) {
-				for (Boxx::Pointer<Node> c : caseList) {
+			for (Boxx::List<Ptr<Expression>> caseList : cases) {
+				for (Weak<Expression> c : caseList) {
 					c->IncludeScan(info);
 				}
 			}
@@ -441,14 +437,14 @@ namespace Melon {
 
 			// Get type of switch expression
 			Symbols::TypeSymbol* const type = SwitchType();
-			Boxx::Pointer<TypeNode> typeNode = nullptr;
+			Ptr<TypeExpression> typeNode = nullptr;
 
 			if (type) {
-				typeNode = new TypeNode(type->AbsoluteName());
+				typeNode = new TypeExpression(type->AbsoluteName());
 			}
 
 			// Scan regular case nodes
-			for (const Boxx::Pointer<Node>& node : nodes) {
+			for (Weak<T> node : nodes) {
 				ScanPreContents(switchInfo, info.Get());
 
 				ScanResult r = node->Scan(info);
@@ -492,15 +488,17 @@ namespace Melon {
 			Symbols::TypeSymbol* const matchType = match->Type();
 
 			if (matchType) {
-				ScanAssignment(new TypeNode(matchType->AbsoluteName()), new TypeNode(matchType->AbsoluteName()), info, match->file);
+				Fixed<TypeExpression> type1 = TypeExpression(matchType->AbsoluteName());
+				Fixed<TypeExpression> type2 = TypeExpression(matchType->AbsoluteName());
+				ScanAssignment(type1, type2, info, match->file);
 			}
 
 			// Scan Nodes
 			result |= ScanNodes(info);
 
 			// Scan case values
-			for (const Boxx::List<Boxx::Pointer<Node>>& nodeList : cases) {
-				for (const Boxx::Pointer<Node>& node : nodeList) {
+			for (const Boxx::List<Ptr<Expression>>& nodeList : cases) {
+				for (Weak<Expression> node : nodeList) {
 					ScanResult r = node->Scan(info);
 					r.SelfUseCheck(info, node->file);
 					result |= r;
@@ -516,12 +514,12 @@ namespace Melon {
 		inline Symbols::NameList SwitchBaseNode<T>::FindSideEffectScope(const bool assign) {
 			Symbols::NameList list = match->GetSideEffectScope(assign);
 
-			for (Boxx::Pointer<Node>& node : nodes) {
+			for (Weak<T> node : nodes) {
 				list = CombineSideEffects(list, node->GetSideEffectScope(assign));
 			}
 
-			for (Boxx::List<Boxx::Pointer<Node>>& caseList : cases) {
-				for (Boxx::Pointer<Node>& node : caseList) {
+			for (Boxx::List<Ptr<Expression>>& caseList : cases) {
+				for (Weak<Expression> node : caseList) {
 					list = CombineSideEffects(list, node->GetSideEffectScope(assign));
 				}
 			}
@@ -534,15 +532,15 @@ namespace Melon {
 		}
 
 		template <class T>
-		inline Boxx::Pointer<T> SwitchBaseNode<T>::OptimizeSwitch(OptimizeInfo& info) {
+		inline Ptr<T> SwitchBaseNode<T>::OptimizeSwitch(OptimizeInfo& info) {
 			Node::Optimize(match, info);
 
-			for (Boxx::Pointer<T>& node : nodes) {
+			for (Weak<T> node : nodes) {
 				Node::Optimize(node, info);
 			}
 
-			for (Boxx::List<_Expression_>& caseList : cases) {
-				for (_Expression_& node : caseList) {
+			for (Boxx::List<Ptr<Expression>>& caseList : cases) {
+				for (Weak<Expression> node : caseList) {
 					Node::Optimize(node, info);
 				}
 			}

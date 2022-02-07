@@ -1,11 +1,11 @@
-#include "RepeatNode.h"
+#include "RepeatStatement.h"
 
-#include "BreakNode.h"
-#include "ContinueNode.h"
-#include "DoNode.h"
-#include "EmptyNode.h"
-#include "StatementsNode.h"
-#include "ConditionNode.h"
+#include "BreakStatement.h"
+#include "ContinueStatement.h"
+#include "DoStatement.h"
+#include "EmptyStatement.h"
+#include "Statements.h"
+#include "Condition.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -15,23 +15,23 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-RepeatNode::RepeatNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
+RepeatStatement::RepeatStatement(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
-RepeatNode::~RepeatNode() {
+RepeatStatement::~RepeatStatement() {
 
 }
 
-UInt RepeatNode::GetSize() const {
+UInt RepeatStatement::GetSize() const {
 	return statements->GetSize();
 }
 
-bool RepeatNode::IsScope() const {
+bool RepeatStatement::IsScope() const {
 	return true;
 }
 
-CompiledNode RepeatNode::Compile(CompileInfo& info) {
+CompiledNode RepeatStatement::Compile(CompileInfo& info) {
 	CompiledNode compiled;
 
 	const UInt label = info.label++;
@@ -123,12 +123,12 @@ CompiledNode RepeatNode::Compile(CompileInfo& info) {
 	return compiled;
 }
 
-void RepeatNode::IncludeScan(ParsingInfo& info) {
+void RepeatStatement::IncludeScan(ParsingInfo& info) {
 	statements->IncludeScan(info);
 	condition->IncludeScan(info);
 }
 
-ScanResult RepeatNode::Scan(ScanInfoStack& info) {
+ScanResult RepeatStatement::Scan(ScanInfoStack& info) {
 	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 	info->scopeInfo.EnterScope(ScopeInfo::ScopeType::Loop);
 
@@ -144,11 +144,11 @@ ScanResult RepeatNode::Scan(ScanInfoStack& info) {
 	return result1 | result2;
 }
 
-NameList RepeatNode::FindSideEffectScope(const bool assign) {
+NameList RepeatStatement::FindSideEffectScope(const bool assign) {
 	return CombineSideEffects(statements->GetSideEffectScope(assign), condition->GetSideEffectScope(assign));
 }
 
-_Statement_ RepeatNode::Optimize(OptimizeInfo& info) {
+Ptr<Statement> RepeatStatement::Optimize(OptimizeInfo& info) {
 	Node::Optimize(statements, info);
 	Node::Optimize(condition, info);
 
@@ -159,7 +159,7 @@ _Statement_ RepeatNode::Optimize(OptimizeInfo& info) {
 			return new EmptyStatement();
 		}
 
-		Pointer<DoStatement> dn = new DoStatement(statements->scope, statements->File());
+		Ptr<DoStatement> dn = new DoStatement(statements->scope, statements->File());
 		dn->statements = statements;
 		info.optimized = true;
 		return dn;
@@ -168,7 +168,7 @@ _Statement_ RepeatNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-StringBuilder RepeatNode::ToMelon(const UInt indent) const {
+StringBuilder RepeatStatement::ToMelon(const UInt indent) const {
 	StringBuilder sb = "repeat\n";
 	sb += String('\t').Repeat(indent + 1);
 	sb += statements->ToMelon(indent + 1);

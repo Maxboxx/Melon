@@ -1,6 +1,6 @@
-#include "ReturnNode.h"
+#include "ReturnStatement.h"
 
-#include "MemoryNode.h"
+#include "KiwiMemoryExpression.h"
 #include "TypeNode.h"
 
 #include "Kiwi/Kiwi.h"
@@ -74,7 +74,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	for (UInt i = 0; i < values.Size(); i++) {
 		stackOffset -= types[i]->Size();
 
-		Pointer<KiwiMemoryExpression> sn = new KiwiMemoryExpression(stackOffset);
+		Fixed<KiwiMemoryExpression> sn = KiwiMemoryExpression(stackOffset);
 		sn->type = types[i]->AbsoluteName();
 
 		info.important = true;
@@ -90,7 +90,7 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 }
 
 void ReturnNode::IncludeScan(ParsingInfo& info) {
-	for (_Expression_& value : values) {
+	for (Weak<Expression> value : values) {
 		value->IncludeScan(info);
 	}
 }
@@ -105,7 +105,7 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 	ScanResult result;
 
 	// Scan nodes
-	for (const _Expression_& value : values) {
+	for (Weak<Expression> value : values) {
 		ScanResult r = value->Scan(info);
 		r.SelfUseCheck(info, value->File());
 		result |= r;
@@ -130,7 +130,8 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 		if (i >= types.Size()) break;
 
 		if (types[i]) {
-			ScanAssignment(new TypeNode(types[i]->AbsoluteName()), values[i], info, values[i]->File());
+			Fixed<TypeExpression> tn = TypeExpression(types[i]->AbsoluteName());
+			ScanAssignment(tn, values[i], info, values[i]->File());
 		}
 	}
 
@@ -140,15 +141,15 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 NameList ReturnNode::FindSideEffectScope(const bool assign) {
 	NameList list = values.IsEmpty() ? scope->AbsoluteName() : scope->Parent()->AbsoluteName();
 
-	for (_Expression_& value : values) {
+	for (Weak<Expression> value : values) {
 		list = CombineSideEffects(list, value->GetSideEffectScope(assign));
 	}
 
 	return list;
 }
 
-_Statement_ ReturnNode::Optimize(OptimizeInfo& info) {
-	for (_Expression_& value : values) {
+Ptr<Statement> ReturnNode::Optimize(OptimizeInfo& info) {
+	for (Ptr<Expression> value : values) {
 		Node::Optimize(value, info);
 	}
 

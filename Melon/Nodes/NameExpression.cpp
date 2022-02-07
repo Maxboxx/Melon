@@ -97,7 +97,7 @@ CompiledNode NameExpression::Compile(CompileInfo& info) {
 		Pointer<NameExpression> name = new NameExpression(scope, file);
 		name->name = this->name;
 		name->ignoreRef = true;
-		Pointer<PtrNode> ptr = new PtrNode(name);
+		Pointer<PtrExpression> ptr = new PtrExpression(name);
 		return ptr->Compile(info);
 	}
 	// Compile stack variable

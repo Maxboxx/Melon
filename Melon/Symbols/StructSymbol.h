@@ -30,7 +30,7 @@ namespace Melon {
 			bool isRecursive = false;
 
 			/// The struct node for this symbol.
-			Boxx::Pointer<Melon::Nodes::Node> node = nullptr;
+			Weak<Melon::Nodes::StructStatement> node;
 		};
 	}
 }

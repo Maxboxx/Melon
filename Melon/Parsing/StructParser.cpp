@@ -29,7 +29,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	info.index++;
 	MapSymbol* const temp = info.scope;
 
-	Pointer<StructNode> sn = ParseName(info, structLine);
+	Pointer<StructStatement> sn = ParseName(info, structLine);
 	info.scope = sn->symbol;
 
 	while (true) {
@@ -77,7 +77,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	return sn;
 }
 
-Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt structLine) {
+Pointer<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt structLine) {
 	static Regex lower = Regex("^%l");
 	static Regex underscore = Regex("%a_+%a");
 
@@ -129,7 +129,7 @@ Pointer<StructNode> StructParser::ParseName(ParsingInfo& info, const UInt struct
 		info.scope->AddSymbol(structName, sym);
 	}
 
-	Pointer<StructNode> sn = new StructNode(info.scope, info.GetFileInfo(structLine));
+	Pointer<StructStatement> sn = new StructStatement(info.scope, info.GetFileInfo(structLine));
 	sn->name = structName;
 	sn->symbol = sym;
 	sym->node = sn;

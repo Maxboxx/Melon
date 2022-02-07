@@ -59,7 +59,7 @@ CompiledNode TypeConversion::Compile(CompileInfo& info) {
 
 		Fixed<CallExpression> cn = CallExpression(scope, file);
 		cn->arguments  = args;
-		cn->expression = new TypeNode(convert->ParentType()->AbsoluteName());
+		cn->expression = new TypeExpression(convert->ParentType()->AbsoluteName());
 
 		CompiledNode c = cn->Compile(info);
 		expression = args[0];

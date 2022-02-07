@@ -25,7 +25,7 @@ NodePtr SwitchParser::ParseStatement(ParsingInfo& info) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", LogMessage::Quote("switch")), info.GetFileInfoPrev());
 	}
 
-	Pointer<SwitchNode> switchNode = new SwitchNode(info.scope, info.GetFileInfo(switchLine));
+	Pointer<SwitchStatement> switchNode = new SwitchStatement(info.scope, info.GetFileInfo(switchLine));
 	switchNode->expr = false;
 	switchNode->match = value;
 
@@ -57,7 +57,7 @@ NodePtr SwitchParser::ParseExpression(ParsingInfo& info, const bool returnOnErro
 		error = true;
 	}
 
-	Pointer<SwitchNode> switchNode = new SwitchNode(info.scope, info.GetFileInfo(switchLine));
+	Pointer<SwitchStatement> switchNode = new SwitchStatement(info.scope, info.GetFileInfo(switchLine));
 	switchNode->expr = true;
 	switchNode->match = value;
 
@@ -98,11 +98,11 @@ List<NodePtr> SwitchParser::ParseCaseExpressions(ParsingInfo& info, bool& error)
 	return expressions;
 }
 
-void SwitchParser::ParseStatementCases(ParsingInfo& info, Pointer<SwitchNode>& switchNode) {
+void SwitchParser::ParseStatementCases(ParsingInfo& info, Pointer<SwitchStatement>& switchNode) {
 	while (ParseStatementCase(info, switchNode) || ParseStatementDefault(info, switchNode));
 }
 
-bool SwitchParser::ParseStatementCase(ParsingInfo& info, Pointer<SwitchNode>& switchNode) {
+bool SwitchParser::ParseStatementCase(ParsingInfo& info, Pointer<SwitchStatement>& switchNode) {
 	if (info.Current().type != TokenType::Case) return false;
 	
 	const UInt line = info.Current().line;
@@ -124,7 +124,7 @@ bool SwitchParser::ParseStatementCase(ParsingInfo& info, Pointer<SwitchNode>& sw
 	return true;
 }
 
-bool SwitchParser::ParseStatementDefault(ParsingInfo& info, Pointer<SwitchNode>& switchNode) {
+bool SwitchParser::ParseStatementDefault(ParsingInfo& info, Pointer<SwitchStatement>& switchNode) {
 	if (info.Current().type != TokenType::Default) return false;
 
 	const UInt line = info.Current().line;
@@ -145,11 +145,11 @@ bool SwitchParser::ParseStatementDefault(ParsingInfo& info, Pointer<SwitchNode>&
 	return true;
 }
 
-void SwitchParser::ParseExpressionCases(ParsingInfo& info, Pointer<SwitchNode>& switchNode, bool& error) {
+void SwitchParser::ParseExpressionCases(ParsingInfo& info, Pointer<SwitchStatement>& switchNode, bool& error) {
 	while (ParseExpressionCase(info, switchNode, error) || ParseExpressionDefault(info, switchNode, error));
 }
 
-bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Pointer<SwitchNode>& switchNode, bool& error) {
+bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Pointer<SwitchStatement>& switchNode, bool& error) {
 	if (info.Current().type != TokenType::Case) return false;
 
 	const UInt line = info.Current().line;
@@ -172,7 +172,7 @@ bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Pointer<SwitchNode>& s
 	return true;
 }
 
-bool SwitchParser::ParseExpressionDefault(ParsingInfo& info, Pointer<SwitchNode>& switchNode, bool& error) {
+bool SwitchParser::ParseExpressionDefault(ParsingInfo& info, Pointer<SwitchStatement>& switchNode, bool& error) {
 	if (info.Current().type != TokenType::Default) return false;
 
 	const UInt line = info.Current().line;

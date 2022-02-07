@@ -215,7 +215,7 @@ NodePtr ExpressionParser::ParseOperand(ParsingInfo& info, const bool statement) 
 		info.index++;
 
 		if (NodePtr node = ParseOperand(info)) {
-			Pointer<UnaryOperatorNode> opNode = new UnaryOperatorNode(info.scope, Name(token.value), info.GetFileInfo(token.line));
+			Pointer<UnaryOperatorExpression> opNode = new UnaryOperatorExpression(info.scope, Name(token.value), info.GetFileInfo(token.line));
 
 			opNode->node = node;
 			return opNode;
@@ -352,7 +352,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 			}
 
 			if (info.Current().type == TokenType::Exclamation) {
-				Pointer<UnaryOperatorNode> unwrap = new UnaryOperatorNode(info.scope, Name::Unwrap, info.GetFileInfo());
+				Pointer<UnaryOperatorExpression> unwrap = new UnaryOperatorExpression(info.scope, Name::Unwrap, info.GetFileInfo());
 				unwrap->node = node;
 				info.index++;
 				node = unwrap;
@@ -362,7 +362,7 @@ NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
 			if (info.Current().type == TokenType::Question) {
 				hasSafeUnwrap = true;
 
-				Pointer<SafeUnwrapNode> unwrap = new SafeUnwrapNode(info.scope, info.GetFileInfo());
+				Pointer<SafeUnwrapExpression> unwrap = new SafeUnwrapExpression(info.scope, info.GetFileInfo());
 				unwrap->node = node;
 				info.index++;
 				node = unwrap;

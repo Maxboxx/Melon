@@ -1,4 +1,4 @@
-#include "RefNode.h"
+#include "RefExpression.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -9,27 +9,27 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-RefNode::RefNode(Ptr<Expression> expression) : Expression(expression->scope, expression->File()) {
+RefExpression::RefExpression(Ptr<Expression> expression) : Expression(expression->scope, expression->File()) {
 	this->expression = expression;
 }
 
-RefNode::~RefNode() {
+RefExpression::~RefExpression() {
 
 }
 
-TypeSymbol* RefNode::Type() const {
+TypeSymbol* RefExpression::Type() const {
 	return expression->Type();
 }
 
-Boxx::List<TypeSymbol*> RefNode::Types() const {
+Boxx::List<TypeSymbol*> RefExpression::Types() const {
 	return expression->Types();
 }
 
-Symbol* RefNode::Symbol() const {
+Symbol* RefExpression::Symbol() const {
 	return expression->Symbol();
 }
 
-CompiledNode RefNode::Compile(CompileInfo& info) {
+CompiledNode RefExpression::Compile(CompileInfo& info) {
 	CompiledNode cn = expression->Compile(info);
 
 	Register reg = Register(info.index++);
@@ -45,39 +45,39 @@ CompiledNode RefNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-void RefNode::IncludeScan(ParsingInfo& info) {
+void RefExpression::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 }
 
-ScanResult RefNode::Scan(ScanInfoStack& info) {
+ScanResult RefExpression::Scan(ScanInfoStack& info) {
 	return expression->Scan(info);
 }
 
-StringBuilder RefNode::ToMelon(const UInt indent) const {
+StringBuilder RefExpression::ToMelon(const UInt indent) const {
 	return expression->ToMelon(indent);
 }
 
-WeakRefNode::WeakRefNode(Weak<Expression> expression) : Expression(expression->scope, expression->File()) {
+WeakRefExpression::WeakRefExpression(Weak<Expression> expression) : Expression(expression->scope, expression->File()) {
 	this->expression = expression;
 }
 
-WeakRefNode::~WeakRefNode() {
+WeakRefExpression::~WeakRefExpression() {
 
 }
 
-TypeSymbol* WeakRefNode::Type() const {
+TypeSymbol* WeakRefExpression::Type() const {
 	return expression->Type();
 }
 
-Boxx::List<TypeSymbol*> WeakRefNode::Types() const {
+Boxx::List<TypeSymbol*> WeakRefExpression::Types() const {
 	return expression->Types();
 }
 
-Symbol* WeakRefNode::Symbol() const {
+Symbol* WeakRefExpression::Symbol() const {
 	return expression->Symbol();
 }
 
-CompiledNode WeakRefNode::Compile(CompileInfo& info) {
+CompiledNode WeakRefExpression::Compile(CompileInfo& info) {
 	CompiledNode cn = expression->Compile(info);
 
 	Register reg = Register(info.index++);
@@ -93,14 +93,14 @@ CompiledNode WeakRefNode::Compile(CompileInfo& info) {
 	return cn;
 }
 
-void WeakRefNode::IncludeScan(ParsingInfo& info) {
+void WeakRefExpression::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 }
 
-ScanResult WeakRefNode::Scan(ScanInfoStack& info) {
+ScanResult WeakRefExpression::Scan(ScanInfoStack& info) {
 	return expression->Scan(info);
 }
 
-StringBuilder WeakRefNode::ToMelon(const UInt indent) const {
+StringBuilder WeakRefExpression::ToMelon(const UInt indent) const {
 	return expression->ToMelon(indent);
 }

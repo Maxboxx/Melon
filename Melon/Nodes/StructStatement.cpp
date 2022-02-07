@@ -1,6 +1,6 @@
-#include "StructNode.h"
+#include "StructStatement.h"
 
-#include "FunctionNode.h"
+#include "FunctionStatement.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -16,19 +16,19 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-StructNode::StructNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
+StructStatement::StructStatement(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
-StructNode::~StructNode() {
+StructStatement::~StructStatement() {
 
 }
 
-CompiledNode StructNode::Compile(CompileInfo& info) {
+CompiledNode StructStatement::Compile(CompileInfo& info) {
 	return CompiledNode();
 }
 
-bool StructNode::IsRecursive(StructSymbol* const symbol) const {
+bool StructStatement::IsRecursive(StructSymbol* const symbol) const {
 	if (symbol == nullptr) return false;
 	if (symbol->isRecursive) return false;
 	if (symbol == this->symbol) return true;
@@ -48,7 +48,7 @@ bool StructNode::IsRecursive(StructSymbol* const symbol) const {
 	return false;
 }
 
-NameList StructNode::FindSideEffectScope(const bool assign) {
+NameList StructStatement::FindSideEffectScope(const bool assign) {
 	if (scope->Is<NamespaceSymbol>()) {
 		return NameList(Name::Global);
 	}
@@ -56,7 +56,7 @@ NameList StructNode::FindSideEffectScope(const bool assign) {
 	return scope->AbsoluteName();
 }
 
-ScanResult StructNode::Scan(ScanInfoStack& info) {
+ScanResult StructStatement::Scan(ScanInfoStack& info) {
 	symbol->UpdateSize();
 
 	for (const Name& var : symbol->members) {
@@ -73,7 +73,7 @@ ScanResult StructNode::Scan(ScanInfoStack& info) {
 	return ScanResult();
 }
 
-StringBuilder StructNode::ToMelon(const UInt indent) const {
+StringBuilder StructStatement::ToMelon(const UInt indent) const {
 	if (name.name == Name::Optional.name) return "";
 	if (symbol->templateParent != nullptr) return "";
 

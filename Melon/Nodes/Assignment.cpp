@@ -363,7 +363,7 @@ ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 
 		// Scan assignment
 		if (!errors) {
-			Fixed<TypeNode> type = TypeNode(values[i].type->AbsoluteName());
+			Fixed<TypeExpression> type = TypeExpression(values[i].type->AbsoluteName());
 			ScanAssignment(node, type, info, node->File());
 		}
 	}

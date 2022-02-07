@@ -1,4 +1,4 @@
-#include "StackNode.h"
+#include "StackExpression.h"
 
 using namespace Boxx;
 using namespace Kiwi;
@@ -7,25 +7,25 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-StackNode::StackNode(const UInt stack) : Expression(nullptr, FileInfo()) {
+StackExpression::StackExpression(const UInt stack) : Expression(nullptr, FileInfo()) {
 	this->stack = stack;
 }
 
-StackNode::~StackNode() {
+StackExpression::~StackExpression() {
 
 }
 
-TypeSymbol* StackNode::Type() const {
+TypeSymbol* StackExpression::Type() const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
-CompiledNode StackNode::Compile(CompileInfo& info) {
+CompiledNode StackExpression::Compile(CompileInfo& info) {
 	CompiledNode c;
 	c.argument = MemoryLocation(info.stack.Offset(stack));
 	c.size = Type()->Size();
 	return c;
 }
 
-StringBuilder StackNode::ToMelon(const UInt indent) const {
+StringBuilder StackExpression::ToMelon(const UInt indent) const {
 	return StringBuilder();
 }

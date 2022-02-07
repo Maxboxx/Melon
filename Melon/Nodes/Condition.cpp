@@ -114,7 +114,7 @@ ScanResult Condition::Scan(ScanInfoStack& info) {
 
 		// Check if the types match
 		if (type && type->AbsoluteName()[0].name == Name::Optional.name) {
-			assign->values[0] = new TypeNode(type->Find(Name::Value, file)->Type()->AbsoluteName());
+			assign->values[0] = new TypeExpression(type->Find(Name::Value, file)->Type()->AbsoluteName());
 		}
 		else {
 			ErrorLog::Error(LogMessage("error.type.conditional_assign", tempValue->Type()->ToString()), tempValue->File());

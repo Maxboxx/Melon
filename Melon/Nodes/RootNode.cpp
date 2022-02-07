@@ -1,9 +1,8 @@
 #include "RootNode.h"
 
 #include "StructNode.h"
-#include "StatementsNode.h"
-#include "FunctionNode.h"
-#include "EmptyNode.h"
+#include "FunctionStatement.h"
+#include "EmptyStatement.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -44,7 +43,7 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	// Get size of statements
 	UInt size = 0;
 
-	for (const _Statements_& statements : nodes) {
+	for (Weak<Statements> statements : nodes) {
 		size += statements->GetSize();
 	}
 
@@ -58,7 +57,7 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	info.stack.PushFrame(size);
 
 	// Compile nodes
-	for (const _Statements_& statements : nodes) {
+	for (Weak<Statements> statements : nodes) {
 		for (const OptimizerInstruction& instruction : statements->Compile(info).instructions) {
 			cn.instructions.Add(instruction);
 		}
@@ -233,7 +232,7 @@ void RootNode::AddTemplateSpecialization(const NameList& name, const NameList& s
 		templateInfo.value1->Parent()->Cast<TemplateTypeSymbol>()->AddTemplateVariant(sym);
 		sym->templateParent = templateInfo.value1;
 
-		Pointer<StructNode> sn = new StructNode(SymbolTable::FindAbsolute(NameList(true), file), file);
+		Ptr<StructStatement> sn = new StructStatement(SymbolTable::FindAbsolute(NameList(true), file), file);
 		sn->name = sym->Parent()->Name();
 
 		List<NameList> templateArgs;
@@ -314,7 +313,7 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 	info->useFunction = true;
 
 	// Scan nodes
-	for (const _Statements_& statements : nodes) {
+	for (Weak<Statements> statements : nodes) {
 		statements->Scan(info);
 	}
 
@@ -401,7 +400,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 	StringBuilder sb;
 
 	// Convert nodes to melon files
-	for (const _Statements_& statements : nodes) {
+	for (Weak<Statements> statements : nodes) {
 		// Check if the namespace changes
 		if (statements->file.currentNamespace != currentNamespace) {
 			// Write old namespace contents to file

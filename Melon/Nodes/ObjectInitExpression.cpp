@@ -116,7 +116,7 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 		VariableSymbol* const v = type->Find<VariableSymbol>(vars[i], file);
 		TypeSymbol* const varType = v->Type();
 
-		Fixed<TypeNode> tn = TypeNode(varType->AbsoluteName());
+		Fixed<TypeExpression> tn = TypeExpression(varType->AbsoluteName());
 		ScanAssignment(tn, expressions[i], info, expressions[i]->File());
 	}
 

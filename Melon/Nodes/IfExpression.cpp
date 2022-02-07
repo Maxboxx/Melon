@@ -48,7 +48,7 @@ CompiledNode IfExpression::Compile(CompileInfo& info) {
 
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
-	Fixed<StackNode> sn = StackNode(info.stack.top);
+	Fixed<StackExpression> sn = StackExpression(info.stack.top);
 	sn->type = Type()->AbsoluteName();
 
 	StackPtr stack = info.stack;
@@ -118,7 +118,7 @@ ScanResult IfExpression::Scan(ScanInfoStack& info) {
 	ScopeInfo scopeInfo = info->scopeInfo.CopyBranch();
 
 	TypeSymbol* const t = Type();
-	Ptr<TypeNode> type = t ? new TypeNode(t->AbsoluteName()) : nullptr;
+	Ptr<TypeExpression> type = t ? new TypeExpression(t->AbsoluteName()) : nullptr;
 
 	// Scan values
 	for (Weak<Expression> node : nodes) {

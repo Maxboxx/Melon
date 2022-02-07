@@ -1,6 +1,6 @@
-#include "SafeUnwrapEndNode.h"
+#include "SafeUnwrapChain.h"
 
-#include "MemoryNode.h"
+#include "KiwiMemoryExpression.h"
 #include "RootNode.h"
 
 #include "Kiwi/Kiwi.h"
@@ -16,17 +16,17 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-String SafeUnwrapEndNode::jumpInstName = "?jmp";
+String SafeUnwrapChain::jumpInstName = "?jmp";
 
-SafeUnwrapEndNode::SafeUnwrapEndNode(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
-
-}
-
-SafeUnwrapEndNode::~SafeUnwrapEndNode() {
+SafeUnwrapChain::SafeUnwrapChain(Symbols::Symbol* const scope, const FileInfo& file) : Expression(scope, file) {
 
 }
 
-TypeSymbol* SafeUnwrapEndNode::Type() const  {
+SafeUnwrapChain::~SafeUnwrapChain() {
+
+}
+
+TypeSymbol* SafeUnwrapChain::Type() const  {
 	Name scope = Name::Optional;
 	scope.types = List<NameList>();
 	scope.types->Add(expression->Type()->AbsoluteName());
@@ -34,7 +34,7 @@ TypeSymbol* SafeUnwrapEndNode::Type() const  {
 	return SymbolTable::FindAbsolute<TypeSymbol>(NameList(scope), file);
 }
 
-CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
+CompiledNode SafeUnwrapChain::Compile(CompileInfo& info)  {
 	// Compile node
 	CompiledNode cn = expression->Compile(info);
 
@@ -48,11 +48,11 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 	cn.instructions.Add(mov1);
 
 	// Get memory location for result optional value
-	Pointer<KiwiMemoryExpression> sn1 = new KiwiMemoryExpression(arg.mem.offset + 1);
+	Fixed<KiwiMemoryExpression> sn1 = KiwiMemoryExpression(arg.mem.offset + 1);
 	sn1->type = expression->Type()->AbsoluteName();
 
 	// Get memory location of compiled value
-	Pointer<KiwiMemoryExpression> sn2 = new KiwiMemoryExpression(cn.argument.mem);
+	Fixed<KiwiMemoryExpression> sn2 = KiwiMemoryExpression(cn.argument.mem);
 	sn2->type = expression->Type()->AbsoluteName();
 
 	// Compile assignment to resulting optional
@@ -92,7 +92,7 @@ CompiledNode SafeUnwrapEndNode::Compile(CompileInfo& info)  {
 	return cn;
 }
 
-void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
+void SafeUnwrapChain::IncludeScan(ParsingInfo& info)  {
 	expression->IncludeScan(info);
 
 	const NameList nodeType = expression->Type()->AbsoluteName();
@@ -108,19 +108,19 @@ void SafeUnwrapEndNode::IncludeScan(ParsingInfo& info)  {
 	Root()->AddTemplateSpecialization(NameList(true, type), scope->AbsoluteName(), file);
 }
 
-ScanResult SafeUnwrapEndNode::Scan(ScanInfoStack& info)  {
+ScanResult SafeUnwrapChain::Scan(ScanInfoStack& info)  {
 	return expression->Scan(info);
 }
 
-NameList SafeUnwrapEndNode::FindSideEffectScope(const bool assign) {
+NameList SafeUnwrapChain::FindSideEffectScope(const bool assign) {
 	return expression->GetSideEffectScope(assign);
 }
 
-_Expression_ SafeUnwrapEndNode::Optimize(OptimizeInfo& info) {
+Ptr<Expression> SafeUnwrapChain::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 	return nullptr;
 }
 
-StringBuilder SafeUnwrapEndNode::ToMelon(const UInt indent) const  {
+StringBuilder SafeUnwrapChain::ToMelon(const UInt indent) const  {
 	return StringBuilder();
 }

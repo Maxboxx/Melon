@@ -115,7 +115,7 @@ ScanResult DefaultExpression::Scan(ScanInfoStack& info) {
 	TypeSymbol* const type = Type();
 	
 	if (type) {
-		Fixed<TypeNode> tn = TypeNode(type->AbsoluteName());
+		Fixed<TypeExpression> tn = TypeExpression(type->AbsoluteName());
 		ScanAssignment(tn, operand2, info, file);
 	}
 
