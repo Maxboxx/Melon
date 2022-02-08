@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/Expression.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,7 +11,7 @@ namespace Melon {
 		class AssignableParser {
 		public:
 			/// Parses an assignable expression.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::Expression> Parse(ParsingInfo& info);
 		};
 	}
 }

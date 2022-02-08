@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/Boolean.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,7 +11,7 @@ namespace Melon {
 		class BooleanParser {
 		public:
 			/// Parses a boolean value.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::Boolean> Parse(ParsingInfo& info);
 		};
 	}
 }

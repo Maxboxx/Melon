@@ -2,15 +2,13 @@
 
 #include "ExpressionParser.h"
 
-#include "Melon/Nodes/CallNode.h"
-
 using namespace Boxx;
 
 using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 
-NodePtr CallParser::Parse(ParsingInfo& info) {
+Ptr<CallExpression> CallParser::Parse(ParsingInfo& info) {
 	if (info.EndOfFile()) return nullptr;
 
 	const UInt startIndex = info.index;
@@ -19,7 +17,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::ParenOpen) {
 		info.index++;
 
-		Pointer<CallNode> call = new CallNode(info.scope, info.GetFileInfoPrev());
+		Ptr<CallExpression> call = new CallExpression(info.scope, info.GetFileInfoPrev());
 
 		// Parse arguments
 		while (info.Current().type != TokenType::ParenClose) {
@@ -33,7 +31,7 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 
 			call->attributes.Add(ParseArgumentAttributes(info));
 
-			if (NodePtr node = ExpressionParser::Parse(info)) {
+			if (Ptr<Expression> node = ExpressionParser::Parse(info)) {
 				call->arguments.Add(node);
 			}
 			else {
@@ -51,20 +49,39 @@ NodePtr CallParser::Parse(ParsingInfo& info) {
 	return nullptr;
 }
 
-CallNode::ArgAttributes CallParser::ParseArgumentAttributes(ParsingInfo& info) {
+Ptr<CallStatement> CallParser::ParseStatement(ParsingInfo& info) {
+	const UInt startIndex = info.index;
+
+	if (Ptr<Expression> node = ExpressionParser::Parse(info, true)) {
+		if (Ptr<CallExpression> callExpr = node.AsPtr<CallExpression>()) {
+			info.statementNumber++;
+
+			Ptr<CallStatement> call = new CallStatement(callExpr->scope, callExpr->File());
+			call->arguments  = callExpr->arguments;
+			call->attributes = callExpr->attributes;
+			call->expression = callExpr->expression;
+			return call;
+		}
+	}
+
+	info.index = startIndex;
+	return nullptr;
+}
+
+CallArgAttributes CallParser::ParseArgumentAttributes(ParsingInfo& info) {
 	switch (info.Current().type) {
 		case TokenType::Ref: {
 			info.index++;
-			return CallNode::ArgAttributes::Ref;
+			return CallArgAttributes::Ref;
 		}
 
 		case TokenType::NoRef: {
 			info.index++;
-			return CallNode::ArgAttributes::NoRef;
+			return CallArgAttributes::NoRef;
 		}
 
 		default: {
-			return CallNode::ArgAttributes::None;
+			return CallArgAttributes::None;
 		}
 	}
 }

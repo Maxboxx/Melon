@@ -3,8 +3,6 @@
 #include "ExpressionParser.h"
 #include "TypeParser.h"
 
-#include "Melon/Nodes/ConvertNode.h"
-
 using namespace Boxx;
 
 using namespace Melon;
@@ -12,7 +10,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr AsParser::Parse(ParsingInfo& info) {
+Ptr<TypeConversion> AsParser::Parse(ParsingInfo& info) {
 	const UInt startIndex = info.index;
 
 	// Parse as token
@@ -29,7 +27,7 @@ NodePtr AsParser::Parse(ParsingInfo& info) {
 
 	// Parse type
 	if (Optional<NameList> type = TypeParser::Parse(info)) {
-		Pointer<TypeConversion> cn = new TypeConversion(info.scope, info.GetFileInfo(asLine));
+		Ptr<TypeConversion> cn = new TypeConversion(info.scope, info.GetFileInfo(asLine));
 		cn->isExplicit = true;
 		cn->type = *type;
 		return cn;

@@ -28,13 +28,13 @@ namespace Melon {
 			};
 
 			/// Parses an assignment statement.
-			static Boxx::Pointer<Nodes::Assignment> Parse(ParsingInfo& info, const Flags flags = Flags::None);
+			static Ptr<Nodes::Assignment> Parse(ParsingInfo& info, const Flags flags = Flags::None);
 
 		private:
 			static Boxx::List<Symbols::NameList> ParseTypes(ParsingInfo& info);
 			static bool ValidateTypes(ParsingInfo& info, Boxx::List<Symbols::NameList>& types, const Flags flags = Flags::None);
-			static void ParseVariables(ParsingInfo& info, Boxx::List<Symbols::NameList>& types, Boxx::Pointer<Nodes::Assignment>& assign, Boxx::List<Boxx::Tuple<Symbols::Name, Symbols::Symbol*>>& symbols, const bool singleType);
-			static void ParseExpressions(ParsingInfo& info, Boxx::Pointer<Nodes::Assignment>& assign);
+			static void ParseVariables(ParsingInfo& info, Boxx::List<Symbols::NameList>& types, Ptr<Nodes::Assignment>& assign, Boxx::List<Boxx::Tuple<Symbols::Name, Symbols::Symbol*>>& symbols, const bool singleType);
+			static void ParseExpressions(ParsingInfo& info, Ptr<Nodes::Assignment>& assign);
 		};
 
 		BOXX_ENUM_FLAGS(AssignmentParser::Flags);

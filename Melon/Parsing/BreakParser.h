@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/BreakStatement.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,11 +11,11 @@ namespace Melon {
 		class BreakParser {
 		public:
 			/// Parses a {break}, {abort}, and {break!} statement.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::BreakStatement> Parse(ParsingInfo& info);
 
 		private:
-			static Nodes::NodePtr ParseBreak(ParsingInfo& info);
-			static Nodes::NodePtr ParseAbort(ParsingInfo& info);
+			static Ptr<Nodes::BreakStatement> ParseBreak(ParsingInfo& info);
+			static Ptr<Nodes::BreakStatement> ParseAbort(ParsingInfo& info);
 		};
 	}
 }
