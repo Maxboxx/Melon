@@ -6,8 +6,7 @@
 #include "AssignmentParser.h"
 #include "ScopeParser.h"
 
-#include "Melon/Nodes/ForConditionNode.h"
-#include "Melon/Nodes/IntegerNode.h"
+#include "Melon/Nodes/Integer.h"
 
 using namespace Boxx;
 
@@ -16,10 +15,10 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr LoopParser::Parse(ParsingInfo& info) {
+Ptr<LoopStatement> LoopParser::Parse(ParsingInfo& info) {
 	if (!IsLoopStart(info.Current().type)) return nullptr;
 
-	Pointer<LoopStatement> loop = new LoopStatement(info.scope, info.GetFileInfo());
+	Ptr<LoopStatement> loop = new LoopStatement(info.scope, info.GetFileInfo());
 
 	const UInt startLine = info.Current().line;
 	const String start = info.Current().value;
@@ -67,7 +66,7 @@ bool LoopParser::ParseSegment(LoopStatement::LoopSegment& ls, const Boxx::String
 bool LoopParser::ParseIf(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
-	if (NodePtr cond = ConditionParser::Parse(info)) {
+	if (Ptr<Condition> cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
 		ls.condition = cond;
 
@@ -89,7 +88,7 @@ bool LoopParser::ParseIf(LoopStatement::LoopSegment& ls, const Boxx::String& val
 bool LoopParser::ParseWhile(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
-	if (NodePtr cond = ConditionParser::Parse(info)) {
+	if (Ptr<Condition> cond = ConditionParser::Parse(info)) {
 		info.statementNumber++;
 		ls.condition = cond;
 		
@@ -111,32 +110,31 @@ bool LoopParser::ParseWhile(LoopStatement::LoopSegment& ls, const Boxx::String& 
 bool LoopParser::ParseFor(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
-	if (NodePtr init = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
+	if (Ptr<Assignment> init = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
 		info.statementNumber++;
 
 		if (info.Current().type == TokenType::Comma) {
 			info.index++;
 
-			Tuple<Optional<Name>, NodePtr> cond = ParseForCondition(info);
+			Tuple<Optional<Name>, Ptr<Condition>> cond = ParseForCondition(info);
 
 			if (cond.value2) {
-				Pointer<ForConditionNode> fcn = new ForConditionNode(info.scope, info.GetFileInfoPrev());
-				fcn->loopInit = init;
-				fcn->conditionOperator = cond.value1;
-				fcn->loopCondition = cond.value2;
+				ls.init = init;
+				ls.conditionOperator = cond.value1;
+				ls.condition = cond.value2;
 
 				if (info.Current().type == TokenType::Comma) {
 					info.index++;
 
-					Tuple<Optional<Name>, NodePtr> step = ParseForStep(info);
-					fcn->stepOperator = step.value1;
-					fcn->loopStep = step.value2;
+					Tuple<Optional<Name>, Ptr<Node>> step = ParseForStep(info);
+					ls.stepOperator = step.value1;
+					ls.step = step.value2;
 				}
 				else {
-					Pointer<Integer> num = new Integer(info.GetFileInfoPrev());
+					Ptr<Integer> num = new Integer(info.GetFileInfoPrev());
 					num->number = 1;
-					fcn->loopStep = num;
-					fcn->stepOperator = Name::Add;
+					ls.step = num;
+					ls.stepOperator = Name::Add;
 				}
 
 				const bool single = info.Current().type == TokenType::Arrow;
@@ -159,9 +157,9 @@ bool LoopParser::ParseFor(LoopStatement::LoopSegment& ls, const Boxx::String& va
 	return false;
 }
 
-Tuple<Optional<Name>, NodePtr> LoopParser::ParseForCondition(ParsingInfo& info) {
+Tuple<Optional<Name>, Ptr<Condition>> LoopParser::ParseForCondition(ParsingInfo& info) {
 	Optional<Name> op;
-	NodePtr node = nullptr;
+	Ptr<Condition> node = nullptr;
 
 	if (ExpressionParser::IsBinaryOperator(info.Current().type)) {
 		op = Name(info.Current().value);
@@ -173,7 +171,7 @@ Tuple<Optional<Name>, NodePtr> LoopParser::ParseForCondition(ParsingInfo& info) 
 			ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote(info.Prev().value), "for loop"), info.GetFileInfoPrev());
 		}
 	}
-	else if (NodePtr cond = ConditionParser::Parse(info)) {
+	else if (Ptr<Condition> cond = ConditionParser::Parse(info)) {
 		node = cond;
 	}
 	else {
@@ -183,25 +181,25 @@ Tuple<Optional<Name>, NodePtr> LoopParser::ParseForCondition(ParsingInfo& info) 
 	return Tuple<>::Create(op, node);
 }
 
-Tuple<Optional<Name>, NodePtr> LoopParser::ParseForStep(ParsingInfo& info) {
+Tuple<Optional<Name>, Ptr<Node>> LoopParser::ParseForStep(ParsingInfo& info) {
 	Optional<Name> op;
-	NodePtr node = nullptr;
+	Ptr<Node> node = nullptr;
 
 	if (ExpressionParser::IsBinaryOperator(info.Current().type)) {
 		op = Name(info.Current().value);
 		info.index++;
 
-		if (NodePtr step = ExpressionParser::Parse(info)) {
+		if (Ptr<Expression> step = ExpressionParser::Parse(info)) {
 			node = step;
 		}
 		else {
 			ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote(info.Prev().value), "for loop"), info.GetFileInfoPrev());
 		}
 	}
-	else if (NodePtr step = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
+	else if (Ptr<Assignment> step = AssignmentParser::Parse(info, AssignmentParser::Flags::Single)) {
 		node = step;
 	}
-	else if (NodePtr step = ExpressionParser::Parse(info)) {
+	else if (Ptr<Expression> step = ExpressionParser::Parse(info)) {
 		node = step;
 	}
 	else {
@@ -223,7 +221,7 @@ bool LoopParser::ParseNone(LoopStatement::LoopSegment& ls, const Boxx::String& v
 	return single;
 }
 
-bool LoopParser::IsValidSegmentType(const TokenType t, const Boxx::Pointer<Nodes::LoopStatement>& loop) {
+bool LoopParser::IsValidSegmentType(const TokenType t, Weak<Nodes::LoopStatement> loop) {
 	if (!IsLoop(t)) return false;
 
 	if (IsLoopStart(t)) {

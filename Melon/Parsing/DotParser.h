@@ -2,14 +2,16 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/DotExpression.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
-		/// Parser for the {.} operator
+		/// Parser for the {.} operator.
 		class DotParser {
 		public:
-			/// Parses a {.} operation
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			/// Parses a {.} expression.
+			static Ptr<Nodes::DotExpression> Parse(ParsingInfo& info);
 		};
 	}
 }

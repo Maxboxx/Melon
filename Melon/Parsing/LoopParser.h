@@ -5,7 +5,7 @@
 #include "Boxx/Tuple.h"
 #include "Boxx/Optional.h"
 
-#include "Melon/Nodes/LoopNode.h"
+#include "Melon/Nodes/LoopStatement.h"
 
 ///N Melon::Parsing
 namespace Melon {
@@ -14,7 +14,7 @@ namespace Melon {
 		class LoopParser {
 		public:
 			/// Parser for {if}, {while}, or {for} statement.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::LoopStatement> Parse(ParsingInfo& info);
 
 		private:
 			static bool ParseSegment(Nodes::LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
@@ -24,10 +24,10 @@ namespace Melon {
 			static bool ParseFor(Nodes::LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
 			static bool ParseNone(Nodes::LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info);
 
-			static Boxx::Tuple<Boxx::Optional<Symbols::Name>, Nodes::NodePtr> ParseForCondition(ParsingInfo& info);
-			static Boxx::Tuple<Boxx::Optional<Symbols::Name>, Nodes::NodePtr> ParseForStep(ParsingInfo& info);
+			static Boxx::Tuple<Boxx::Optional<Symbols::Name>, Ptr<Nodes::Condition>> ParseForCondition(ParsingInfo& info);
+			static Boxx::Tuple<Boxx::Optional<Symbols::Name>, Ptr<Nodes::Node>> ParseForStep(ParsingInfo& info);
 
-			static bool IsValidSegmentType(const TokenType t, const Boxx::Pointer<Nodes::LoopStatement>& loop);
+			static bool IsValidSegmentType(const TokenType t, Weak<Nodes::LoopStatement> loop);
 			static bool IsLoop(const TokenType t);
 			static bool IsLoopStart(const TokenType t);
 			static bool IsLoopMiddle(const TokenType t);

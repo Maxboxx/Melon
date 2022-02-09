@@ -2,8 +2,6 @@
 
 #include "ExpressionParser.h"
 
-#include "Melon/Nodes/ObjectInitNode.h"
-
 using namespace Boxx;
 
 using namespace Melon;
@@ -11,11 +9,11 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
+Ptr<ObjectInitExpression> ObjectInitParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::CurlyOpen) return nullptr;
 	info.index++;
 
-	Pointer<ObjectInitExpression> cn = new ObjectInitExpression(info.scope, info.GetFileInfoPrev());
+	Ptr<ObjectInitExpression> cn = new ObjectInitExpression(info.scope, info.GetFileInfoPrev());
 
 	while (info.Current().type != TokenType::CurlyClose) {
 		if (!cn->vars.IsEmpty()) {
@@ -35,7 +33,7 @@ NodePtr ObjectInitParser::Parse(ParsingInfo& info) {
 
 			info.index++;
 
-			if (NodePtr node = ExpressionParser::Parse(info)) {
+			if (Ptr<Expression> node = ExpressionParser::Parse(info)) {
 				cn->expressions.Add(node);
 			}
 			else {

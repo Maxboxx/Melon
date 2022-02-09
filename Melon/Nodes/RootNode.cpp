@@ -78,7 +78,7 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(in);
 
 	// Compile functions
-	for (const Pointer<FunctionStatement>& func : funcs) {
+	for (const Pointer<FunctionBody>& func : funcs) {
 		for (const OptimizerInstruction& instruction : func->Compile(info).instructions) {
 			cn.instructions.Add(instruction);
 		}
@@ -319,10 +319,10 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 
 	// Scan functions
 	while (!info.functions.IsEmpty()) {
-		Collection<Pointer<FunctionStatement>> functions = info.functions;
-		info.functions = Collection<Pointer<FunctionStatement>>();
+		Collection<Pointer<FunctionBody>> functions = info.functions;
+		info.functions = Collection<Pointer<FunctionBody>>();
 
-		for (const Pointer<FunctionStatement>& func : functions) {
+		for (const Pointer<FunctionBody>& func : functions) {
 			if (func) {
 				func->isUsed = true;
 				func->Scan(info);
@@ -337,8 +337,8 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 	info->useFunction = false;
 
 	// Scan unused functions
-	for (const Pointer<FunctionStatement>& node : funcs) {
-		if (!info.usedFunctions.Contains(node.Cast<FunctionStatement>()->sym)) {
+	for (const Pointer<FunctionBody>& node : funcs) {
+		if (!info.usedFunctions.Contains(node.Cast<FunctionBody>()->sym)) {
 			node->isUsed = false;
 			node->Scan(info);
 		}
@@ -364,10 +364,10 @@ void RootNode::Optimize(OptimizeInfo& info) {
 
 	// Remove unused functions
 	if (info.usedFunctions.Size() < funcs.Size()) {
-		List<Pointer<FunctionStatement>> functions = funcs;
-		funcs = List<Pointer<FunctionStatement>>(info.usedFunctions.Size());
+		List<Pointer<FunctionBody>> functions = funcs;
+		funcs = List<Pointer<FunctionBody>>(info.usedFunctions.Size());
 
-		for (const Pointer<FunctionStatement>& func : functions) {
+		for (const Pointer<FunctionBody>& func : functions) {
 			if (info.usedFunctions.Contains(func->sym)) {
 				funcs.Add(func);
 			}

@@ -100,7 +100,7 @@ namespace Melon {
 
 			/// The node to use for the compilation of the function.
 			///p Is {nullptr} if {symbolNode} should be used instead.
-			Boxx::Pointer<Melon::Nodes::Node> node;
+			Weak<Melon::Nodes::FunctionBody> node;
 
 			/// The function attributes.
 			FunctionAttributes attributes = FunctionAttributes::None;

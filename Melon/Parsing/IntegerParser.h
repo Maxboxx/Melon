@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/Integer.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,7 +11,7 @@ namespace Melon {
 		class IntegerParser {
 		public:
 			/// Parses an integer.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::Integer> Parse(ParsingInfo& info);
 		};
 	}
 }

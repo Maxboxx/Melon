@@ -25,6 +25,9 @@
 #include "Melon/Nodes/SafeUnwrapChain.h"
 #include "Melon/Nodes/TypeConversion.h"
 #include "Melon/Nodes/IfExpression.h"
+#include "Melon/Nodes/SwitchExpression.h"
+#include "Melon/Nodes/Integer.h"
+#include "Melon/Nodes/Boolean.h"
 
 using namespace Boxx;
 
@@ -47,8 +50,8 @@ Ptr<Expression> ExpressionParser::Parse(ParsingInfo& info, const bool statement)
 
 			if (IsBinaryOperator(token.type)) {
 				if (token.type == TokenType::As) {
-					if (Ptr<Expression> node = AsParser::Parse(info)) {
-						node.As<TypeConversion>()->expression = nodes.Last();
+					if (Ptr<TypeConversion> node = AsParser::Parse(info)) {
+						node->expression = nodes.Last();
 						nodes[nodes.Size() - 1] = node;
 					}
 				}
@@ -231,28 +234,28 @@ Ptr<Expression> ExpressionParser::ParseUnaryOperand(ParsingInfo& info, const boo
 		bool hasSafeUnwrap = false;
 
 		while (!info.EndOfFile()) {
-			if (Ptr<Expression> call = CallParser::Parse(info)) {
-				call.As<CallExpression>()->expression = node;
+			if (Ptr<CallExpression> call = CallParser::Parse(info)) {
+				call->expression = node;
 				node = call;
 
 				continue;
 			}
 
-			if (Ptr<Expression> call = MethodCallParser::Parse(info)) {
-				call.As<CallExpression>()->expression = node;
+			if (Ptr<CallExpression> call = MethodCallParser::Parse(info)) {
+				call->expression = node;
 				node = call;
 
 				continue;
 			}
 
-			if (Ptr<Expression> dot = DotParser::Parse(info)) {
-				dot.As<DotExpression>()->expression = node;
+			if (Ptr<DotExpression> dot = DotParser::Parse(info)) {
+				dot->expression = node;
 				node = dot;
 				continue;
 			}
 
-			if (Ptr<Expression> dot = ObjectInitParser::Parse(info)) {
-				dot.As<ObjectInitExpression>()->expression = node;
+			if (Ptr<ObjectInitExpression> dot = ObjectInitParser::Parse(info)) {
+				dot->expression = node;
 				node = dot;
 				continue;
 			}
@@ -298,7 +301,7 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 		ErrorLog::AddMarker();
 
 		try {
-			if (Ptr<Expression> node = IfExpressionParser::Parse(info, true)) {
+			if (Ptr<IfExpression> node = IfExpressionParser::Parse(info, true)) {
 				ErrorLog::RemoveMarker();
 				return node;
 			}
@@ -308,7 +311,7 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 		}
 
 		try {
-			if (Ptr<Expression> node = SwitchParser::ParseExpression(info, true)) {
+			if (Ptr<SwitchExpression> node = SwitchParser::ParseExpression(info, true)) {
 				ErrorLog::RemoveMarker();
 				return node;
 			}
@@ -320,10 +323,10 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 		ErrorLog::Revert();
 	}
 	else {
-		if (Ptr<Expression> node = IfExpressionParser::Parse(info)) {
+		if (Ptr<IfExpression> node = IfExpressionParser::Parse(info)) {
 			return node;
 		}
-		else if (Ptr<Expression> node = SwitchParser::ParseExpression(info)) {
+		else if (Ptr<SwitchExpression> node = SwitchParser::ParseExpression(info)) {
 			return node;
 		}
 	}
@@ -337,10 +340,10 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 			return node;
 		}
 	}
-	else if (Ptr<Expression> node = IntegerParser::Parse(info)) {
+	else if (Ptr<Integer> node = IntegerParser::Parse(info)) {
 		return node;
 	}
-	else if (Ptr<Expression> node = BooleanParser::Parse(info)) {
+	else if (Ptr<Boolean> node = BooleanParser::Parse(info)) {
 		return node;
 	}
 	else if (info.Current().type == TokenType::Nil) {
@@ -353,8 +356,7 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 		const UInt line = info.Current().line;
 		info.index++;
 
-		if (Ptr<Expression> dotNode = DotParser::Parse(info)) {
-			Ptr<DotExpression> dn = dotNode.AsPtr<DotExpression>();
+		if (Ptr<DotExpression> dn = DotParser::Parse(info)) {
 			Ptr<NameExpression> nn = new NameExpression(nullptr, info.GetFileInfo(line));
 			nn->name = Name::Global;
 			dn->expression = nn;
@@ -376,7 +378,7 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 		nn->name = *node;
 		return nn;
 	}
-	else if (Ptr<Expression> node = NameParser::Parse(info)) {
+	else if (Ptr<NameExpression> node = NameParser::Parse(info)) {
 		return node;
 	}
 

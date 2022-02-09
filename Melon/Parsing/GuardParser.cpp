@@ -3,8 +3,6 @@
 #include "ConditionParser.h"
 #include "ScopeParser.h"
 
-#include "Melon/Nodes/GuardNode.h"
-
 using namespace Boxx;
 
 using namespace Melon;
@@ -12,7 +10,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NodePtr GuardParser::Parse(ParsingInfo& info) {
+Ptr<GuardStatement> GuardParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Guard) {
 		return nullptr;
 	}
@@ -22,10 +20,10 @@ NodePtr GuardParser::Parse(ParsingInfo& info) {
 
 	info.index++;
 
-	if (NodePtr node = ConditionParser::Parse(info)) {
+	if (Ptr<Condition> node = ConditionParser::Parse(info)) {
 		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(guardLine));
 
-		Pointer<GuardStatement> gn = new GuardStatement(info.scope, info.GetFileInfo(guardLine));
+		Ptr<GuardStatement> gn = new GuardStatement(info.scope, info.GetFileInfo(guardLine));
 		gn->cond = node;
 		gn->else_ = ScopeParser::Parse(info, TokenType::Else, ScopeParser::Info("else", "guard condition", "guard statement", guardLine), false);
 

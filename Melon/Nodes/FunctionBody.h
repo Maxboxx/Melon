@@ -8,7 +8,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for functions.
-		class FunctionStatement : public Statement {
+		class FunctionBody : public Statement {
 		public:
 			/// The function body.
 			Ptr<Statements> statements;
@@ -19,8 +19,8 @@ namespace Melon {
 			/// {true} if the function is used.
 			bool isUsed = true;
 
-			FunctionStatement(Symbols::Symbol* const scope, const FileInfo& file);
-			~FunctionStatement();
+			FunctionBody(Symbols::Symbol* const scope, const FileInfo& file);
+			~FunctionBody();
 
 			virtual bool IsScope() const override;
 			virtual CompiledNode Compile(CompileInfo& info) override;

@@ -142,7 +142,7 @@ bool Statements::HasSpaceAround(Weak<Statement> statement) {
 	if (statement.Is<SwitchStatement>())   return true;
 	if (statement.Is<DoStatement>())       return true;
 	if (statement.Is<RepeatStatement>())   return true;
-	if (statement.Is<FunctionStatement>()) return true;
+	if (statement.Is<FunctionBody>()) return true;
 	if (statement.Is<StructStatement>())   return true;
 	if (statement.Is<EnumStatement>())     return true;
 

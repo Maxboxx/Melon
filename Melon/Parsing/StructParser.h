@@ -2,6 +2,9 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/StructStatement.h"
+#include "Melon/Nodes/NewVariableNode.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Nodes {
@@ -13,12 +16,11 @@ namespace Melon {
 		class StructParser {
 		public:
 			/// Parses a struct.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::StructStatement> Parse(ParsingInfo& info);
 
 		private:
-			static Boxx::Pointer<Nodes::StructStatement> ParseName(ParsingInfo& info, const Boxx::UInt structLine);
-			static Nodes::NodePtr ParseFunction(ParsingInfo& info);
-			static Nodes::NodePtr ParseVariable(ParsingInfo& info);
+			static Ptr<Nodes::StructStatement> ParseName(ParsingInfo& info, const Boxx::UInt structLine);
+			static Ptr<Nodes::NewVariableNode> ParseVariable(ParsingInfo& info);
 		};
 	}
 }

@@ -5,13 +5,12 @@
 #include "ScopeParser.h"
 #include "TemplateParser.h"
 
-#include "Melon/Nodes/FunctionNode.h"
-#include "Melon/Nodes/EmptyNode.h"
-
 #include "Melon/Symbols/MapSymbol.h";
 #include "Melon/Symbols/TemplateSymbol.h";
 #include "Melon/Symbols/StructSymbol.h";
 #include "Melon/Symbols/EnumSymbol.h";
+
+#include "Melon/Nodes/FunctionBody.h"
 
 using namespace Boxx;
 
@@ -20,7 +19,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
+Ptr<EmptyStatement> FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 	const UInt startIndex = info.index;
 	const UInt startLine = info.Current().line;
 
@@ -31,7 +30,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, parent == nullptr)) {
 		const FunctionHead funcHead = *fh;
-		Pointer<FunctionStatement> func = new FunctionStatement(info.scope, info.GetFileInfo(startLine));
+		Ptr<FunctionBody> func = new FunctionBody(info.scope, info.GetFileInfo(startLine));
 
 		UInt line = 0;
 
@@ -102,9 +101,9 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		info.root.funcs.Add(func);
 		info.statementNumber++;
 
-		Pointer<EmptyStatement> en = new EmptyStatement();
-		en->node = func;
-		return en;
+		Ptr<EmptyStatement> empty = new EmptyStatement();
+		empty->statement = func;
+		return empty;
 	}
 
 	delete funcSym;

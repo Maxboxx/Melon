@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/ObjectInitExpression.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,7 +11,7 @@ namespace Melon {
 		class ObjectInitParser {
 		public:
 			/// Parses an object initializer.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::ObjectInitExpression> Parse(ParsingInfo& info);
 		};
 	}
 }

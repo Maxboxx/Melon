@@ -1,4 +1,4 @@
-#include "FunctionStatement.h"
+#include "FunctionBody.h"
 
 #include "Statements.h"
 
@@ -17,19 +17,19 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Optimizing;
 
-FunctionStatement::FunctionStatement(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
+FunctionBody::FunctionBody(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
-FunctionStatement::~FunctionStatement() {
+FunctionBody::~FunctionBody() {
 
 }
 
-bool FunctionStatement::IsScope() const {
+bool FunctionBody::IsScope() const {
 	return true;
 }
 
-CompiledNode FunctionStatement::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+CompiledNode FunctionBody::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
 	if (sym->IsNotSpecialized()) return CompiledNode();
 	scope->SetTemplateValues(sym);
 
@@ -87,7 +87,7 @@ CompiledNode FunctionStatement::Compile(CompileInfo& info) { // TODO: more accur
 	return c;
 }
 
-void FunctionStatement::IncludeScan(ParsingInfo& info) {
+void FunctionBody::IncludeScan(ParsingInfo& info) {
 	for (UInt i = 0; i < sym->arguments.Size(); i++) {
 		if (VariableSymbol* const arg = sym->Argument(i)) {
 			if (!arg->Type()) {
@@ -102,7 +102,7 @@ void FunctionStatement::IncludeScan(ParsingInfo& info) {
 	statements->IncludeScan(info);
 }
 
-ScanResult FunctionStatement::Scan(ScanInfoStack& info) {
+ScanResult FunctionBody::Scan(ScanInfoStack& info) {
 	if (sym->IsNotSpecialized()) return ScanResult();
 	scope->SetTemplateValues(sym);
 
@@ -149,12 +149,12 @@ ScanResult FunctionStatement::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-Ptr<Statement> FunctionStatement::Optimize(OptimizeInfo& info) {
+Ptr<Statement> FunctionBody::Optimize(OptimizeInfo& info) {
 	Node::Optimize(statements, info);
 	return nullptr;
 }
 
-StringBuilder FunctionStatement::ToMelon(const UInt indent) const {
+StringBuilder FunctionBody::ToMelon(const UInt indent) const {
 	StringBuilder sb = "";
 
 	// Get attribute names

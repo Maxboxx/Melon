@@ -2,6 +2,9 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/Statement.h"
+#include "Melon/Nodes/Statements.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,10 +12,10 @@ namespace Melon {
 		class StatementParser {
 		public:
 			/// Parses a statement.
-			static Nodes::NodePtr Parse(ParsingInfo& info, const bool single = false);
+			static Ptr<Nodes::Statement> Parse(ParsingInfo& info, const bool single = false);
 
 			/// Parses multiple statements.
-			static Nodes::NodePtr ParseMultiple(ParsingInfo& info);
+			static Ptr<Nodes::Statements> ParseMultiple(ParsingInfo& info);
 		};
 	}
 }

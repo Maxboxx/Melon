@@ -3,8 +3,6 @@
 #include "StatementParser.h"
 #include "ConditionParser.h"
 
-#include "Melon/Nodes/RepeatNode.h"
-
 using namespace Boxx;
 
 using namespace Melon;
@@ -12,14 +10,14 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NodePtr RepeatParser::Parse(ParsingInfo& info) {
+Ptr<RepeatStatement> RepeatParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Repeat) return nullptr;
 
 	const UInt startIndex = info.index;
 	const UInt repeatLine = info.Current().line;
 	info.index++;
 
-	Pointer<RepeatStatement> repeatNode = new RepeatStatement(info.scope, info.GetFileInfoPrev());
+	Ptr<RepeatStatement> repeatNode = new RepeatStatement(info.scope, info.GetFileInfoPrev());
 
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo(repeatLine));
 
@@ -32,7 +30,7 @@ NodePtr RepeatParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Until) {
 		info.index++;
 
-		if (NodePtr cond = ConditionParser::Parse(info)) {
+		if (Ptr<Condition> cond = ConditionParser::Parse(info)) {
 			repeatNode->condition = cond;
 			info.statementNumber++;
 			info.scope = info.scope->Parent<ScopeSymbol>();

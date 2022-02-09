@@ -2,6 +2,9 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/Expression.h"
+#include "Melon/Nodes/Statements.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -16,7 +19,7 @@ namespace Melon {
 			///A scopeStart: Used by {ParseBlock}.
 			///A scopeInfo: Used by {ParseBlock} and {ParseSingle}.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr Parse(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Statements> Parse(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
 
 			/// Parses a scope without the {end} keyword.
 			///p Uses either {ParseBlockNoEnd} or {ParseSingle} to parse the scope. 
@@ -24,7 +27,7 @@ namespace Melon {
 			///A scopeStart: Used by {ParseBlockNoEnd}.
 			///A scopeInfo: Used by {ParseBlockNoEnd} and {ParseSingle}.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr ParseNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Statements> ParseNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
 
 			/// Parses a scope with multiple statements.
 			///p The scope starts with {scopeStart} and ends with {TokenType::End}.
@@ -33,7 +36,7 @@ namespace Melon {
 			///p If this value is {TokenType::None}, the scope starts with nothing.
 			///A scopeInfo: Info used for errors.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr ParseBlock(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Statements> ParseBlock(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
 
 			/// Parses a scope with multiple statements without the {end} keyword.
 			///p The scope starts with {scopeStart}.
@@ -42,14 +45,14 @@ namespace Melon {
 			///p If this value is {TokenType::None}, the scope starts with nothing.
 			///A scopeInfo: Info used for errors.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr ParseBlockNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Statements> ParseBlockNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
 			
 			/// Parses a scope with a single statement.
 			///p The scope starts with {TokenType::Arrow} and ends after the statement.
 			///p This function does not modify {info.scope} or {info.scopeCount}.
 			///A scopeInfo: Info for errors.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr ParseSingle(ParsingInfo& info, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Statements> ParseSingle(ParsingInfo& info, const Info& scopeInfo, const bool required = false);
 
 			/// Parses an expression scope.
 			///p Uses either {ParseExpressionBlock} or {ParseExpressionSingle} to parse the scope. 
@@ -57,7 +60,7 @@ namespace Melon {
 			///A scopeStart: Used by {ParseExpressionBlock}.
 			///A scopeInfo: Used by {ParseExpressionBlock} and {ParseExpressionSingle}.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr ParseExpression(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Expression> ParseExpression(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
 
 			/// Parses an expression scope without the {end} keyword.
 			///p Uses either {ParseExpressionBlockNoEnd} or {ParseExpressionSingle} to parse the scope. 
@@ -65,7 +68,7 @@ namespace Melon {
 			///A scopeStart: Used by {ParseExpressionBlockNoEnd}.
 			///A scopeInfo: Used by {ParseExpressionBlockNoEnd} and {ParseExpressionSingle}.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr ParseExpressionNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Expression> ParseExpressionNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
 
 			/// Parses an expression block scope.
 			///p The scope starts with {scopeStart} and ends with {TokenType::End}.
@@ -74,7 +77,7 @@ namespace Melon {
 			///p If this value is {TokenType::None}, the scope starts with nothing.
 			///A scopeInfo: Info used for errors.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr ParseExpressionBlock(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Expression> ParseExpressionBlock(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
 
 			/// Parses an expression block scope without the {end} keyword.
 			///p The scope starts with {scopeStart}.
@@ -83,14 +86,14 @@ namespace Melon {
 			///p If this value is {TokenType::None}, the scope starts with nothing.
 			///A scopeInfo: Info used for errors.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr ParseExpressionBlockNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Expression> ParseExpressionBlockNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
 
 			/// Parses a single expression scope.
 			///p The scope starts with {TokenType::Arrow} and ends after the expression.
 			///p This function does not modify {info.scope} or {info.scopeCount}.
 			///A scopeInfo: Info for errors.
 			///A required: {true} if the scope is required.
-			static Nodes::NodePtr ParseExpressionSingle(ParsingInfo& info, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Expression> ParseExpressionSingle(ParsingInfo& info, const Info& scopeInfo, const bool required = false);
 		
 			/// Info used for error messages.
 			struct Info {

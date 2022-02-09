@@ -9,11 +9,6 @@
 
 #include "Melon/Symbols/Nodes/StructAssignNode.h"
 
-#include "Melon/Nodes/StructNode.h"
-#include "Melon/Nodes/NewVariableNode.h"
-#include "Melon/Nodes/EmptyNode.h"
-#include "Melon/Nodes/FunctionNode.h"
-
 using namespace Boxx;
 
 using namespace Melon;
@@ -22,22 +17,20 @@ using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 using namespace Melon::Parsing;
 
-NodePtr StructParser::Parse(ParsingInfo& info) {
+Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 	if (info.Current().type != TokenType::Struct) return nullptr;
 
 	const UInt structLine = info.Current().line;
 	info.index++;
 	MapSymbol* const temp = info.scope;
 
-	Pointer<StructStatement> sn = ParseName(info, structLine);
+	Ptr<StructStatement> sn = ParseName(info, structLine);
 	info.scope = sn->symbol;
 
 	while (true) {
 		bool found = false;
 
-		if (NodePtr node = ParseVariable(info)) {
-			Pointer<NewVariableNode> nn = node.Cast<NewVariableNode>();
-
+		if (Ptr<NewVariableNode> nn = ParseVariable(info)) {
 			for (UInt i = 0; i < nn->names.Size(); i++) {
 				VariableSymbol* const var = new VariableSymbol(info.GetFileInfo());
 
@@ -77,7 +70,7 @@ NodePtr StructParser::Parse(ParsingInfo& info) {
 	return sn;
 }
 
-Pointer<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt structLine) {
+Ptr<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt structLine) {
 	static Regex lower = Regex("^%l");
 	static Regex underscore = Regex("%a_+%a");
 
@@ -129,7 +122,7 @@ Pointer<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt s
 		info.scope->AddSymbol(structName, sym);
 	}
 
-	Pointer<StructStatement> sn = new StructStatement(info.scope, info.GetFileInfo(structLine));
+	Ptr<StructStatement> sn = new StructStatement(info.scope, info.GetFileInfo(structLine));
 	sn->name = structName;
 	sn->symbol = sym;
 	sym->node = sn;
@@ -137,8 +130,8 @@ Pointer<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt s
 	return sn;
 }
 
-NodePtr StructParser::ParseVariable(ParsingInfo& info) {
-	if (NodePtr node = NewVariableParser::Parse(info)) {
+Ptr<NewVariableNode> StructParser::ParseVariable(ParsingInfo& info) {
+	if (Ptr<NewVariableNode> node = NewVariableParser::Parse(info)) {
 		return node;
 	}
 

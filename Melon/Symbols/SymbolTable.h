@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 #include "Boxx/Pointer.h"
 
 #include "Symbol.h"

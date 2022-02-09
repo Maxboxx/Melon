@@ -3,8 +3,7 @@
 #include "TypeParser.h"
 #include "VariableAttributeParser.h"
 
-#include "Melon/Nodes/NewVariableNode.h"
-#include "Melon/Nodes/DiscardNode.h"
+#include "Melon/Nodes/DiscardExpression.h"
 
 using namespace Boxx;
 
@@ -13,13 +12,13 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr NewVariableParser::Parse(ParsingInfo& info, const bool single) {
+Ptr<NewVariableNode> NewVariableParser::Parse(ParsingInfo& info, const bool single) {
 	static Regex upper = Regex("^%u");
 	static Regex underscore = Regex("%a_+%a");
 
 	const UInt startIndex = info.index;
 
-	Pointer<NewVariableNode> node = new NewVariableNode(info.scope, info.GetFileInfo());
+	Ptr<NewVariableNode> node = new NewVariableNode(info.scope, info.GetFileInfo());
 
 	while (const Optional<NameList> type = ParseType(info)) {
 		node->types.Add(*type);

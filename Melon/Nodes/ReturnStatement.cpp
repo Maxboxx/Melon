@@ -20,19 +20,19 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-ReturnNode::ReturnNode(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
+ReturnStatement::ReturnStatement(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 
 }
 
-ReturnNode::~ReturnNode() {
+ReturnStatement::~ReturnStatement() {
 
 }
 
-FunctionSymbol* ReturnNode::GetFunc() const {
+FunctionSymbol* ReturnStatement::GetFunc() const {
 	return SymbolTable::Find<FunctionSymbol>(func, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 }
 
-List<TypeSymbol*> ReturnNode::GetTypes() const {
+List<TypeSymbol*> ReturnStatement::GetTypes() const {
 	List<TypeSymbol*> types;
 
 	if (FunctionSymbol* const f = GetFunc()) {
@@ -44,7 +44,7 @@ List<TypeSymbol*> ReturnNode::GetTypes() const {
 	return types;
 }
 
-CompiledNode ReturnNode::Compile(CompileInfo& info) {
+CompiledNode ReturnStatement::Compile(CompileInfo& info) {
 	FunctionSymbol* const f = GetFunc();
 	if (!f) return CompiledNode();
 
@@ -89,13 +89,13 @@ CompiledNode ReturnNode::Compile(CompileInfo& info) {
 	return c;
 }
 
-void ReturnNode::IncludeScan(ParsingInfo& info) {
+void ReturnStatement::IncludeScan(ParsingInfo& info) {
 	for (Weak<Expression> value : values) {
 		value->IncludeScan(info);
 	}
 }
 
-ScanResult ReturnNode::Scan(ScanInfoStack& info) {
+ScanResult ReturnStatement::Scan(ScanInfoStack& info) {
 	if (info->scopeInfo.CanContinue()) {
 		info->scopeInfo.hasReturned = true;
 	}
@@ -138,7 +138,7 @@ ScanResult ReturnNode::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-NameList ReturnNode::FindSideEffectScope(const bool assign) {
+NameList ReturnStatement::FindSideEffectScope(const bool assign) {
 	NameList list = values.IsEmpty() ? scope->AbsoluteName() : scope->Parent()->AbsoluteName();
 
 	for (Weak<Expression> value : values) {
@@ -148,7 +148,7 @@ NameList ReturnNode::FindSideEffectScope(const bool assign) {
 	return list;
 }
 
-Ptr<Statement> ReturnNode::Optimize(OptimizeInfo& info) {
+Ptr<Statement> ReturnStatement::Optimize(OptimizeInfo& info) {
 	for (Ptr<Expression> value : values) {
 		Node::Optimize(value, info);
 	}
@@ -156,7 +156,7 @@ Ptr<Statement> ReturnNode::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-StringBuilder ReturnNode::ToMelon(const UInt indent) const {
+StringBuilder ReturnStatement::ToMelon(const UInt indent) const {
 	StringBuilder sb = "return";
 
 	for (UInt i = 0; i < values.Size(); i++) {

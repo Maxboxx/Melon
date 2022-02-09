@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for {return} statements.
-		class ReturnNode : public Statement {
+		class ReturnStatement : public Statement {
 		public:
 			/// The values to return from the function.
 			Boxx::List<Ptr<Expression>> values;
@@ -14,8 +14,8 @@ namespace Melon {
 			/// The absolute name of the function to return from.
 			Symbols::NameList func;
 
-			ReturnNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~ReturnNode();
+			ReturnStatement(Symbols::Symbol* const scope, const FileInfo& file);
+			~ReturnStatement();
 
 			/// Get the function to return from.
 			Symbols::FunctionSymbol* GetFunc() const;
