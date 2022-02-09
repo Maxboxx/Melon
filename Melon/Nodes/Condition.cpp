@@ -1,11 +1,11 @@
 #include "Condition.h"
 
-#include "ConvertNode.h"
+#include "TypeConversion.h"
 #include "Assignment.h"
 #include "Boolean.h"
 #include "KiwiExpression.h"
-#include "TypeNode.h"
-#include "DiscardNode.h"
+#include "TypeExpression.h"
+#include "DiscardExpression.h"
 
 #include "Melon/Symbols/VariableSymbol.h"
 
@@ -155,8 +155,8 @@ Ptr<Condition> Condition::Optimize(OptimizeInfo& info) {
 
 	// Replace condition with immediate value
 	if (cond->IsImmediate()) {
-		Ptr<BooleanNode> bn = new BooleanNode(cond->File());
-		bn->boolean = cond->GetImmediate() != 0;
+		Ptr<Boolean> bn = new Boolean(cond->File());
+		bn->value = cond->GetImmediate() != 0;
 		info.optimized = true;
 		return bn;
 	}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 template <class T>
 class Weak;
 
@@ -105,6 +107,9 @@ public:
 	}
 
 private:
+	template <class U>
+	friend class Ptr;
+
 	T* ptr;
 
 	void Free() {
@@ -123,12 +128,12 @@ public:
 
 	}
 
-	Fixed(const T& value) {
-		this->value = value;
+	Fixed(const T& value) : value(value) {
+		
 	}
 
-	Fixed(T&& value) {
-		this->value = value;
+	Fixed(T&& value) : value(value) {
+		
 	}
 
 	~Fixed() {
@@ -150,7 +155,7 @@ public:
 	}
 
 	void operator=(T&& value) {
-		this->value = value;
+		this->value = std::move(value);
 	}
 
 	void operator=(const Fixed<T>& ptr) {

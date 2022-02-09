@@ -17,7 +17,7 @@ namespace Melon {
 				/// Constructor.
 				IntegerUnaryOperatorNode(const Boxx::UByte size, const Kiwi::InstructionType name);
 
-				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::_Expression_& operand, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

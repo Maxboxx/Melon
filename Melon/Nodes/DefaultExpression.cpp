@@ -1,7 +1,7 @@
 #include "DefaultExpression.h"
 
-#include "MemoryNode.h"
-#include "TypeNode.h"
+#include "KiwiMemoryExpression.h"
+#include "TypeExpression.h"
 
 #include "Melon/Symbols/VariableSymbol.h"
 

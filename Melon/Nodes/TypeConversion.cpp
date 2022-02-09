@@ -1,7 +1,7 @@
 #include "TypeConversion.h"
 
 #include "CallExpression.h"
-#include "TypeNode.h"
+#include "TypeExpression.h"
 #include "Expression.h"
 
 #include "Melon/Symbols/TemplateSymbol.h"

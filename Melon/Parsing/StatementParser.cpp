@@ -1,6 +1,6 @@
 #include "StatementParser.h"
 
-#include "CallStatementParser.h"
+#include "CallParser.h"
 #include "AssignmentParser.h"
 #include "LoopParser.h"
 #include "SwitchParser.h"
@@ -25,7 +25,7 @@ using namespace Melon::Symbols;
 Ptr<Statement> StatementParser::Parse(ParsingInfo& info, const bool single) {
 	if (info.EndOfFile()) return nullptr;
 
-	if (Ptr<Statement> node = CallStatementParser::Parse(info)) {
+	if (Ptr<Statement> node = CallParser::ParseStatement(info)) {
 		return node;
 	}
 	else if (Ptr<Statement> node = AssignmentParser::Parse(info, single ? AssignmentParser::Flags::Single : AssignmentParser::Flags::None)) {

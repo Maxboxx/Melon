@@ -5,7 +5,7 @@
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
 #include "BreakStatement.h"
-#include "EmptyNode.h"
+#include "EmptyStatement.h"
 #include "Statements.h"
 
 using namespace Boxx;

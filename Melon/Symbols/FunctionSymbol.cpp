@@ -7,7 +7,7 @@
 #include "TemplateTypeSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
-#include "Melon/Nodes/FunctionNode.h"
+#include "Melon/Nodes/FunctionBody.h"
 
 #include "Boxx/ReplacementMap.h"
 #include "Boxx/Map.h"
@@ -319,7 +319,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 		return best;
 	}
 	else {
-		return best->Parent<FunctionSymbol>()->AddOverload(best->SpecializeTemplate(replacement, Node::root));
+		return best->Parent<FunctionSymbol>()->AddOverload(best->SpecializeTemplate(replacement, Node::Root()));
 	}
 }
 
@@ -452,9 +452,9 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 
 	if (overloads.IsEmpty()) {
 		if (node) {
-			Pointer<FunctionBody> fn = new FunctionBody(node->scope, node->file);
+			Ptr<FunctionBody> fn = new FunctionBody(node->scope, node->file);
 			fn->sym = sym;
-			fn->statements = node.Cast<FunctionBody>()->statements;
+			fn->statements = node->statements;
 			sym->node = fn;
 			root->funcs.Add(sym->node);
 		}

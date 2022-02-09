@@ -5,8 +5,8 @@
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 
-#include "Melon/Nodes/MemoryNode.h"
-#include "Melon/Nodes/BooleanNode.h"
+#include "Melon/Nodes/KiwiMemoryExpression.h"
+#include "Melon/Nodes/Boolean.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -17,7 +17,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalAssignValueNode::Compile(const _Expression_& operand1, const _Expression_& operand2, CompileInfo& info) const {
+CompiledNode OptionalAssignValueNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
 	bool important = info.important;
 	info.important = false;
 
@@ -33,24 +33,22 @@ CompiledNode OptionalAssignValueNode::Compile(const _Expression_& operand1, cons
 
 		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], operand1->File());
 		
-		Pointer<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
+		Ptr<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
 		mn1->mem.offset += offset;
 		mn1->type = member->Type()->AbsoluteName();
 		offset++;
 
-		_Expression_ value;
+		info.important = important;
 
 		if (i == 1) {
-			value = operand2;
+			c1.AddInstructions(Node::CompileAssignment(mn1, operand2, info, operand2->File()).instructions);
 		}
 		else {
-			Pointer<BooleanNode> bn = new BooleanNode(operand1->File());
-			bn->boolean = !isNil;
-			value = bn;
+			Fixed<Boolean> bn = Boolean(operand1->File());
+			bn->value = !isNil;
+			c1.AddInstructions(Node::CompileAssignment(mn1, bn, info, operand2->File()).instructions);
 		}
 
-		info.important = important;
-		c1.AddInstructions(Node::CompileAssignment(mn1, value, info, operand2->File()).instructions);
 		info.important = false;
 	}
 

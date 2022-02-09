@@ -1,6 +1,6 @@
 #include "StructStatement.h"
 
-#include "FunctionStatement.h"
+#include "FunctionBody.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -119,7 +119,7 @@ StringBuilder StructStatement::ToMelon(const UInt indent) const {
 	for (const Pair<Name, Symbol*>& syms : symbol->symbols) {
 		if (FunctionSymbol* const func = syms.value->Cast<FunctionSymbol>()) {
 			for (FunctionSymbol* const overload : func->overloads) {
-				if (overload->node && overload->node.Cast<FunctionBody>()->isUsed) {
+				if (overload->node && overload->node->isUsed) {
 					sb += "\n\n";
 					sb += tabs;
 					sb += overload->node->ToMelon(indent + 1);

@@ -6,7 +6,7 @@
 
 #include "KiwiMemoryExpression.h"
 #include "BreakStatement.h"
-#include "TypeNode.h"
+#include "TypeExpression.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -272,7 +272,7 @@ namespace Melon {
 
 			// Get size of return type
 			if (this->expr) {
-				switchInfo.cn.size = Type()->Size();
+				switchInfo.cn.size = SwitchType()->Size();
 			}
 
 			// Compile match expression
@@ -329,7 +329,7 @@ namespace Melon {
 			// Set result argument
 			if (expr) {
 				switchInfo.cn.argument = switchInfo.result;
-				info.stack.Pop(Type()->Size());
+				info.stack.Pop(SwitchType()->Size());
 			}
 
 			return switchInfo.cn;
@@ -350,7 +350,7 @@ namespace Melon {
 			}
 		}
 
-		template <class T>
+		/*template <class T>
 		inline SwitchBaseNode<T>::SwitchScanInfo SwitchBaseNode<T>::ScanSetup(ScanInfo& info) const {
 			SwitchScanInfo switchInfo;
 			switchInfo.init = info.init;
@@ -365,7 +365,7 @@ namespace Melon {
 			}
 
 			return switchInfo;
-		}
+		}*/
 
 		template <class T>
 		inline void SwitchBaseNode<T>::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
@@ -503,7 +503,7 @@ namespace Melon {
 					r.SelfUseCheck(info, node->file);
 					result |= r;
 
-					SymbolTable::FindOperator(Symbols::Name::Equal, matchType, node->Type(), node->file);
+					Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, matchType, node->Type(), node->file);
 				}
 			}
 

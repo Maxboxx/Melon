@@ -31,11 +31,15 @@
 
 ///N Melon::Nodes
 namespace Melon {
+	class MelonCompiler;
+
 	namespace Parsing {
 		struct ParsingInfo;
 	}
 
 	namespace Symbols {
+		class FunctionSymbol;
+
 		namespace Nodes {
 			class SymbolNode;
 		}
@@ -115,6 +119,7 @@ namespace Melon {
 
 		protected:
 			friend RootNode;
+			friend Symbols::FunctionSymbol;
 
 			FileInfo file;
 
@@ -132,7 +137,7 @@ namespace Melon {
 			void Include(const Symbols::NameList& name, Parsing::ParsingInfo& info);
 
 		private:
-			friend class Melon::MelonCompiler;
+			friend MelonCompiler;
 
 			Boxx::Optional<Symbols::NameList> sideEffectScope;
 

@@ -13,7 +13,7 @@
 
 #include "Melon/Nodes/NewVariableNode.h"
 #include "Melon/Nodes/EmptyStatement.h"
-#include "Melon/Nodes/FunctionStatement.h"
+#include "Melon/Nodes/FunctionBody.h"
 #include "Melon/Nodes/Integer.h"
 
 #include "Kiwi/Kiwi.h"

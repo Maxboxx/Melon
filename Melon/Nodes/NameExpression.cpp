@@ -1,6 +1,6 @@
 #include "NameExpression.h"
 
-#include "PtrNode.h"
+#include "PtrExpression.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -94,10 +94,11 @@ CompiledNode NameExpression::Compile(CompileInfo& info) {
 
 	// Compile reference variable
 	if (!ignoreRef && sym->HasAttribute(VariableAttributes::Ref)) {
-		Pointer<NameExpression> name = new NameExpression(scope, file);
+		Ptr<NameExpression> name = new NameExpression(scope, file);
 		name->name = this->name;
 		name->ignoreRef = true;
-		Pointer<PtrExpression> ptr = new PtrExpression(name);
+
+		Fixed<PtrExpression> ptr = PtrExpression(name);
 		return ptr->Compile(info);
 	}
 	// Compile stack variable

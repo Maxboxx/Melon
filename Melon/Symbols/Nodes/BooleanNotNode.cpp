@@ -8,7 +8,7 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode BooleanNotNode::Compile(const _Expression_& operand, CompileInfo& info) const {
+CompiledNode BooleanNotNode::Compile(Weak<Expression> operand, CompileInfo& info) const {
 	CompiledNode c = operand->Compile(info);
 
 	Instruction eq = Instruction(InstructionType::Eq, 1);

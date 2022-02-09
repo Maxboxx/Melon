@@ -5,7 +5,7 @@
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 
-#include "Melon/Nodes/MemoryNode.h"
+#include "Melon/Nodes/KiwiMemoryExpression.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -16,7 +16,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode StructAssignNode::Compile(const _Expression_& operand1, const _Expression_& operand2, CompileInfo& info) const {
+CompiledNode StructAssignNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
 	bool important = info.important;
 	info.important = false;
 
@@ -31,11 +31,11 @@ CompiledNode StructAssignNode::Compile(const _Expression_& operand1, const _Expr
 	for (UInt i = 0; i < type->members.Size(); i++) {
 		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], operand1->File());
 
-		Pointer<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
+		Ptr<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
 		mn1->mem.offset += member->stackIndex;
 		mn1->type = member->Type()->AbsoluteName();
 
-		Pointer<KiwiMemoryExpression> mn2 = new KiwiMemoryExpression(c2.argument.mem);
+		Ptr<KiwiMemoryExpression> mn2 = new KiwiMemoryExpression(c2.argument.mem);
 		mn2->mem.offset += member->stackIndex;
 		mn2->type = member->Type()->AbsoluteName();
 

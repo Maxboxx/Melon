@@ -58,7 +58,8 @@ Ptr<BreakStatement> BreakParser::ParseBreak(ParsingInfo& info) {
 					info.index++;
 				}
 				else {
-					return Parser::UnexpectedToken(info);
+					Parser::UnexpectedToken(info);
+					return nullptr;
 				}
 			}
 		}
@@ -79,7 +80,8 @@ Ptr<BreakStatement> BreakParser::ParseBreak(ParsingInfo& info) {
 					info.index++;
 				}
 				else {
-					return Parser::UnexpectedToken(info);
+					Parser::UnexpectedToken(info);
+					return nullptr;
 				}
 			}
 		}

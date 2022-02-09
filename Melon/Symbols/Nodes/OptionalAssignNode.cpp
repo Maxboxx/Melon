@@ -6,8 +6,8 @@
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
 
-#include "Melon/Nodes/MemoryNode.h"
-#include "Melon/Nodes/BooleanNode.h"
+#include "Melon/Nodes/KiwiMemoryExpression.h"
+#include "Melon/Nodes/Boolean.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -18,7 +18,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalAssignNode::Compile(const _Expression_& operand1, const _Expression_& operand2, CompileInfo& info) const {
+CompiledNode OptionalAssignNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
 	bool important = info.important;
 	info.important = false;
 
@@ -44,11 +44,11 @@ CompiledNode OptionalAssignNode::Compile(const _Expression_& operand1, const _Ex
 	c1.instructions.Add(mov1);
 	c1.instructions.Last().important = important;
 
-	Pointer<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
+	Fixed<KiwiMemoryExpression> mn1 = KiwiMemoryExpression(c1.argument.mem);
 	mn1->mem.offset++;
 	mn1->type = type1->Find<VariableSymbol>(Name::Value, operand1->File())->Type()->AbsoluteName();
 
-	Pointer<KiwiMemoryExpression> mn2 = new KiwiMemoryExpression(c2.argument.mem);
+	Fixed<KiwiMemoryExpression> mn2 = KiwiMemoryExpression(c2.argument.mem);
 	mn2->mem.offset++;
 	mn2->type = type2->Find<VariableSymbol>(Name::Value, operand2->File())->Type()->AbsoluteName();
 

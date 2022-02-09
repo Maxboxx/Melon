@@ -58,6 +58,8 @@ namespace Melon {
 		protected:
 			bool isStatement;
 
+			Boxx::List<Symbols::TypeSymbol*> GetReturnTypes() const;
+
 			Symbols::Name GetFuncName() const;
 
 			Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>> GetTemplateTypes(const Boxx::Optional<Boxx::List<Symbols::NameList>>& types) const;

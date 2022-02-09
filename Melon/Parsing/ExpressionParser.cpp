@@ -6,7 +6,6 @@
 #include "SwitchParser.h"
 #include "NameParser.h"
 #include "CallParser.h"
-#include "MethodCallParser.h"
 #include "DotParser.h"
 #include "ObjectInitParser.h"
 #include "TypeParser.h"
@@ -235,13 +234,6 @@ Ptr<Expression> ExpressionParser::ParseUnaryOperand(ParsingInfo& info, const boo
 
 		while (!info.EndOfFile()) {
 			if (Ptr<CallExpression> call = CallParser::Parse(info)) {
-				call->expression = node;
-				node = call;
-
-				continue;
-			}
-
-			if (Ptr<CallExpression> call = MethodCallParser::Parse(info)) {
 				call->expression = node;
 				node = call;
 

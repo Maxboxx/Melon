@@ -20,7 +20,7 @@ IntegerAssignNode::IntegerAssignNode(const UByte size) {
 	this->size = size;
 }
 
-CompiledNode IntegerAssignNode::Compile(const _Expression_& operand1, const _Expression_& operand2, CompileInfo& info) const {
+CompiledNode IntegerAssignNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
 	bool important = info.important;
 	info.important = false;
 

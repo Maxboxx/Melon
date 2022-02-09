@@ -1,7 +1,7 @@
 #include "IfExpression.h"
 
-#include "StackNode.h"
-#include "TypeNode.h"
+#include "StackExpression.h"
+#include "TypeExpression.h"
 #include "TypeConversion.h"
 #include "Condition.h"
 

@@ -1,9 +1,9 @@
 #include "BaseCallNode.h"
 
-#include "RefNode.h"
-#include "MemoryNode.h"
-#include "TypeNode.h"
-#include "ObjectInitNode.h"
+#include "RefExpression.h"
+#include "KiwiMemoryExpression.h"
+#include "TypeExpression.h"
+#include "ObjectInitExpression.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -12,8 +12,8 @@
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 #include "NewVariableNode.h"
-#include "NameNode.h"
-#include "DotNode.h"
+#include "NameExpression.h"
+#include "DotExpression.h"
 
 #include "Boxx/Optional.h"
 
@@ -37,11 +37,36 @@ inline BaseCallNode<T>::~BaseCallNode() {
 }
 
 template <class T>
+inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes() const {
+	FunctionSymbol* const f = GetFunc();
+
+	List<TypeSymbol*> types;
+
+	if (f == nullptr) {
+		types.Add(nullptr);
+		return types;
+	}
+
+	if (IsInit()) {
+		types.Add(expression->Type());
+	}
+	else for (UInt i = 0; i < f->returnValues.Size(); i++) {
+		types.Add(f->ReturnType(i));
+	}
+
+	if (types.IsEmpty()) {
+		types.Add(nullptr);
+	}
+
+	return types;
+}
+
+template <class T>
 inline Name BaseCallNode<T>::GetFuncName() const {
-	if (Weak<NameNode> nn = expression.As<NameNode>()) {
+	if (Weak<NameExpression> nn = expression.As<NameExpression>()) {
 		return nn->name;
 	}
-	else if (Weak<DotNode> nn = expression.As<DotNode>()) {
+	else if (Weak<DotExpression> nn = expression.As<DotExpression>()) {
 		return nn->name;
 	}
 	else {
@@ -56,7 +81,7 @@ inline Optional<List<TypeSymbol*>> BaseCallNode<T>::GetTemplateTypes(const Optio
 	List<TypeSymbol*> args;
 
 	for (const NameList& s : *types) {
-		TypeSymbol* const type = SymbolTable::Find<TypeSymbol>(s, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+		TypeSymbol* const type = SymbolTable::Find<TypeSymbol>(s, scope->AbsoluteName(), File(), SymbolTable::SearchOptions::ReplaceTemplates);
 
 		if (!type) return nullptr;
 
@@ -180,7 +205,7 @@ inline FunctionSymbol* BaseCallNode<T>::GetFunc() const {
 			argStr.Add(type->AbsoluteName().ToString());
 		}
 
-		ErrorLog::Error(LogMessage("error.symbol.function.not_found_args", f->ToString(), argStr), file);
+		ErrorLog::Error(LogMessage("error.symbol.function.not_found_args", f->ToString(), argStr), File());
 	}
 
 	return nullptr;
@@ -204,7 +229,7 @@ inline bool BaseCallNode<T>::IsInit() const {
 
 template <class T>
 inline UInt BaseCallNode<T>::CalculateReturnSize(CallInfo& callInfo) {
-	if (callInfo.isInit) return Type()->Size();
+	if (callInfo.isInit) return GetReturnTypes()[0]->Size();
 
 	UInt retSize = 0; 
 
@@ -261,15 +286,15 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, CompileI
 			const bool needsConversion = !arguments[i]->Type()->IsOfType(callInfo.func->ArgumentType(i));
 
 			// Is the value a noref value
-			const bool hasNoRef = attributes[i] == ArgAttributes::NoRef;
+			const bool hasNoRef = attributes[i] == CallArgAttributes::NoRef;
 
 			// Check if the value needs to be assigned to temporary memory
 			if (notMemory || aboveTop || needsConversion || hasNoRef) {
 				// Checks if a warning should be logged
-				if (!hasNoRef && !arguments[i]->IsImmediate() && !arguments[i].Is<ObjectInitNode>()) {
+				if (!hasNoRef && !arguments[i]->IsImmediate() && !arguments[i].Is<ObjectInitExpression>()) {
 					bool error = true;
 
-					if (const Pointer<BaseCallNode>& call = arguments[i].Cast<BaseCallNode>()) {
+					if (Weak<BaseCallNode<Expression>>& call = arguments[i].As<BaseCallNode<Expression>>()) {
 						error = !call->IsInit();
 					}
 
@@ -283,7 +308,7 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, CompileI
 				tempSize += callInfo.func->ArgumentType(callInfo.isInit ? i + 1 : i)->Size();
 				callInfo.memoryOffsets[callInfo.memoryOffsets.Size() - 1] = tempSize;
 			}
-			else if (attributes[i] != ArgAttributes::Ref) {
+			else if (attributes[i] != CallArgAttributes::Ref) {
 				ErrorLog::Warning(LogMessage("warning.ref"), arguments[i]->File());
 			}
 		}
@@ -344,11 +369,11 @@ template <class T>
 inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	// Create self for constructor
 	if (index == -1) {
-		return new RefNode(new MemoryNode(callInfo.stackIndex));
+		return new RefExpression(new KiwiMemoryExpression(callInfo.stackIndex));
 	}
 	// Create reference to self
 	else if (index == 0 && IsSelfPassing()) {
-		return new RefNode(expression);
+		return new RefExpression(expression);
 	}
 	// Create reference for regular argument
 	else {
@@ -356,18 +381,18 @@ inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, Compi
 
 		// Assign argument to temporary memory
 		if (callInfo.assignFirst[index]) {
-			Ptr<MemoryNode> sn = new MemoryNode(info.stack.Offset((Long)callInfo.initialTop + callInfo.memoryOffsets[index]));
+			Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(info.stack.Offset((Long)callInfo.initialTop + callInfo.memoryOffsets[index]));
 			sn->type = type->AbsoluteName();
 
 			UInt top = info.stack.top;
 			callInfo.cn.AddInstructions(CompileAssignment(sn, arguments[index], info, arguments[index]->File()).instructions);
 			info.stack.top = top;
 
-			return new RefNode(sn);
+			return new RefExpression(sn);
 		}
 		// Reference the argument normally
 		else {
-			return new WeakRefNode(arguments[index]);
+			return new WeakRefExpression(arguments[index]);
 		}
 	}
 }
@@ -416,7 +441,7 @@ template <class T>
 inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	callInfo.stackIndex -= type->Size();
 
-	Fixed<MemoryNode> mn = MemoryNode(callInfo.stackIndex);
+	Fixed<KiwiMemoryExpression> mn = KiwiMemoryExpression(callInfo.stackIndex);
 	mn->type = type->AbsoluteName();
 
 	info.stack.Push(type->Size());
@@ -551,10 +576,10 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 		VariableSymbol* const arg = func->Argument(i);
 
 		if (arg && (arg->attributes & VariableAttributes::Ref) == VariableAttributes::None) {
-			if (attributes[i] == ArgAttributes::NoRef) {
+			if (attributes[i] == CallArgAttributes::NoRef) {
 				ErrorLog::Error(LogMessage("error.scan.use.noref"), arguments[i]->File());
 			}
-			else if (attributes[i] == ArgAttributes::Ref) {
+			else if (attributes[i] == CallArgAttributes::Ref) {
 				ErrorLog::Error(LogMessage("error.scan.use.ref"), arguments[i]->File());
 			}
 		}
@@ -589,7 +614,8 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 		}
 
 		if (type) {
-			ScanAssignment(new TypeNode(type->AbsoluteName()), arg, info, expression->File());
+			Fixed<TypeExpression> tn = TypeExpression(type->AbsoluteName());
+			ScanAssignment(tn, arg, info, expression->File());
 		}
 	}
 
@@ -615,8 +641,8 @@ inline StringBuilder BaseCallNode<T>::ToMelon(const UInt indent) const {
 
 	for (UInt i = 0; i < arguments.Size(); i++) {
 		if (i > 0) sb += ", ";
-		if (attributes[i] == ArgAttributes::Ref)   sb += "ref ";
-		if (attributes[i] == ArgAttributes::NoRef) sb += "noref ";
+		if (attributes[i] == CallArgAttributes::Ref)   sb += "ref ";
+		if (attributes[i] == CallArgAttributes::NoRef) sb += "noref ";
 		sb += arguments[i]->ToMelon(indent);
 	}
 

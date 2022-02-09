@@ -10,7 +10,7 @@ BooleanBinaryOperatorNode::BooleanBinaryOperatorNode(const InstructionType op) {
 	this->op = op;
 }
 
-CompiledNode BooleanBinaryOperatorNode::Compile(const _Expression_& operand1, const _Expression_& operand2, CompileInfo& info) const {
+CompiledNode BooleanBinaryOperatorNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
 	return CompiledNode();
 }
 

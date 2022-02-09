@@ -2,7 +2,7 @@
 
 #include "BreakStatement.h"
 #include "ContinueStatement.h"
-#include "ReturnNode.h"
+#include "ReturnStatement.h"
 #include "Expression.h"
 #include "Condition.h"
 #include "Statements.h"
@@ -291,7 +291,7 @@ void GuardStatement::AddReturn(ScanInfoStack& info) {
 
 	if (func) {
 		if (func->returnValues.IsEmpty() && !info->scopeInfo.hasReturned) {
-			end = new ReturnNode(scope, file);
+			end = new ReturnStatement(scope, file);
 		}
 		else if (!info->scopeInfo.hasReturned) {
 			ErrorLog::Error(LogMessage("error.scan.guard.return"), file);

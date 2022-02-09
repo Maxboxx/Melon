@@ -1,7 +1,7 @@
 #include "ReturnStatement.h"
 
 #include "KiwiMemoryExpression.h"
-#include "TypeNode.h"
+#include "TypeExpression.h"
 
 #include "Kiwi/Kiwi.h"
 

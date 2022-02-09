@@ -1,7 +1,7 @@
 #include "ObjectInitExpression.h"
 
 #include "KiwiMemoryExpression.h"
-#include "TypeNode.h"
+#include "TypeExpression.h"
 
 #include "Melon/Parsing/Parser.h"
 

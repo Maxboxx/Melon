@@ -1,7 +1,7 @@
 #include "RootNode.h"
 
-#include "StructNode.h"
-#include "FunctionStatement.h"
+#include "StructStatement.h"
+#include "FunctionBody.h"
 #include "EmptyStatement.h"
 
 #include "Melon/Parsing/Parser.h"
@@ -78,7 +78,7 @@ CompiledNode RootNode::Compile(CompileInfo& info) {
 	cn.instructions.Add(in);
 
 	// Compile functions
-	for (const Pointer<FunctionBody>& func : funcs) {
+	for (Weak<FunctionBody> func : funcs) {
 		for (const OptimizerInstruction& instruction : func->Compile(info).instructions) {
 			cn.instructions.Add(instruction);
 		}
@@ -337,8 +337,8 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 	info->useFunction = false;
 
 	// Scan unused functions
-	for (const Pointer<FunctionBody>& node : funcs) {
-		if (!info.usedFunctions.Contains(node.Cast<FunctionBody>()->sym)) {
+	for (Weak<FunctionBody> node : funcs) {
+		if (!info.usedFunctions.Contains(node->sym)) {
 			node->isUsed = false;
 			node->Scan(info);
 		}
@@ -364,10 +364,10 @@ void RootNode::Optimize(OptimizeInfo& info) {
 
 	// Remove unused functions
 	if (info.usedFunctions.Size() < funcs.Size()) {
-		List<Pointer<FunctionBody>> functions = funcs;
-		funcs = List<Pointer<FunctionBody>>(info.usedFunctions.Size());
+		List<Weak<FunctionBody>> functions = funcs;
+		funcs = List<Weak<FunctionBody>>(info.usedFunctions.Size());
 
-		for (const Pointer<FunctionBody>& func : functions) {
+		for (Weak<FunctionBody> func : functions) {
 			if (info.usedFunctions.Contains(func->sym)) {
 				funcs.Add(func);
 			}

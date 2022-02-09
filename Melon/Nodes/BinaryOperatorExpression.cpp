@@ -1,8 +1,8 @@
 #include "BinaryOperatorExpression.h"
 
-#include "CallNode.h"
-#include "TypeNode.h"
-#include "BooleanNode.h"
+#include "CallExpression.h"
+#include "TypeExpression.h"
+#include "Boolean.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -60,7 +60,7 @@ CompiledNode BinaryOperatorExpression::Compile(CompileInfo& info) {
 		args.Add(operand1);
 		args.Add(operand2);
 
-		Fixed<CallNode> cn = CallNode(scope, file);
+		Fixed<CallExpression> cn = CallExpression(scope, file);
 		cn->arguments  = args;
 		cn->expression = new TypeExpression(func->Parent()->Parent()->AbsoluteName());
 
@@ -113,15 +113,15 @@ Ptr<Expression> BinaryOperatorExpression::Optimize(OptimizeInfo& info) {
 		if (operand1->Type()->AbsoluteName() == NameList::Bool && operand2->Type()->AbsoluteName() == NameList::Bool) {
 			// Equal
 			if (op == Name::Equal) {
-				BooleanNode* const bn = new BooleanNode(operand1->File());
-				bn->boolean = operand1->GetImmediate() == operand2->GetImmediate();
+				Ptr<Boolean> bn = new Boolean(operand1->File());
+				bn->value = operand1->GetImmediate() == operand2->GetImmediate();
 				info.optimized = true;
 				return bn;
 			}
 			// Not Equal
 			else if (op == Name::NotEqual) {
-				BooleanNode* const bn = new BooleanNode(operand1->File());
-				bn->boolean = operand1->GetImmediate() != operand2->GetImmediate();
+				Ptr<Boolean> bn = new Boolean(operand1->File());
+				bn->value = operand1->GetImmediate() != operand2->GetImmediate();
 				info.optimized = true;
 				return bn;
 			}

@@ -12,7 +12,7 @@ namespace Melon {
 				/// Constructor
 				IntegerAssignNode(const Boxx::UByte size);
 
-				virtual Melon::Nodes::CompiledNode Compile(const Melon::Nodes::_Expression_& operand1, const Melon::Nodes::_Expression_& operand2, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

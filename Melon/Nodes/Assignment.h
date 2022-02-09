@@ -38,6 +38,10 @@ namespace Melon {
 				Symbols::TypeSymbol* type;
 				Weak<Expression> value;
 
+				Value() {
+					
+				}
+
 				Value(Symbols::TypeSymbol* const type, const Weak<Expression>& value) {
 					this->type  = type;
 					this->value = value;

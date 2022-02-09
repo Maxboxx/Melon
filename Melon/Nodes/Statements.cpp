@@ -1,14 +1,14 @@
 #include "Statements.h"
 
-#include "LoopNode.h";
-#include "SwitchNode.h";
-#include "RepeatNode.h";
-#include "GuardNode.h";
-#include "FunctionNode.h";
-#include "StructNode.h";
-#include "EnumNode.h";
-#include "DoNode.h";
-#include "EmptyNode.h";
+#include "LoopStatement.h";
+#include "SwitchStatement.h";
+#include "RepeatStatement.h";
+#include "GuardStatement.h";
+#include "FunctionBody.h";
+#include "StructStatement.h";
+#include "EnumStatement.h";
+#include "DoStatement.h";
+#include "EmptyStatement.h";
 
 #include "Melon/Parsing/Parser.h"
 
@@ -147,7 +147,7 @@ bool Statements::HasSpaceAround(Weak<Statement> statement) {
 	if (statement.Is<EnumStatement>())     return true;
 
 	if (Weak<GuardStatement> guardNode = statement.As<GuardStatement>()) {
-		return guardNode->else_ != nullptr;
+		return (bool)guardNode->else_;
 	}
 
 	if (Weak<EmptyStatement> empty = statement.As<EmptyStatement>()) {

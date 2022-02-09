@@ -63,7 +63,8 @@ Ptr<NewVariableNode> NewVariableParser::Parse(ParsingInfo& info, const bool sing
 			if (info.Next().type != TokenType::Comma) break;
 
 			if (node->types.Size() > 1 && node->names.Size() >= node->types.Size()) {
-				return Parser::UnexpectedToken(info);
+				Parser::UnexpectedToken(info);
+				return nullptr;
 			}
 		}
 

@@ -1,6 +1,6 @@
 #include "DotExpression.h"
 
-#include "NameNode.h"
+#include "NameExpression.h"
 
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"

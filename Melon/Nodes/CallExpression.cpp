@@ -21,26 +21,6 @@ TypeSymbol* CallExpression::Type() const {
 }
 
 List<TypeSymbol*> CallExpression::Types() const {
-	FunctionSymbol* const f = GetFunc();
-
-	List<TypeSymbol*> types;
-
-	if (f == nullptr) {
-		types.Add(nullptr);
-		return types;
-	}
-
-	if (IsInit()) {
-		types.Add(expression->Type());
-	}
-	else for (UInt i = 0; i < f->returnValues.Size(); i++) {
-		types.Add(f->ReturnType(i));
-	}
-
-	if (types.IsEmpty()) {
-		types.Add(nullptr);
-	}
-
-	return types;
+	return GetReturnTypes();
 }
 
