@@ -250,7 +250,7 @@ void RootNode::AddTemplateSpecialization(const NameList& name, const NameList& s
 			sn->vars.Add(var);
 		}
 
-		nodes.Add(sn);
+		nodes.Add(Statements::FromStatement(sn));
 	}
 
 	// Scan the new type

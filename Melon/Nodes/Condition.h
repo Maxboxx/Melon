@@ -11,7 +11,7 @@ namespace Melon {
 		class Condition : public Node {
 		public:
 			/// The expression for a regular condition.
-			Ptr<Expression> cond;
+			Ptr<Expression> expression;
 
 			/// The assignment for assign conditions.
 			Ptr<Assignment> assign;
@@ -34,6 +34,9 @@ namespace Melon {
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Condition> Optimize(OptimizeInfo& info);
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
+
+			/// Creates a condition from an expression.
+			static Ptr<Condition> FromExpression(Ptr<Expression> expression);
 
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);

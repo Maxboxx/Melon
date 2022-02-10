@@ -2,8 +2,17 @@
 
 #include <utility>
 
+template<class T, class U>
+concept PtrDerived = std::derived_from<T, U>;
+
+template<class T, class U>
+concept PtrConvert = std::derived_from<T, U> || std::derived_from<U, T>;
+
 template <class T>
 class Weak;
+
+class A {public: virtual ~A(){}};
+class B : public A {};
 
 template <class T>
 class Ptr {
@@ -13,109 +22,160 @@ public:
 	}
 
 	Ptr(T* const ptr) {
-		this->ptr = ptr;
+		this->ptr = new _Ptr(ptr);
 	}
 
 	Ptr(Ptr<T>& ptr) {
-		this->ptr = *ptr;
+		this->ptr = ptr.ptr;
 		ptr.ptr = nullptr;
+	}
+
+	Ptr(const Ptr<T>& ptr) {
+		this->ptr = new _Ptr(ptr.ptr->ptr);
+		ptr.ptr->ptr = nullptr;
 	}
 
 	Ptr(Ptr<T>&& ptr) {
-		this->ptr = *ptr;
+		this->ptr = ptr.ptr;
 		ptr.ptr = nullptr;
 	}
 
-	template <class U>
-	Ptr(Ptr<U>& ptr) {
-		this->ptr = *ptr;
-		ptr.ptr = nullptr;
+	template <PtrDerived<T> U>
+	Ptr(const Ptr<U>& ptr) {
+		this->ptr = new _Ptr(ptr.ptr->ptr);
+		ptr.ptr->ptr = nullptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	Ptr(Ptr<U>&& ptr) {
-		this->ptr = *ptr;
+		this->ptr = new _Ptr(ptr.ptr->ptr);
+		ptr.ptr->ptr = nullptr;
+		delete ptr.ptr;
 		ptr.ptr = nullptr;
 	}
 
 	~Ptr() {
-		Free();
+		FreeAll();
 	}
 
-	template <class Type>
+	template <PtrConvert<T> Type>
 	bool Is() const {
-		return dynamic_cast<Type*>(ptr) != nullptr;
+		return dynamic_cast<Type*>(ptr ? ptr->ptr : nullptr) != nullptr;
 	}
 
-	template <class Type>
+	template <PtrConvert<T> Type>
 	Weak<Type> As() const {
 		return Weak<T>(*this).As<Type>();
 	}
 
-	template <class Type>
+	template <PtrConvert<T> Type>
 	Ptr<Type> AsPtr() {
-		Type* t = dynamic_cast<Type*>(ptr);
+		Type* t = dynamic_cast<Type*>(ptr ? ptr->ptr : nullptr);
 		ptr = nullptr;
 		return t;
 	}
 
 	void operator=(T* const ptr) {
-		Free();
-		this->ptr = ptr;
+		FreeInstance();
+
+		if (this->ptr) 
+			this->ptr->ptr = ptr;
+		else
+			this->ptr = new _Ptr(ptr);
 	}
 
 	void operator=(Ptr<T>& ptr) {
-		Free();
-		this->ptr = *ptr;
+		FreeAll();
+		this->ptr = ptr.ptr;
 		ptr.ptr = nullptr;
+	}
+
+	void operator=(const Ptr<T>& ptr) {
+		FreeInstance();
+
+		if (this->ptr)
+			this->ptr->ptr = ptr.ptr->ptr;
+		else
+			this->ptr = new _Ptr(ptr.ptr->ptr);
+
+		ptr.ptr->ptr = nullptr;
 	}
 
 	void operator=(Ptr<T>&& ptr) {
-		Free();
-		this->ptr = *ptr;
+		FreeAll();
+		this->ptr = ptr.ptr;
 		ptr.ptr = nullptr;
 	}
 
-	template <class U>
-	void operator=(Ptr<U>& ptr) {
-		Free();
-		this->ptr = *ptr;
-		ptr.ptr = nullptr;
+	template <PtrDerived<T> U>
+	void operator=(const Ptr<U>& ptr) {
+		FreeInstance();
+
+		if (this->ptr)
+			this->ptr->ptr = ptr.ptr->ptr;
+		else
+			this->ptr = new _Ptr(ptr.ptr->ptr);
+
+		ptr.ptr->ptr = nullptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	void operator=(Ptr<U>&& ptr) {
-		Free();
-		this->ptr = *ptr;
-		ptr.ptr = nullptr;
+		FreeInstance();
+
+		if (this->ptr)
+			this->ptr->ptr = ptr.ptr->ptr;
+		else
+			this->ptr = new _Ptr(ptr.ptr->ptr);
+
+		ptr.ptr->ptr = nullptr;
+		ptr.FreeAll();
 	}
 
 	T* operator->() const {
-		return ptr;
+		return ptr ? ptr->ptr : nullptr;
 	}
 
 	T* operator*() const {
-		return ptr;
+		return ptr ? ptr->ptr : nullptr;
 	}
 
 	bool operator!() const {
-		return ptr == nullptr;
+		return ptr == nullptr || ptr->ptr == nullptr;
 	}
 
 	explicit operator bool() const {
-		return ptr != nullptr;
+		return ptr != nullptr && ptr->ptr != nullptr;
 	}
 
 private:
 	template <class U>
 	friend class Ptr;
 
-	T* ptr;
+	struct _Ptr {
+		T* ptr;
 
-	void Free() {
+		_Ptr(T* const t): ptr(t) {}
+	};
+
+	_Ptr* ptr;
+
+	void FreeAll() {
 		if (ptr) {
+			if (ptr->ptr) {
+				delete ptr->ptr;
+				ptr->ptr = nullptr;
+			}
+
 			delete ptr;
 			ptr = nullptr;
+		}
+	}
+
+	void FreeInstance() {
+		if (ptr && ptr->ptr) {
+			delete ptr->ptr;
+			ptr->ptr = nullptr;
 		}
 	}
 };
@@ -129,23 +189,23 @@ public:
 	}
 
 	Fixed(const T& value) : value(value) {
-		
+
 	}
 
 	Fixed(T&& value) : value(value) {
-		
+
 	}
 
 	~Fixed() {
 
 	}
 
-	template <class Type>
+	template <PtrConvert<T> Type>
 	bool Is() const {
 		return dynamic_cast<Type*>(&value) != nullptr;
 	}
 
-	template <class Type>
+	template <PtrConvert<T> Type>
 	Weak<Type> As() const {
 		return Weak<T>(*this).As<Type>();
 	}
@@ -210,32 +270,32 @@ public:
 		this->ptr = *ptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	Weak(const Ptr<U>& ptr) {
 		this->ptr = *ptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	Weak(Fixed<U>& ptr) {
 		this->ptr = *ptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	Weak(const Weak<U>& ptr) {
 		this->ptr = *ptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	Weak(Weak<U>&& ptr) {
 		this->ptr = *ptr;
 	}
 
-	template <class Type>
+	template <PtrConvert<T> Type>
 	bool Is() const {
 		return dynamic_cast<Type*>(ptr) != nullptr;
 	}
 
-	template <class Type>
+	template <PtrConvert<T> Type>
 	Weak<Type> As() const {
 		Weak<Type> w;
 		w.ptr = dynamic_cast<Type*>(ptr);
@@ -258,22 +318,22 @@ public:
 		this->ptr = *ptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	void operator=(const Ptr<U>& ptr) {
 		this->ptr = *ptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	void operator=(Fixed<U>& ptr) {
 		this->ptr = *ptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	void operator=(const Weak<U>& ptr) {
 		this->ptr = *ptr;
 	}
 
-	template <class U>
+	template <PtrDerived<T> U>
 	void operator=(Weak<U>&& ptr) {
 		this->ptr = *ptr;
 	}

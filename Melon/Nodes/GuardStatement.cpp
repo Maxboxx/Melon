@@ -196,6 +196,8 @@ Ptr<Statement> GuardStatement::Optimize(OptimizeInfo& info) {
 
 	// Optimize condition for immediate values
 	if (cond->IsImmediate()) {
+		info.optimized = true;
+
 		// Optimize false
 		if (cond->GetImmediate() == 0) {
 			return OptimizeFalseCondition(info);
@@ -213,30 +215,27 @@ Ptr<Statement> GuardStatement::OptimizeFalseCondition(OptimizeInfo& info) {
 	// Optimize else segment if it exists
 	if (else_) {
 		if (IsEmpty(else_) || !else_->HasSideEffects()) {
-			info.optimized = true;
 			return new EmptyStatement();
 		}
 
 		Ptr<DoStatement> dn = new DoStatement(else_->scope, else_->File());
 		dn->statements = else_;
-		info.optimized = true;
 		return dn;
 	}
 	// Replace guard with empty node
 	else {
-		info.optimized = true;
 		return new EmptyStatement();
 	}
 }
 
 Ptr<Statement> GuardStatement::OptimizeTrueCondition(OptimizeInfo& info) {
-	info.optimized = true;
-
 	if (IsEmpty(continue_) || !continue_->HasSideEffects()) {
 		return new EmptyStatement();
 	}
 	else {
-		return continue_;
+		Ptr<DoStatement> dn = new DoStatement(else_->scope, else_->File());
+		dn->statements = continue_;
+		return dn;
 	}
 }
 

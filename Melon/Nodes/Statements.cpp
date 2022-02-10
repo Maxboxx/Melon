@@ -156,3 +156,9 @@ bool Statements::HasSpaceAround(Weak<Statement> statement) {
 
 	return false;
 }
+
+Ptr<Statements> Statements::FromStatement(Ptr<Statement> statement) {
+	Ptr<Statements> statements = new Statements(statement->scope, statement->File());
+	statements->statements.Add(statement);
+	return statements;
+}

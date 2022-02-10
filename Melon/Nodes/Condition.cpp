@@ -29,15 +29,15 @@ Condition::~Condition() {
 }
 
 bool Condition::IsImmediate() const {
-	return !assign && cond->IsImmediate();
+	return !assign && expression->IsImmediate();
 }
 
 Boxx::Long Condition::GetImmediate() const {
-	return !assign ? cond->GetImmediate() : 0;
+	return !assign ? expression->GetImmediate() : 0;
 }
 
 TypeSymbol* Condition::Type() const {
-	return assign ? (TypeSymbol*)SymbolTable::Bool : cond->Type();
+	return assign ? (TypeSymbol*)SymbolTable::Bool : expression->Type();
 }
 
 UInt Condition::GetSize() const {
@@ -95,14 +95,14 @@ CompiledNode Condition::Compile(CompileInfo& info) {
 	else {
 		Pointer<TypeConversion> convert = new TypeConversion(scope, file);
 		convert->isExplicit = true;
-		convert->expression = cond;
+		convert->expression = expression;
 		convert->type = NameList::Bool;
 		return convert->Compile(info);
 	}
 }
 
 void Condition::IncludeScan(ParsingInfo& info) {
-	cond->IncludeScan(info);
+	expression->IncludeScan(info);
 }
 
 ScanResult Condition::Scan(ScanInfoStack& info) {
@@ -120,7 +120,7 @@ ScanResult Condition::Scan(ScanInfoStack& info) {
 			ErrorLog::Error(LogMessage("error.type.conditional_assign", tempValue->Type()->ToString()), tempValue->File());
 		}
 
-		ScanResult result = cond->Scan(info) | tempValue->Scan(info);
+		ScanResult result = expression->Scan(info) | tempValue->Scan(info);
 		assign->values[0] = tempValue;
 		return result;
 	}
@@ -128,14 +128,14 @@ ScanResult Condition::Scan(ScanInfoStack& info) {
 	else {
 		Pointer<TypeConversion> convert = new TypeConversion(scope, file);
 		convert->isExplicit = true;
-		convert->expression = cond;
+		convert->expression = expression;
 		convert->type = NameList::Bool;
 		return convert->Scan(info);
 	}
 }
 
 NameList Condition::FindSideEffectScope(const bool assign) {
-	return cond->GetSideEffectScope(assign);
+	return expression->GetSideEffectScope(assign);
 }
 
 Ptr<Condition> Condition::Optimize(OptimizeInfo& info) {
@@ -144,26 +144,32 @@ Ptr<Condition> Condition::Optimize(OptimizeInfo& info) {
 		assign->OptimizeAsCondition(info);
 
 		if (assign->assignableValues.IsEmpty() || assign->assignableValues[0].Is<DiscardExpression>()) {
-			cond   = assign->values[0];
+			expression   = assign->values[0];
 			assign = nullptr;
 		}
 	}
 	// Optimize regular condition
 	else {
-		Node::Optimize(cond, info);
+		Node::Optimize(expression, info);
 	}
 
 	// Replace condition with immediate value
-	if (cond->IsImmediate()) {
-		Ptr<Boolean> bn = new Boolean(cond->File());
-		bn->value = cond->GetImmediate() != 0;
+	if (expression->IsImmediate()) {
+		Ptr<Boolean> bn = new Boolean(expression->File());
+		bn->value = expression->GetImmediate() != 0;
 		info.optimized = true;
-		return bn;
+		return FromExpression(bn);
 	}
 
 	return nullptr;
 }
 
 StringBuilder Condition::ToMelon(const UInt indent) const {
-	return cond->ToMelon(indent);
+	return expression->ToMelon(indent);
+}
+
+Ptr<Condition> Condition::FromExpression(Ptr<Expression> expression) {
+	Ptr<Condition> cond = new Condition(expression->scope, expression->File());
+	cond->expression = expression;
+	return cond;
 }

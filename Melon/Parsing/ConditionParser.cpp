@@ -22,7 +22,7 @@ Ptr<Condition> ConditionParser::Parse(ParsingInfo& info, const bool includeAssig
 
 	if (Ptr<Expression> node = ExpressionParser::Parse(info)) {
 		Ptr<Condition> cond = new Condition(info.scope, node->File());
-		cond->cond = node;
+		cond->expression = node;
 		return cond;
 	}
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="Ptr&lt;*&gt;">
+		<DisplayString Condition="ptr == nullptr || ptr->ptr == nullptr">nullptr</DisplayString>
+		<DisplayString Condition="ptr != nullptr &amp;&amp; ptr->ptr != nullptr">{*ptr->ptr}</DisplayString>
+		<Expand>
+			<Item Name="pointer">ptr ? ptr->ptr : nullptr</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Weak&lt;*&gt;">
+		<DisplayString>{*ptr}</DisplayString>
+		<Expand>
+			<Item Name="pointer">ptr</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Fixed&lt;*&gt;">
+		<DisplayString>{value}</DisplayString>
+		<Expand>
+			<Item Name="value">value</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>

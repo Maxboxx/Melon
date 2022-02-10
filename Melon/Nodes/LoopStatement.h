@@ -38,7 +38,7 @@ namespace Melon {
 				Ptr<Condition> condition;
 
 				/// The body of the segment.
-				Ptr<Statement> statements;
+				Ptr<Statements> statements;
 
 				/// The init node of a for segment.
 				Ptr<Assignment> init;

@@ -23,6 +23,9 @@ namespace Melon {
 
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
+			/// Create from statement.
+			static Ptr<Statements> FromStatement(Ptr<Statement> statement);
+
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 

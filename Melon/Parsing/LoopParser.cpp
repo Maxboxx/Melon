@@ -165,7 +165,7 @@ Tuple<Optional<Name>, Ptr<Condition>> LoopParser::ParseForCondition(ParsingInfo&
 		op = Name(info.Current().value);
 		info.index++;
 
-		node = ExpressionParser::Parse(info);
+		node = Condition::FromExpression(ExpressionParser::Parse(info));
 
 		if (!node) {
 			ErrorLog::Error(LogMessage("error.syntax.expected.after_in", "expression", LogMessage::Quote(info.Prev().value), "for loop"), info.GetFileInfoPrev());

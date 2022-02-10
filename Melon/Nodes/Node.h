@@ -130,6 +130,7 @@ namespace Melon {
 			static RootNode* Root();
 
 			static bool IsEmpty(Weak<Statement> statement);
+			static bool IsEmpty(Weak<Statements> statements);
 
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 

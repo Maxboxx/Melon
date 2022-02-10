@@ -108,7 +108,7 @@ void IfExpression::IncludeScan(ParsingInfo& info) {
 		node->IncludeScan(info);
 	}
 
-	for (Weak<Expression> condition : conditions) {
+	for (Weak<Condition> condition : conditions) {
 		condition->IncludeScan(info);
 	}
 }
@@ -132,7 +132,7 @@ ScanResult IfExpression::Scan(ScanInfoStack& info) {
 	}
 
 	// Scan conditions
-	for (Weak<Expression> node : conditions) {
+	for (Weak<Condition> node : conditions) {
 		ScanResult r = node->Scan(info);
 		r.SelfUseCheck(info, node->File());
 		result |= r;

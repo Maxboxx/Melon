@@ -374,7 +374,7 @@ void LoopStatement::CompileForStart(CompiledNode& compiled, CompileInfo& info, S
 
 		Ptr<BinaryOperatorExpression> add = new BinaryOperatorExpression(segment.step->scope, *segment.stepOperator, segment.step->File());
 		add->operand1 = assign->assignableValues[0];
-		add->operand2 = new WeakExpression(segment.step);
+		add->operand2 = new WeakExpression(segment.step.As<Expression>());
 
 		assign->values.Add(add);
 		compiled.AddInstructions(assign->Compile(info).instructions);
@@ -393,7 +393,7 @@ void LoopStatement::CompileForStart(CompiledNode& compiled, CompileInfo& info, S
 	if (segment.conditionOperator) {
 		Pointer<BinaryOperatorExpression> comp = new BinaryOperatorExpression(segment.condition->scope, *segment.conditionOperator, segment.condition->File());
 		comp->operand1 = segment.init->assignableValues[0];
-		comp->operand2 = segment.condition->cond;
+		comp->operand2 = segment.condition->expression;
 		compiledCond = comp->Compile(info);
 	}
 	else {
@@ -712,7 +712,7 @@ ScanResult LoopStatement::ScanForCondition(const LoopSegment& segment, ScanInfoS
 	else {
 		Pointer<BinaryOperatorExpression> op = new BinaryOperatorExpression(segment.condition->scope, *segment.conditionOperator, segment.condition->File());
 		op->operand1 = segment.init->assignableValues[0];
-		op->operand2 = segment.condition->cond;
+		op->operand2 = segment.condition->expression;
 
 		ScanResult r = op->Scan(info);
 		r.SelfUseCheck(info, segment.condition->File());
@@ -732,7 +732,7 @@ ScanResult LoopStatement::ScanForCondition(const LoopSegment& segment, ScanInfoS
 
 		Ptr<BinaryOperatorExpression> op = new BinaryOperatorExpression(segment.step->scope, *segment.stepOperator, segment.step->File());
 		op->operand1 = assign->assignableValues[0];
-		op->operand2 = new WeakExpression(segment.step);
+		op->operand2 = new WeakExpression(segment.step.As<Expression>());
 
 		assign->values.Add(op);
 

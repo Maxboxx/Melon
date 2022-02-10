@@ -220,3 +220,11 @@ bool Node::IsEmpty(Weak<Statement> statement) {
 	
 	return false;
 }
+
+bool Node::IsEmpty(Weak<Statements> statements) {
+	for (Weak<Statement> statement : statements->statements) {
+		if (!IsEmpty(statement)) return false;
+	}
+
+	return true;
+}

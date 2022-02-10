@@ -7,7 +7,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for {switch} statements.
-		class SwitchStatement : public SwitchBaseNode<Statement> {
+		class SwitchStatement : public SwitchBaseNode<Statement, Statements> {
 		public:
 			SwitchStatement(Symbols::Symbol* const scope, const FileInfo& file);
 			~SwitchStatement();

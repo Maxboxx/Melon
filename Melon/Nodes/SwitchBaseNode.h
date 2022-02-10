@@ -19,20 +19,20 @@
 namespace Melon {
 	namespace Nodes {
 		/// Abstract base node for {switch}.
-		template <class T>
+		template <class T, class U = T>
 		class SwitchBaseNode : public T {
 		public:
 			/// The match expression.
 			Ptr<Expression> match;
 
 			/// The nodes for all the cases.
-			Boxx::List<Ptr<T>> nodes;
+			Boxx::List<Ptr<U>> nodes;
 
 			/// All case expressions.
 			Boxx::List<Boxx::List<Ptr<Expression>>> cases;
 
 			/// The default node.
-			Ptr<T> def;
+			Ptr<U> def;
 
 			SwitchBaseNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~SwitchBaseNode();
@@ -109,18 +109,18 @@ namespace Melon {
 			bool expr;
 		};
 
-		template <class T>
-		inline SwitchBaseNode<T>::SwitchBaseNode(Symbols::Symbol* const scope, const FileInfo& file) : T(scope, file) {
+		template <class T, class U>
+		inline SwitchBaseNode<T, U>::SwitchBaseNode(Symbols::Symbol* const scope, const FileInfo& file) : T(scope, file) {
 
 		}
 
-		template <class T>
-		inline SwitchBaseNode<T>::~SwitchBaseNode() {
+		template <class T, class U>
+		inline SwitchBaseNode<T, U>::~SwitchBaseNode() {
 
 		}
 
-		template <class T>
-		inline Symbols::TypeSymbol* SwitchBaseNode<T>::SwitchType() const {
+		template <class T, class U>
+		inline Symbols::TypeSymbol* SwitchBaseNode<T, U>::SwitchType() const {
 			if (!expr) return nullptr;
 
 			Symbols::TypeSymbol* type = nodes[0]->Type();
@@ -134,8 +134,8 @@ namespace Melon {
 			return type;
 		}
 
-		template <class T>
-		inline Boxx::UInt SwitchBaseNode<T>::GetSize() const {
+		template <class T, class U>
+		inline Boxx::UInt SwitchBaseNode<T, U>::GetSize() const {
 			if (expr) return 0;
 
 			Boxx::UInt size = 0;
@@ -147,8 +147,8 @@ namespace Melon {
 			return size;
 		}
 
-		template <class T>
-		inline void SwitchBaseNode<T>::CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+		template <class T, class U>
+		inline void SwitchBaseNode<T, U>::CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info) {
 			// Compile cases
 			for (const Boxx::List<Ptr<Expression>>& values : cases) {
 				Boxx::List<Boxx::UInt> jumps;
@@ -171,8 +171,8 @@ namespace Melon {
 			}
 		}
 
-		template <class T>
-		inline void SwitchBaseNode<T>::CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+		template <class T, class U>
+		inline void SwitchBaseNode<T, U>::CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info) {
 			// Compile nodes
 			for (Ptr<T> expr : nodes) {
 				// Add label for case
@@ -225,8 +225,8 @@ namespace Melon {
 			}
 		}
 
-		template <class T>
-		inline void SwitchBaseNode<T>::CompileDefault(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+		template <class T, class U>
+		inline void SwitchBaseNode<T, U>::CompileDefault(SwitchCompileInfo& switchInfo, CompileInfo& info) {
 			if (def) {
 				// Compile statements
 				if (!this->expr) {
@@ -264,8 +264,8 @@ namespace Melon {
 			}
 		}
 
-		template <class T>
-		inline CompiledNode SwitchBaseNode<T>::Compile(CompileInfo& info) {
+		template <class T, class U>
+		inline CompiledNode SwitchBaseNode<T, U>::Compile(CompileInfo& info) {
 			// Setup compile info
 			SwitchCompileInfo switchInfo;
 			switchInfo.caseIndex = 0;
@@ -335,8 +335,8 @@ namespace Melon {
 			return switchInfo.cn;
 		}
 
-		template <class T>
-		inline void SwitchBaseNode<T>::IncludeScan(Parsing::ParsingInfo& info) {
+		template <class T, class U>
+		inline void SwitchBaseNode<T, U>::IncludeScan(Parsing::ParsingInfo& info) {
 			match->IncludeScan(info);
 
 			for (Weak<T> node : nodes) {
@@ -350,8 +350,8 @@ namespace Melon {
 			}
 		}
 
-		/*template <class T>
-		inline SwitchBaseNode<T>::SwitchScanInfo SwitchBaseNode<T>::ScanSetup(ScanInfo& info) const {
+		/*template <class T, class U>
+		inline SwitchBaseNode<T, U>::SwitchScanInfo SwitchBaseNode<T, U>::ScanSetup(ScanInfo& info) const {
 			SwitchScanInfo switchInfo;
 			switchInfo.init = info.init;
 
@@ -367,8 +367,8 @@ namespace Melon {
 			return switchInfo;
 		}*/
 
-		template <class T>
-		inline void SwitchBaseNode<T>::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+		template <class T, class U>
+		inline void SwitchBaseNode<T, U>::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 			if (!expr) {
 				if (switchInfo.init) {
 					info.init = true;
@@ -384,8 +384,8 @@ namespace Melon {
 			}
 		}
 
-		template <class T>
-		inline void SwitchBaseNode<T>::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+		template <class T, class U>
+		inline void SwitchBaseNode<T, U>::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 			if (!expr) {
 				if (switchInfo.init) {
 					info.scopeInfo.unassigned = info.type->UnassignedMembers();
@@ -395,8 +395,8 @@ namespace Melon {
 			}
 		}
 
-		template <class T>
-		inline void SwitchBaseNode<T>::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+		template <class T, class U>
+		inline void SwitchBaseNode<T, U>::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 			if (!expr) {
 				for (Boxx::UInt i = 0; i < switchInfo.cases.Size(); i++) {
 					if (i == 0) {
@@ -428,8 +428,8 @@ namespace Melon {
 			}
 		}
 
-		template <class T>
-		inline ScanResult SwitchBaseNode<T>::ScanNodes(ScanInfoStack& info) const {
+		template <class T, class U>
+		inline ScanResult SwitchBaseNode<T, U>::ScanNodes(ScanInfoStack& info) const {
 			ScanResult result;
 
 			// Setup scan
@@ -479,8 +479,8 @@ namespace Melon {
 			return result;
 		}
 
-		template <class T>
-		inline ScanResult SwitchBaseNode<T>::Scan(ScanInfoStack& info) {
+		template <class T, class U>
+		inline ScanResult SwitchBaseNode<T, U>::Scan(ScanInfoStack& info) {
 			ScanResult result = match->Scan(info);
 			result.SelfUseCheck(info, match->file);
 
@@ -510,8 +510,8 @@ namespace Melon {
 			return result;
 		}
 
-		template <class T>
-		inline Symbols::NameList SwitchBaseNode<T>::FindSideEffectScope(const bool assign) {
+		template <class T, class U>
+		inline Symbols::NameList SwitchBaseNode<T, U>::FindSideEffectScope(const bool assign) {
 			Symbols::NameList list = match->GetSideEffectScope(assign);
 
 			for (Weak<T> node : nodes) {
@@ -531,8 +531,8 @@ namespace Melon {
 			return list;
 		}
 
-		template <class T>
-		inline Ptr<T> SwitchBaseNode<T>::OptimizeSwitch(OptimizeInfo& info) {
+		template <class T, class U>
+		inline Ptr<T> SwitchBaseNode<T, U>::OptimizeSwitch(OptimizeInfo& info) {
 			Node::Optimize(match, info);
 
 			for (Weak<T> node : nodes) {
@@ -571,8 +571,8 @@ namespace Melon {
 			return nullptr;
 		}
 
-		template <class T>
-		inline Boxx::StringBuilder SwitchBaseNode<T>::ToMelon(const Boxx::UInt indent) const {
+		template <class T, class U>
+		inline Boxx::StringBuilder SwitchBaseNode<T, U>::ToMelon(const Boxx::UInt indent) const {
 			Boxx::StringBuilder sb = "switch ";
 			sb += match->ToMelon(indent);
 
