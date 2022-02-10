@@ -77,7 +77,7 @@ public:
 	template <PtrConvert<T> Type>
 	Ptr<Type> AsPtr() {
 		Type* t = dynamic_cast<Type*>(ptr ? ptr->ptr : nullptr);
-		ptr = nullptr;
+		if (t) ptr = nullptr;
 		return t;
 	}
 

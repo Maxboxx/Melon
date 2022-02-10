@@ -4,7 +4,7 @@
 		<DisplayString>{filename.str, sb}:{line}</DisplayString>
 	</Type>
 	
-	<Type Name="Melon::Symbols::Scope">
+	<Type Name="Melon::Symbols::Name">
 		<DisplayString Condition="!types.hasValue &amp;&amp; !arguments.hasValue">{name.str, sb}</DisplayString>
 
 		
@@ -182,22 +182,22 @@
 		</DisplayString>
 	</Type>
 
-	<Type Name="Melon::Symbols::ScopeList">
-		<DisplayString Condition="scopes.list->size == 0 &amp;&amp; !absolute">""</DisplayString>
-		<DisplayString Condition="scopes.list->size == 1 &amp;&amp; !absolute">{scopes.list->list[0]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 2 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 3 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 4 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 5 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]}</DisplayString>
-		<DisplayString Condition="scopes.list->size > 5 &amp;&amp; !absolute">{scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]} ...</DisplayString>
+	<Type Name="Melon::Symbols::NameList">
+		<DisplayString Condition="names.list->size == 0 &amp;&amp; !absolute">""</DisplayString>
+		<DisplayString Condition="names.list->size == 1 &amp;&amp; !absolute">{names.list->list[0]}</DisplayString>
+		<DisplayString Condition="names.list->size == 2 &amp;&amp; !absolute">{names.list->list[0]}.{names.list->list[1]}</DisplayString>
+		<DisplayString Condition="names.list->size == 3 &amp;&amp; !absolute">{names.list->list[0]}.{names.list->list[1]}.{names.list->list[2]}</DisplayString>
+		<DisplayString Condition="names.list->size == 4 &amp;&amp; !absolute">{names.list->list[0]}.{names.list->list[1]}.{names.list->list[2]}.{names.list->list[3]}</DisplayString>
+		<DisplayString Condition="names.list->size == 5 &amp;&amp; !absolute">{names.list->list[0]}.{names.list->list[1]}.{names.list->list[2]}.{names.list->list[3]}.{names.list->list[4]}</DisplayString>
+		<DisplayString Condition="names.list->size > 5 &amp;&amp; !absolute">{names.list->list[0]}.{names.list->list[1]}.{names.list->list[2]}.{names.list->list[3]}.{names.list->list[4]} ...</DisplayString>
 
-		<DisplayString Condition="scopes.list->size == 0 &amp;&amp; absolute">global ""</DisplayString>
-		<DisplayString Condition="scopes.list->size == 1 &amp;&amp; absolute">global {scopes.list->list[0]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 2 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 3 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 4 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}</DisplayString>
-		<DisplayString Condition="scopes.list->size == 5 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]}</DisplayString>
-		<DisplayString Condition="scopes.list->size > 5 &amp;&amp; absolute">global {scopes.list->list[0]}.{scopes.list->list[1]}.{scopes.list->list[2]}.{scopes.list->list[3]}.{scopes.list->list[4]} ...</DisplayString>
+		<DisplayString Condition="names.list->size == 0 &amp;&amp; absolute">global ""</DisplayString>
+		<DisplayString Condition="names.list->size == 1 &amp;&amp; absolute">global {names.list->list[0]}</DisplayString>
+		<DisplayString Condition="names.list->size == 2 &amp;&amp; absolute">global {names.list->list[0]}.{names.list->list[1]}</DisplayString>
+		<DisplayString Condition="names.list->size == 3 &amp;&amp; absolute">global {names.list->list[0]}.{names.list->list[1]}.{names.list->list[2]}</DisplayString>
+		<DisplayString Condition="names.list->size == 4 &amp;&amp; absolute">global {names.list->list[0]}.{names.list->list[1]}.{names.list->list[2]}.{names.list->list[3]}</DisplayString>
+		<DisplayString Condition="names.list->size == 5 &amp;&amp; absolute">global {names.list->list[0]}.{names.list->list[1]}.{names.list->list[2]}.{names.list->list[3]}.{names.list->list[4]}</DisplayString>
+		<DisplayString Condition="names.list->size > 5 &amp;&amp; absolute">global {names.list->list[0]}.{names.list->list[1]}.{names.list->list[2]}.{names.list->list[3]}.{names.list->list[4]} ...</DisplayString>
 	</Type>
 
 	<Type Name="Melon::Symbols::ScopeSymbol">

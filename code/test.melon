@@ -1,22 +1,16 @@
 
 struct A
 	int: i
-	
-	function init(int: i)
-		self.i = i
-	end
-	
-	function int: f()
-		return self.i
-	end
 end
 
-function int: f()
-	return 3
+function int: f(A: ref a)
+	a.i = 3
+	return a.i
 end
 
-A: x = A(7)
+A: a = A {
+	i = 5
+}
 
-int: a = f()
-int: b = x.f()
+int: i = f(ref a)
 

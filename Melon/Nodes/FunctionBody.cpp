@@ -56,7 +56,7 @@ CompiledNode FunctionBody::Compile(CompileInfo& info) { // TODO: more accurate a
 	Long size = info.stack.ptrSize;
 
 	// Set stack index of arguments
-	for (Long i = sym->arguments.Size() - 1; i >= 0; i--) {
+	for (Long i = (Long)sym->arguments.Size() - 1; i >= 0; i--) {
 		VariableSymbol* const arg = sym->Argument(i);
 		arg->stackIndex = -size;
 
