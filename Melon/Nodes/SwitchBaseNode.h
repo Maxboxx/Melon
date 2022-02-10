@@ -11,6 +11,7 @@
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/SymbolTable.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
@@ -18,8 +19,14 @@
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
+		template <class T>
+		concept BaseSwitchType = std::is_same<T, Expression>::value || std::is_same<T, Statement>::value;
+
+		template <class T>
+		concept BaseSwitchType2 = std::is_same<T, Expression>::value || std::is_same<T, Statement>::value || std::is_same<T, Statements>::value;
+
 		/// Abstract base node for {switch}.
-		template <class T, class U = T>
+		template <BaseSwitchType T, BaseSwitchType2 U = T>
 		class SwitchBaseNode : public T {
 		public:
 			/// The match expression.
@@ -105,49 +112,50 @@ namespace Melon {
 			void CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info);
 			void CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info);
 			void CompileDefault(SwitchCompileInfo& switchInfo, CompileInfo& info);
-
-			bool expr;
 		};
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline SwitchBaseNode<T, U>::SwitchBaseNode(Symbols::Symbol* const scope, const FileInfo& file) : T(scope, file) {
 
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline SwitchBaseNode<T, U>::~SwitchBaseNode() {
 
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline Symbols::TypeSymbol* SwitchBaseNode<T, U>::SwitchType() const {
-			if (!expr) return nullptr;
+			return nullptr;
+		}
 
+		template <>
+		inline Symbols::TypeSymbol* SwitchBaseNode<Expression, Expression>::SwitchType() const {
 			Symbols::TypeSymbol* type = nodes[0]->Type();
 
-			for (Weak<T> node : nodes) {
+			for (Weak<Expression> node : nodes) {
 				if (type != node->Type()) {
-					ErrorLog::Error(LogMessage("error.type.switch"), File());
+					ErrorLog::Error(LogMessage("error.type.switch"), this->File());
 				}
 			}
 
 			return type;
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline Boxx::UInt SwitchBaseNode<T, U>::GetSize() const {
-			if (expr) return 0;
+			if constexpr (std::is_same<U, Expression>::value) return 0;
 
 			Boxx::UInt size = 0;
 
-			for (Weak<T> node : nodes) {
+			for (Weak<U> node : nodes) {
 				size = Boxx::Math::Max(size, node->GetSize());
 			}
 
 			return size;
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline void SwitchBaseNode<T, U>::CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info) {
 			// Compile cases
 			for (const Boxx::List<Ptr<Expression>>& values : cases) {
@@ -171,10 +179,10 @@ namespace Melon {
 			}
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline void SwitchBaseNode<T, U>::CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info) {
 			// Compile nodes
-			for (Ptr<T> expr : nodes) {
+			for (Weak<U> expr : nodes) {
 				// Add label for case
 				switchInfo.cn.instructions.Add(Kiwi::Instruction::Label(info.label));
 
@@ -186,7 +194,7 @@ namespace Melon {
 				switchInfo.caseIndex++;
 
 				// Compile statements
-				if (!this->expr) {
+				if constexpr (!std::is_same<U, Expression>::value) {
 					CompiledNode compExpr = expr->Compile(info);
 
 					// Check for scopewise breaks
@@ -216,7 +224,7 @@ namespace Melon {
 				}
 				// Compile expression
 				else {
-					switchInfo.cn.AddInstructions(CompileAssignment(switchInfo.resultNode, expr, info, expr->file).instructions);
+					switchInfo.cn.AddInstructions(this->CompileAssignment(switchInfo.resultNode, expr, info, expr->File()).instructions);
 				}
 
 				// Jump to end
@@ -225,11 +233,11 @@ namespace Melon {
 			}
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline void SwitchBaseNode<T, U>::CompileDefault(SwitchCompileInfo& switchInfo, CompileInfo& info) {
 			if (def) {
 				// Compile statements
-				if (!this->expr) {
+				if constexpr (!std::is_same<U, Expression>::value) {
 					CompiledNode defNode = def->Compile(info);
 
 					// Check for scopewise breaks
@@ -259,19 +267,19 @@ namespace Melon {
 				}
 				// Compile expression
 				else {
-					switchInfo.cn.AddInstructions(CompileAssignment(switchInfo.resultNode, def, info, def->file).instructions);
+					switchInfo.cn.AddInstructions(this->CompileAssignment(switchInfo.resultNode, def, info, def->File()).instructions);
 				}
 			}
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline CompiledNode SwitchBaseNode<T, U>::Compile(CompileInfo& info) {
 			// Setup compile info
 			SwitchCompileInfo switchInfo;
 			switchInfo.caseIndex = 0;
 
 			// Get size of return type
-			if (this->expr) {
+			if constexpr (std::is_same<U, Expression>::value) {
 				switchInfo.cn.size = SwitchType()->Size();
 			}
 
@@ -281,12 +289,12 @@ namespace Melon {
 			switchInfo.match->type = this->match->Type()->AbsoluteName();
 
 			const Boxx::UInt frame = info.stack.frame;
-			switchInfo.cn.AddInstructions(CompileAssignment(switchInfo.match, this->match, info, this->match->file).instructions);
+			switchInfo.cn.AddInstructions(this->CompileAssignment(switchInfo.match, this->match, info, this->match->File()).instructions);
 
 			// Compile cases
 			CompileCaseMatches(switchInfo, info);
 
-			if (!this->expr) {
+			if constexpr (!std::is_same<U, Expression>::value) {
 				info.stack.PopExpr(frame, switchInfo.cn);
 			}
 
@@ -297,7 +305,7 @@ namespace Melon {
 			switchInfo.defaultJump = switchInfo.cn.instructions.Size();
 			switchInfo.cn.instructions.Add(defJmp);
 
-			if (expr) {
+			if constexpr (std::is_same<U, Expression>::value) {
 				info.stack.PushExpr(SwitchType()->Size(), switchInfo.cn);
 
 				// Get result memory location
@@ -327,7 +335,7 @@ namespace Melon {
 			info.label++;
 
 			// Set result argument
-			if (expr) {
+			if constexpr (std::is_same<U, Expression>::value) {
 				switchInfo.cn.argument = switchInfo.result;
 				info.stack.Pop(SwitchType()->Size());
 			}
@@ -335,11 +343,11 @@ namespace Melon {
 			return switchInfo.cn;
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline void SwitchBaseNode<T, U>::IncludeScan(Parsing::ParsingInfo& info) {
 			match->IncludeScan(info);
 
-			for (Weak<T> node : nodes) {
+			for (Weak<U> node : nodes) {
 				node->IncludeScan(info);
 			}
 
@@ -350,13 +358,13 @@ namespace Melon {
 			}
 		}
 
-		/*template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline SwitchBaseNode<T, U>::SwitchScanInfo SwitchBaseNode<T, U>::ScanSetup(ScanInfo& info) const {
 			SwitchScanInfo switchInfo;
 			switchInfo.init = info.init;
 
-			if (!expr) {
-				switchInfo.willACaseRun = def != nullptr;
+			if constexpr (!std::is_same<U, Expression>::value) {
+				switchInfo.willACaseRun = (bool)def;
 				switchInfo.scope = info.scopeInfo.CopyBranch();
 
 				if (switchInfo.init) {
@@ -365,11 +373,11 @@ namespace Melon {
 			}
 
 			return switchInfo;
-		}*/
+		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline void SwitchBaseNode<T, U>::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
-			if (!expr) {
+			if constexpr (!std::is_same<U, Expression>::value) {
 				if (switchInfo.init) {
 					info.init = true;
 
@@ -384,9 +392,9 @@ namespace Melon {
 			}
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline void SwitchBaseNode<T, U>::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
-			if (!expr) {
+			if constexpr (!std::is_same<U, Expression>::value) {
 				if (switchInfo.init) {
 					info.scopeInfo.unassigned = info.type->UnassignedMembers();
 				}
@@ -395,9 +403,9 @@ namespace Melon {
 			}
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline void SwitchBaseNode<T, U>::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
-			if (!expr) {
+			if constexpr (!std::is_same<U, Expression>::value) {
 				for (Boxx::UInt i = 0; i < switchInfo.cases.Size(); i++) {
 					if (i == 0) {
 						switchInfo.scope = switchInfo.cases[i];
@@ -428,7 +436,7 @@ namespace Melon {
 			}
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline ScanResult SwitchBaseNode<T, U>::ScanNodes(ScanInfoStack& info) const {
 			ScanResult result;
 
@@ -444,15 +452,17 @@ namespace Melon {
 			}
 
 			// Scan regular case nodes
-			for (Weak<T> node : nodes) {
+			for (Weak<U> node : nodes) {
 				ScanPreContents(switchInfo, info.Get());
 
 				ScanResult r = node->Scan(info);
-				r.SelfUseCheck(info, node->file);
+				r.SelfUseCheck(info, node->File());
 				result |= r;
 
-				if (expr && typeNode) {
-					ScanAssignment(typeNode, node, info, node->file);
+				if constexpr (std::is_same<U, Expression>::value) {
+					if (typeNode) {
+						this->ScanAssignment(typeNode, node, info, node->File());
+					}
 				}
 
 				ScanPostContents(switchInfo, info.Get());
@@ -463,11 +473,13 @@ namespace Melon {
 				ScanPreContents(switchInfo, info.Get());
 
 				ScanResult r = def->Scan(info);
-				r.SelfUseCheck(info, def->file);
+				r.SelfUseCheck(info, def->File());
 				result |= r;
 
-				if (expr && typeNode) {
-					ScanAssignment(typeNode, def, info, def->file);
+				if constexpr (std::is_same<U, Expression>::value) {
+					if (typeNode) {
+						this->ScanAssignment(typeNode, def, info, def->File());
+					}
 				}
 
 				ScanPostContents(switchInfo, info.Get());
@@ -479,10 +491,10 @@ namespace Melon {
 			return result;
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline ScanResult SwitchBaseNode<T, U>::Scan(ScanInfoStack& info) {
 			ScanResult result = match->Scan(info);
-			result.SelfUseCheck(info, match->file);
+			result.SelfUseCheck(info, match->File());
 
 			// Scan match type
 			Symbols::TypeSymbol* const matchType = match->Type();
@@ -490,7 +502,7 @@ namespace Melon {
 			if (matchType) {
 				Fixed<TypeExpression> type1 = TypeExpression(matchType->AbsoluteName());
 				Fixed<TypeExpression> type2 = TypeExpression(matchType->AbsoluteName());
-				ScanAssignment(type1, type2, info, match->file);
+				this->ScanAssignment(type1, type2, info, match->File());
 			}
 
 			// Scan Nodes
@@ -500,47 +512,47 @@ namespace Melon {
 			for (const Boxx::List<Ptr<Expression>>& nodeList : cases) {
 				for (Weak<Expression> node : nodeList) {
 					ScanResult r = node->Scan(info);
-					r.SelfUseCheck(info, node->file);
+					r.SelfUseCheck(info, node->File());
 					result |= r;
 
-					Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, matchType, node->Type(), node->file);
+					Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, matchType, node->Type(), node->File());
 				}
 			}
 
 			return result;
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline Symbols::NameList SwitchBaseNode<T, U>::FindSideEffectScope(const bool assign) {
 			Symbols::NameList list = match->GetSideEffectScope(assign);
 
-			for (Weak<T> node : nodes) {
-				list = CombineSideEffects(list, node->GetSideEffectScope(assign));
+			for (Weak<U> node : nodes) {
+				list = this->CombineSideEffects(list, node->GetSideEffectScope(assign));
 			}
 
 			for (Boxx::List<Ptr<Expression>>& caseList : cases) {
 				for (Weak<Expression> node : caseList) {
-					list = CombineSideEffects(list, node->GetSideEffectScope(assign));
+					list = this->CombineSideEffects(list, node->GetSideEffectScope(assign));
 				}
 			}
 
 			if (def) {
-				list = CombineSideEffects(list, def->GetSideEffectScope(assign));
+				list = this->CombineSideEffects(list, def->GetSideEffectScope(assign));
 			}
 
 			return list;
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline Ptr<T> SwitchBaseNode<T, U>::OptimizeSwitch(OptimizeInfo& info) {
 			Node::Optimize(match, info);
 
-			for (Weak<T> node : nodes) {
+			for (Ptr<U>& node : nodes) {
 				Node::Optimize(node, info);
 			}
 
 			for (Boxx::List<Ptr<Expression>>& caseList : cases) {
-				for (Weak<Expression> node : caseList) {
+				for (Ptr<Expression>& node : caseList) {
 					Node::Optimize(node, info);
 				}
 			}
@@ -552,9 +564,9 @@ namespace Melon {
 			// TODO: Check for side effects in cases
 
 			// Remove empty cases
-			if (!expr) {
+			if constexpr (!std::is_same<U, Expression>::value) {
 				for (Boxx::UInt i = 0; i < nodes.Size(); i++) {
-					if (IsEmpty(nodes[i])) {
+					if (Node::IsEmpty(nodes[i])) {
 						cases.RemoveAt(i);
 						nodes.RemoveAt(i);
 						i--;
@@ -562,7 +574,7 @@ namespace Melon {
 					}
 				}
 
-				if (def && IsEmpty(def)) {
+				if (def && Node::IsEmpty(def)) {
 					def = nullptr;
 					info.optimized = true;
 				}
@@ -571,7 +583,7 @@ namespace Melon {
 			return nullptr;
 		}
 
-		template <class T, class U>
+		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline Boxx::StringBuilder SwitchBaseNode<T, U>::ToMelon(const Boxx::UInt indent) const {
 			Boxx::StringBuilder sb = "switch ";
 			sb += match->ToMelon(indent);

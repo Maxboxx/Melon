@@ -31,8 +31,10 @@ public:
 	}
 
 	Ptr(const Ptr<T>& ptr) {
-		this->ptr = new _Ptr(ptr.ptr->ptr);
-		ptr.ptr->ptr = nullptr;
+		if (ptr.ptr) {
+			this->ptr = new _Ptr(ptr.ptr->ptr);
+			ptr.ptr->ptr = nullptr;
+		}
 	}
 
 	Ptr(Ptr<T>&& ptr) {
@@ -42,16 +44,20 @@ public:
 
 	template <PtrDerived<T> U>
 	Ptr(const Ptr<U>& ptr) {
-		this->ptr = new _Ptr(ptr.ptr->ptr);
-		ptr.ptr->ptr = nullptr;
+		if (ptr.ptr) {
+			this->ptr = new _Ptr(ptr.ptr->ptr);
+			ptr.ptr->ptr = nullptr;
+		}
 	}
 
 	template <PtrDerived<T> U>
 	Ptr(Ptr<U>&& ptr) {
-		this->ptr = new _Ptr(ptr.ptr->ptr);
-		ptr.ptr->ptr = nullptr;
-		delete ptr.ptr;
-		ptr.ptr = nullptr;
+		if (ptr.ptr) {
+			this->ptr = new _Ptr(ptr.ptr->ptr);
+			ptr.ptr->ptr = nullptr;
+			delete ptr.ptr;
+			ptr.ptr = nullptr;
+		}
 	}
 
 	~Ptr() {
@@ -93,12 +99,14 @@ public:
 	void operator=(const Ptr<T>& ptr) {
 		FreeInstance();
 
-		if (this->ptr)
-			this->ptr->ptr = ptr.ptr->ptr;
-		else
-			this->ptr = new _Ptr(ptr.ptr->ptr);
+		if (ptr.ptr) {
+			if (this->ptr)
+				this->ptr->ptr = ptr.ptr->ptr;
+			else
+				this->ptr = new _Ptr(ptr.ptr->ptr);
 
-		ptr.ptr->ptr = nullptr;
+			ptr.ptr->ptr = nullptr;
+		}
 	}
 
 	void operator=(Ptr<T>&& ptr) {
@@ -111,25 +119,29 @@ public:
 	void operator=(const Ptr<U>& ptr) {
 		FreeInstance();
 
-		if (this->ptr)
-			this->ptr->ptr = ptr.ptr->ptr;
-		else
-			this->ptr = new _Ptr(ptr.ptr->ptr);
+		if (ptr.ptr) {
+			if (this->ptr)
+				this->ptr->ptr = ptr.ptr->ptr;
+			else
+				this->ptr = new _Ptr(ptr.ptr->ptr);
 
-		ptr.ptr->ptr = nullptr;
+			ptr.ptr->ptr = nullptr;
+		}
 	}
 
 	template <PtrDerived<T> U>
 	void operator=(Ptr<U>&& ptr) {
 		FreeInstance();
 
-		if (this->ptr)
-			this->ptr->ptr = ptr.ptr->ptr;
-		else
-			this->ptr = new _Ptr(ptr.ptr->ptr);
+		if (ptr.ptr) {
+			if (this->ptr)
+				this->ptr->ptr = ptr.ptr->ptr;
+			else
+				this->ptr = new _Ptr(ptr.ptr->ptr);
 
-		ptr.ptr->ptr = nullptr;
-		ptr.FreeAll();
+			ptr.ptr->ptr = nullptr;
+			ptr.FreeAll();
+		}
 	}
 
 	T* operator->() const {

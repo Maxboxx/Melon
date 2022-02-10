@@ -21,8 +21,11 @@ namespace Melon {
 
 		BOXX_ENUM_FLAGS(CallArgAttributes);
 
-		/// Base node for call nodes.
 		template <class T>
+		concept BaseCallType = std::is_same<T, Expression>::value || std::is_same<T, Statement>::value;
+
+		/// Base node for call nodes.
+		template <BaseCallType T>
 		class BaseCallNode : public T {
 		public:
 			/// The expression to call.

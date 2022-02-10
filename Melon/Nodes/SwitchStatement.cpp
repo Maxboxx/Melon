@@ -6,7 +6,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 
 SwitchStatement::SwitchStatement(Symbols::Symbol* const scope, const FileInfo& file) : SwitchBaseNode<Statement, Statements>(scope, file) {
-	expr = false;
+	
 }
 
 SwitchStatement::~SwitchStatement() {

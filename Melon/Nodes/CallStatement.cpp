@@ -1,5 +1,7 @@
 #include "CallStatement.h"
 
+#include "BaseCallNode.cpp"
+
 using namespace Boxx;
 using namespace Kiwi;
 

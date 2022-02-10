@@ -6,7 +6,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 
 SwitchExpression::SwitchExpression(Symbols::Symbol* const scope, const FileInfo& file) : SwitchBaseNode<Expression>(scope, file) {
-	expr = true;
+	
 }
 
 SwitchExpression::~SwitchExpression() {

@@ -319,10 +319,10 @@ ScanResult RootNode::Scan(ScanInfoStack& info) {
 
 	// Scan functions
 	while (!info.functions.IsEmpty()) {
-		Collection<Pointer<FunctionBody>> functions = info.functions;
-		info.functions = Collection<Pointer<FunctionBody>>();
+		Collection<Weak<FunctionBody>> functions = info.functions;
+		info.functions = Collection<Weak<FunctionBody>>();
 
-		for (const Pointer<FunctionBody>& func : functions) {
+		for (Weak<FunctionBody> func : functions) {
 			if (func) {
 				func->isUsed = true;
 				func->Scan(info);

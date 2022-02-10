@@ -25,18 +25,18 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-template <class T>
+template <BaseCallType T>
 inline BaseCallNode<T>::BaseCallNode(Symbols::Symbol* const scope, const FileInfo& file) : T(scope, file) {
 
 }
 
 
-template <class T>
+template <BaseCallType T>
 inline BaseCallNode<T>::~BaseCallNode() {
 	
 }
 
-template <class T>
+template <BaseCallType T>
 inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes() const {
 	FunctionSymbol* const f = GetFunc();
 
@@ -61,7 +61,7 @@ inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes() const {
 	return types;
 }
 
-template <class T>
+template <BaseCallType T>
 inline Name BaseCallNode<T>::GetFuncName() const {
 	if (Weak<NameExpression> nn = expression.As<NameExpression>()) {
 		return nn->name;
@@ -74,14 +74,14 @@ inline Name BaseCallNode<T>::GetFuncName() const {
 	}
 }
 
-template <class T>
+template <BaseCallType T>
 inline Optional<List<TypeSymbol*>> BaseCallNode<T>::GetTemplateTypes(const Optional<List<NameList>>& types) const {
 	if (!types) return nullptr;
 
 	List<TypeSymbol*> args;
 
 	for (const NameList& s : *types) {
-		TypeSymbol* const type = SymbolTable::Find<TypeSymbol>(s, scope->AbsoluteName(), File(), SymbolTable::SearchOptions::ReplaceTemplates);
+		TypeSymbol* const type = SymbolTable::Find<TypeSymbol>(s, this->scope->AbsoluteName(), this->File(), SymbolTable::SearchOptions::ReplaceTemplates);
 
 		if (!type) return nullptr;
 
@@ -91,7 +91,7 @@ inline Optional<List<TypeSymbol*>> BaseCallNode<T>::GetTemplateTypes(const Optio
 	return args;
 }
 
-template <class T>
+template <BaseCallType T>
 inline Optional<List<TypeSymbol*>> BaseCallNode<T>::GetArgumentTypes() const {
 	List<TypeSymbol*> argTypes;
 
@@ -107,7 +107,7 @@ inline Optional<List<TypeSymbol*>> BaseCallNode<T>::GetArgumentTypes() const {
 	return argTypes;
 }
 
-template <class T>
+template <BaseCallType T>
 inline FunctionSymbol* BaseCallNode<T>::GetInitFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (TypeSymbol* const t = expression->Symbol<TypeSymbol>()) {
 		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name::Init, expression->File())) {
@@ -118,7 +118,7 @@ inline FunctionSymbol* BaseCallNode<T>::GetInitFunction(const Optional<List<Type
 	return nullptr;
 }
 
-template <class T>
+template <BaseCallType T>
 inline FunctionSymbol* BaseCallNode<T>::GetStaticOrPlainFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (FunctionSymbol* const f = expression->Symbol<FunctionSymbol>()) {
 		if (f->Parent()->Is<TypeSymbol>()) {
@@ -142,10 +142,10 @@ inline FunctionSymbol* BaseCallNode<T>::GetStaticOrPlainFunction(const Optional<
 	return nullptr;
 }
 
-template <class T>
+template <BaseCallType T>
 inline FunctionSymbol* BaseCallNode<T>::GetMethod(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (TypeSymbol* const t = expression->Type()) {
-		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(methodName, expression->File())) {
+		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name("methodName"), expression->File())) {
 			if (templateTypes) {
 				return f->FindMethodOverload(*templateTypes, argTypes, expression->File());
 			}
@@ -158,7 +158,7 @@ inline FunctionSymbol* BaseCallNode<T>::GetMethod(const Optional<List<TypeSymbol
 	return nullptr;
 }
 
-template <class T>
+template <BaseCallType T>
 inline FunctionSymbol* BaseCallNode<T>::GetFunctionSymbol(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
 	if (IsInit()) {
 		return GetInitFunction(templateTypes, argTypes);
@@ -171,7 +171,12 @@ inline FunctionSymbol* BaseCallNode<T>::GetFunctionSymbol(const Optional<List<Ty
 	}
 }
 
-template <class T>
+template <BaseCallType T>
+inline bool BaseCallNode<T>::IsMethod() const {
+	return false;
+}
+
+template <BaseCallType T>
 inline FunctionSymbol* BaseCallNode<T>::GetFunc() const {
 	List<TypeSymbol*> argTypes;
 	Optional<List<TypeSymbol*>> templateTypes = nullptr;
@@ -205,18 +210,18 @@ inline FunctionSymbol* BaseCallNode<T>::GetFunc() const {
 			argStr.Add(type->AbsoluteName().ToString());
 		}
 
-		ErrorLog::Error(LogMessage("error.symbol.function.not_found_args", f->ToString(), argStr), File());
+		ErrorLog::Error(LogMessage("error.symbol.function.not_found_args", f->ToString(), argStr), this->File());
 	}
 
 	return nullptr;
 }
 
-template <class T>
+template <BaseCallType T>
 inline bool BaseCallNode<T>::IsSelfPassing() const {
 	return IsMethod();
 }
 
-template <class T>
+template <BaseCallType T>
 inline bool BaseCallNode<T>::IsInit() const {
 	Symbols::Symbol* const s = expression->Symbol();
 
@@ -227,7 +232,7 @@ inline bool BaseCallNode<T>::IsInit() const {
 	return false;
 }
 
-template <class T>
+template <BaseCallType T>
 inline UInt BaseCallNode<T>::CalculateReturnSize(CallInfo& callInfo) {
 	if (callInfo.isInit) return GetReturnTypes()[0]->Size();
 
@@ -240,7 +245,7 @@ inline UInt BaseCallNode<T>::CalculateReturnSize(CallInfo& callInfo) {
 	return retSize;
 }
 
-template <class T>
+template <BaseCallType T>
 inline UInt BaseCallNode<T>::CalculateArgumentSize(CallInfo& callInfo, CompileInfo& info) {
 	UInt argSize = 0;
 
@@ -258,7 +263,7 @@ inline UInt BaseCallNode<T>::CalculateArgumentSize(CallInfo& callInfo, CompileIn
 	return argSize;
 }
 
-template <class T>
+template <BaseCallType T>
 inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
 	UInt tempSize = 0;
 
@@ -294,7 +299,7 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, CompileI
 				if (!hasNoRef && !arguments[i]->IsImmediate() && !arguments[i].Is<ObjectInitExpression>()) {
 					bool error = true;
 
-					if (Weak<BaseCallNode<Expression>>& call = arguments[i].As<BaseCallNode<Expression>>()) {
+					if (Weak<BaseCallNode<Expression>> call = arguments[i].As<BaseCallNode<Expression>>()) {
 						error = !call->IsInit();
 					}
 
@@ -317,7 +322,7 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, CompileI
 	return tempSize;
 }
 
-template <class T>
+template <BaseCallType T>
 inline UInt BaseCallNode<T>::CalculatePushSize(CallInfo& callInfo, CompileInfo& info) {
 	UInt pushSize = 0;
 
@@ -342,7 +347,7 @@ inline UInt BaseCallNode<T>::CalculatePushSize(CallInfo& callInfo, CompileInfo& 
 	return pushSize;
 }
 
-template <class T>
+template <BaseCallType T>
 inline void BaseCallNode<T>::SetupStackFrame(CallInfo& callInfo, CompileInfo& info) {
 	// Calculate sizes
 	callInfo.retSize  = CalculateReturnSize(callInfo);
@@ -365,7 +370,7 @@ inline void BaseCallNode<T>::SetupStackFrame(CallInfo& callInfo, CompileInfo& in
 	}
 }
 
-template <class T>
+template <BaseCallType T>
 inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	// Create self for constructor
 	if (index == -1) {
@@ -385,7 +390,7 @@ inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, Compi
 			sn->type = type->AbsoluteName();
 
 			UInt top = info.stack.top;
-			callInfo.cn.AddInstructions(CompileAssignment(sn, arguments[index], info, arguments[index]->File()).instructions);
+			callInfo.cn.AddInstructions(this->CompileAssignment(sn, arguments[index], info, arguments[index]->File()).instructions);
 			info.stack.top = top;
 
 			return new RefExpression(sn);
@@ -397,7 +402,7 @@ inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, Compi
 	}
 }
 
-template <class T>
+template <BaseCallType T>
 inline void BaseCallNode<T>::CompileRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	Ptr<Expression> refArg = GetRefArgument(callInfo, info, type, index);
 
@@ -437,7 +442,7 @@ inline void BaseCallNode<T>::CompileRefArgument(CallInfo& callInfo, CompileInfo&
 	info.index = regIndex;
 }
 
-template <class T>
+template <BaseCallType T>
 inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	callInfo.stackIndex -= type->Size();
 
@@ -450,17 +455,17 @@ inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, CompileInfo
 
 	// Compile method argument
 	if (IsMethod()) {
-		callInfo.cn.AddInstructions(CompileAssignment(mn, this->arguments[index - 1], info, expression->File()).instructions);
+		callInfo.cn.AddInstructions(this->CompileAssignment(mn, this->arguments[index - 1], info, expression->File()).instructions);
 	}
 	// Compile regular argument
 	else {
-		callInfo.cn.AddInstructions(CompileAssignment(mn, this->arguments[index], info, expression->File()).instructions);
+		callInfo.cn.AddInstructions(this->CompileAssignment(mn, this->arguments[index], info, expression->File()).instructions);
 	}
 
 	info.stack.PopExpr(frame, callInfo.cn);
 }
 
-template <class T>
+template <BaseCallType T>
 inline void BaseCallNode<T>::CompileArguments(CallInfo& callInfo, CompileInfo& info) {
 	for (UInt i = 0; i < callInfo.func->arguments.Size(); i++) {
 		TypeSymbol* const type = callInfo.func->ArgumentType(i);
@@ -476,7 +481,7 @@ inline void BaseCallNode<T>::CompileArguments(CallInfo& callInfo, CompileInfo& i
 	}
 }
 
-template <class T>
+template <BaseCallType T>
 inline void BaseCallNode<T>::CompileCall(CallInfo& callInfo, CompileInfo& info) {
 	// Create call instruction
 	Instruction inst = Instruction(InstructionType::Call);
@@ -510,7 +515,7 @@ inline void BaseCallNode<T>::CompileCall(CallInfo& callInfo, CompileInfo& info) 
 	}
 }
 
-template <class T>
+template <BaseCallType T>
 inline CompiledNode BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
 	// Setup call info
 	CallInfo callInfo;
@@ -543,7 +548,7 @@ inline CompiledNode BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: more 
 	return callInfo.cn;
 }
 
-template <class T>
+template <BaseCallType T>
 inline void BaseCallNode<T>::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 
@@ -554,7 +559,7 @@ inline void BaseCallNode<T>::IncludeScan(ParsingInfo& info) {
 	GetFunc();
 }
 
-template <class T>
+template <BaseCallType T>
 inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 	// Scan called node
 	ScanResult result = expression->Scan(info);
@@ -615,14 +620,14 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 
 		if (type) {
 			Fixed<TypeExpression> tn = TypeExpression(type->AbsoluteName());
-			ScanAssignment(tn, arg, info, expression->File());
+			this->ScanAssignment(tn, arg, info, expression->File());
 		}
 	}
 
 	return result;
 }
 
-template <class T>
+template <BaseCallType T>
 inline Ptr<T> BaseCallNode<T>::Optimize(OptimizeInfo& info) {
 	Node::Optimize(expression, info);
 
@@ -633,7 +638,7 @@ inline Ptr<T> BaseCallNode<T>::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-template <class T>
+template <BaseCallType T>
 inline StringBuilder BaseCallNode<T>::ToMelon(const UInt indent) const {
 	StringBuilder sb = expression->ToMelon(indent);
 
