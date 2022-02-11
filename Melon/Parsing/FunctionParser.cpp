@@ -102,7 +102,7 @@ Ptr<EmptyStatement> FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const p
 		info.statementNumber++;
 
 		Ptr<EmptyStatement> empty = new EmptyStatement();
-		empty->statement = func;
+		empty->statement = info.root.funcs.Last();
 		return empty;
 	}
 

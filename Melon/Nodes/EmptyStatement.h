@@ -9,7 +9,7 @@ namespace Melon {
 		class EmptyStatement : public Statement {
 		public:
 			/// This statement does not get compiled but the {ToMelon()} method is called for it.
-			Ptr<Statement> statement = nullptr;
+			Weak<Statement> statement = nullptr;
 
 			EmptyStatement();
 			~EmptyStatement();

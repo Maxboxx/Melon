@@ -1,4 +1,4 @@
---/struct Pair<A, B>
+struct Pair<A, B>
 	A: value1
 	B: value2
 end
@@ -13,7 +13,13 @@ struct Compare
 	static function B: min<A, B, C>(Pair<A, Tuple<B, Pair<C, B>, A>>: pair, Tuple<Pair<A, A>, B, Pair<C, Tuple<C, A, C>>>: tuple)
 		return pair.value2.value1
 	end
+	
+	static function A: min<A>(A: a)
+		return a
+	end
 end
+
+int: n = Compare.min(3 as long)
 
 int: i = Compare.min(
 	Pair<short, Tuple<int, Pair<long, int>, short>> {
@@ -50,12 +56,4 @@ int: i = Compare.min(
 		}
 	}
 )
-/--
 
-struct Func
-	static function f(int: t)
-
-	end
-end
-
-Func.f(4)

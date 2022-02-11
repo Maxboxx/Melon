@@ -167,7 +167,7 @@ Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(F
 					TypeSymbol* t = nullptr;
 
 					if (templateMap.Contains(pair.key, t)) {
-						if (t != pair.value) {
+						if (!SymbolTable::FindImplicitConversion(pair.value, t, file)) {
 							templateMap[pair.key] = nullptr;
 						}
 					}
@@ -213,7 +213,14 @@ Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(F
 	}
 
 	for (UInt i = 0; i < func->arguments.Size(); i++) {
-		types.value2.Add(func->ArgumentType(i)->AbsoluteName());
+		//types.value2.Add(func->ArgumentType(i)->AbsoluteName());
+		TypeSymbol* type = func->ArgumentType(i);
+
+		if (TemplateSymbol* t = type->Cast<TemplateSymbol>()) {
+			templateMap.Contains(t, type);
+		}
+
+		types.value2.Add(type->AbsoluteName());
 	}
 
 	for (const Pair<TemplateSymbol*, NameList>& pair : templateTypes) {
@@ -254,7 +261,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 			if (arg != args[i]) {
 				perfect = false;
 
-				if (!SymbolTable::FindImplicitConversion(arg, args[i], file)) {
+				if (!SymbolTable::FindImplicitConversion(args[i], arg, file)) {
 					match = false;
 					break;
 				}
@@ -454,7 +461,11 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 		if (node) {
 			Ptr<FunctionBody> fn = new FunctionBody(node->scope, node->file);
 			fn->sym = sym;
-			fn->statements = node->statements;
+
+			// TODO: Copy instead of reference?
+			fn->statements = new Statements(node->statements->scope, node->statements->File());
+			fn->statements->statements = node->statements->statements;
+
 			sym->node = fn;
 			root->funcs.Add(fn);
 		}

@@ -364,10 +364,10 @@ void RootNode::Optimize(OptimizeInfo& info) {
 
 	// Remove unused functions
 	if (info.usedFunctions.Size() < funcs.Size()) {
-		List<Weak<FunctionBody>> functions = funcs;
-		funcs = List<Weak<FunctionBody>>(info.usedFunctions.Size());
+		List<Ptr<FunctionBody>> functions = funcs;
+		funcs = List<Ptr<FunctionBody>>(info.usedFunctions.Size());
 
-		for (Weak<FunctionBody> func : functions) {
+		for (Ptr<FunctionBody> func : functions) {
 			if (info.usedFunctions.Contains(func->sym)) {
 				funcs.Add(func);
 			}

@@ -19,7 +19,7 @@ namespace Melon {
 			Boxx::List<Ptr<Statements>> nodes;
 
 			/// All functions in the program.
-			Boxx::List<Weak<FunctionBody>> funcs;
+			Boxx::List<Ptr<FunctionBody>> funcs;
 
 			/// The id for the next function.
 			Boxx::UInt funcId = 0;
