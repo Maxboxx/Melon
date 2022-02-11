@@ -44,11 +44,11 @@ CompiledNode OptionalAssignNode::Compile(Weak<Expression> operand1, Weak<Express
 	c1.instructions.Add(mov1);
 	c1.instructions.Last().important = important;
 
-	Fixed<KiwiMemoryExpression> mn1 = KiwiMemoryExpression(c1.argument.mem);
+	Ptr<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
 	mn1->mem.offset++;
 	mn1->type = type1->Find<VariableSymbol>(Name::Value, operand1->File())->Type()->AbsoluteName();
 
-	Fixed<KiwiMemoryExpression> mn2 = KiwiMemoryExpression(c2.argument.mem);
+	Ptr<KiwiMemoryExpression> mn2 = new KiwiMemoryExpression(c2.argument.mem);
 	mn2->mem.offset++;
 	mn2->type = type2->Find<VariableSymbol>(Name::Value, operand2->File())->Type()->AbsoluteName();
 

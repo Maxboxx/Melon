@@ -48,11 +48,11 @@ CompiledNode SafeUnwrapChain::Compile(CompileInfo& info)  {
 	cn.instructions.Add(mov1);
 
 	// Get memory location for result optional value
-	Fixed<KiwiMemoryExpression> sn1 = KiwiMemoryExpression(arg.mem.offset + 1);
+	Ptr<KiwiMemoryExpression> sn1 = new KiwiMemoryExpression(arg.mem.offset + 1);
 	sn1->type = expression->Type()->AbsoluteName();
 
 	// Get memory location of compiled value
-	Fixed<KiwiMemoryExpression> sn2 = KiwiMemoryExpression(cn.argument.mem);
+	Ptr<KiwiMemoryExpression> sn2 = new KiwiMemoryExpression(cn.argument.mem);
 	sn2->type = expression->Type()->AbsoluteName();
 
 	// Compile assignment to resulting optional

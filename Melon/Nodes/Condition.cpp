@@ -93,9 +93,9 @@ CompiledNode Condition::Compile(CompileInfo& info) {
 	}
 	// Compile regular condition
 	else {
-		Pointer<TypeConversion> convert = new TypeConversion(scope, file);
+		Ptr<TypeConversion> convert = new TypeConversion(scope, file);
 		convert->isExplicit = true;
-		convert->expression = expression;
+		convert->expression = new WeakExpression(expression);
 		convert->type = NameList::Bool;
 		return convert->Compile(info);
 	}
@@ -126,9 +126,9 @@ ScanResult Condition::Scan(ScanInfoStack& info) {
 	}
 	// Scan regular condition
 	else {
-		Pointer<TypeConversion> convert = new TypeConversion(scope, file);
+		Ptr<TypeConversion> convert = new TypeConversion(scope, file);
 		convert->isExplicit = true;
-		convert->expression = expression;
+		convert->expression = new WeakExpression(expression);
 		convert->type = NameList::Bool;
 		return convert->Scan(info);
 	}
@@ -144,7 +144,7 @@ Ptr<Condition> Condition::Optimize(OptimizeInfo& info) {
 		assign->OptimizeAsCondition(info);
 
 		if (assign->assignableValues.IsEmpty() || assign->assignableValues[0].Is<DiscardExpression>()) {
-			expression   = assign->values[0];
+			expression = assign->values[0];
 			assign = nullptr;
 		}
 	}

@@ -500,8 +500,8 @@ namespace Melon {
 			Symbols::TypeSymbol* const matchType = match->Type();
 
 			if (matchType) {
-				Fixed<TypeExpression> type1 = TypeExpression(matchType->AbsoluteName());
-				Fixed<TypeExpression> type2 = TypeExpression(matchType->AbsoluteName());
+				Ptr<TypeExpression> type1 = new TypeExpression(matchType->AbsoluteName());
+				Ptr<TypeExpression> type2 = new TypeExpression(matchType->AbsoluteName());
 				this->ScanAssignment(type1, type2, info, match->File());
 			}
 

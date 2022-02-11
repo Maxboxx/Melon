@@ -1,16 +1,61 @@
-
-struct A
-	int: i
+--/struct Pair<A, B>
+	A: value1
+	B: value2
 end
 
-function int: f(A: ref a)
-	a.i = 3
-	return a.i
+struct Tuple<A, B, C>
+	A: value1
+	B: value2
+	C: value3
 end
 
-A: a = A {
-	i = 5
-}
+struct Compare
+	static function B: min<A, B, C>(Pair<A, Tuple<B, Pair<C, B>, A>>: pair, Tuple<Pair<A, A>, B, Pair<C, Tuple<C, A, C>>>: tuple)
+		return pair.value2.value1
+	end
+end
 
-int: i = f(ref a)
+int: i = Compare.min(
+	Pair<short, Tuple<int, Pair<long, int>, short>> {
+		value1 = 1,
+		
+		value2 = Tuple<int, Pair<long, int>, short> {
+			value1 = 2,
+			
+			value2 = Pair<long, int> {
+				value1 = 3,
+				value2 = 4
+			},
+			
+			value3 = 5
+		}
+	},
+	
+	Tuple<Pair<short, short>, int, Pair<long, Tuple<long, short, long>>> {
+		value1 = Pair<short, short> {
+			value1 = 1,
+			value2 = 2
+		},
+		
+		value2 = 3,
+		
+		value3 = Pair<long, Tuple<long, short, long>> {
+			value1 = 4,
+			
+			value2 = Tuple<long, short, long> {
+				value1 = 5,
+				value2 = 6,
+				value3 = 7
+			}
+		}
+	}
+)
+/--
 
+struct Func
+	static function f(int: t)
+
+	end
+end
+
+Func.f(4)

@@ -456,7 +456,7 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 			fn->sym = sym;
 			fn->statements = node->statements;
 			sym->node = fn;
-			root->funcs.Add(sym->node);
+			root->funcs.Add(fn);
 		}
 
 		for (UInt i = 0; i < returnValues.Size(); i++) {

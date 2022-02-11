@@ -60,7 +60,7 @@ CompiledNode BinaryOperatorExpression::Compile(CompileInfo& info) {
 		args.Add(operand1);
 		args.Add(operand2);
 
-		Fixed<CallExpression> cn = CallExpression(scope, file);
+		Ptr<CallExpression> cn = new CallExpression(scope, file);
 		cn->arguments  = args;
 		cn->expression = new TypeExpression(func->Parent()->Parent()->AbsoluteName());
 

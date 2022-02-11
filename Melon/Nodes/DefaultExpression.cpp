@@ -68,10 +68,10 @@ CompiledNode DefaultExpression::Compile(CompileInfo& info) {
 	cn.instructions.Add(eq);
 
 	// Get memory location for the result and the optional value
-	Fixed<KiwiMemoryExpression> sn1 = KiwiMemoryExpression(cn.argument.mem);
+	Ptr<KiwiMemoryExpression> sn1 = new KiwiMemoryExpression(cn.argument.mem);
 	sn1->type = Type()->AbsoluteName();
 
-	Fixed<KiwiMemoryExpression> sn2 = KiwiMemoryExpression(c1.argument.mem);
+	Ptr<KiwiMemoryExpression> sn2 = new KiwiMemoryExpression(c1.argument.mem);
 	sn2->mem.offset++;
 	sn2->type = operand1->Type()->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
 
@@ -115,7 +115,7 @@ ScanResult DefaultExpression::Scan(ScanInfoStack& info) {
 	TypeSymbol* const type = Type();
 	
 	if (type) {
-		Fixed<TypeExpression> tn = TypeExpression(type->AbsoluteName());
+		Ptr<TypeExpression> tn = new TypeExpression(type->AbsoluteName());
 		ScanAssignment(tn, operand2, info, file);
 	}
 

@@ -48,7 +48,7 @@ CompiledNode IfExpression::Compile(CompileInfo& info) {
 
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
-	Fixed<StackExpression> sn = StackExpression(info.stack.top);
+	Ptr<StackExpression> sn = new StackExpression(info.stack.top);
 	sn->type = Type()->AbsoluteName();
 
 	StackPtr stack = info.stack;

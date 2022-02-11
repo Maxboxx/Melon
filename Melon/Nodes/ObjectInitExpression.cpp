@@ -54,7 +54,7 @@ CompiledNode ObjectInitExpression::Compile(CompileInfo& info) {
 		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
 
 		if (type->Is<StructSymbol>()) {
-			Fixed<KiwiMemoryExpression> sn = KiwiMemoryExpression(info.stack.Offset() + var->stackIndex);
+			Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(info.stack.Offset() + var->stackIndex);
 			sn->type = var->Type()->AbsoluteName();
 
 			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->File()).instructions);
@@ -116,7 +116,7 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 		VariableSymbol* const v = type->Find<VariableSymbol>(vars[i], file);
 		TypeSymbol* const varType = v->Type();
 
-		Fixed<TypeExpression> tn = TypeExpression(varType->AbsoluteName());
+		Ptr<TypeExpression> tn = new TypeExpression(varType->AbsoluteName());
 		ScanAssignment(tn, expressions[i], info, expressions[i]->File());
 	}
 

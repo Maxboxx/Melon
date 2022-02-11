@@ -369,7 +369,7 @@ void LoopStatement::CompileForStart(CompiledNode& compiled, CompileInfo& info, S
 
 	// Compile loop step
 	if (segment.stepOperator) {
-		Fixed<Assignment> assign = Assignment(segment.step->scope, segment.step->File());
+		Ptr<Assignment> assign = new Assignment(segment.step->scope, segment.step->File());
 		assign->assignableValues.Add(segment.init->assignableValues[0]);
 
 		Ptr<BinaryOperatorExpression> add = new BinaryOperatorExpression(segment.step->scope, *segment.stepOperator, segment.step->File());
@@ -727,7 +727,7 @@ ScanResult LoopStatement::ScanForCondition(const LoopSegment& segment, ScanInfoS
 	}
 	// Scan step with step operator
 	else {
-		Fixed<Assignment> assign = Assignment(segment.step->scope, segment.step->File());
+		Ptr<Assignment> assign = new Assignment(segment.step->scope, segment.step->File());
 		assign->assignableValues.Add(segment.init->assignableValues[0]);
 
 		Ptr<BinaryOperatorExpression> op = new BinaryOperatorExpression(segment.step->scope, *segment.stepOperator, segment.step->File());

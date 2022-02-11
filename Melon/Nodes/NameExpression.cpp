@@ -98,7 +98,7 @@ CompiledNode NameExpression::Compile(CompileInfo& info) {
 		name->name = this->name;
 		name->ignoreRef = true;
 
-		Fixed<PtrExpression> ptr = PtrExpression(name);
+		Ptr<PtrExpression> ptr = new PtrExpression(name);
 		return ptr->Compile(info);
 	}
 	// Compile stack variable

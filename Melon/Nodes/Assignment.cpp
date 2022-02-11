@@ -130,7 +130,7 @@ CompiledNode Assignment::Compile(CompileInfo& info) {
 		}
 		// Assign extra return values
 		else if (!assignableValues[i].Is<DiscardExpression>()) {
-			Fixed<KiwiMemoryExpression> memory = KiwiMemoryExpression(info.stack.Offset(returnOffsets[i - this->values.Size()]));
+			Ptr<KiwiMemoryExpression> memory = new KiwiMemoryExpression(info.stack.Offset(returnOffsets[i - this->values.Size()]));
 			memory->type = values[i].type->AbsoluteName();
 
 			info.important = true;
@@ -363,7 +363,7 @@ ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 
 		// Scan assignment
 		if (!errors) {
-			Fixed<TypeExpression> type = TypeExpression(values[i].type->AbsoluteName());
+			Ptr<TypeExpression> type = new TypeExpression(values[i].type->AbsoluteName());
 			ScanAssignment(node, type, info, node->File());
 		}
 	}

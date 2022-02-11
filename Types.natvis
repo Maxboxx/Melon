@@ -1,24 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 	<Type Name="Ptr&lt;*&gt;">
-		<DisplayString Condition="ptr == nullptr || ptr->ptr == nullptr">nullptr</DisplayString>
-		<DisplayString Condition="ptr != nullptr &amp;&amp; ptr->ptr != nullptr">{*ptr->ptr}</DisplayString>
+		<DisplayString Condition="!ptr || !ptr->ref || !ptr->ref->ptr">null</DisplayString>
+		<DisplayString Condition="ptr &amp;&amp; ptr->ref &amp;&amp; ptr->ref->ptr">{*($T1*)ptr->ref->ptr}</DisplayString>
 		<Expand>
-			<Item Name="pointer">ptr ? ptr->ptr : nullptr</Item>
+			<Item Name="pointer">*(ptr &amp;&amp; ptr->ref ? ($T1*)ptr->ref->ptr : nullptr)</Item>
 		</Expand>
 	</Type>
 
 	<Type Name="Weak&lt;*&gt;">
-		<DisplayString>{*ptr}</DisplayString>
+		<DisplayString Condition="ref &amp;&amp; ref->ptr">{*($T1*)ref->ptr}</DisplayString>
+		<DisplayString Condition="!ref || !ref->ptr">null</DisplayString>
 		<Expand>
-			<Item Name="pointer">ptr</Item>
-		</Expand>
-	</Type>
-
-	<Type Name="Fixed&lt;*&gt;">
-		<DisplayString>{value}</DisplayString>
-		<Expand>
-			<Item Name="value">value</Item>
+			<Item Name="pointer">*(ref ? ($T1*)ref->ptr : nullptr)</Item>
 		</Expand>
 	</Type>
 </AutoVisualizer>

@@ -40,7 +40,7 @@ Name LogicExpression::GetOperator() const {
 }
 
 CompiledNode LogicExpression::CompileToBool(Ptr<Expression>& node, CompileInfo& info) {
-	Fixed<TypeConversion> convert = TypeConversion(node->scope, node->File());
+	Ptr<TypeConversion> convert = new TypeConversion(node->scope, node->File());
 	convert->expression = node;
 	convert->type = NameList::Bool;
 	convert->isExplicit = true;

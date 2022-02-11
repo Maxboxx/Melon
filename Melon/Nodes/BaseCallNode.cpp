@@ -446,7 +446,7 @@ template <BaseCallType T>
 inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	callInfo.stackIndex -= type->Size();
 
-	Fixed<KiwiMemoryExpression> mn = KiwiMemoryExpression(callInfo.stackIndex);
+	Ptr<KiwiMemoryExpression> mn = new KiwiMemoryExpression(callInfo.stackIndex);
 	mn->type = type->AbsoluteName();
 
 	info.stack.Push(type->Size());
@@ -619,7 +619,7 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 		}
 
 		if (type) {
-			Fixed<TypeExpression> tn = TypeExpression(type->AbsoluteName());
+			Ptr<TypeExpression> tn = new TypeExpression(type->AbsoluteName());
 			this->ScanAssignment(tn, arg, info, expression->File());
 		}
 	}

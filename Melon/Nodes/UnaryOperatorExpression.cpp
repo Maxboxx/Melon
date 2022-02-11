@@ -76,7 +76,7 @@ CompiledNode UnaryOperatorExpression::Compile(CompileInfo& info) {
 		List<Ptr<Expression>> args;
 		args.Add(new WeakExpression(operand));
 
-		Fixed<CallExpression> cn = CallExpression(scope, file);
+		Ptr<CallExpression> cn = new CallExpression(scope, file);
 		cn->arguments  = args;
 		cn->expression = new TypeExpression(func->ParentType()->AbsoluteName());
 

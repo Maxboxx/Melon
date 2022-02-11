@@ -74,7 +74,7 @@ CompiledNode ReturnStatement::Compile(CompileInfo& info) {
 	for (UInt i = 0; i < values.Size(); i++) {
 		stackOffset -= types[i]->Size();
 
-		Fixed<KiwiMemoryExpression> sn = KiwiMemoryExpression(stackOffset);
+		Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(stackOffset);
 		sn->type = types[i]->AbsoluteName();
 
 		info.important = true;
@@ -130,7 +130,7 @@ ScanResult ReturnStatement::Scan(ScanInfoStack& info) {
 		if (i >= types.Size()) break;
 
 		if (types[i]) {
-			Fixed<TypeExpression> tn = TypeExpression(types[i]->AbsoluteName());
+			Ptr<TypeExpression> tn = new TypeExpression(types[i]->AbsoluteName());
 			ScanAssignment(tn, values[i], info, values[i]->File());
 		}
 	}
@@ -149,7 +149,7 @@ NameList ReturnStatement::FindSideEffectScope(const bool assign) {
 }
 
 Ptr<Statement> ReturnStatement::Optimize(OptimizeInfo& info) {
-	for (Ptr<Expression> value : values) {
+	for (Ptr<Expression>& value : values) {
 		Node::Optimize(value, info);
 	}
 

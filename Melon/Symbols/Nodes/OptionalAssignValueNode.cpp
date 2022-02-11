@@ -44,7 +44,7 @@ CompiledNode OptionalAssignValueNode::Compile(Weak<Expression> operand1, Weak<Ex
 			c1.AddInstructions(Node::CompileAssignment(mn1, operand2, info, operand2->File()).instructions);
 		}
 		else {
-			Fixed<Boolean> bn = Boolean(operand1->File());
+			Ptr<Boolean> bn = new Boolean(operand1->File());
 			bn->value = !isNil;
 			c1.AddInstructions(Node::CompileAssignment(mn1, bn, info, operand2->File()).instructions);
 		}

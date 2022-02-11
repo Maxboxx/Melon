@@ -169,7 +169,7 @@ CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expressio
 	}
 
 	if (assign) {
-		Fixed<TypeConversion> cn = TypeConversion(value->scope, value->file);
+		Ptr<TypeConversion> cn = new TypeConversion(value->scope, value->file);
 		cn->isExplicit = false;
 		cn->expression = new WeakExpression(value);
 		cn->type = assign->ArgumentType(0)->AbsoluteName();
@@ -181,7 +181,7 @@ CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expressio
 }
 
 NameList Node::FindSideEffectScope(const bool assign) {
-	return scope->AbsoluteName();
+	return scope ? scope->AbsoluteName() : NameList();
 }
 
 void Node::Include(const Symbols::Name& name, ParsingInfo& info) {
