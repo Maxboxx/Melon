@@ -74,8 +74,7 @@ CompiledNode ReturnStatement::Compile(CompileInfo& info) {
 	for (UInt i = 0; i < values.Size(); i++) {
 		stackOffset -= types[i]->Size();
 
-		Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(stackOffset);
-		sn->type = types[i]->AbsoluteName();
+		Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(stackOffset, types[i]->AbsoluteName());
 
 		info.important = true;
 		c.AddInstructions(CompileAssignment(sn, values[i], info, values[i]->File()).instructions);

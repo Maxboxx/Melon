@@ -118,7 +118,7 @@ Optional<Name> FunctionParser::ParseFunctionName(ParsingInfo& info, const bool i
 		info.index++;
 		return s;
 	}
-	else if (isPlain) {
+	else if (!isPlain) {
 		if (info.Current().type == TokenType::Init) {
 			const Name s = Name::Init;
 			info.index++;

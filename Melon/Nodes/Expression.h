@@ -41,7 +41,7 @@ namespace Melon {
 			///R A new optimized node or {nullptr} if the node was not optimized.
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info);
 
-			/// True if the expression is an immediate Kiwi value.
+			/// {true} if the expression is an immediate Kiwi value.
 			virtual bool IsImmediate() const;
 
 			/// Returns the immediate value of the expression.

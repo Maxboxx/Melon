@@ -33,9 +33,7 @@ CompiledNode OptionalAssignValueNode::Compile(Weak<Expression> operand1, Weak<Ex
 
 		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], operand1->File());
 		
-		Ptr<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem);
-		mn1->mem.offset += offset;
-		mn1->type = member->Type()->AbsoluteName();
+		Ptr<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem.offset + offset, member->Type()->AbsoluteName());
 		offset++;
 
 		info.important = important;

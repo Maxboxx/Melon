@@ -14,8 +14,8 @@ namespace Melon {
 			/// The absolute type name of the node.
 			Symbols::NameList type;
 
-			KiwiMemoryExpression(const Boxx::Int offset);
-			KiwiMemoryExpression(const Kiwi::MemoryLocation& mem);
+			KiwiMemoryExpression(const Boxx::Int offset, const Symbols::NameList& type);
+			KiwiMemoryExpression(const Kiwi::MemoryLocation& mem, const Symbols::NameList& type);
 			~KiwiMemoryExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;

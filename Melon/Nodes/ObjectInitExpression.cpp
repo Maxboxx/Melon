@@ -54,9 +54,7 @@ CompiledNode ObjectInitExpression::Compile(CompileInfo& info) {
 		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
 
 		if (type->Is<StructSymbol>()) {
-			Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(info.stack.Offset() + var->stackIndex);
-			sn->type = var->Type()->AbsoluteName();
-
+			Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(info.stack.Offset() + var->stackIndex, var->Type()->AbsoluteName());
 			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->File()).instructions);
 		}
 

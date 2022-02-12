@@ -81,19 +81,17 @@ Symbol* DotExpression::Symbol() const {
 }
 
 CompiledNode DotExpression::Compile(CompileInfo& info) {
-	TypeSymbol* const type = expression->Type();
+	TypeSymbol* const sym = expression->Type();
 
 	CompiledNode c = expression->Compile(info);
 
 	// Compile enum value
-	if (type->Is<EnumSymbol>()) {
-		c.argument = Argument(type->Find<ValueSymbol>(name, file)->value);
-		c.size = type->Size();
+	if (EnumSymbol* enumSym = sym->Cast<EnumSymbol>()) {
+		c.argument = Argument(sym->Find<ValueSymbol>(name, file)->value);
+		c.size = enumSym->Size();
 	}
 	// Compile variable
-	else {
-		VariableSymbol* const var = type->Find<VariableSymbol>(name, file);
-
+	else if (VariableSymbol* const var = sym->Find<VariableSymbol>(name, file)) {
 		if (var->HasAttribute(VariableAttributes::Static)) {
 			c.argument = MemoryLocation(0);
 			c.argument.mem.memptr = var->AbsoluteName().ToString();

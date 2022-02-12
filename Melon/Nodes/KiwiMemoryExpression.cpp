@@ -7,12 +7,22 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-KiwiMemoryExpression::KiwiMemoryExpression(const Boxx::Int offset) : Expression(nullptr, FileInfo()) {
-	this->mem = MemoryLocation(offset);
+KiwiMemoryExpression::KiwiMemoryExpression(const Boxx::Int offset, const Symbols::NameList& type) : Expression(nullptr, FileInfo()) {
+	this->mem  = MemoryLocation(offset);
+	this->type = type;
+
+	if (type == NameList()) {
+		int i = 0;
+	}
 }
 
-KiwiMemoryExpression::KiwiMemoryExpression(const MemoryLocation& mem) : Expression(nullptr, FileInfo()) {
-	this->mem = mem;
+KiwiMemoryExpression::KiwiMemoryExpression(const MemoryLocation& mem, const Symbols::NameList& type) : Expression(nullptr, FileInfo()) {
+	this->mem  = mem;
+	this->type = type;
+
+	if (type == NameList()) {
+		int i = 0;
+	}
 }
 
 KiwiMemoryExpression::~KiwiMemoryExpression() {

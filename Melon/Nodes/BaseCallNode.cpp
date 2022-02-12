@@ -144,8 +144,11 @@ inline FunctionSymbol* BaseCallNode<T>::GetStaticOrPlainFunction(const Optional<
 
 template <BaseCallType T>
 inline FunctionSymbol* BaseCallNode<T>::GetMethod(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
-	if (TypeSymbol* const t = expression->Type()) {
-		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name("methodName"), expression->File())) {
+	Weak<DotExpression> dot = expression.As<DotExpression>();
+	if (!dot) return nullptr;
+
+	if (TypeSymbol* const t = dot->expression->Type()) {
+		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(dot->name, expression->File())) {
 			if (templateTypes) {
 				return f->FindMethodOverload(*templateTypes, argTypes, expression->File());
 			}
@@ -173,6 +176,12 @@ inline FunctionSymbol* BaseCallNode<T>::GetFunctionSymbol(const Optional<List<Ty
 
 template <BaseCallType T>
 inline bool BaseCallNode<T>::IsMethod() const {
+	if (Weak<DotExpression> dot = expression.As<DotExpression>()) {
+		if (dot->expression->Type()) {
+			return true;
+		}
+	}
+	
 	return false;
 }
 
@@ -374,11 +383,11 @@ template <BaseCallType T>
 inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	// Create self for constructor
 	if (index == -1) {
-		return new RefExpression(new KiwiMemoryExpression(callInfo.stackIndex));
+		return new RefExpression(new KiwiMemoryExpression(callInfo.stackIndex, type->AbsoluteName()));
 	}
 	// Create reference to self
 	else if (index == 0 && IsSelfPassing()) {
-		return new RefExpression(expression);
+		return new WeakRefExpression(expression);
 	}
 	// Create reference for regular argument
 	else {
@@ -386,8 +395,7 @@ inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, Compi
 
 		// Assign argument to temporary memory
 		if (callInfo.assignFirst[index]) {
-			Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(info.stack.Offset((Long)callInfo.initialTop + callInfo.memoryOffsets[index]));
-			sn->type = type->AbsoluteName();
+			Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(info.stack.Offset((Long)callInfo.initialTop + callInfo.memoryOffsets[index]), type->AbsoluteName());
 
 			UInt top = info.stack.top;
 			callInfo.cn.AddInstructions(this->CompileAssignment(sn, arguments[index], info, arguments[index]->File()).instructions);
@@ -446,8 +454,7 @@ template <BaseCallType T>
 inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
 	callInfo.stackIndex -= type->Size();
 
-	Ptr<KiwiMemoryExpression> mn = new KiwiMemoryExpression(callInfo.stackIndex);
-	mn->type = type->AbsoluteName();
+	Ptr<KiwiMemoryExpression> mn = new KiwiMemoryExpression(callInfo.stackIndex, type->AbsoluteName());
 
 	info.stack.Push(type->Size());
 

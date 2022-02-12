@@ -285,8 +285,7 @@ namespace Melon {
 
 			// Compile match expression
 			info.stack.PushExpr(this->match->Type()->Size(), switchInfo.cn);
-			switchInfo.match = new KiwiMemoryExpression(info.stack.Offset());
-			switchInfo.match->type = this->match->Type()->AbsoluteName();
+			switchInfo.match = new KiwiMemoryExpression(info.stack.Offset(), this->match->Type()->AbsoluteName());
 
 			const Boxx::UInt frame = info.stack.frame;
 			switchInfo.cn.AddInstructions(this->CompileAssignment(switchInfo.match, this->match, info, this->match->File()).instructions);
@@ -310,8 +309,7 @@ namespace Melon {
 
 				// Get result memory location
 				switchInfo.result = Kiwi::Argument(Kiwi::MemoryLocation(info.stack.Offset()));
-				switchInfo.resultNode = new KiwiMemoryExpression(switchInfo.result.mem.offset);
-				switchInfo.resultNode->type = SwitchType()->AbsoluteName();
+				switchInfo.resultNode = new KiwiMemoryExpression(switchInfo.result.mem.offset, SwitchType()->AbsoluteName());
 			}
 
 			// Compile case bodies

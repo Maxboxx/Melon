@@ -68,12 +68,8 @@ CompiledNode DefaultExpression::Compile(CompileInfo& info) {
 	cn.instructions.Add(eq);
 
 	// Get memory location for the result and the optional value
-	Ptr<KiwiMemoryExpression> sn1 = new KiwiMemoryExpression(cn.argument.mem);
-	sn1->type = Type()->AbsoluteName();
-
-	Ptr<KiwiMemoryExpression> sn2 = new KiwiMemoryExpression(c1.argument.mem);
-	sn2->mem.offset++;
-	sn2->type = operand1->Type()->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
+	Ptr<KiwiMemoryExpression> sn1 = new KiwiMemoryExpression(cn.argument.mem, Type()->AbsoluteName());
+	Ptr<KiwiMemoryExpression> sn2 = new KiwiMemoryExpression(c1.argument.mem.offset + 1, operand1->Type()->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName());
 
 	// Assign the optional value to the result
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);

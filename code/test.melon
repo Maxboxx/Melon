@@ -1,59 +1,29 @@
-struct Pair<A, B>
-	A: value1
-	B: value2
-end
 
-struct Tuple<A, B, C>
-	A: value1
-	B: value2
-	C: value3
-end
+struct A
+	int: i
 
-struct Compare
-	static function B: min<A, B, C>(Pair<A, Tuple<B, Pair<C, B>, A>>: pair, Tuple<Pair<A, A>, B, Pair<C, Tuple<C, A, C>>>: tuple)
-		return pair.value2.value1
+	function init(int: i)
+		self.i = i
 	end
 	
-	static function A: min<A>(A: a)
-		return a
+	function int: value()
+		return self.i
 	end
 end
 
-int: n = Compare.min(3 as long)
+function int: f()
+	return 3
+end
 
-int: i = Compare.min(
-	Pair<short, Tuple<int, Pair<long, int>, short>> {
-		value1 = 1,
-		
-		value2 = Tuple<int, Pair<long, int>, short> {
-			value1 = 2,
-			
-			value2 = Pair<long, int> {
-				value1 = 3,
-				value2 = 4
-			},
-			
-			value3 = 5
-		}
-	},
-	
-	Tuple<Pair<short, short>, int, Pair<long, Tuple<long, short, long>>> {
-		value1 = Pair<short, short> {
-			value1 = 1,
-			value2 = 2
-		},
-		
-		value2 = 3,
-		
-		value3 = Pair<long, Tuple<long, short, long>> {
-			value1 = 4,
-			
-			value2 = Tuple<long, short, long> {
-				value1 = 5,
-				value2 = 6,
-				value3 = 7
-			}
-		}
-	}
-)
+function swap(int: ref a, int: ref b)
+	int: temp = a
+	a = b
+	b = temp
+end
+
+A: a = A(2)
+
+int: x, y = f(), a.value()
+
+swap(ref a.i, ref x)
 

@@ -130,8 +130,7 @@ CompiledNode Assignment::Compile(CompileInfo& info) {
 		}
 		// Assign extra return values
 		else if (!assignableValues[i].Is<DiscardExpression>()) {
-			Ptr<KiwiMemoryExpression> memory = new KiwiMemoryExpression(info.stack.Offset(returnOffsets[i - this->values.Size()]));
-			memory->type = values[i].type->AbsoluteName();
+			Ptr<KiwiMemoryExpression> memory = new KiwiMemoryExpression(info.stack.Offset(returnOffsets[i - this->values.Size()]), values[i].type->AbsoluteName());
 
 			info.important = true;
 			c.AddInstructions(CompileAssignment(assignableValues[i], memory, info, assignableValues[i]->File()).instructions);
