@@ -4,25 +4,20 @@
 
 #include "Kiwi/Kiwi.h";
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-
-			///B BooleanBinaryOperatorNode
-			/// Node for binary operatorn between boolean values
-			class BooleanBinaryOperatorNode : public SymbolNode {
+			/// Node for binary operators between boolean values.
+			class BooleanBinaryOperatorNode : public BinarySymbolNode {
 			public:
-
-				///T Operator
+				/// The operator.
 				Kiwi::InstructionType op;
 
-				///T Contructor
-				BooleanBinaryOperatorNode(const Kiwi::InstructionType name);
+				/// Constructor with operator.
+				BooleanBinaryOperatorNode(const Kiwi::InstructionType op);
 
-				///T Compile
-				///A nodes[0]: The first operand
-				///A nodes[1]: The second operand
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

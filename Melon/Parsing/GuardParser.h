@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/GuardStatement.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,7 +11,7 @@ namespace Melon {
 		class GuardParser {
 		public:
 			/// Parses a {guard} statement.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::GuardStatement> Parse(ParsingInfo& info);
 		};
 	}
 }

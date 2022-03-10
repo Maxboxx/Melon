@@ -2,18 +2,20 @@
 
 #include "SymbolNode.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-			///B BooleanConstantNode
-			class BooleanConstantNode : public SymbolNode {
+			/// Node for a boolean constant.
+			class BooleanConstantNode : public ConstantSymbolNode {
 			public:
+				/// The boolean value.
 				bool value;
 
+				/// Constructor for a boolean value.
 				BooleanConstantNode(const bool value);
 
-				///T Compile
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

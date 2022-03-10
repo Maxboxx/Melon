@@ -11,11 +11,10 @@
 #include "Melon/Symbols/Nodes/IntegerAssignNode.h"
 #include "Melon/Symbols/Nodes/IntegerBinaryOperatorNode.h"
 
-#include "Melon/Nodes/EnumNode.h"
 #include "Melon/Nodes/NewVariableNode.h"
-#include "Melon/Nodes/EmptyNode.h"
-#include "Melon/Nodes/FunctionNode.h"
-#include "Melon/Nodes/IntegerNode.h"
+#include "Melon/Nodes/EmptyStatement.h"
+#include "Melon/Nodes/FunctionBody.h"
+#include "Melon/Nodes/Integer.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -28,7 +27,7 @@ using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 using namespace Melon::Parsing;
 
-NodePtr EnumParser::Parse(ParsingInfo& info) {
+Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	static Regex lower = Regex("^%l");
 	static Regex underscore = Regex("%a_+%a");
 
@@ -56,7 +55,7 @@ NodePtr EnumParser::Parse(ParsingInfo& info) {
 	// TODO: size
 	EnumSymbol* enumSymbol = new EnumSymbol(1, false, info.GetFileInfo(enumLine));
 
-	Pointer<EnumNode> en = new EnumNode(info.scope, info.GetFileInfo(enumLine));
+	Ptr<EnumStatement> en = new EnumStatement(info.scope, info.GetFileInfo(enumLine));
 
 	en->name = enumName;
 
@@ -137,14 +136,15 @@ Optional<EnumParser::EnumValue> EnumParser::ParseValue(ParsingInfo& info, ULong&
 	if (info.Next().type == TokenType::Assign) {
 		info.index++;
 
-		if (NodePtr num = IntegerParser::Parse(info)) {
-			value.value = num.Cast<IntegerNode>()->number;
+		if (Ptr<Integer> num = IntegerParser::Parse(info)) {
+			value.value = num->number;
 		}
 		else {
 			ErrorLog::Error(LogMessage("error.syntax.expected.after", "integer", LogMessage::Quote("=")), info.GetFileInfoPrev());
 		}
 	}
 	else {
+		// TODO: pick unique value
 		value.value = currentValue++;
 	}
 

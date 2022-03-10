@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 #include "Boxx/List.h"
 #include "Boxx/Pointer.h"
 #include "Boxx/String.h"
@@ -21,7 +23,7 @@ namespace Melon {
 			static ParsingInfo Parse(const Boxx::String& filename, const CompilerOptions& options);
 
 			/// Generates an unexpected token error.
-			static Nodes::NodePtr UnexpectedToken(ParsingInfo& info);
+			static void UnexpectedToken(ParsingInfo& info);
 
 		private:
 			friend class IncludeParser;

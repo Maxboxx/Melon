@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 #include "Boxx/Pointer.h"
 #include "Boxx/List.h"
 #include "Boxx/Mango.h"
@@ -22,70 +24,56 @@
 #include "Structs/ScopeInfo.h"
 #include "Structs/StackPtr.h"
 
-#include "Melon/Symbols/NameList.h"
+#include "Melon/Symbols/Symbol.h"
 #include "Melon/Symbols/SymbolTable.h"
-#include "Melon/Symbols/TypeSymbol.h"
-#include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
+///N Melon::Nodes
 namespace Melon {
+	class MelonCompiler;
+
 	namespace Parsing {
 		struct ParsingInfo;
 	}
 
-	///N Melon::Nodes
-	namespace Nodes {
-		class RootNode;
+	namespace Symbols {
+		class FunctionSymbol;
 
-		///T NodePtr
-		/// Typedef for a pointer to a {Node}.
-		typedef Boxx::Pointer<class Node> NodePtr;
+		namespace Nodes {
+			class SymbolNode;
+		}
+	}
+
+	namespace Nodes {
+		class Expression;
+		class Condition;
+		class Statement;
+		class Statements;
+
+		class RootNode;
 
 		/// Base for all nodes.
 		class Node {
 		public:
-			/// The scope the node is in.
-			Symbols::Symbol* scope;
-
-			/// The file info of the node.
-			FileInfo file;
-
-			/// The inner side effect scope.
-			Boxx::Optional<Symbols::NameList> sideEffectScope;
+			Symbols::Symbol* const scope;
 
 			/// Creates a node.
 			Node(Symbols::Symbol* const scope, const FileInfo& file);
 			~Node();
-
-			/// Returns the type of the node.
-			virtual Symbols::TypeSymbol* Type() const;
-
-			/// Returns the types of all return values of the node.
-			///p Defaults to a list containing the result from {Type()}.
-			virtual Boxx::List<Symbols::TypeSymbol*> Types() const;
-
-			/// Returns the symbol for the current node.
-			virtual Symbols::Symbol* GetSymbol() const;
-
-			/// Gets the byte size of the node.
-			///p This is only used by the compile step.
-			virtual Boxx::UInt GetSize() const;
-
-			/// {true} if the node is a scope.
-			virtual bool IsScope() const;
-
-			/// Compiles the node.
-			virtual CompiledNode Compile(CompileInfo& info) = 0;
-
-			/// Converts the node to melon.
-			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const = 0;
 
 			/// Scans the node for potential extra includes.
 			virtual void IncludeScan(Parsing::ParsingInfo& info);
 
 			/// Scans the node for potential errors.
 			virtual ScanResult Scan(ScanInfoStack& info);
+
+			/// Compiles the node.
+			virtual CompiledNode Compile(CompileInfo& info) = 0;
+
+			/// Gets the byte size of the node.
+			///p This is only used by the compile step.
+			virtual Boxx::UInt GetSize() const;
 
 			/// Checks if the node has side effects
 			bool HasSideEffects();
@@ -96,34 +84,65 @@ namespace Melon {
 			/// Gets the side effect scope.
 			Symbols::NameList GetSideEffectScope(const bool assign);
 
-			/// Optimizes the node.
-			///R The optimized node. If the node was not optimized, this will be {nullptr}.
-			virtual NodePtr Optimize(OptimizeInfo& info);
+			/// Converts the node to melon.
+			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const = 0;
 
-			/// {true} if the compiled node is an immediate value.
-			///p Defaults to {false}.
-			virtual bool IsImmediate() const;
+			/// Gets the file info of the node.
+			FileInfo File() const;
 
-			/// Gets the immediate value of the node.
-			virtual Boxx::Long GetImmediate() const;
-			
-			/// Scans an assignment.
-			static ScanResult ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file);
+			/// Optimizes an expression.
+			///A expression: The expression to optimize.
+			///p The optimized expression will be assigned to this value.
+			static void Optimize(Ptr<Expression>& expression, OptimizeInfo& info);
 
-			/// Compiles an assignment.
-			static CompiledNode CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file);
+			/// Optimizes a condition.
+			///A condition: The condition to optimize.
+			///p The optimized condition will be assigned to this value.
+			static void Optimize(Ptr<Condition>& condition, OptimizeInfo& info);
 
-			/// Checks if a node is an empty empty node.
-			static bool IsEmpty(const NodePtr& node);
+			/// Optimizes a statement.
+			///A statement: The statement to optimize.
+			///p The optimized statement will be assigned to this value.
+			static void Optimize(Ptr<Statement>& statement, OptimizeInfo& info);
 
-			/// Combines two side effect scopes by returning the outer scope.
-			static Symbols::NameList CombineSideEffects(const Symbols::NameList& scope1, const Symbols::NameList& scope2);
+			/// Optimizes statements.
+			///A statements: The statements to optimize.
+			///p The optimized statements will be assigned to this value.
+			static void Optimize(Ptr<Statements>& statements, OptimizeInfo& info);
 
-			/// Pointer to the root node.
-			static RootNode* root;
+			/// Optimizes a node.
+			///A node: The node to optimize.
+			///p The optimized node will be assigned to this value.
+			static void Optimize(Ptr<Node>& node, OptimizeInfo& info);
+
+			static CompiledNode CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file);
 
 		protected:
+			friend RootNode;
+			friend Symbols::FunctionSymbol;
+
+			FileInfo file;
+
+			static Symbols::NameList CombineSideEffects(const Symbols::NameList& scope1, const Symbols::NameList& scope2);
+
+			static ScanResult ScanAssignment(Weak<Expression> assignable, Weak<Expression> value, ScanInfoStack& info, const FileInfo& file);
+
+			static RootNode* Root();
+
+			static bool IsEmpty(Weak<Statement> statement);
+			static bool IsEmpty(Weak<Statements> statements);
+
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
+
+			void Include(const Symbols::Name& name, Parsing::ParsingInfo& info);
+			void Include(const Symbols::NameList& name, Parsing::ParsingInfo& info);
+
+		private:
+			friend MelonCompiler;
+
+			Boxx::Optional<Symbols::NameList> sideEffectScope;
+
+			static RootNode* _root;
 		};
 
 		///H Errors

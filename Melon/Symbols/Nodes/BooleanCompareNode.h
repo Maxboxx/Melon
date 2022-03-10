@@ -4,24 +4,20 @@
 
 #include "Kiwi/Kiwi.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-
-			///B BooleanCompareNode
-			/// Node for comparing boolean values
-			class BooleanCompareNode : public SymbolNode {
+			/// Node for comparing boolean values.
+			class BooleanCompareNode : public BinarySymbolNode {
 			public:
-				///T Operator
+				/// The compare operator.
 				Kiwi::InstructionType op;
 
-				///T Constructor
+				/// Constructor.
 				BooleanCompareNode(const Kiwi::InstructionType op);
 
-				///T Compile
-				///A nodes[0]: The first operand
-				///A nodes[1]: The second operand
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

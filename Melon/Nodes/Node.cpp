@@ -1,11 +1,18 @@
 #include "Node.h"
 
-#include "ConvertNode.h"
-#include "EmptyNode.h"
+#include "Expression.h"
+#include "Statement.h"
+#include "Statements.h"
+#include "Condition.h"
+#include "TypeConversion.h"
+#include "EmptyStatement.h"
+#include "RootNode.h"
 
 #include "Melon/Parsing/Parser.h"
+#include "Melon/Parsing/IncludeParser.h"
 
 #include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/NamespaceSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -13,15 +20,15 @@
 
 using namespace Boxx;
 
+using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 using namespace Melon::Optimizing;
 
-RootNode* Node::root = nullptr;
+RootNode* Node::_root = nullptr;
 
-Node::Node(Symbol* const scope, const FileInfo& file) {
-	this->scope = scope;
+Node::Node(Symbol* const scope, const FileInfo& file) : scope(scope) {
 	this->file = file;
 }
 
@@ -29,18 +36,16 @@ Node::~Node() {
 
 }
 
-TypeSymbol* Node::Type() const {
-	return nullptr;
-}
+void Node::IncludeScan(ParsingInfo& info) {
 
-List<TypeSymbol*> Node::Types() const {
-	List<TypeSymbol*> types;
-	types.Add(Type());
-	return types;
 }
 
 ScanResult Node::Scan(ScanInfoStack& info) {
 	return ScanResult();
+}
+
+UInt Node::GetSize() const {
+	return 0;
 }
 
 bool Node::HasSideEffects() {
@@ -71,8 +76,51 @@ NameList Node::GetSideEffectScope(const bool assign) {
 	return *sideEffectScope;
 }
 
-NameList Node::FindSideEffectScope(const bool assign) {
-	return scope->AbsoluteName();
+FileInfo Node::File() const {
+	return file;
+}
+
+void Node::Optimize(Ptr<Expression>& node, OptimizeInfo& info) {
+	if (Ptr<Expression> n = node->Optimize(info)) {
+		node = n;
+	}
+}
+
+void Node::Optimize(Ptr<Condition>& node, OptimizeInfo& info) {
+	if (Ptr<Condition> n = node->Optimize(info)) {
+		node = n;
+	}
+}
+
+void Node::Optimize(Ptr<Statement>& node, OptimizeInfo& info) {
+	if (Ptr<Statement> n = node->Optimize(info)) {
+		node = n;
+	}
+}
+
+void Node::Optimize(Ptr<Statements>& node, OptimizeInfo& info) {
+	if (Ptr<Statements> n = node->Optimize(info)) {
+		node = n;
+	}
+}
+
+void Node::Optimize(Ptr<Node>& node, OptimizeInfo& info) {
+	if (Ptr<Expression> n = node.AsPtr<Expression>()) {
+		Optimize(n, info);
+		node = n;
+	}
+	else if (Ptr<Condition> n = node.AsPtr<Condition>()) {
+		Optimize(n, info);
+		node = n;
+	}
+	else if (Ptr<Statement> n = node.AsPtr<Statement>()) {
+		Optimize(n, info);
+		node = n;
+	}
+	else if (Ptr<Statements> n = node.AsPtr<Statements>()) {
+		Optimize(n, info);
+		node = n;
+	}
 }
 
 NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2) {
@@ -95,39 +143,11 @@ NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2
 	}
 }
 
-NodePtr Node::Optimize(OptimizeInfo& info) {
-	return nullptr;
-}
-
-void Node::IncludeScan(ParsingInfo& info) {
-	
-}
-
-Symbol* Node::GetSymbol() const {
-	return nullptr;
-}
-
-UInt Node::GetSize() const {
-	return 0;
-}
-
-bool Node::IsScope() const {
-	return false;
-}
-
-bool Node::IsImmediate() const {
-	return false;
-}
-
-Long Node::GetImmediate() const {
-	return 0;
-}
-
-ScanResult Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info, const FileInfo& file) {
+ScanResult Node::ScanAssignment(Weak<Expression> assignable, Weak<Expression> value, ScanInfoStack& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
-	if (TypeSymbol* const type = var->Type()) {
+	if (TypeSymbol* const type = assignable->Type()) {
 		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
 			func->FindOverload(args, file);
 		}
@@ -136,39 +156,75 @@ ScanResult Node::ScanAssignment(NodePtr var, NodePtr value, ScanInfoStack& info,
 	return ScanResult();
 }
 
-CompiledNode Node::CompileAssignment(NodePtr var, NodePtr value, CompileInfo& info, const FileInfo& file) {
+CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
 	FunctionSymbol* assign = nullptr;
 
-	if (TypeSymbol* const type = var->Type()) {
+	if (TypeSymbol* const type = assignable->Type()) {
 		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
 			assign = func->FindOverload(args, file);
 		}
 	}
 
 	if (assign) {
-		List<NodePtr> nodes;
-		nodes.Add(var);
-
-		Pointer<ConvertNode> cn = new ConvertNode(value->scope, value->file);
+		Ptr<TypeConversion> cn = new TypeConversion(value->scope, value->file);
 		cn->isExplicit = false;
-		cn->node = value;
+		cn->expression = new WeakExpression(value);
 		cn->type = assign->ArgumentType(0)->AbsoluteName();
-		nodes.Add(cn);
 
-		return assign->symbolNode->Compile(nodes, info);
+		return assign->symbolNode->Compile(assignable, cn, info);
 	}
 
 	return CompiledNode();
 }
 
-bool Node::IsEmpty(const NodePtr& node) {
-	if (Pointer<EmptyNode> empty = node.Cast<EmptyNode>()) {
-		return !empty->node;
-	}
+NameList Node::FindSideEffectScope(const bool assign) {
+	return scope ? scope->AbsoluteName() : NameList();
+}
 
+void Node::Include(const Symbols::Name& name, ParsingInfo& info) {
+	Include(NameList(name), info);
+}
+
+void Node::Include(const Symbols::NameList& name, ParsingInfo& info) {
+	while (Symbol* s = SymbolTable::Find(name, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates)) {
+		bool done = true;
+
+		for (UInt i = 1; i < name.Size(); i++) {
+			if (s->Is<NamespaceSymbol>()) {
+				if (Symbol* const sym = s->Contains(name[i])) {
+					s = sym;
+				}
+				else {
+					IncludeParser::ParseInclude(s->AbsoluteName().Add(name[i]), info);
+					done = false;
+					break;
+				}
+			}
+		}
+
+		if (done) break;
+	}
+}
+
+RootNode* Node::Root() {
+	return _root;
+}
+
+bool Node::IsEmpty(Weak<Statement> statement) {
+	if (Weak<EmptyStatement> empty = statement.As<EmptyStatement>()) {
+		return !empty->statement;
+	}
+	
 	return false;
 }
 
+bool Node::IsEmpty(Weak<Statements> statements) {
+	for (Weak<Statement> statement : statements->statements) {
+		if (!IsEmpty(statement)) return false;
+	}
+
+	return true;
+}

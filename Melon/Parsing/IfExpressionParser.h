@@ -4,10 +4,12 @@
 
 #include "Boxx/List.h"
 
+#include "Melon/Nodes/IfExpression.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Nodes {
-		class IfExprNode;
+		class IfExpression;
 	}
 
 	namespace Parsing {
@@ -15,11 +17,11 @@ namespace Melon {
 		class IfExpressionParser {
 		public:
 			/// Parses an {if} expression.
-			static Nodes::NodePtr Parse(ParsingInfo& info, const bool returnOnError = false);
+			static Ptr<Nodes::IfExpression> Parse(ParsingInfo& info, const bool returnOnError = false);
 
 		private:
-			static bool ParseSimple(ParsingInfo& info, Nodes::IfExprNode* const node, const Boxx::UInt line, bool& error);
-			static bool ParseFull(ParsingInfo& info, Nodes::IfExprNode* const node, const Boxx::UInt line, bool& error);
+			static bool ParseSimple(ParsingInfo& info, Weak<Nodes::IfExpression> node, const Boxx::UInt line, bool& error);
+			static bool ParseFull(ParsingInfo& info, Weak<Nodes::IfExpression> node, const Boxx::UInt line, bool& error);
 		};
 	}
 }

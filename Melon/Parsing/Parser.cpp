@@ -39,9 +39,8 @@ ParsingInfo Parser::Parse(const String& filename, const CompilerOptions& options
 	return info;
 }
 
-NodePtr Parser::UnexpectedToken(ParsingInfo& info) {
+void Parser::UnexpectedToken(ParsingInfo& info) {
 	ErrorLog::Error(LogMessage("error.token.unexpected", info.Current().value), info.GetFileInfo());
-	return nullptr;
 }
 
 void Parser::ParseFile(const String& filename, ParsingInfo& info) {
@@ -60,7 +59,7 @@ void Parser::ParseFile(const String& filename, ParsingInfo& info) {
 		}
 	}
 
-	if (NodePtr node = StatementParser::ParseMultiple(info)) {
+	if (Ptr<Statements> node = StatementParser::ParseMultiple(info)) {
 		info.root.nodes.Add(node);
 	}
 

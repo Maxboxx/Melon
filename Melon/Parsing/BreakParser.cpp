@@ -1,14 +1,12 @@
 #include "BreakParser.h"
 
-#include "Melon/Nodes/BreakNode.h"
-
 using namespace Boxx;
 
 using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 
-NodePtr BreakParser::Parse(ParsingInfo& info) {
+Ptr<BreakStatement> BreakParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::Break) {
 		return ParseBreak(info);
 	}
@@ -19,10 +17,10 @@ NodePtr BreakParser::Parse(ParsingInfo& info) {
 	return nullptr;
 }
 
-NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
+Ptr<BreakStatement> BreakParser::ParseBreak(ParsingInfo& info) {
 	info.index++;
 
-	Pointer<BreakNode> bn = new BreakNode(info.scope, info.GetFileInfoPrev());
+	Ptr<BreakStatement> bn = new BreakStatement(info.scope, info.GetFileInfoPrev());
 	bn->isBreak = true;
 	bn->loops = 1;
 	bn->breakBool = false;
@@ -60,7 +58,8 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 					info.index++;
 				}
 				else {
-					return Parser::UnexpectedToken(info);
+					Parser::UnexpectedToken(info);
+					return nullptr;
 				}
 			}
 		}
@@ -81,7 +80,8 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 					info.index++;
 				}
 				else {
-					return Parser::UnexpectedToken(info);
+					Parser::UnexpectedToken(info);
+					return nullptr;
 				}
 			}
 		}
@@ -95,10 +95,10 @@ NodePtr BreakParser::ParseBreak(ParsingInfo& info) {
 	return bn;
 }
 
-NodePtr BreakParser::ParseAbort(ParsingInfo& info) {
+Ptr<BreakStatement> BreakParser::ParseAbort(ParsingInfo& info) {
 	info.index++;
 
-	Pointer<BreakNode> bn = new BreakNode(info.scope, info.GetFileInfoPrev());
+	Ptr<BreakStatement> bn = new BreakStatement(info.scope, info.GetFileInfoPrev());
 	bn->isBreak = false;
 	bn->loops = 1;
 

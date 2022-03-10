@@ -6,25 +6,27 @@
 #include "SwitchParser.h"
 #include "NameParser.h"
 #include "CallParser.h"
-#include "MethodCallParser.h"
 #include "DotParser.h"
 #include "ObjectInitParser.h"
 #include "TypeParser.h"
 #include "AsParser.h"
 
-#include "Melon/Nodes/BinaryOperatorNode.h"
-#include "Melon/Nodes/UnaryOperatorNode.h"
-#include "Melon/Nodes/LogicNode.h"
-#include "Melon/Nodes/CallNode.h"
-#include "Melon/Nodes/DotNode.h"
-#include "Melon/Nodes/ObjectInitNode.h"
-#include "Melon/Nodes/NameNode.h"
-#include "Melon/Nodes/NilNode.h"
-#include "Melon/Nodes/DefaultNode.h"
-#include "Melon/Nodes/SafeUnwrapNode.h"
-#include "Melon/Nodes/SafeUnwrapEndNode.h"
-#include "Melon/Nodes/ConvertNode.h"
-#include "Melon/Nodes/IfExprNode.h"
+#include "Melon/Nodes/BinaryOperatorExpression.h"
+#include "Melon/Nodes/UnaryOperatorExpression.h"
+#include "Melon/Nodes/LogicExpression.h"
+#include "Melon/Nodes/CallExpression.h"
+#include "Melon/Nodes/DotExpression.h"
+#include "Melon/Nodes/ObjectInitExpression.h"
+#include "Melon/Nodes/NameExpression.h"
+#include "Melon/Nodes/NilValue.h"
+#include "Melon/Nodes/DefaultExpression.h"
+#include "Melon/Nodes/SafeUnwrapExpression.h"
+#include "Melon/Nodes/SafeUnwrapChain.h"
+#include "Melon/Nodes/TypeConversion.h"
+#include "Melon/Nodes/IfExpression.h"
+#include "Melon/Nodes/SwitchExpression.h"
+#include "Melon/Nodes/Integer.h"
+#include "Melon/Nodes/Boolean.h"
 
 using namespace Boxx;
 
@@ -33,12 +35,12 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
+Ptr<Expression> ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 	const UInt startIndex = info.index;
 
-	if (NodePtr valueNode = ParseOperand(info, statement)) {
-		List<Pair<TokenType, Pointer<BinaryOperatorNode>>> operators;
-		List<NodePtr> nodes;
+	if (Ptr<Expression> valueNode = ParseBinaryOperand(info, statement)) {
+		List<Pair<TokenType, Ptr<BinaryOperatorExpression>>> operators;
+		List<Ptr<Expression>> nodes;
 		nodes.Add(valueNode);
 		UByte highestPrecedence = 0;
 
@@ -47,28 +49,28 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 
 			if (IsBinaryOperator(token.type)) {
 				if (token.type == TokenType::As) {
-					if (NodePtr node = AsParser::Parse(info)) {
-						node.Cast<ConvertNode>()->node = nodes.Last();
+					if (Ptr<TypeConversion> node = AsParser::Parse(info)) {
+						node->expression = nodes.Last();
 						nodes[nodes.Size() - 1] = node;
 					}
 				}
 				else {
 					info.index++;
 
-					if (NodePtr valueNode2 = ParseOperand(info)) {
-						Pointer<BinaryOperatorNode> node;
+					if (Ptr<Expression> valueNode2 = ParseBinaryOperand(info)) {
+						Ptr<BinaryOperatorExpression> node;
 
 						if (IsLogic(token.type)) {
-							node = new LogicNode(info.scope, token.type, info.GetFileInfo(token.line));
+							node = new LogicExpression(info.scope, token.type, info.GetFileInfo(token.line));
 						}
 						else if (token.type == TokenType::DoubleQuestion) {
-							node = new DefaultNode(info.scope, info.GetFileInfo(token.line));
+							node = new DefaultExpression(info.scope, info.GetFileInfo(token.line));
 						}
 						else {
-							node = new BinaryOperatorNode(info.scope, Name(token.value), info.GetFileInfo(token.line));
+							node = new BinaryOperatorExpression(info.scope, Name(token.value), info.GetFileInfo(token.line));
 						}
 
-						operators.Add(Pair<TokenType, Pointer<BinaryOperatorNode>>(token.type, node));
+						operators.Add(Pair<TokenType, Ptr<BinaryOperatorExpression>>(token.type, node));
 						nodes.Add(valueNode2);
 
 						if (highestPrecedence < Precedence(token.type)) highestPrecedence = Precedence(token.type);
@@ -88,9 +90,9 @@ NodePtr ExpressionParser::Parse(ParsingInfo& info, const bool statement) {
 			while (!operators.IsEmpty()) {
 				for (UInt i = 0; i < operators.Size();) {
 					if (Precedence(operators[i].key) == highestPrecedence) {
-						Pointer<BinaryOperatorNode> op = operators[i].value;
-						op->node1 = nodes[i];
-						op->node2 = nodes[i + 1];
+						Ptr<BinaryOperatorExpression> op = operators[i].value;
+						op->operand1 = nodes[i];
+						op->operand2 = nodes[i + 1];
 						nodes[i] = op;
 
 						operators.RemoveAt(i);
@@ -204,20 +206,20 @@ bool ExpressionParser::IsLogic(const TokenType type) {
 		type == TokenType::Xnor;
 }	
 
-NodePtr ExpressionParser::ParseOperand(ParsingInfo& info, const bool statement) {
+Ptr<Expression> ExpressionParser::ParseBinaryOperand(ParsingInfo& info, const bool statement) {
 	const UInt startIndex = info.index;
 	const Token token = info.Current();
 
-	if (NodePtr node = ParseValue(info, statement)) {
+	if (Ptr<Expression> node = ParseUnaryOperand(info, statement)) {
 		return node;
 	}
 	else if (token.type == TokenType::Minus || token.type == TokenType::BNot || token.type == TokenType::Not) {
 		info.index++;
 
-		if (NodePtr node = ParseOperand(info)) {
-			Pointer<UnaryOperatorNode> opNode = new UnaryOperatorNode(info.scope, Name(token.value), info.GetFileInfo(token.line));
+		if (Ptr<Expression> node = ParseBinaryOperand(info)) {
+			Ptr<UnaryOperatorExpression> opNode = new UnaryOperatorExpression(info.scope, Name(token.value), info.GetFileInfo(token.line));
 
-			opNode->node = node;
+			opNode->operand = node;
 			return opNode;
 		}
 	}
@@ -226,7 +228,64 @@ NodePtr ExpressionParser::ParseOperand(ParsingInfo& info, const bool statement) 
 	return nullptr;
 }
 
-NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement) {
+Ptr<Expression> ExpressionParser::ParseUnaryOperand(ParsingInfo& info, const bool statement) {
+	if (Ptr<Expression> node = ParseChainOperand(info, statement)) {
+		bool hasSafeUnwrap = false;
+
+		while (!info.EndOfFile()) {
+			if (Ptr<CallExpression> call = CallParser::Parse(info)) {
+				call->expression = node;
+				node = call;
+
+				continue;
+			}
+
+			if (Ptr<DotExpression> dot = DotParser::Parse(info)) {
+				dot->expression = node;
+				node = dot;
+				continue;
+			}
+
+			if (Ptr<ObjectInitExpression> dot = ObjectInitParser::Parse(info)) {
+				dot->expression = node;
+				node = dot;
+				continue;
+			}
+
+			if (info.Current().type == TokenType::Exclamation) {
+				Ptr<UnaryOperatorExpression> unwrap = new UnaryOperatorExpression(info.scope, Name::Unwrap, info.GetFileInfo());
+				unwrap->operand = node;
+				info.index++;
+				node = unwrap;
+				continue;
+			}
+
+			if (info.Current().type == TokenType::Question) {
+				hasSafeUnwrap = true;
+
+				Ptr<SafeUnwrapExpression> unwrap = new SafeUnwrapExpression(info.scope, info.GetFileInfo());
+				unwrap->expression = node;
+				info.index++;
+				node = unwrap;
+				continue;
+			}
+
+			break;
+		}
+
+		if (hasSafeUnwrap) {
+			Ptr<SafeUnwrapChain> unwrap = new SafeUnwrapChain(info.scope, info.GetFileInfoPrev());
+			unwrap->expression = node;
+			node = unwrap;
+		}
+
+		return node;
+	}
+
+	return nullptr;
+}
+
+Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const bool statement) {
 	const UInt startIndex = info.index;
 	const UInt startLine  = info.Current().line;
 
@@ -234,7 +293,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		ErrorLog::AddMarker();
 
 		try {
-			if (NodePtr node = IfExpressionParser::Parse(info, true)) {
+			if (Ptr<IfExpression> node = IfExpressionParser::Parse(info, true)) {
 				ErrorLog::RemoveMarker();
 				return node;
 			}
@@ -244,7 +303,7 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		}
 
 		try {
-			if (NodePtr node = SwitchParser::ParseExpression(info, true)) {
+			if (Ptr<SwitchExpression> node = SwitchParser::ParseExpression(info, true)) {
 				ErrorLog::RemoveMarker();
 				return node;
 			}
@@ -256,31 +315,31 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		ErrorLog::Revert();
 	}
 	else {
-		if (NodePtr node = IfExpressionParser::Parse(info)) {
+		if (Ptr<IfExpression> node = IfExpressionParser::Parse(info)) {
 			return node;
 		}
-		else if (NodePtr node = SwitchParser::ParseExpression(info)) {
+		else if (Ptr<SwitchExpression> node = SwitchParser::ParseExpression(info)) {
 			return node;
 		}
 	}
 
 	if (info.Current().type == TokenType::ParenOpen) {
 		info.index++;
-		NodePtr node = Parse(info);
+		Ptr<Expression> node = Parse(info);
 
 		if (info.Current().type == TokenType::ParenClose) {
 			info.index++;
 			return node;
 		}
 	}
-	else if (NodePtr node = IntegerParser::Parse(info)) {
+	else if (Ptr<Integer> node = IntegerParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = BooleanParser::Parse(info)) {
+	else if (Ptr<Boolean> node = BooleanParser::Parse(info)) {
 		return node;
 	}
 	else if (info.Current().type == TokenType::Nil) {
-		Pointer<NilNode> node = new NilNode(info.GetFileInfo());
+		Ptr<NilValue> node = new NilValue(info.GetFileInfo());
 		info.index++;
 		return node;
 	}
@@ -288,12 +347,11 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 	if (info.Current().type == TokenType::Global) {
 		const UInt line = info.Current().line;
 		info.index++;
-		
-		if (NodePtr dotNode = DotParser::Parse(info)) {
-			Pointer<DotNode> dn = dotNode.Cast<DotNode>();
-			Pointer<NameNode> nn = new NameNode(nullptr, info.GetFileInfo(line));
+
+		if (Ptr<DotExpression> dn = DotParser::Parse(info)) {
+			Ptr<NameExpression> nn = new NameExpression(nullptr, info.GetFileInfo(line));
 			nn->name = Name::Global;
-			dn->node = nn;
+			dn->expression = nn;
 			return dn;
 		}
 
@@ -307,79 +365,15 @@ NodePtr ExpressionParser::ParseRawValue(ParsingInfo& info, const bool statement)
 		info.index = startIndex;
 		return nullptr;
 	}
-	else if (Optional<Name> node = TypeParser::ParseScope(info)) {
-		Pointer<NameNode> nn = new NameNode(info.scope, info.GetFileInfo(startLine));
+	else if (Optional<Name> node = TypeParser::ParseName(info)) {
+		Ptr<NameExpression> nn = new NameExpression(info.scope, info.GetFileInfo(startLine));
 		nn->name = *node;
 		return nn;
 	}
-	else if (NodePtr node = NameParser::Parse(info)) {
+	else if (Ptr<NameExpression> node = NameParser::Parse(info)) {
 		return node;
 	}
 
 	info.index = startIndex;
-	return nullptr;
-}
-
-NodePtr ExpressionParser::ParseValue(ParsingInfo& info, const bool statement) {
-	if (NodePtr node = ParseRawValue(info, statement)) {
-		bool hasSafeUnwrap = false;
-
-		while (!info.EndOfFile()) {
-			if (NodePtr call = CallParser::Parse(info)) {
-				call.Cast<CallNode>()->node = node;
-				node = call;
-
-				continue;
-			}
-
-			if (NodePtr call = MethodCallParser::Parse(info)) {
-				call.Cast<CallNode>()->node = node;
-				node = call;
-
-				continue;
-			}
-
-			if (NodePtr dot = DotParser::Parse(info)) {
-				dot.Cast<DotNode>()->node = node;
-				node = dot;
-				continue;
-			}
-
-			if (NodePtr dot = ObjectInitParser::Parse(info)) {
-				dot.Cast<ObjectInitNode>()->node = node;
-				node = dot;
-				continue;
-			}
-
-			if (info.Current().type == TokenType::Exclamation) {
-				Pointer<UnaryOperatorNode> unwrap = new UnaryOperatorNode(info.scope, Name::Unwrap, info.GetFileInfo());
-				unwrap->node = node;
-				info.index++;
-				node = unwrap;
-				continue;
-			}
-
-			if (info.Current().type == TokenType::Question) {
-				hasSafeUnwrap = true;
-
-				Pointer<SafeUnwrapNode> unwrap = new SafeUnwrapNode(info.scope, info.GetFileInfo());
-				unwrap->node = node;
-				info.index++;
-				node = unwrap;
-				continue;
-			}
-
-			break;
-		}
-
-		if (hasSafeUnwrap) {
-			Pointer<SafeUnwrapEndNode> unwrap = new SafeUnwrapEndNode(info.scope, info.GetFileInfoPrev());
-			unwrap->node = node;
-			node = unwrap;
-		}
-
-		return node;
-	}
-
 	return nullptr;
 }

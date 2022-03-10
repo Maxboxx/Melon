@@ -2,19 +2,14 @@
 
 #include "SymbolNode.h"
 
+///N Melon::Symbols::Nodes
 namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
-
-			///B OptionalAssignValueNode
-			/// Node for assigning values to optional types
-			class OptionalAssignValueNode : public SymbolNode {
+			/// Node for assigning values to optional types.
+			class OptionalAssignValueNode : public BinarySymbolNode {
 			public:
-
-				///T Compile
-				///A nodes[0]: The node to assign a value to
-				///A nodes[1]: The value to be assigned 
-				virtual Melon::Nodes::CompiledNode Compile(const Boxx::List<Melon::Nodes::NodePtr>& nodes, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

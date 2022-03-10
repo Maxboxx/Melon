@@ -11,13 +11,13 @@ using namespace Melon::Nodes;
 using namespace Melon::Optimizing;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode BooleanAssignNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
+CompiledNode BooleanAssignNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
 	bool important = info.important;
 	info.important = false;
 
-	CompiledNode c1 = nodes[0]->Compile(info);
+	CompiledNode c1 = operand1->Compile(info);
 	const UInt frame = info.stack.frame;
-	CompiledNode c2 = nodes[1]->Compile(info);
+	CompiledNode c2 = operand2->Compile(info);
 
 	OptimizerInstruction mov = Instruction(InstructionType::Mov, 1);
 	mov.important = important;

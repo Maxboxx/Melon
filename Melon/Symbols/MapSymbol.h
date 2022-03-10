@@ -4,7 +4,7 @@
 
 namespace Melon {
 	namespace Nodes {
-		class StructNode;
+		class StructStatement;
 	}
 
 	///N Melon::Symbols
@@ -29,7 +29,7 @@ namespace Melon {
 		protected:
 			virtual Symbol* FindSymbol(const NameList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
 
-			friend Melon::Nodes::StructNode;
+			friend Melon::Nodes::StructStatement;
 
 			Boxx::Map<Symbols::Name, Symbol*> symbols;
 		};

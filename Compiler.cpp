@@ -6,6 +6,8 @@
 	#error Boxx version of 3.4.0 or newer required
 #endif
 
+#include "Types.h"
+
 #include "Kiwi/Kiwi.h"
 #include "Kiwi/x86_64Converter.h"
 
@@ -18,6 +20,8 @@ using namespace Kiwi;
 using namespace Melon;
 
 int main() {
+	Ptr<int> a = nullptr;
+
 	/*
 	DragonfruitInfo info;
 	info.docComment = "///";
@@ -37,7 +41,7 @@ int main() {
 	info.blockHeadingPatterns.Add(Pair<String, Regex>("Types", Regex("%b{enum%n+class|class|struct|enum}%n+(%w+)")));
 	info.blockHeadingPatterns.Add(Pair<String, Regex>("Values", Regex("^%n*%w+%n*{[,=]|$}")));
 	info.blockHeadingPatterns.Add(Pair<String, Regex>("Members", Regex("%w+")));
-
+	
 	Dragonfruit doc = Dragonfruit::Generate("./", info);
 	doc.GenerateHTML("../Documentation");
 	/*/

@@ -5,9 +5,9 @@
 #include "AssignableParser.h"
 #include "VariableAttributeParser.h"
 
-#include "Melon/Nodes/AssignNode.h"
-#include "Melon/Nodes/NameNode.h"
-#include "Melon/Nodes/DiscardNode.h"
+#include "Melon/Nodes/Assignment.h"
+#include "Melon/Nodes/NameExpression.h"
+#include "Melon/Nodes/DiscardExpression.h"
 
 #include "Melon/Symbols/VariableSymbol.h"
 
@@ -18,7 +18,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
+Ptr<Assignment> AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	const UInt startIndex = info.index;
 	const UInt startLine = info.Current().line;
 
@@ -34,20 +34,20 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	bool singleType = types.Size() == 1;
 
 	// Create assign node
-	Pointer<AssignNode> assign = new AssignNode(info.scope, info.GetFileInfo(startLine));
+	Ptr<Assignment> assign = new Assignment(info.scope, info.GetFileInfo(startLine));
 	List<Tuple<Name, Symbol*>> symbols;
 
 	// Parse variables
 	ParseVariables(info, types, assign, symbols, singleType);
 
 	// Check for single flag
-	if ((flags & Flags::Single) != Flags::None && assign->vars.Size() > 1) {
+	if ((flags & Flags::Single) != Flags::None && assign->assignableValues.Size() > 1) {
 		info.index = startIndex;
 		return nullptr;
 	}
 
 	// Break if assignment is empty
-	if (assign->vars.IsEmpty()) {
+	if (assign->assignableValues.IsEmpty()) {
 		info.index = startIndex;
 		return nullptr;
 	}
@@ -72,7 +72,7 @@ NodePtr AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	ParseExpressions(info, assign);
 
 	// Check if there are too many expressions
-	if (assign->values.Size() > assign->vars.Size()) {
+	if (assign->values.Size() > assign->assignableValues.Size()) {
 		ErrorLog::Error(LogMessage("error.syntax.assign.expr.many"), info.GetFileInfoPrev());
 	}
 
@@ -154,7 +154,7 @@ bool AssignmentParser::ValidateTypes(ParsingInfo& info, List<NameList>& types, c
 	return true;
 }
 
-void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, Pointer<AssignNode>& assign, List<Tuple<Name, Symbol*>>& symbols, const bool singleType) {
+void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, Ptr<Assignment>& assign, List<Tuple<Name, Symbol*>>& symbols, const bool singleType) {
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
 			if (info.Current().type != TokenType::Comma) {
@@ -194,12 +194,12 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 				FileInfo file = info.GetFileInfoPrev();
 				file.statement++;
 
-				Pointer<NameNode> nn = new NameNode(info.scope, file);
+				Ptr<NameExpression> nn = new NameExpression(info.scope, file);
 				nn->name = name;
-				assign->vars.Add(nn);
+				assign->assignableValues.Add(nn);
 			}
 			else {
-				assign->vars.Add(new DiscardNode(info.scope, info.GetFileInfoPrev()));
+				assign->assignableValues.Add(new DiscardExpression(info.scope, info.GetFileInfoPrev()));
 			}
 
 			if (name == NameList::Discard.Last()) continue;
@@ -211,8 +211,8 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 			symbols.Add(Tuple<Name, Symbol*>(name, v));
 		}
 		else {
-			if (NodePtr node = AssignableParser::Parse(info)) {
-				assign->vars.Add(node);
+			if (Ptr<Expression> node = AssignableParser::Parse(info)) {
+				assign->assignableValues.Add(node);
 			}
 			else {
 				break;
@@ -221,7 +221,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 	}
 }
 
-void AssignmentParser::ParseExpressions(ParsingInfo& info, Pointer<AssignNode>& assign) {
+void AssignmentParser::ParseExpressions(ParsingInfo& info, Ptr<Assignment>& assign) {
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
 			if (info.EndOfFile() || info.Current().type != TokenType::Comma) {
@@ -231,7 +231,7 @@ void AssignmentParser::ParseExpressions(ParsingInfo& info, Pointer<AssignNode>& 
 			info.index++;
 		}
 
-		if (NodePtr node = ExpressionParser::Parse(info)) {
+		if (Ptr<Expression> node = ExpressionParser::Parse(info)) {
 			assign->values.Add(node);
 		}
 		else {

@@ -7,7 +7,7 @@
 #include "TemplateTypeSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
-#include "Melon/Nodes/FunctionNode.h"
+#include "Melon/Nodes/FunctionBody.h"
 
 #include "Boxx/ReplacementMap.h"
 #include "Boxx/Map.h"
@@ -167,7 +167,7 @@ Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(F
 					TypeSymbol* t = nullptr;
 
 					if (templateMap.Contains(pair.key, t)) {
-						if (t != pair.value) {
+						if (!SymbolTable::FindImplicitConversion(pair.value, t, file)) {
 							templateMap[pair.key] = nullptr;
 						}
 					}
@@ -213,7 +213,14 @@ Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(F
 	}
 
 	for (UInt i = 0; i < func->arguments.Size(); i++) {
-		types.value2.Add(func->ArgumentType(i)->AbsoluteName());
+		//types.value2.Add(func->ArgumentType(i)->AbsoluteName());
+		TypeSymbol* type = func->ArgumentType(i);
+
+		if (TemplateSymbol* t = type->Cast<TemplateSymbol>()) {
+			templateMap.Contains(t, type);
+		}
+
+		types.value2.Add(type->AbsoluteName());
 	}
 
 	for (const Pair<TemplateSymbol*, NameList>& pair : templateTypes) {
@@ -254,7 +261,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 			if (arg != args[i]) {
 				perfect = false;
 
-				if (!SymbolTable::FindImplicitConversion(arg, args[i], file)) {
+				if (!SymbolTable::FindImplicitConversion(args[i], arg, file)) {
 					match = false;
 					break;
 				}
@@ -319,7 +326,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 		return best;
 	}
 	else {
-		return best->Parent<FunctionSymbol>()->AddOverload(best->SpecializeTemplate(replacement, Node::root));
+		return best->Parent<FunctionSymbol>()->AddOverload(best->SpecializeTemplate(replacement, Node::Root()));
 	}
 }
 
@@ -452,11 +459,15 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 
 	if (overloads.IsEmpty()) {
 		if (node) {
-			Pointer<FunctionNode> fn = new FunctionNode(node->scope, node->file);
+			Ptr<FunctionBody> fn = new FunctionBody(node->scope, node->file);
 			fn->sym = sym;
-			fn->node = node.Cast<FunctionNode>()->node;
+
+			// TODO: Copy instead of reference?
+			fn->statements = new Statements(node->statements->scope, node->statements->File());
+			fn->statements->statements = node->statements->statements;
+
 			sym->node = fn;
-			root->funcs.Add(sym->node);
+			root->funcs.Add(fn);
 		}
 
 		for (UInt i = 0; i < returnValues.Size(); i++) {

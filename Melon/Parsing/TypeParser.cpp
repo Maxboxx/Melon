@@ -2,9 +2,6 @@
 
 #include "TemplateParser.h"
 
-#include "Melon/Nodes/NameNode.h"
-#include "Melon/Nodes/DotNode.h"
-
 using namespace Boxx;
 
 using namespace Melon;

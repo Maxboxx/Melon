@@ -5,6 +5,7 @@
 #include "TemplateSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
+#include "Melon/Nodes/Structs/StackPtr.h"
 
 #include "Boxx/Map.h"
 
@@ -24,6 +25,10 @@ VariableSymbol::~VariableSymbol() {
 
 bool VariableSymbol::HasAttribute(const VariableAttributes attribute) {
 	return (this->attributes & attribute) != VariableAttributes::None;
+}
+
+Boxx::UInt VariableSymbol::Size() {
+	return HasAttribute(VariableAttributes::Ref) ? StackPtr::ptrSize : Type()->Size();
 }
 
 TypeSymbol* VariableSymbol::Type() {

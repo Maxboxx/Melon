@@ -2,27 +2,27 @@
 
 #include "ExpressionParser.h"
 
-#include "Melon/Nodes/NameNode.h"
-#include "Melon/Nodes/DotNode.h"
-#include "Melon/Nodes/DiscardNode.h"
+#include "Melon/Nodes/NameExpression.h"
+#include "Melon/Nodes/DotExpression.h"
+#include "Melon/Nodes/DiscardExpression.h"
 
 using namespace Boxx;
 
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 
-NodePtr AssignableParser::Parse(ParsingInfo& info) {
+Ptr<Expression> AssignableParser::Parse(ParsingInfo& info) {
 	const UInt startIndex = info.index;
 
 	// Parse discard
 	if (info.Current().type == TokenType::Discard) {
 		info.index++;
-		return new DiscardNode(info.scope, info.GetFileInfoPrev());
+		return new DiscardExpression(info.scope, info.GetFileInfoPrev());
 	}
 	// Parse expression
-	else if (NodePtr node = ExpressionParser::Parse(info, true)) {
-		if (node.Cast<NameNode>()) return node;
-		if (node.Cast<DotNode>())  return node;
+	else if (Ptr<Expression> node = ExpressionParser::Parse(info, true)) {
+		if (node.Is<NameExpression>()) return node;
+		if (node.Is<DotExpression>())  return node;
 
 		info.index = startIndex;
 		return nullptr;

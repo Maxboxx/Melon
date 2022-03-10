@@ -12,9 +12,9 @@ BooleanCompareNode::BooleanCompareNode(const InstructionType op) {
 	this->op = op;
 }
 
-CompiledNode BooleanCompareNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
+CompiledNode BooleanCompareNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
 	const UInt top = info.stack.top;
-	CompiledNode c1 = nodes[0]->Compile(info);
+	CompiledNode c1 = operand1->Compile(info);
 
 	if (c1.argument.type == ArgumentType::Memory) {
 		if (c1.argument.mem.memptr.IsLeft() && c1.argument.mem.memptr.GetLeft().type == RegisterType::Stack) {
@@ -26,7 +26,7 @@ CompiledNode BooleanCompareNode::Compile(const List<NodePtr>& nodes, CompileInfo
 
 	const UInt frame = info.stack.frame;
 
-	CompiledNode c2 = nodes[1]->Compile(info);
+	CompiledNode c2 = operand2->Compile(info);
 	c1.AddInstructions(c2.instructions);
 
 	if (info.stack.frame > frame) {
@@ -49,3 +49,4 @@ CompiledNode BooleanCompareNode::Compile(const List<NodePtr>& nodes, CompileInfo
 	c1.argument = comp.arguments[2];
 	return c1;
 }
+

@@ -7,7 +7,7 @@
 ///N Melon::Parsing
 namespace Melon {
 	namespace Nodes {
-		class TypeNode;
+		class TypeExpression;
 	}
 
 	namespace Parsing {

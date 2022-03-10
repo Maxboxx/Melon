@@ -5,13 +5,12 @@
 #include "ScopeParser.h"
 #include "TemplateParser.h"
 
-#include "Melon/Nodes/FunctionNode.h"
-#include "Melon/Nodes/EmptyNode.h"
-
 #include "Melon/Symbols/MapSymbol.h";
 #include "Melon/Symbols/TemplateSymbol.h";
 #include "Melon/Symbols/StructSymbol.h";
 #include "Melon/Symbols/EnumSymbol.h";
+
+#include "Melon/Nodes/FunctionBody.h"
 
 using namespace Boxx;
 
@@ -20,7 +19,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
+Ptr<EmptyStatement> FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 	const UInt startIndex = info.index;
 	const UInt startLine = info.Current().line;
 
@@ -31,7 +30,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 
 	if (Optional<FunctionHead> fh = ParseFunctionHead(info, parent == nullptr)) {
 		const FunctionHead funcHead = *fh;
-		Pointer<FunctionNode> func = new FunctionNode(info.scope, info.GetFileInfo(startLine));
+		Ptr<FunctionBody> func = new FunctionBody(info.scope, info.GetFileInfo(startLine));
 
 		UInt line = 0;
 
@@ -90,7 +89,7 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		info.loops = 0;
 		info.scopeCount = 0;
 		
-		func->node = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("function", startLine), true);
+		func->statements = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("function", startLine), true);
 
 		func->sym = funcSym;
 		funcSym->node = func;
@@ -102,9 +101,9 @@ NodePtr FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const parent) {
 		info.root.funcs.Add(func);
 		info.statementNumber++;
 
-		Pointer<EmptyNode> en = new EmptyNode();
-		en->node = func;
-		return en;
+		Ptr<EmptyStatement> empty = new EmptyStatement();
+		empty->statement = info.root.funcs.Last();
+		return empty;
 	}
 
 	delete funcSym;
@@ -119,7 +118,7 @@ Optional<Name> FunctionParser::ParseFunctionName(ParsingInfo& info, const bool i
 		info.index++;
 		return s;
 	}
-	else if (isPlain) {
+	else if (!isPlain) {
 		if (info.Current().type == TokenType::Init) {
 			const Name s = Name::Init;
 			info.index++;

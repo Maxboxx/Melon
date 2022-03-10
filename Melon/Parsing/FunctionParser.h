@@ -10,6 +10,8 @@
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 
+#include "Melon/Nodes/EmptyStatement.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -17,7 +19,7 @@ namespace Melon {
 		class FunctionParser {
 		public:
 			/// Parses a function.
-			static Nodes::NodePtr Parse(ParsingInfo& info, Symbols::TypeSymbol* const parent = nullptr);
+			static Ptr<Nodes::EmptyStatement> Parse(ParsingInfo& info, Symbols::TypeSymbol* const parent = nullptr);
 
 		private:
 			struct Argument {

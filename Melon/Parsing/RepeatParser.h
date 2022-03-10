@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/RepeatStatement.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,7 +11,7 @@ namespace Melon {
 		class RepeatParser {
 		public:
 			/// Parses a {repeat} statement.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::RepeatStatement> Parse(ParsingInfo& info);
 		};
 	}
 }

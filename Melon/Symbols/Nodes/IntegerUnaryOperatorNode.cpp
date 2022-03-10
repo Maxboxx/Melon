@@ -11,8 +11,8 @@ IntegerUnaryOperatorNode::IntegerUnaryOperatorNode(const UByte size, const Instr
 	this->op = name;
 }
 
-CompiledNode IntegerUnaryOperatorNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
-	CompiledNode c1 = nodes[0]->Compile(info);
+CompiledNode IntegerUnaryOperatorNode::Compile(Weak<Expression> operand, CompileInfo& info) const {
+	CompiledNode c1 = operand->Compile(info);
 
 	if (c1.argument.type != ArgumentType::Register) {
 		Argument reg = Argument(Register(info.index++));
@@ -32,3 +32,4 @@ CompiledNode IntegerUnaryOperatorNode::Compile(const List<NodePtr>& nodes, Compi
 
 	return c1;
 }
+

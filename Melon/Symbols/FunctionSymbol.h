@@ -11,7 +11,7 @@
 namespace Melon {
 	namespace Nodes {
 		class Node;
-		class StructNode;
+		class StructStatement;
 	}
 
 	namespace Symbols {
@@ -100,7 +100,7 @@ namespace Melon {
 
 			/// The node to use for the compilation of the function.
 			///p Is {nullptr} if {symbolNode} should be used instead.
-			Boxx::Pointer<Melon::Nodes::Node> node;
+			Weak<Melon::Nodes::FunctionBody> node;
 
 			/// The function attributes.
 			FunctionAttributes attributes = FunctionAttributes::None;
@@ -130,7 +130,7 @@ namespace Melon {
 		private:
 			friend TypeSymbol;
 			friend SymbolTable;
-			friend Melon::Nodes::StructNode;
+			friend Melon::Nodes::StructStatement;
 			Boxx::List<FunctionSymbol*> overloads;
 		};
 	}

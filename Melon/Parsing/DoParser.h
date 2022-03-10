@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/DoStatement.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,7 +11,7 @@ namespace Melon {
 		class DoParser {
 		public:
 			/// Parses a {do} statement.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::DoStatement> Parse(ParsingInfo& info);
 		};
 	}
 }

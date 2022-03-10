@@ -2,8 +2,6 @@
 
 #include "ExpressionParser.h"
 
-#include "Melon/Nodes/ReturnNode.h"
-
 #include "Melon/Symbols/FunctionSymbol.h"
 
 using namespace Boxx;
@@ -13,13 +11,13 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-NodePtr ReturnParser::Parse(ParsingInfo& info) {
+Ptr<ReturnStatement> ReturnParser::Parse(ParsingInfo& info) {
 	const UInt startIndex = info.index;
 
 	if (info.Current().type == TokenType::Return) {
 		info.index++;
 
-		Pointer<ReturnNode> ret = new ReturnNode(info.scope, info.GetFileInfoPrev());
+		Ptr<ReturnStatement> ret = new ReturnStatement(info.scope, info.GetFileInfoPrev());
 		
 		Symbol* sym = info.scope;
 
@@ -29,8 +27,8 @@ NodePtr ReturnParser::Parse(ParsingInfo& info) {
 
 		ret->func = sym->AbsoluteName();
 
-		while (NodePtr node = ExpressionParser::Parse(info)) {
-			ret->nodes.Add(node);
+		while (Ptr<Expression> node = ExpressionParser::Parse(info)) {
+			ret->values.Add(node);
 
 			if (info.Current().type == TokenType::Comma) {
 				info.index++;

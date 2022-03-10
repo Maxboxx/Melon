@@ -1,10 +1,29 @@
 
-int: i = 0
+struct A
+	int: i
 
-i = if i == 0 ->
-	1
-elseif i > 4 ->
-	2
-else ->
-	3
+	function init(int: i)
+		self.i = i
+	end
+	
+	function int: value()
+		return self.i
+	end
+end
+
+function int: f()
+	return 3
+end
+
+function swap(int: ref a, int: ref b)
+	int: temp = a
+	a = b
+	b = temp
+end
+
+A: a = A(2)
+
+int: x, y = f(), a.value()
+
+swap(ref a.i, ref x)
 

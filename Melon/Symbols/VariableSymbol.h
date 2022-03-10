@@ -43,6 +43,9 @@ namespace Melon {
 			/// Checks if the variable has the spceified attribute.
 			bool HasAttribute(const VariableAttributes attribute);
 
+			/// Gets the memory size of the variable.
+			Boxx::UInt Size();
+
 			virtual TypeSymbol* Type() override;
 			virtual VariableSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 		};

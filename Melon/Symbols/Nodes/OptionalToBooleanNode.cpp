@@ -2,7 +2,7 @@
 
 #include "Melon/Symbols/NameList.h"
 
-#include "Melon/Nodes/BooleanNode.h"
+#include "Melon/Nodes/Boolean.h"
 
 #include "Kiwi/Kiwi.h"
 
@@ -13,6 +13,6 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalToBooleanNode::Compile(const Boxx::List<NodePtr>& nodes, CompileInfo& info) const {
-	return nodes[0]->Compile(info);
+CompiledNode OptionalToBooleanNode::Compile(Weak<Expression> operand, CompileInfo& info) const {
+	return operand->Compile(info);
 }

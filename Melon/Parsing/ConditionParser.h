@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/Condition.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,7 +11,7 @@ namespace Melon {
 		class ConditionParser {
 		public:
 			/// Parses a conditional expression.
-			static Nodes::NodePtr Parse(ParsingInfo& info, const bool includeAssign = true);
+			static Ptr<Nodes::Condition> Parse(ParsingInfo& info, const bool includeAssign = true);
 		};
 	}
 }

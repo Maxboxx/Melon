@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 #include "Boxx/String.h"
 #include "Boxx/Set.h"
 #include "Boxx/List.h"

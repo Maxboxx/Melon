@@ -20,19 +20,19 @@ IntegerAssignNode::IntegerAssignNode(const UByte size) {
 	this->size = size;
 }
 
-CompiledNode IntegerAssignNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
+CompiledNode IntegerAssignNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
 	bool important = info.important;
 	info.important = false;
 
-	CompiledNode c1 = nodes[0]->Compile(info);
+	CompiledNode c1 = operand1->Compile(info);
 	const UInt frame = info.stack.frame;
-	CompiledNode c2 = nodes[1]->Compile(info);
+	CompiledNode c2 = operand2->Compile(info);
 
 	OptimizerInstruction mov = Instruction(InstructionType::Mov);
 	mov.instruction.sizes[0] = c1.size;
-	mov.instruction.sizes[1] = nodes[1]->IsImmediate() ? c1.size : c2.size;
-	mov.instruction.signs[0] = nodes[0]->Type()->Cast<IntegerSymbol>()->IsSigned();
-	mov.instruction.signs[1] = nodes[1]->Type()->Cast<IntegerSymbol>()->IsSigned();
+	mov.instruction.sizes[1] = operand2->IsImmediate() ? c1.size : c2.size;
+	mov.instruction.signs[0] = operand1->Type()->Cast<IntegerSymbol>()->IsSigned();
+	mov.instruction.signs[1] = operand2->Type()->Cast<IntegerSymbol>()->IsSigned();
 	mov.important = important;
 	mov.instruction.arguments.Add(OffsetArgument(c1.argument, frame, info));
 	mov.instruction.arguments.Add(c2.argument);

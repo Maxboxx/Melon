@@ -8,8 +8,8 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode IntegerToBoolNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
-	CompiledNode c = nodes[0]->Compile(info);
+CompiledNode IntegerToBoolNode::Compile(Weak<Expression> operand, CompileInfo& info) const {
+	CompiledNode c = operand->Compile(info);
 
 	Instruction ne = Instruction(InstructionType::Ne, c.size);
 	ne.arguments.Add(c.argument);
@@ -21,3 +21,4 @@ CompiledNode IntegerToBoolNode::Compile(const List<NodePtr>& nodes, CompileInfo&
 	c.argument = ne.arguments[2];
 	return c;
 }
+

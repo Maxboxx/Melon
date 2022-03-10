@@ -2,6 +2,8 @@
 
 #include "Parser.h"
 
+#include "Melon/Nodes/NameExpression.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Parsing {
@@ -9,7 +11,7 @@ namespace Melon {
 		class NameParser {
 		public:
 			/// Parses a name.
-			static Nodes::NodePtr Parse(ParsingInfo& info);
+			static Ptr<Nodes::NameExpression> Parse(ParsingInfo& info);
 		};
 	}
 }

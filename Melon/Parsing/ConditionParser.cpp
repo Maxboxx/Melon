@@ -3,7 +3,7 @@
 #include "ExpressionParser.h"
 #include "AssignmentParser.h"
 
-#include "Melon/Nodes/ConditionNode.h"
+#include "Melon/Nodes/Assignment.h"
 
 using namespace Boxx;
 
@@ -11,20 +11,18 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 
-NodePtr ConditionParser::Parse(ParsingInfo& info, const bool includeAssign) {
-	Pointer<ConditionNode> cond = nullptr;
-
+Ptr<Condition> ConditionParser::Parse(ParsingInfo& info, const bool includeAssign) {
 	if (includeAssign) {
-		if (NodePtr node = AssignmentParser::Parse(info, AssignmentParser::Flags::Single | AssignmentParser::Flags::MethodCall)) {
-			cond = new ConditionNode(info.scope, node->file);
-			cond->cond = node;
+		if (Ptr<Assignment> assign = AssignmentParser::Parse(info, AssignmentParser::Flags::Single | AssignmentParser::Flags::MethodCall)) {
+			Ptr<Condition> cond = new Condition(info.scope, assign->File());
+			cond->assign = assign;
 			return cond;
 		}
 	}
 
-	if (NodePtr node = ExpressionParser::Parse(info)) {
-		cond = new ConditionNode(info.scope, node->file);
-		cond->cond = node;
+	if (Ptr<Expression> node = ExpressionParser::Parse(info)) {
+		Ptr<Condition> cond = new Condition(info.scope, node->File());
+		cond->expression = node;
 		return cond;
 	}
 

@@ -8,8 +8,8 @@ using namespace Kiwi;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode BooleanNotNode::Compile(const List<NodePtr>& nodes, CompileInfo& info) const {
-	CompiledNode c = nodes[0]->Compile(info);
+CompiledNode BooleanNotNode::Compile(Weak<Expression> operand, CompileInfo& info) const {
+	CompiledNode c = operand->Compile(info);
 
 	Instruction eq = Instruction(InstructionType::Eq, 1);
 	eq.arguments.Add(c.argument);
@@ -21,3 +21,4 @@ CompiledNode BooleanNotNode::Compile(const List<NodePtr>& nodes, CompileInfo& in
 	c.size = 1;
 	return c;
 }
+

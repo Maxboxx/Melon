@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Types.h"
 #include "ScanInfo.h"
 
 #include "Boxx/Pointer.h"
@@ -14,7 +15,7 @@ namespace Melon {
 
 	///N Melon::Nodes
 	namespace Nodes {
-		class Node;
+		class FunctionBody;
 
 		///H Structs
 
@@ -64,7 +65,7 @@ namespace Melon {
 			Boxx::Set<Symbols::FunctionSymbol*> usedFunctions;
 
 			/// All function nodes.
-			Boxx::Collection<Boxx::Pointer<Node>> functions;
+			Boxx::Collection<Weak<FunctionBody>> functions;
 
 		private:
 			Boxx::Stack<ScanInfo> stack;

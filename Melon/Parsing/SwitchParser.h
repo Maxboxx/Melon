@@ -5,10 +5,13 @@
 #include "Boxx/Tuple.h"
 #include "Boxx/List.h"
 
+#include "Melon/Nodes/SwitchStatement.h"
+#include "Melon/Nodes/SwitchExpression.h"
+
 ///N Melon::Parsing
 namespace Melon {
 	namespace Nodes {
-		class SwitchNode;
+		class SwitchStatement;
 	}
 
 	namespace Parsing {
@@ -16,21 +19,21 @@ namespace Melon {
 		class SwitchParser {
 		public:
 			/// Parses a {switch} statement.
-			static Nodes::NodePtr ParseStatement(ParsingInfo& info);
+			static Ptr<Nodes::SwitchStatement> ParseStatement(ParsingInfo& info);
 
 			/// Parses a {switch} expression.
-			static Nodes::NodePtr ParseExpression(ParsingInfo& info, const bool returnOnError = true);
+			static Ptr<Nodes::SwitchExpression> ParseExpression(ParsingInfo& info, const bool returnOnError = true);
 
 		private:
-			static Boxx::List<Nodes::NodePtr> ParseCaseExpressions(ParsingInfo& info, bool& error);
+			static Boxx::List<Ptr<Nodes::Expression>> ParseCaseExpressions(ParsingInfo& info, bool& error);
 
-			static void ParseStatementCases(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode);
-			static bool ParseStatementCase(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode);
-			static bool ParseStatementDefault(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode);
+			static void ParseStatementCases(ParsingInfo& info, Ptr<Nodes::SwitchStatement>& switchNode);
+			static bool ParseStatementCase(ParsingInfo& info, Ptr<Nodes::SwitchStatement>& switchNode);
+			static bool ParseStatementDefault(ParsingInfo& info, Ptr<Nodes::SwitchStatement>& switchNode);
 
-			static void ParseExpressionCases(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode, bool& error);
-			static bool ParseExpressionCase(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode, bool& error);
-			static bool ParseExpressionDefault(ParsingInfo& info, Boxx::Pointer<Nodes::SwitchNode>& switchNode, bool& error);
+			static void ParseExpressionCases(ParsingInfo& info, Ptr<Nodes::SwitchExpression>& switchNode, bool& error);
+			static bool ParseExpressionCase(ParsingInfo& info, Ptr<Nodes::SwitchExpression>& switchNode, bool& error);
+			static bool ParseExpressionDefault(ParsingInfo& info, Ptr<Nodes::SwitchExpression>& switchNode, bool& error);
 		};
 	}
 }

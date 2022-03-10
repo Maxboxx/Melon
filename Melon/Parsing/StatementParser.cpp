@@ -1,6 +1,6 @@
 #include "StatementParser.h"
 
-#include "CallStatementParser.h"
+#include "CallParser.h"
 #include "AssignmentParser.h"
 #include "LoopParser.h"
 #include "SwitchParser.h"
@@ -14,8 +14,7 @@
 #include "EnumParser.h"
 #include "GuardParser.h"
 
-#include "Melon/Nodes/StatementsNode.h"
-#include "Melon/Nodes/GuardNode.h"
+#include "Melon/Nodes/GuardStatement.h"
 
 using namespace Boxx;
 
@@ -23,57 +22,57 @@ using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
-NodePtr StatementParser::Parse(ParsingInfo& info, const bool single) {
+Ptr<Statement> StatementParser::Parse(ParsingInfo& info, const bool single) {
 	if (info.EndOfFile()) return nullptr;
 
-	if (NodePtr node = CallStatementParser::Parse(info)) {
+	if (Ptr<Statement> node = CallParser::ParseStatement(info)) {
 		return node;
 	}
-	else if (NodePtr node = AssignmentParser::Parse(info, single ? AssignmentParser::Flags::Single : AssignmentParser::Flags::None)) {
+	else if (Ptr<Statement> node = AssignmentParser::Parse(info, single ? AssignmentParser::Flags::Single : AssignmentParser::Flags::None)) {
 		return node;
 	}
-	else if (NodePtr node = LoopParser::Parse(info)) {
+	else if (Ptr<Statement> node = LoopParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = SwitchParser::ParseStatement(info)) {
+	else if (Ptr<Statement> node = SwitchParser::ParseStatement(info)) {
 		return node;
 	}
-	else if (NodePtr node = DoParser::Parse(info)) {
+	else if (Ptr<Statement> node = DoParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = RepeatParser::Parse(info)) {
+	else if (Ptr<Statement> node = RepeatParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = GuardParser::Parse(info)) {
+	else if (Ptr<Statement> node = GuardParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = FunctionParser::Parse(info)) {
+	else if (Ptr<Statement> node = FunctionParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = ReturnParser::Parse(info)) {
+	else if (Ptr<Statement> node = ReturnParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = BreakParser::Parse(info)) {
+	else if (Ptr<Statement> node = BreakParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = ContinueParser::Parse(info)) {
+	else if (Ptr<Statement> node = ContinueParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = StructParser::Parse(info)) {
+	else if (Ptr<Statement> node = StructParser::Parse(info)) {
 		return node;
 	}
-	else if (NodePtr node = EnumParser::Parse(info)) {
+	else if (Ptr<Statement> node = EnumParser::Parse(info)) {
 		return node;
 	}
 
 	return nullptr;
 }
 
-NodePtr StatementParser::ParseMultiple(ParsingInfo& info) {
-	Pointer<StatementsNode> sn = new StatementsNode(info.scope, info.GetFileInfo());
+Ptr<Statements> StatementParser::ParseMultiple(ParsingInfo& info) {
+	Ptr<Statements> sn = new Statements(info.scope, info.GetFileInfo());
 
-	while (NodePtr stat = StatementParser::Parse(info)) {
-		if (Pointer<GuardNode> gn = stat.Cast<GuardNode>()) {
+	while (Ptr<Statement> stat = StatementParser::Parse(info)) {
+		if (Ptr<GuardStatement> gn = stat.AsPtr<GuardStatement>()) {
 			gn->continue_ = StatementParser::ParseMultiple(info);
 			sn->statements.Add(gn);
 		}

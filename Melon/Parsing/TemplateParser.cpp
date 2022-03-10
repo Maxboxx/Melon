@@ -35,7 +35,9 @@ Optional<List<NameList>> TemplateParser::Parse(ParsingInfo& info) {
 	if (info.Current().type == TokenType::BShiftRight) {
 		info.tokens[info.index].type  = TokenType::Greater;
 		info.tokens[info.index].value = Name::Greater.name;
-		info.tokens.Insert(info.index, info.tokens[info.index]);
+
+		Token token = info.tokens[info.index];
+		info.tokens.Insert(info.index, token);
 	}
 
 	if (info.Current().type != TokenType::Greater) {
