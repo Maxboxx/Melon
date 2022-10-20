@@ -29,6 +29,7 @@ namespace Melon {
 			};
 
 			struct FunctionHead {
+				Symbols::FunctionModifiers  modifiers;
 				Symbols::FunctionAttributes attributes;
 				bool isMethod;
 				bool isOperator;
@@ -44,9 +45,10 @@ namespace Melon {
 			static Boxx::Optional<Symbols::Name> ParseOperatorName(ParsingInfo& info);
 			static Boxx::Optional<Symbols::Name> ParseName        (const bool isOperator, ParsingInfo& info, const bool isPlain);
 			static Boxx::List<Symbols::NameList> ParseReturnTypes (ParsingInfo& info);
-			static Symbols::FunctionAttributes    ParseAttributes  (ParsingInfo& info, const bool isPlain);
-			static Boxx::List<Argument>           ParseArguments   (ParsingInfo& info);
-			static Boxx::Optional<FunctionHead>   ParseFunctionHead(ParsingInfo& info, const bool isPlain);
+			static Symbols::FunctionModifiers    ParseModifiers   (ParsingInfo& info, const bool isPlain);
+			static Symbols::FunctionAttributes   ParseAttributes  (ParsingInfo& info, const bool isPlain);
+			static Boxx::List<Argument>          ParseArguments   (ParsingInfo& info);
+			static Boxx::Optional<FunctionHead>  ParseFunctionHead(ParsingInfo& info, const bool isPlain);
 		};
 	}
 }

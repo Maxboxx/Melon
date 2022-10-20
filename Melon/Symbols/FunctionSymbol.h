@@ -15,25 +15,24 @@ namespace Melon {
 	}
 
 	namespace Symbols {
+		/// Bit flags for function modifiers.
+		enum class FunctionModifiers : Boxx::UByte {
+			None = 0,
+			Static = 1,
+			Override = 2,
+			Required = 4,
+			Partial = 8
+		};
+
+		BOXX_ENUM_FLAGS(FunctionModifiers);
+
 		/// Bit flags for function attributes.
 		enum class FunctionAttributes : Boxx::UByte {
-			/// No attributes.
 			None = 0,
-
-			/// The {static} attribute.
-			Static = 1,
-
-			/// The {override} attribute.
-			Override = 2,
-
-			/// The {required} attribute.
-			Required = 4,
-
-			/// The {debug} attribute.
-			Debug = 8,
-
-			/// The {partial} attribute.
-			Partial = 16
+			Get = 1,
+			Ref = 2,
+			Set = 4,
+			Throw = 8
 		};
 
 		BOXX_ENUM_FLAGS(FunctionAttributes);
@@ -54,6 +53,21 @@ namespace Melon {
 
 			/// Get the argument at the specified index.
 			VariableSymbol* Argument(const Boxx::UInt index);
+
+			/// The combined size of the arguments.
+			Boxx::UInt ArgumentSize();
+
+			/// The size of the error type identifier.
+			Boxx::UInt ErrorTypeSize();
+
+			/// The size of the biggers error.
+			Boxx::UInt ErrorSize();
+
+			/// The combined size of all return values.
+			Boxx::UInt ReturnValueSize();
+
+			/// The size of the return values combined with errors.
+			Boxx::UInt ReturnSize();
 
 			/// Get the template argument at the specified index.
 			TypeSymbol* TemplateArgument(const Boxx::UInt index);
@@ -101,6 +115,9 @@ namespace Melon {
 			/// The node to use for the compilation of the function.
 			///p Is {nullptr} if {symbolNode} should be used instead.
 			Weak<Melon::Nodes::FunctionBody> node;
+
+			/// The function modifiers.
+			FunctionModifiers modifiers = FunctionModifiers::None;
 
 			/// The function attributes.
 			FunctionAttributes attributes = FunctionAttributes::None;

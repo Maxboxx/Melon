@@ -56,6 +56,47 @@ VariableSymbol* FunctionSymbol::Argument(const UInt index) {
 	}
 }
 
+UInt FunctionSymbol::ArgumentSize() {
+	UInt size = 0;
+
+	for (UInt i = 0; i < arguments.Size(); i++) {
+		VariableSymbol* const var = Argument(i);
+
+		if (var->HasAttribute(VariableAttributes::Ref)) {
+			size += StackPtr::ptrSize;
+		}
+		else {
+			size += var->Type()->Size();
+		}
+	}
+
+	return size;
+}
+
+UInt FunctionSymbol::ErrorTypeSize() {
+	if ((attributes & FunctionAttributes::Throw) == FunctionAttributes::None) return 0;
+
+	return 1;
+}
+
+UInt FunctionSymbol::ErrorSize() {
+	return 0;
+}
+
+UInt FunctionSymbol::ReturnValueSize() {
+	UInt retSize = 0; 
+
+	for (UInt i = 0; i < returnValues.Size(); i++) {
+		retSize += ReturnType(i)->Size();
+	}
+
+	return retSize;
+}
+
+UInt FunctionSymbol::ReturnSize() {
+	return ErrorTypeSize() + Math::Max(ErrorSize(), ReturnValueSize());
+}
+
 TypeSymbol* FunctionSymbol::TemplateArgument(const UInt index) {
 	if (index >= templateArguments.Size()) return nullptr;
 
@@ -334,7 +375,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, cons
 	List<FunctionSymbol*> matches;
 
 	for (FunctionSymbol* const overload : overloads) {
-		if (isStatic && ((overload->attributes & FunctionAttributes::Static) != FunctionAttributes::None) != isStatic) continue;
+		if (isStatic && ((overload->modifiers & FunctionModifiers::Static) != FunctionModifiers::None) != isStatic) continue;
 		if (overload->RequiredArguments() > args.Size()) continue;
 		if (overload->arguments.Size() < args.Size()) continue;
 
@@ -373,7 +414,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateAr
 	List<FunctionSymbol*> matches;
 
 	for (FunctionSymbol* const overload : overloads) {
-		if (isStatic && ((overload->attributes & FunctionAttributes::Static) != FunctionAttributes::None) != isStatic) continue;
+		if (isStatic && ((overload->modifiers & FunctionModifiers::Static) != FunctionModifiers::None) != isStatic) continue;
 		if (overload->RequiredArguments() > args.Size()) continue;
 		if (overload->arguments.Size() < args.Size()) continue;
 		if (overload->RequiredTemplateArguments() > templateArgs.Size()) continue;
@@ -452,7 +493,7 @@ void FunctionSymbol::SetTemplateValues(Symbol* const symbol) {
 FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
 	FunctionSymbol* const sym = new FunctionSymbol(file);
 	sym->arguments  = arguments.Copy();
-	sym->attributes = attributes;
+	sym->modifiers = modifiers;
 	sym->isExplicit = isExplicit;
 	sym->name       = name;
 	sym->symbolNode = symbolNode;

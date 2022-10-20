@@ -1,29 +1,7 @@
 
-struct A
-	int: i
-
-	function init(int: i)
-		self.i = i
-	end
-	
-	function int: value()
-		return self.i
-	end
+function int: throw increment(int: i)
+	return i + 1
 end
 
-function int: f()
-	return 3
-end
-
-function swap(int: ref a, int: ref b)
-	int: temp = a
-	a = b
-	b = temp
-end
-
-A: a = A(2)
-
-int: x, y = f(), a.value()
-
-swap(ref a.i, ref x)
+int: i = increment(3)
 

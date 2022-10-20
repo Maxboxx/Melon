@@ -48,27 +48,15 @@ CompiledNode ReturnStatement::Compile(CompileInfo& info) {
 	FunctionSymbol* const f = GetFunc();
 	if (!f) return CompiledNode();
 
-	UInt stackOffset = info.stack.ptrSize + info.stack.frame;
-	List<TypeSymbol*> types = GetTypes();
-
-	// Calculate stack offset for return values
-	for (TypeSymbol* const type : types) {
-		stackOffset += type->Size();
-	}
-
-	// Calculate stack offset for arguments
-	for (UInt i = 0; i < f->arguments.Size(); i++) {
-		VariableSymbol* const var = f->Argument(i);
-
-		if (var->HasAttribute(VariableAttributes::Ref)) {
-			stackOffset += info.stack.ptrSize;
-		}
-		else {
-			stackOffset += var->Type()->Size();
-		}
-	}
+	UInt stackOffset  = info.stack.ptrSize + info.stack.frame;
+	UInt argumentSize = f->ArgumentSize();
+	UInt returnSize   = f->ReturnSize();
+	
+	stackOffset += argumentSize;
+	stackOffset += returnSize;
 
 	CompiledNode c;
+	List<TypeSymbol*> types = GetTypes();
 
 	// Compile return values
 	for (UInt i = 0; i < values.Size(); i++) {

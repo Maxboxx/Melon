@@ -157,25 +157,19 @@ Ptr<Statement> FunctionBody::Optimize(OptimizeInfo& info) {
 StringBuilder FunctionBody::ToMelon(const UInt indent) const {
 	StringBuilder sb = "";
 
-	// Get attribute names
-
-	if ((sym->attributes & FunctionAttributes::Debug) != FunctionAttributes::None) {
-		sb += "debug ";
-	}
-
-	if ((sym->attributes & FunctionAttributes::Static) != FunctionAttributes::None) {
+	if ((sym->modifiers & FunctionModifiers::Static) != FunctionModifiers::None) {
 		sb += "static ";
 	}
 
-	if ((sym->attributes & FunctionAttributes::Override) != FunctionAttributes::None) {
+	if ((sym->modifiers & FunctionModifiers::Override) != FunctionModifiers::None) {
 		sb += "override ";
 	}
 
-	if ((sym->attributes & FunctionAttributes::Partial) != FunctionAttributes::None) {
+	if ((sym->modifiers & FunctionModifiers::Partial) != FunctionModifiers::None) {
 		sb += "partial ";
 	}
 
-	if ((sym->attributes & FunctionAttributes::Required) != FunctionAttributes::None) {
+	if ((sym->modifiers & FunctionModifiers::Required) != FunctionModifiers::None) {
 		sb += "required ";
 	}
 	
@@ -194,6 +188,10 @@ StringBuilder FunctionBody::ToMelon(const UInt indent) const {
 
 	if (!sym->returnValues.IsEmpty()) {
 		sb += ": ";
+	}
+
+	if ((sym->attributes & FunctionAttributes::Throw) != FunctionAttributes::None) {
+		sb += "throw ";
 	}
 
 	// Get name of function with template arguments

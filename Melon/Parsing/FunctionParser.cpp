@@ -46,6 +46,7 @@ Ptr<EmptyStatement> FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const p
 
 		funcSym = functionParent->AddOverload(funcSym);
 		funcSym->returnValues = funcHead.returnTypes;
+		funcSym->modifiers    = funcHead.modifiers;
 		funcSym->attributes   = funcHead.attributes;
 
 		for (const NameList& arg : funcHead.templateArgs) {
@@ -273,44 +274,65 @@ Optional<Name> FunctionParser::ParseName(const bool isOperator, ParsingInfo& inf
 	}
 }
 
-FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool isPlain) {
-	FunctionAttributes attributes = FunctionAttributes::None;
+FunctionModifiers FunctionParser::ParseModifiers(ParsingInfo& info, const bool isPlain) {
+	FunctionModifiers modifiers = FunctionModifiers::None;
 
 	bool loop = !isPlain;
 
 	while (loop) {
-		// TODO: Error for invalid attributes
+		// TODO: Error for invalid modifiers
 		switch (info.Current().type) {
 			case TokenType::Static: {
-				if ((attributes & FunctionAttributes::Static) != FunctionAttributes::None) {
+				if ((modifiers & FunctionModifiers::Static) != FunctionModifiers::None) {
 					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "static"), info.GetFileInfo());
 				}
 				
-				attributes |= FunctionAttributes::Static;
+				modifiers |= FunctionModifiers::Static;
 				break;
 			}
 			case TokenType::Override: {
-				if ((attributes & FunctionAttributes::Override) != FunctionAttributes::None) {
+				if ((modifiers & FunctionModifiers::Override) != FunctionModifiers::None) {
 					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "override"), info.GetFileInfo());
 				}
 
-				attributes |= FunctionAttributes::Override;
+				modifiers |= FunctionModifiers::Override;
 				break;
 			}
 			case TokenType::Required: {
-				if ((attributes & FunctionAttributes::Required) != FunctionAttributes::None) {
+				if ((modifiers & FunctionModifiers::Required) != FunctionModifiers::None) {
 					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "required"), info.GetFileInfo());
 				}
 
-				attributes |= FunctionAttributes::Required;
+				modifiers |= FunctionModifiers::Required;
 				break;
 			}
-			case TokenType::Debug: {
-				if ((attributes & FunctionAttributes::Debug) != FunctionAttributes::None) {
-					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "debug"), info.GetFileInfo());
+			default: {
+				loop = false;
+				info.index--;
+				break;
+			}
+		}
+
+		info.index++;
+	}
+
+	return modifiers;
+}
+
+FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool isPlain) {
+	FunctionAttributes attributes = FunctionAttributes::None;
+
+	bool loop = true;
+
+	while (loop) {
+		// TODO: Error for invalid attributes
+		switch (info.Current().type) {
+			case TokenType::Throw: {
+				if ((attributes & FunctionAttributes::Throw) != FunctionAttributes::None) {
+					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "throw"), info.GetFileInfo());
 				}
 
-				attributes |= FunctionAttributes::Debug;
+				attributes |= FunctionAttributes::Throw;
 				break;
 			}
 			default: {
@@ -413,11 +435,11 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 	const UInt startLine = info.Current().line;
 
 	FunctionHead funcHead;
-	funcHead.attributes = ParseAttributes(info, isPlain);
-	funcHead.isMethod   = !isPlain && (funcHead.attributes & FunctionAttributes::Static) == FunctionAttributes::None;
+	funcHead.modifiers = ParseModifiers(info, isPlain);
+	funcHead.isMethod  = !isPlain && (funcHead.modifiers & FunctionModifiers::Static) == FunctionModifiers::None;
 
 	if (info.Current().type != TokenType::Function) {
-		if (funcHead.attributes != FunctionAttributes::None) {
+		if (funcHead.modifiers != FunctionModifiers::None) {
 			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("function"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 		}
 
@@ -433,6 +455,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 	}
 
 	funcHead.returnTypes = ParseReturnTypes(info);
+	funcHead.attributes  = ParseAttributes(info, isPlain);
 	
 	if (Optional<Name> name = ParseName(funcHead.isOperator, info, isPlain)) {
 		funcHead.name = *name;

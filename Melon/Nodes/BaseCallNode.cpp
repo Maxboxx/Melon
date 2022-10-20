@@ -243,33 +243,17 @@ inline bool BaseCallNode<T>::IsInit() const {
 
 template <BaseCallType T>
 inline UInt BaseCallNode<T>::CalculateReturnSize(CallInfo& callInfo) {
-	if (callInfo.isInit) return GetReturnTypes()[0]->Size();
+	UInt errorTypeSize = callInfo.func->ErrorTypeSize();
+	UInt errorSize     = callInfo.func->ErrorSize();
 
-	UInt retSize = 0; 
-
-	for (UInt i = 0; i < callInfo.func->returnValues.Size(); i++) {
-		retSize += callInfo.func->ReturnType(i)->Size();
-	}
-
-	return retSize;
+	if (callInfo.isInit) return errorTypeSize + Math::Max(GetReturnTypes()[0]->Size(), errorSize);
+	
+	return errorTypeSize + Math::Max(callInfo.func->ReturnValueSize(), errorSize);
 }
 
 template <BaseCallType T>
 inline UInt BaseCallNode<T>::CalculateArgumentSize(CallInfo& callInfo, CompileInfo& info) {
-	UInt argSize = 0;
-
-	for (UInt i = 0; i < callInfo.func->arguments.Size(); i++) {
-		if (VariableSymbol* const arg = callInfo.func->Argument(i)) {
-			if (arg->HasAttribute(VariableAttributes::Ref)) {
-				argSize += info.stack.ptrSize;
-			}
-			else {
-				argSize += arg->Type()->Size();
-			}
-		}
-	}
-
-	return argSize;
+	return callInfo.func->ArgumentSize();
 }
 
 template <BaseCallType T>

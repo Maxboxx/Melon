@@ -109,6 +109,7 @@ namespace Melon {
 		Global,
 		As,
 		Discard,
+		Throw,
 
 		// Logic
 		Not,
