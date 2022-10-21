@@ -43,7 +43,7 @@ namespace Melon {
 				top += bytes;
 
 				if (top > frame) {
-					cn.instructions.Add(Kiwi::Instruction(Kiwi::InstructionType::Push, top - frame));
+					cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Push, top - frame));
 					frame = top;
 				}
 			}
@@ -51,7 +51,7 @@ namespace Melon {
 			/// Pops the frame back to a previous position.
 			void PopExpr(const Boxx::UInt frame, CompiledNode& cn) {
 				if (this->frame > frame) {
-					cn.instructions.Add(Kiwi::Instruction(Kiwi::InstructionType::Pop, this->frame - frame));
+					cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Pop, this->frame - frame));
 				}
 
 				this->frame = frame;

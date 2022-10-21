@@ -1,7 +1,7 @@
 #include "KiwiMemoryExpression.h"
 
 using namespace Boxx;
-using namespace Kiwi;
+using namespace KiwiOld;
 
 using namespace Melon;
 using namespace Melon::Nodes;

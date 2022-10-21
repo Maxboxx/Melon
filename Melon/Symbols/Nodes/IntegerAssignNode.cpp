@@ -1,6 +1,6 @@
 #include "IntegerAssignNode.h"
 
-#include "Kiwi/Kiwi.h"
+#include "Kiwi/Old/Kiwi.h"
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
@@ -9,7 +9,7 @@
 
 using namespace Boxx;
 
-using namespace Kiwi;
+using namespace KiwiOld;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;

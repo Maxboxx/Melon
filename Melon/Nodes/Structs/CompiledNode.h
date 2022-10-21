@@ -13,7 +13,7 @@ namespace Melon {
 			Boxx::List<Optimizing::OptimizerInstruction> instructions;
 
 			/// The argument to use if the node returns something.
-			Kiwi::Argument argument;
+			KiwiOld::Argument argument;
 
 			/// The size in bytes of the returned value.
 			Boxx::UByte size;

@@ -9,13 +9,13 @@ namespace Melon {
 		class KiwiExpression : public Expression {
 		public:
 			/// The kiwi argument.
-			Kiwi::Argument argument;
+			KiwiOld::Argument argument;
 
 			/// The absolute type name for the argument value.
 			Symbols::NameList type;
 
 			/// Create from kiwi argument.
-			KiwiExpression(const Kiwi::Argument& arg);
+			KiwiExpression(const KiwiOld::Argument& arg);
 			~KiwiExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;

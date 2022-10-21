@@ -3,7 +3,7 @@
 #include "Boxx/List.h"
 #include "Boxx/ReplacementMap.h"
 
-#include "Kiwi/Kiwi.h"
+#include "Kiwi/Old/Kiwi.h"
 
 #include "OptimizerInstruction.h"
 
@@ -15,7 +15,7 @@ namespace Melon {
 		public:
 			/// Optimizes a list of kiwi instructions.
 			///A loops: The number of optimization loops to perform.
-			static Boxx::List<Kiwi::Instruction> Optimize(const Boxx::List<OptimizerInstruction>& instructionList, const Boxx::UInt loops = 1);
+			static Boxx::List<KiwiOld::Instruction> Optimize(const Boxx::List<OptimizerInstruction>& instructionList, const Boxx::UInt loops = 1);
 
 		private:
 			static Boxx::List<Boxx::Pair<Boxx::List<OptimizerInstruction>, Boxx::List<OptimizerInstruction>>> Split(const Boxx::List<OptimizerInstruction>& instructions);
@@ -38,23 +38,23 @@ namespace Melon {
 
 			struct CombineInfo {
 				OptimizerInstruction inst;
-				Kiwi::Argument arg1, arg2;
+				KiwiOld::Argument arg1, arg2;
 				Boxx::UInt nextAssign1, nextAssign2;
 
-				Boxx::ReplacementMap<Kiwi::Register> replacement;
-				Boxx::Optional<Boxx::Tuple<Kiwi::Register, Kiwi::Register>> nextReplacement;
-				Boxx::Optional<Kiwi::Register> remove;
+				Boxx::ReplacementMap<KiwiOld::Register> replacement;
+				Boxx::Optional<Boxx::Tuple<KiwiOld::Register, KiwiOld::Register>> nextReplacement;
+				Boxx::Optional<KiwiOld::Register> remove;
 			};
 
 			static void UpdateCombineInfo(Boxx::List<OptimizerInstruction>& instructions, CombineInfo& info, const Boxx::UInt initialIndex, Boxx::UInt& index);
-			static void ReplaceInstructionRegisters(Kiwi::Instruction& instruction, const Boxx::ReplacementMap<Kiwi::Register>& replacement);
-			static void ReplaceArgumentRegister(Kiwi::Argument& argument, const Boxx::ReplacementMap<Kiwi::Register>& replacement);
-			static void ReplaceArgumentMemoryRegister(Kiwi::Argument& argument, const Boxx::ReplacementMap<Kiwi::Register>& replacement);
-
+			static void ReplaceInstructionRegisters(KiwiOld::Instruction& instruction, const Boxx::ReplacementMap<KiwiOld::Register>& replacement);
+			static void ReplaceArgumentRegister(KiwiOld::Argument& argument, const Boxx::ReplacementMap<KiwiOld::Register>& replacement);
+			static void ReplaceArgumentMemoryRegister(KiwiOld::Argument& argument, const Boxx::ReplacementMap<KiwiOld::Register>& replacement);
+			
 			// Removes unused instructions
 			static void RemoveUnused(Boxx::List<OptimizerInstruction>& instructions);
 
-			static bool IsRegister(const Kiwi::Argument& arg);
+			static bool IsRegister(const KiwiOld::Argument& arg);
 
 			// Combine comparison instructions
 			static void CombineComp(Boxx::List<OptimizerInstruction>& instructions);
@@ -77,29 +77,29 @@ namespace Melon {
 
 			// Rename registers
 			static void RenameRegisters(Boxx::List<OptimizerInstruction>& instructions);
-			static void CheckAssignedRegisters(Boxx::List<OptimizerInstruction>& instructions, Boxx::Set<Kiwi::Register>& usedRegisters, const Boxx::UInt start);
-			static void CheckRegisterUse(OptimizerInstruction& instruction, Boxx::Set<Kiwi::Register>& usedRegisters, Boxx::ReplacementMap<Kiwi::Register>& replacement);
+			static void CheckAssignedRegisters(Boxx::List<OptimizerInstruction>& instructions, Boxx::Set<KiwiOld::Register>& usedRegisters, const Boxx::UInt start);
+			static void CheckRegisterUse(OptimizerInstruction& instruction, Boxx::Set<KiwiOld::Register>& usedRegisters, Boxx::ReplacementMap<KiwiOld::Register>& replacement);
 
 			static void OffsetStackPointer(Boxx::List<OptimizerInstruction>& instructions, const Boxx::UInt start, const Boxx::UInt end, const Boxx::UInt offset);
-			static Kiwi::InstructionType OppositeComp(const Kiwi::InstructionType type);
+			static KiwiOld::InstructionType OppositeComp(const KiwiOld::InstructionType type);
 
 			// Get next assignment to the specified argument
-			static Boxx::UInt NextAssign(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const Kiwi::Argument& arg);
+			static Boxx::UInt NextAssign(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const KiwiOld::Argument& arg);
 
 			// Get next access to the specified argument
-			static Boxx::UInt NextAccess(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const Kiwi::Argument& arg);
+			static Boxx::UInt NextAccess(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const KiwiOld::Argument& arg);
 
 			// Get next use of the specified argument
-			static Boxx::UInt NextUse(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const Kiwi::Argument& arg);
+			static Boxx::UInt NextUse(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const KiwiOld::Argument& arg);
 
 			// Get the use count of the specified argument
-			static Boxx::UInt UseCount(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt start, Boxx::UInt end, const Kiwi::Argument& arg);
+			static Boxx::UInt UseCount(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt start, Boxx::UInt end, const KiwiOld::Argument& arg);
 
 			// Get next access to the specified register
-			static Boxx::UInt NextRegisterAccess(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const Kiwi::Register& reg);
+			static Boxx::UInt NextRegisterAccess(Boxx::List<OptimizerInstruction>& instructions, Boxx::UInt index, const KiwiOld::Register& reg);
 
 			// Get last label in jump chain
-			static Kiwi::Argument LastLabelInChain(const Boxx::List<OptimizerInstruction>& instructions, const Kiwi::Argument& label, const Boxx::Optional<Kiwi::Argument>& firstLabel = nullptr);
+			static KiwiOld::Argument LastLabelInChain(const Boxx::List<OptimizerInstruction>& instructions, const KiwiOld::Argument& label, const Boxx::Optional<KiwiOld::Argument>& firstLabel = nullptr);
 		};
 	}
 }

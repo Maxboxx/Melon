@@ -7,7 +7,7 @@
 #include "Boxx/Math.h"
 
 using namespace Boxx;
-using namespace Kiwi;
+using namespace KiwiOld;
 
 using namespace Melon::Nodes;
 using namespace Melon::Optimizing;

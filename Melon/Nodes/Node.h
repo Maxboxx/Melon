@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.h"
+#include "Ptr.h"
 
 #include "Boxx/Pointer.h"
 #include "Boxx/List.h"
@@ -13,7 +13,7 @@
 #include "Boxx/String.h"
 #include "Boxx/StringBuilder.h";
 
-#include "Kiwi/Kiwi.h"
+#include "Kiwi/Old/Kiwi.h"
 
 #include "Structs/CompiledNode.h"
 #include "Structs/CompileInfo.h"

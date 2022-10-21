@@ -8,7 +8,7 @@
 #include "Boxx/ReplacementMap.h"
 
 using namespace Boxx;
-using namespace Kiwi;
+using namespace KiwiOld;
 using namespace Melon::Optimizing;
 
 List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& instructionList, const UInt loops) {

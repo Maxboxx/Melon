@@ -4,8 +4,8 @@
 #include "Boxx/Mango.h"
 #include "Boxx/System.h"
 
-#include "Kiwi/Kiwi.h"
-#include "Kiwi/x86_64Converter.h"
+#include "Kiwi/Old/Kiwi.h"
+#include "Kiwi/Old/x86_64Converter.h"
 
 #include "Melon/Errors.h"
 #include "Melon/Token.h"
@@ -19,7 +19,7 @@
 #include "Melon/Optimizing/KiwiOptimizer.h"
 
 using namespace Boxx;
-using namespace Kiwi;
+using namespace KiwiOld;
 
 using namespace Melon;
 using namespace Melon::Nodes;

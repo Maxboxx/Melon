@@ -13,10 +13,10 @@
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/EnumSymbol.h"
 
-#include "Kiwi/Kiwi.h"
+#include "Kiwi/Old/Kiwi.h"
 
 using namespace Boxx;
-using namespace Kiwi;
+using namespace KiwiOld;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;

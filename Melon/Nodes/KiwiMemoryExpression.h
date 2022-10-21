@@ -9,13 +9,13 @@ namespace Melon {
 		class KiwiMemoryExpression : public Expression {
 		public:
 			/// The memory location.
-			Kiwi::MemoryLocation mem;
+			KiwiOld::MemoryLocation mem;
 
 			/// The absolute type name of the node.
 			Symbols::NameList type;
 
 			KiwiMemoryExpression(const Boxx::Int offset, const Symbols::NameList& type);
-			KiwiMemoryExpression(const Kiwi::MemoryLocation& mem, const Symbols::NameList& type);
+			KiwiMemoryExpression(const KiwiOld::MemoryLocation& mem, const Symbols::NameList& type);
 			~KiwiMemoryExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;

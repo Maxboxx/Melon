@@ -3,12 +3,12 @@
 #include "KiwiMemoryExpression.h"
 #include "RootNode.h"
 
-#include "Kiwi/Kiwi.h"
+#include "Kiwi/Old/Kiwi.h"
 
 #include "Melon/Optimizing/OptimizerInstruction.h"
 
 using namespace Boxx;
-using namespace Kiwi;
+using namespace KiwiOld;
 
 using namespace Melon;
 using namespace Melon::Nodes;

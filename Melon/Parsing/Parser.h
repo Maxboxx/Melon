@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.h"
+#include "Ptr.h"
 
 #include "Boxx/List.h"
 #include "Boxx/Pointer.h"

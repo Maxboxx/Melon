@@ -4,8 +4,8 @@
 #include "Boxx/List.h"
 #include "Boxx/Pointer.h"
 
-#include "Kiwi/Kiwi.h"
-#include "Kiwi/x86_64Converter.h"
+#include "Kiwi/Old/Kiwi.h"
+#include "Kiwi/Old/x86_64Converter.h"
 
 namespace Melon {
 	namespace Parsing {
@@ -68,7 +68,7 @@ namespace Melon {
 
 		///T Converter
 		/// The kiwi converter to use for compiling
-		Boxx::Pointer<Kiwi::Converter> converter = new Kiwi::x86_64Converter(Kiwi::x86_64Syntax::Intel);
+		Boxx::Pointer<KiwiOld::Converter> converter = new KiwiOld::x86_64Converter(KiwiOld::x86_64Syntax::Intel);
 
 		~CompilerOptions() {}
 
@@ -96,7 +96,7 @@ namespace Melon {
 		static Nodes::ScanInfoStack ScanProject(const CompilerOptions& options, Parsing::ParsingInfo& info);
 		static Boxx::List<Optimizing::OptimizerInstruction> CompileProject(Parsing::ParsingInfo& info, Nodes::ScanInfoStack& scanInfo);
 
-		static void OutputKiwi(const CompilerOptions& options, const Boxx::List<Kiwi::Instruction>& instructions);
-		static void OutputAssembly(const CompilerOptions& options, const Boxx::List<Kiwi::Instruction>& instructions);
+		static void OutputKiwi(const CompilerOptions& options, const Boxx::List<KiwiOld::Instruction>& instructions);
+		static void OutputAssembly(const CompilerOptions& options, const Boxx::List<KiwiOld::Instruction>& instructions);
 	};
 }

@@ -7,10 +7,10 @@
 
 #include "Melon/Nodes/KiwiMemoryExpression.h"
 
-#include "Kiwi/Kiwi.h"
+#include "Kiwi/Old/Kiwi.h"
 
 using namespace Boxx;
-using namespace Kiwi;
+using namespace KiwiOld;
 
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;

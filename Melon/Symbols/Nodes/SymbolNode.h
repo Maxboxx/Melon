@@ -5,7 +5,7 @@
 #include "Boxx/Error.h"
 #include "Boxx/String.h"
 
-#include "Kiwi/Kiwi.h"
+#include "Kiwi/Old/Kiwi.h"
 
 ///N Melon::Symbols::Nodes
 namespace Melon {
@@ -35,11 +35,11 @@ namespace Melon {
 				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const = 0;
 
 				/// Offsets a kiwi argument.
-				static Kiwi::Argument OffsetArgument(const Kiwi::Argument& arg, const Boxx::UInt frame, Melon::Nodes::CompileInfo& info) {
-					if (arg.type != Kiwi::ArgumentType::Memory) return arg;
-					if (arg.mem.memptr.IsRight() || arg.mem.memptr.GetLeft().type != Kiwi::RegisterType::Stack) return arg;
+				static KiwiOld::Argument OffsetArgument(const KiwiOld::Argument& arg, const Boxx::UInt frame, Melon::Nodes::CompileInfo& info) {
+					if (arg.type != KiwiOld::ArgumentType::Memory) return arg;
+					if (arg.mem.memptr.IsRight() || arg.mem.memptr.GetLeft().type != KiwiOld::RegisterType::Stack) return arg;
 
-					Kiwi::Argument a = arg;
+					KiwiOld::Argument a = arg;
 					a.mem.offset += info.stack.frame - frame;
 					return a;
 				}

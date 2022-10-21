@@ -80,7 +80,7 @@ namespace Melon {
 				Boxx::UInt defaultJump;
 
 				/// Result argument.
-				Kiwi::Argument result;
+				KiwiOld::Argument result;
 
 				/// Result node.
 				Ptr<KiwiMemoryExpression> resultNode;
@@ -167,9 +167,9 @@ namespace Melon {
 					CompiledNode comp = sym->symbolNode->Compile(switchInfo.match, node, info);
 					switchInfo.cn.AddInstructions(comp.instructions);
 
-					Kiwi::Instruction eq = Kiwi::Instruction(Kiwi::InstructionType::Ne, 1);
+					KiwiOld::Instruction eq = KiwiOld::Instruction(KiwiOld::InstructionType::Ne, 1);
 					eq.arguments.Add(comp.argument);
-					eq.arguments.Add(Kiwi::Argument(0));
+					eq.arguments.Add(KiwiOld::Argument(0));
 					switchInfo.cn.instructions.Add(eq);
 
 					jumps.Add(switchInfo.cn.instructions.Size() - 1);
@@ -184,10 +184,10 @@ namespace Melon {
 			// Compile nodes
 			for (Weak<U> expr : nodes) {
 				// Add label for case
-				switchInfo.cn.instructions.Add(Kiwi::Instruction::Label(info.label));
+				switchInfo.cn.instructions.Add(KiwiOld::Instruction::Label(info.label));
 
 				for (const Boxx::UInt i : switchInfo.caseJumps[switchInfo.caseIndex]) {
-					switchInfo.cn.instructions[i].instruction.arguments.Add(Kiwi::Argument(Kiwi::ArgumentType::Label, info.label));
+					switchInfo.cn.instructions[i].instruction.arguments.Add(KiwiOld::Argument(KiwiOld::ArgumentType::Label, info.label));
 				}
 
 				info.label++;
@@ -199,7 +199,7 @@ namespace Melon {
 
 					// Check for scopewise breaks
 					for (const Optimizing::OptimizerInstruction& in : compExpr.instructions) {
-						if (in.instruction.type != Kiwi::InstructionType::Custom) {
+						if (in.instruction.type != KiwiOld::InstructionType::Custom) {
 							switchInfo.cn.instructions.Add(in);
 							continue;
 						}
@@ -218,7 +218,7 @@ namespace Melon {
 						}
 						else {
 							switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
-							switchInfo.cn.instructions.Add(Kiwi::Instruction(Kiwi::InstructionType::Jmp, 0));
+							switchInfo.cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0));
 						}
 					}
 				}
@@ -229,7 +229,7 @@ namespace Melon {
 
 				// Jump to end
 				switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
-				switchInfo.cn.instructions.Add(Kiwi::Instruction(Kiwi::InstructionType::Jmp, 0));
+				switchInfo.cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0));
 			}
 		}
 
@@ -242,7 +242,7 @@ namespace Melon {
 
 					// Check for scopewise breaks
 					for (const Optimizing::OptimizerInstruction& in : defNode.instructions) {
-						if (in.instruction.type != Kiwi::InstructionType::Custom) {
+						if (in.instruction.type != KiwiOld::InstructionType::Custom) {
 							switchInfo.cn.instructions.Add(in);
 							continue;
 						}
@@ -261,7 +261,7 @@ namespace Melon {
 						}
 						else {
 							switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
-							switchInfo.cn.instructions.Add(Kiwi::Instruction(Kiwi::InstructionType::Jmp, 0));
+							switchInfo.cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0));
 						}
 					}
 				}
@@ -300,7 +300,7 @@ namespace Melon {
 			info.stack.Pop(this->match->Type()->Size());
 
 			// Jump to default
-			Kiwi::Instruction defJmp = Kiwi::Instruction(Kiwi::InstructionType::Jmp, 0);
+			KiwiOld::Instruction defJmp = KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0);
 			switchInfo.defaultJump = switchInfo.cn.instructions.Size();
 			switchInfo.cn.instructions.Add(defJmp);
 
@@ -308,7 +308,7 @@ namespace Melon {
 				info.stack.PushExpr(SwitchType()->Size(), switchInfo.cn);
 
 				// Get result memory location
-				switchInfo.result = Kiwi::Argument(Kiwi::MemoryLocation(info.stack.Offset()));
+				switchInfo.result = KiwiOld::Argument(KiwiOld::MemoryLocation(info.stack.Offset()));
 				switchInfo.resultNode = new KiwiMemoryExpression(switchInfo.result.mem.offset, SwitchType()->AbsoluteName());
 			}
 
@@ -316,18 +316,18 @@ namespace Melon {
 			CompileCaseBodies(switchInfo, info);
 
 			// Add default label
-			switchInfo.cn.instructions.Add(Kiwi::Instruction::Label(info.label));
-			switchInfo.cn.instructions[switchInfo.defaultJump].instruction.arguments.Add(Kiwi::Argument(Kiwi::ArgumentType::Label, info.label));
+			switchInfo.cn.instructions.Add(KiwiOld::Instruction::Label(info.label));
+			switchInfo.cn.instructions[switchInfo.defaultJump].instruction.arguments.Add(KiwiOld::Argument(KiwiOld::ArgumentType::Label, info.label));
 			info.label++;
 
 			// Compile default case
 			CompileDefault(switchInfo, info);
 
 			// Add end label
-			switchInfo.cn.instructions.Add(Kiwi::Instruction::Label(info.label));
+			switchInfo.cn.instructions.Add(KiwiOld::Instruction::Label(info.label));
 
 			for (const Boxx::UInt i : switchInfo.endJumps) {
-				switchInfo.cn.instructions[i].instruction.arguments.Add(Kiwi::Argument(Kiwi::ArgumentType::Label, info.label));
+				switchInfo.cn.instructions[i].instruction.arguments.Add(KiwiOld::Argument(KiwiOld::ArgumentType::Label, info.label));
 			}
 
 			info.label++;

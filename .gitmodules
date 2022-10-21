@@ -1,0 +1,6 @@
+[submodule "Boxx"]
+	path = Boxx
+	url = https://github.com/Maxboxx/Boxx.git
+[submodule "Kiwi"]
+	path = Kiwi
+	url = https://github.com/Maxboxx/Kiwi.git

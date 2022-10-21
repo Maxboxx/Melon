@@ -27,10 +27,10 @@
 #include "Nodes/OptionalToBooleanNode.h"
 #include "Nodes/OptionalNotNode.h"
 
-#include "Kiwi/Kiwi.h"
+#include "Kiwi/Old/Kiwi.h"
 
 using namespace Boxx;
-using namespace Kiwi;
+using namespace KiwiOld;
 
 using namespace Melon;
 using namespace Melon::Symbols;
