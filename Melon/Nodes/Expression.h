@@ -11,7 +11,6 @@ namespace Melon {
 		class Expression : public Node {
 		public:
 			Expression(Symbols::Symbol* const scope, const FileInfo& file);
-			~Expression();
 
 			/// Returns the type of the expression.
 			virtual Symbols::TypeSymbol* Type() const;

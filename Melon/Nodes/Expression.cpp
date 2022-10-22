@@ -10,10 +10,6 @@ Expression::Expression(Symbols::Symbol* const scope, const FileInfo& file) : Nod
 
 }
 
-Expression::~Expression() {
-
-}
-
 TypeSymbol* Expression::Type() const {
 	return nullptr;
 }

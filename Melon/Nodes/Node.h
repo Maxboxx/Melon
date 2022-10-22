@@ -60,7 +60,7 @@ namespace Melon {
 
 			/// Creates a node.
 			Node(Symbols::Symbol* const scope, const FileInfo& file);
-			~Node();
+			virtual ~Node();
 
 			/// Scans the node for potential extra includes.
 			virtual void IncludeScan(Parsing::ParsingInfo& info);
