@@ -19,7 +19,7 @@ TypeSymbol* KiwiExpression::Type() const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
-CompiledNode KiwiExpression::Compile(CompileInfo& info) {
+CompiledNode KiwiExpression::Compile(OldCompileInfo& info) {
 	CompiledNode c;
 	c.argument = argument;
 	c.size = Type()->Size();

@@ -10,6 +10,6 @@ BooleanUnaryOperatorNode::BooleanUnaryOperatorNode(const InstructionType name) {
 	op = name;
 }
 
-CompiledNode BooleanUnaryOperatorNode::Compile(Weak<Expression> operand, CompileInfo& info) const {
+CompiledNode BooleanUnaryOperatorNode::Compile(Weak<Expression> operand, OldCompileInfo& info) const {
 	return CompiledNode();
 }

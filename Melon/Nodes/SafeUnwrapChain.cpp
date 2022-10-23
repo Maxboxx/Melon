@@ -34,7 +34,7 @@ TypeSymbol* SafeUnwrapChain::Type() const  {
 	return SymbolTable::FindAbsolute<TypeSymbol>(NameList(scope), file);
 }
 
-CompiledNode SafeUnwrapChain::Compile(CompileInfo& info)  {
+CompiledNode SafeUnwrapChain::Compile(OldCompileInfo& info)  {
 	// Compile node
 	CompiledNode cn = expression->Compile(info);
 

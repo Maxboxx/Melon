@@ -28,7 +28,7 @@ Symbol* SafeUnwrapExpression::Symbol() const {
 	return Type();
 }
 
-CompiledNode SafeUnwrapExpression::Compile(CompileInfo& info)  {
+CompiledNode SafeUnwrapExpression::Compile(OldCompileInfo& info)  {
 	CompiledNode cn = expression->Compile(info);
 
 	Instruction jmp = Instruction(SafeUnwrapChain::jumpInstName, 1);

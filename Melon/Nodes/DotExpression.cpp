@@ -80,7 +80,7 @@ Symbol* DotExpression::Symbol() const {
 	return nullptr;
 }
 
-CompiledNode DotExpression::Compile(CompileInfo& info) {
+CompiledNode DotExpression::Compile(OldCompileInfo& info) {
 	TypeSymbol* const sym = expression->Type();
 
 	CompiledNode c = expression->Compile(info);

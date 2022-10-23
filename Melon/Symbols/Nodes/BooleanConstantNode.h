@@ -15,7 +15,7 @@ namespace Melon {
 				/// Constructor for a boolean value.
 				BooleanConstantNode(const bool value);
 
-				virtual Melon::Nodes::CompiledNode Compile(Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Melon::Nodes::OldCompileInfo& info) const override;
 			};
 		}
 	}

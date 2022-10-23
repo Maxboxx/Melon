@@ -18,7 +18,7 @@ TypeSymbol* DiscardExpression::Type() const {
 	return nullptr;
 }
 
-CompiledNode DiscardExpression::Compile(CompileInfo& info) {
+CompiledNode DiscardExpression::Compile(OldCompileInfo& info) {
 	return CompiledNode();
 }
 

@@ -44,7 +44,7 @@ UInt Condition::GetSize() const {
 	return assign ? assign->GetSize() : 0;
 }
 
-CompiledNode Condition::CompileAssignCondition(CompileInfo& info) {
+CompiledNode Condition::CompileAssignCondition(OldCompileInfo& info) {
 	TypeSymbol* const type = assign->values[0]->Type();
 
 	// Compile value
@@ -86,7 +86,7 @@ CompiledNode Condition::CompileAssignCondition(CompileInfo& info) {
 	return c;
 }
 
-CompiledNode Condition::Compile(CompileInfo& info) {
+CompiledNode Condition::Compile(OldCompileInfo& info) {
 	// Compile assign condition
 	if (assign) {
 		return CompileAssignCondition(info);

@@ -26,7 +26,7 @@ Long NilValue::GetImmediate() const {
 	return 0;
 }
 
-CompiledNode NilValue::Compile(CompileInfo& info) {
+CompiledNode NilValue::Compile(OldCompileInfo& info) {
 	CompiledNode node;
 	node.argument = Argument(0);
 	node.size = 0;

@@ -2,6 +2,7 @@
 
 #include "Boxx/Map.h"
 #include "Boxx/Console.h"
+#include "Boxx/String.h"
 
 #include "Melon/Symbols/FunctionSymbol.h"
 
@@ -15,7 +16,7 @@ List<ErrorLog::Message> ErrorLog::messages;
 List<UInt> ErrorLog::markers;
 bool ErrorLog::stopOnError = false;
 
-void ErrorLog::Log(const String& message, const FileInfo& info) {
+void ErrorLog::Log(const Boxx::String& message, const FileInfo& info) {
 	Message msg;
 	msg.level = LogLevel::Log;
 	msg.message.message = message;
@@ -94,7 +95,7 @@ void ErrorLog::Revert() {
 }
 
 void ErrorLog::LogErrors() {
-	Map<String, List<Message>> sortedErrors;
+	Map<Boxx::String, List<Message>> sortedErrors;
 	List<Message> noFileErrors;
 
 	for (Message error : messages) {
@@ -134,7 +135,7 @@ void ErrorLog::LogErrors() {
 		}
 	}
 
-	for (const Pair<String, List<Message>>& errorList : sortedErrors) {
+	for (const Pair<Boxx::String, List<Message>>& errorList : sortedErrors) {
 		for (const Message& error : errorList.value) {
 			switch (error.level) {
 				case LogLevel::Log:     logger.Log(error.message.message); break;

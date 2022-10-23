@@ -9,7 +9,7 @@ namespace Melon {
 			/// Node for converting an integer to a boolean.
 			class IntegerToBoolNode : public UnarySymbolNode {
 			public:
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::OldCompileInfo& info) const override;
 			};
 		}
 	}

@@ -31,7 +31,7 @@ bool RepeatStatement::IsScope() const {
 	return true;
 }
 
-CompiledNode RepeatStatement::Compile(CompileInfo& info) {
+CompiledNode RepeatStatement::Compile(OldCompileInfo& info) {
 	CompiledNode compiled;
 
 	const UInt label = info.label++;

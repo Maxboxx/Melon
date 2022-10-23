@@ -27,7 +27,7 @@ namespace Melon {
 			RootNode();
 			~RootNode();
 
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 
 			/// Returns the instruction list from {Node::Compile()}.
 			Boxx::List<Optimizing::OptimizerInstruction> Compile(const Boxx::Set<Symbols::VariableSymbol*>& usedVariables);

@@ -90,7 +90,7 @@ namespace Melon {
 			virtual Boxx::UInt GetSize() const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
@@ -109,9 +109,9 @@ namespace Melon {
 
 			ScanResult ScanNodes(ScanInfoStack& info) const;
 
-			void CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info);
-			void CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info);
-			void CompileDefault(SwitchCompileInfo& switchInfo, CompileInfo& info);
+			void CompileCaseMatches(SwitchCompileInfo& switchInfo, OldCompileInfo& info);
+			void CompileCaseBodies(SwitchCompileInfo& switchInfo, OldCompileInfo& info);
+			void CompileDefault(SwitchCompileInfo& switchInfo, OldCompileInfo& info);
 		};
 
 		template <BaseSwitchType T, BaseSwitchType2 U>
@@ -156,7 +156,7 @@ namespace Melon {
 		}
 
 		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+		inline void SwitchBaseNode<T, U>::CompileCaseMatches(SwitchCompileInfo& switchInfo, OldCompileInfo& info) {
 			// Compile cases
 			for (const Boxx::List<Ptr<Expression>>& values : cases) {
 				Boxx::List<Boxx::UInt> jumps;
@@ -180,7 +180,7 @@ namespace Melon {
 		}
 
 		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+		inline void SwitchBaseNode<T, U>::CompileCaseBodies(SwitchCompileInfo& switchInfo, OldCompileInfo& info) {
 			// Compile nodes
 			for (Weak<U> expr : nodes) {
 				// Add label for case
@@ -234,7 +234,7 @@ namespace Melon {
 		}
 
 		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::CompileDefault(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+		inline void SwitchBaseNode<T, U>::CompileDefault(SwitchCompileInfo& switchInfo, OldCompileInfo& info) {
 			if (def) {
 				// Compile statements
 				if constexpr (!std::is_same<U, Expression>::value) {
@@ -273,7 +273,7 @@ namespace Melon {
 		}
 
 		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline CompiledNode SwitchBaseNode<T, U>::Compile(CompileInfo& info) {
+		inline CompiledNode SwitchBaseNode<T, U>::Compile(OldCompileInfo& info) {
 			// Setup compile info
 			SwitchCompileInfo switchInfo;
 			switchInfo.caseIndex = 0;

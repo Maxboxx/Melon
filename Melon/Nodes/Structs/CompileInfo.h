@@ -8,7 +8,7 @@ namespace Melon {
 		///H Structs
 
 		/// Contains info about the compiliation.
-		struct CompileInfo {
+		struct [[deprecated("Use the new compile info instead")]] OldCompileInfo {
 			/// The next free label index.
 			Boxx::UInt label = 0;
 

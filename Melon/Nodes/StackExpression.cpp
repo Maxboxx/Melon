@@ -19,7 +19,7 @@ TypeSymbol* StackExpression::Type() const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
-CompiledNode StackExpression::Compile(CompileInfo& info) {
+CompiledNode StackExpression::Compile(OldCompileInfo& info) {
 	CompiledNode c;
 	c.argument = MemoryLocation(info.stack.Offset(stack));
 	c.size = Type()->Size();

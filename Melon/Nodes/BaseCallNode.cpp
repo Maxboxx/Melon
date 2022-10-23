@@ -252,12 +252,12 @@ inline UInt BaseCallNode<T>::CalculateReturnSize(CallInfo& callInfo) {
 }
 
 template <BaseCallType T>
-inline UInt BaseCallNode<T>::CalculateArgumentSize(CallInfo& callInfo, CompileInfo& info) {
+inline UInt BaseCallNode<T>::CalculateArgumentSize(CallInfo& callInfo, OldCompileInfo& info) {
 	return callInfo.func->ArgumentSize();
 }
 
 template <BaseCallType T>
-inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, CompileInfo info) {
+inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, OldCompileInfo info) {
 	UInt tempSize = 0;
 
 	// Check all arguments
@@ -316,7 +316,7 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, CompileI
 }
 
 template <BaseCallType T>
-inline UInt BaseCallNode<T>::CalculatePushSize(CallInfo& callInfo, CompileInfo& info) {
+inline UInt BaseCallNode<T>::CalculatePushSize(CallInfo& callInfo, OldCompileInfo& info) {
 	UInt pushSize = 0;
 
 	// Changes stack top if push is not needed
@@ -341,7 +341,7 @@ inline UInt BaseCallNode<T>::CalculatePushSize(CallInfo& callInfo, CompileInfo& 
 }
 
 template <BaseCallType T>
-inline void BaseCallNode<T>::SetupStackFrame(CallInfo& callInfo, CompileInfo& info) {
+inline void BaseCallNode<T>::SetupStackFrame(CallInfo& callInfo, OldCompileInfo& info) {
 	// Calculate sizes
 	callInfo.retSize  = CalculateReturnSize(callInfo);
 	callInfo.argSize  = CalculateArgumentSize(callInfo, info);
@@ -364,7 +364,7 @@ inline void BaseCallNode<T>::SetupStackFrame(CallInfo& callInfo, CompileInfo& in
 }
 
 template <BaseCallType T>
-inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
+inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, OldCompileInfo& info, TypeSymbol* const type, Int index) {
 	// Create self for constructor
 	if (index == -1) {
 		return new RefExpression(new KiwiMemoryExpression(callInfo.stackIndex, type->AbsoluteName()));
@@ -395,7 +395,7 @@ inline Ptr<Expression> BaseCallNode<T>::GetRefArgument(CallInfo& callInfo, Compi
 }
 
 template <BaseCallType T>
-inline void BaseCallNode<T>::CompileRefArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
+inline void BaseCallNode<T>::CompileRefArgument(CallInfo& callInfo, OldCompileInfo& info, TypeSymbol* const type, Int index) {
 	Ptr<Expression> refArg = GetRefArgument(callInfo, info, type, index);
 
 	UInt regIndex = info.index;
@@ -435,7 +435,7 @@ inline void BaseCallNode<T>::CompileRefArgument(CallInfo& callInfo, CompileInfo&
 }
 
 template <BaseCallType T>
-inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, TypeSymbol* const type, Int index) {
+inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, OldCompileInfo& info, TypeSymbol* const type, Int index) {
 	callInfo.stackIndex -= type->Size();
 
 	Ptr<KiwiMemoryExpression> mn = new KiwiMemoryExpression(callInfo.stackIndex, type->AbsoluteName());
@@ -457,7 +457,7 @@ inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, CompileInfo
 }
 
 template <BaseCallType T>
-inline void BaseCallNode<T>::CompileArguments(CallInfo& callInfo, CompileInfo& info) {
+inline void BaseCallNode<T>::CompileArguments(CallInfo& callInfo, OldCompileInfo& info) {
 	for (UInt i = 0; i < callInfo.func->arguments.Size(); i++) {
 		TypeSymbol* const type = callInfo.func->ArgumentType(i);
 
@@ -473,7 +473,7 @@ inline void BaseCallNode<T>::CompileArguments(CallInfo& callInfo, CompileInfo& i
 }
 
 template <BaseCallType T>
-inline void BaseCallNode<T>::CompileCall(CallInfo& callInfo, CompileInfo& info) {
+inline void BaseCallNode<T>::CompileCall(CallInfo& callInfo, OldCompileInfo& info) {
 	// Create call instruction
 	Instruction inst = Instruction(InstructionType::Call);
 	inst.arguments.Add(Argument(ArgumentType::Name, callInfo.func->AbsoluteName().ToString()));
@@ -507,7 +507,7 @@ inline void BaseCallNode<T>::CompileCall(CallInfo& callInfo, CompileInfo& info) 
 }
 
 template <BaseCallType T>
-inline CompiledNode BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+inline CompiledNode BaseCallNode<T>::Compile(OldCompileInfo& info) { // TODO: more accurate arg error lines
 	// Setup call info
 	CallInfo callInfo;
 	callInfo.func   = GetFunc();

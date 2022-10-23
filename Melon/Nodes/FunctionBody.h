@@ -23,7 +23,7 @@ namespace Melon {
 			~FunctionBody();
 
 			virtual bool IsScope() const override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;

@@ -11,7 +11,7 @@ using namespace Melon::Nodes;
 using namespace Melon::Optimizing;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode BooleanAssignNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
+CompiledNode BooleanAssignNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, OldCompileInfo& info) const {
 	bool important = info.important;
 	info.important = false;
 

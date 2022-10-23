@@ -17,7 +17,7 @@ EnumStatement::~EnumStatement() {
 
 }
 
-CompiledNode EnumStatement::Compile(CompileInfo& info) {
+CompiledNode EnumStatement::Compile(OldCompileInfo& info) {
 	return CompiledNode();
 }
 

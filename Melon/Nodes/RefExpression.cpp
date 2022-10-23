@@ -29,7 +29,7 @@ Symbol* RefExpression::Symbol() const {
 	return expression->Symbol();
 }
 
-CompiledNode RefExpression::Compile(CompileInfo& info) {
+CompiledNode RefExpression::Compile(OldCompileInfo& info) {
 	CompiledNode cn = expression->Compile(info);
 
 	Register reg = Register(info.index++);
@@ -77,7 +77,7 @@ Symbol* WeakRefExpression::Symbol() const {
 	return expression->Symbol();
 }
 
-CompiledNode WeakRefExpression::Compile(CompileInfo& info) {
+CompiledNode WeakRefExpression::Compile(OldCompileInfo& info) {
 	CompiledNode cn = expression->Compile(info);
 
 	Register reg = Register(info.index++);

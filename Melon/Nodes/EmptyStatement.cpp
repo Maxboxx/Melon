@@ -13,7 +13,7 @@ EmptyStatement::~EmptyStatement() {
 	
 }
 
-CompiledNode EmptyStatement::Compile(CompileInfo& info) {
+CompiledNode EmptyStatement::Compile(OldCompileInfo& info) {
 	return CompiledNode();
 }
 

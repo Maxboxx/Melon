@@ -52,7 +52,7 @@ namespace Melon {
 			/// {true} if the function is a constructor.
 			bool IsInit() const;
 
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<T> Optimize(OptimizeInfo& info) override;
@@ -91,16 +91,16 @@ namespace Melon {
 			};
 
 			Boxx::UInt CalculateReturnSize(CallInfo& callInfo);
-			Boxx::UInt CalculateArgumentSize(CallInfo& callInfo, CompileInfo& info);
-			Boxx::UInt CalculateTemporarySize(CallInfo& callInfo, CompileInfo info);
-			Boxx::UInt CalculatePushSize(CallInfo& callInfo, CompileInfo& info);
+			Boxx::UInt CalculateArgumentSize(CallInfo& callInfo, OldCompileInfo& info);
+			Boxx::UInt CalculateTemporarySize(CallInfo& callInfo, OldCompileInfo info);
+			Boxx::UInt CalculatePushSize(CallInfo& callInfo, OldCompileInfo& info);
 
-			void SetupStackFrame(CallInfo& callInfo, CompileInfo& info);
-			void CompileArguments(CallInfo& callInfo, CompileInfo& info);
-			void CompileRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			Ptr<Expression> GetRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			void CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			void CompileCall(CallInfo& callInfo, CompileInfo& info);
+			void SetupStackFrame(CallInfo& callInfo, OldCompileInfo& info);
+			void CompileArguments(CallInfo& callInfo, OldCompileInfo& info);
+			void CompileRefArgument(CallInfo& callInfo, OldCompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
+			Ptr<Expression> GetRefArgument(CallInfo& callInfo, OldCompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
+			void CompileCopyArgument(CallInfo& callInfo, OldCompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
+			void CompileCall(CallInfo& callInfo, OldCompileInfo& info);
 		};
 	}
 }

@@ -29,7 +29,7 @@ namespace Melon {
 			virtual Symbols::TypeSymbol* Type() const;
 
 			virtual Boxx::UInt GetSize() const override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Condition> Optimize(OptimizeInfo& info);
@@ -41,7 +41,7 @@ namespace Melon {
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
-			CompiledNode CompileAssignCondition(CompileInfo& info);
+			CompiledNode CompileAssignCondition(OldCompileInfo& info);
 		};
 	}
 }

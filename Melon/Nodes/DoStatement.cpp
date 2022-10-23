@@ -33,7 +33,7 @@ bool DoStatement::IsScope() const {
 	return true;
 }
 
-CompiledNode DoStatement::Compile(CompileInfo& info) {
+CompiledNode DoStatement::Compile(OldCompileInfo& info) {
 	CompiledNode compiled;
 
 	List<UInt> jumps;

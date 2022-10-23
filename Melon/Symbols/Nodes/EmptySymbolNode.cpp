@@ -3,6 +3,6 @@
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode EmptySymbolNode::Compile(CompileInfo& info) const {
+CompiledNode EmptySymbolNode::Compile(OldCompileInfo& info) const {
 	return CompiledNode();
 }

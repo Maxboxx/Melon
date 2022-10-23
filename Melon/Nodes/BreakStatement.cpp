@@ -21,7 +21,7 @@ BreakStatement::~BreakStatement() {
 
 }
 
-CompiledNode BreakStatement::Compile(CompileInfo& info) {
+CompiledNode BreakStatement::Compile(OldCompileInfo& info) {
 	CompiledNode c;
 
 	Instruction in = Instruction(InstructionType::Custom, loops);

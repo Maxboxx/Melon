@@ -15,7 +15,7 @@ namespace Melon {
 				/// The target integer size.
 				Boxx::UByte targetSize;
 
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::OldCompileInfo& info) const override;
 			};
 		}
 	}

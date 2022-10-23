@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PTR_INCLUDE
+#define PTR_INCLUDE
 
 #include <utility>
 
@@ -400,3 +401,4 @@ private:
 	}
 };
 
+#endif

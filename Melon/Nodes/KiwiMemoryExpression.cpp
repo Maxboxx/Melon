@@ -33,7 +33,7 @@ TypeSymbol* KiwiMemoryExpression::Type() const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
-CompiledNode KiwiMemoryExpression::Compile(CompileInfo& info) {
+CompiledNode KiwiMemoryExpression::Compile(OldCompileInfo& info) {
 	CompiledNode c;
 	c.argument = mem;
 	c.size = SymbolTable::FindAbsolute<TypeSymbol>(type, file)->Size();

@@ -24,7 +24,7 @@ namespace Melon {
 			BreakStatement(Symbols::Symbol* const scope, const FileInfo& file);
 			~BreakStatement();
 
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 

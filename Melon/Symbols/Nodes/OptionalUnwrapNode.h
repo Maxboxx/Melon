@@ -9,7 +9,7 @@ namespace Melon {
 			/// Node for unwrapping optional types.
 			class OptionalUnwrapNode : public UnarySymbolNode {
 			public:
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info) const override;
+				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::OldCompileInfo& info) const override;
 			};
 		}
 	}

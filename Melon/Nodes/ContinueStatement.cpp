@@ -16,7 +16,7 @@ ContinueStatement::~ContinueStatement() {
 
 }
 
-CompiledNode ContinueStatement::Compile(CompileInfo& info) {
+CompiledNode ContinueStatement::Compile(OldCompileInfo& info) {
 	CompiledNode c;
 
 	Instruction in = Instruction(InstructionType::Custom, loops);

@@ -74,7 +74,7 @@ UInt NewVariableNode::GetSize() const {
 	return size;
 }
 
-CompiledNode NewVariableNode::Compile(CompileInfo& info) { // TODO: more accurate error lines
+CompiledNode NewVariableNode::Compile(OldCompileInfo& info) { // TODO: more accurate error lines
 	CompiledNode cn;
 	cn.size = Type()->Size();
 

@@ -156,7 +156,7 @@ ScanResult Node::ScanAssignment(Weak<Expression> assignable, Weak<Expression> va
 	return ScanResult();
 }
 
-CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file) {
+CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, OldCompileInfo& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 

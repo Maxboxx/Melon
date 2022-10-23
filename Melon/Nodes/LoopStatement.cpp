@@ -68,7 +68,7 @@ bool LoopStatement::IsScope() const {
 	return true;
 }
 
-CompiledNode LoopStatement::Compile(CompileInfo& info) {
+CompiledNode LoopStatement::Compile(OldCompileInfo& info) {
 	CompiledNode c;
 
 	SegmentInfo segmentInfo;
@@ -146,7 +146,7 @@ bool LoopStatement::IsSegmentLast(const UInt segment) const {
 	return segment != 0 && segments[segment].also != segments[segment + 1].also;
 }
 
-void LoopStatement::AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
+void LoopStatement::AddLabelIfNeeded(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const {
 	bool needsLabel = false;
 
 	// Check if a label is needed
@@ -165,7 +165,7 @@ void LoopStatement::AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, 
 	}
 }
 
-void LoopStatement::CompileIfSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
+void LoopStatement::CompileIfSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const {
 	// Setup segment
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
@@ -226,7 +226,7 @@ void LoopStatement::CompileIfSegment(CompiledNode& compiled, CompileInfo& info, 
 	}
 }
 
-void LoopStatement::CompileWhileSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
+void LoopStatement::CompileWhileSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const {
 	// Setup segment
 	AddLabelIfNeeded(compiled, info, segmentInfo);
 
@@ -237,7 +237,7 @@ void LoopStatement::CompileWhileSegment(CompiledNode& compiled, CompileInfo& inf
 	CompileWhileEnd(compiled, info, segmentInfo, loopInfo);
 }
 
-void LoopStatement::CompileWhileStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
+void LoopStatement::CompileWhileStart(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
 	bool isLast = IsSegmentLast(segmentInfo.index);
 
 	// Add loop flag if loop is not last
@@ -286,7 +286,7 @@ void LoopStatement::CompileWhileStart(CompiledNode& compiled, CompileInfo& info,
 	}
 }
 
-void LoopStatement::CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
+void LoopStatement::CompileWhileEnd(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 
@@ -336,7 +336,7 @@ void LoopStatement::CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, S
 	}
 }
 
-void LoopStatement::CompileForSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
+void LoopStatement::CompileForSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const {
 	// Setup segment
 	AddLabelIfNeeded(compiled, info, segmentInfo);
 
@@ -347,7 +347,7 @@ void LoopStatement::CompileForSegment(CompiledNode& compiled, CompileInfo& info,
 	CompileForEnd(compiled, info, segmentInfo, loopInfo);
 }
 
-void LoopStatement::CompileForStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
+void LoopStatement::CompileForStart(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
 	const bool isLast = IsSegmentLast(segmentInfo.index);
 
 	const UInt frame = info.stack.frame;
@@ -418,7 +418,7 @@ void LoopStatement::CompileForStart(CompiledNode& compiled, CompileInfo& info, S
 	compiled.instructions.Add(eq);
 }
 
-void LoopStatement::CompileForEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
+void LoopStatement::CompileForEnd(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 
@@ -444,7 +444,7 @@ void LoopStatement::CompileForEnd(CompiledNode& compiled, CompileInfo& info, Seg
 	}
 }
 
-void LoopStatement::CompileLoopBody(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
+void LoopStatement::CompileLoopBody(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const {
 	bool isLast = IsSegmentLast(segmentInfo.index);
 
 	UInt nextTrue, nextFalse;
@@ -505,7 +505,7 @@ void LoopStatement::CompileLoopBody(CompiledNode& compiled, CompileInfo& info, S
 	}
 }
 
-void LoopStatement::CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const {
+void LoopStatement::CompileNoneSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const {
 	UInt nextTrue, nextFalse;
 	GetNextSegments(segmentInfo.index, nextTrue, nextFalse);
 	AddLabelIfNeeded(compiled, info, segmentInfo);

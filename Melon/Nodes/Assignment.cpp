@@ -76,7 +76,7 @@ ScanResult Assignment::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-CompiledNode Assignment::Compile(CompileInfo& info) {
+CompiledNode Assignment::Compile(OldCompileInfo& info) {
 	CompiledNode c;
 
 	UInt varSize = 0;

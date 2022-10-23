@@ -37,7 +37,7 @@ RootNode::~RootNode() {
 
 }
 
-CompiledNode RootNode::Compile(CompileInfo& info) {
+CompiledNode RootNode::Compile(OldCompileInfo& info) {
 	CompiledNode cn;
 
 	// Get size of statements
@@ -126,7 +126,7 @@ List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVar
 
 	// Compile code
 	UByte index = 0;
-	CompileInfo info;
+	OldCompileInfo info;
 	c.instructions.Add(Instruction(InstructionType::Code));
 	c.AddInstructions(Compile(info).instructions);
 	return c.instructions;

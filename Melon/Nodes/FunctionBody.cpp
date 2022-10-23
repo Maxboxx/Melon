@@ -29,7 +29,7 @@ bool FunctionBody::IsScope() const {
 	return true;
 }
 
-CompiledNode FunctionBody::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+CompiledNode FunctionBody::Compile(OldCompileInfo& info) { // TODO: more accurate arg error lines
 	if (sym->IsNotSpecialized()) return CompiledNode();
 	scope->SetTemplateValues(sym);
 

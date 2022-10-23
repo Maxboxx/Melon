@@ -14,6 +14,7 @@
 #include "Boxx/StringBuilder.h";
 
 #include "Kiwi/Old/Kiwi.h"
+#include "Kiwi/Node.h"
 
 #include "Structs/CompiledNode.h"
 #include "Structs/CompileInfo.h"
@@ -69,7 +70,10 @@ namespace Melon {
 			virtual ScanResult Scan(ScanInfoStack& info);
 
 			/// Compiles the node.
-			virtual CompiledNode Compile(CompileInfo& info) = 0;
+			virtual CompiledNode [[deprecated("Use new Compile instead")]] Compile(OldCompileInfo& info) = 0;
+
+			/// Compiles the node.
+			//virtual Ptr<Kiwi::Node> Compile() = 0;
 
 			/// Gets the byte size of the node.
 			///p This is only used by the compile step.
@@ -115,7 +119,7 @@ namespace Melon {
 			///p The optimized node will be assigned to this value.
 			static void Optimize(Ptr<Node>& node, OptimizeInfo& info);
 
-			static CompiledNode CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file);
+			static CompiledNode CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, OldCompileInfo& info, const FileInfo& file);
 
 		protected:
 			friend RootNode;

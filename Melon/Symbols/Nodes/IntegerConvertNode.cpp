@@ -8,7 +8,7 @@ using namespace KiwiOld;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode IntegerConvertNode::Compile(Weak<Expression> operand, CompileInfo& info) const {
+CompiledNode IntegerConvertNode::Compile(Weak<Expression> operand, OldCompileInfo& info) const {
 	CompiledNode cn = operand->Compile(info);
 
 	if (size >= targetSize || cn.argument.type == ArgumentType::Number) {

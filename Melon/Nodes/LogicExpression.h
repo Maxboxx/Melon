@@ -18,7 +18,7 @@ namespace Melon {
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Symbols::Name GetOperator() const;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
@@ -26,11 +26,11 @@ namespace Melon {
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
-			static CompiledNode CompileToBool(Ptr<Expression>& node, CompileInfo& info);
+			static CompiledNode CompileToBool(Ptr<Expression>& node, OldCompileInfo& info);
 
-			CompiledNode CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue);
-			CompiledNode CompileAndOrOperand(CompileInfo& info, CompiledNode& cn, Boxx::List<Boxx::UInt>& jumps, const bool checkTrue);
-			CompiledNode CompileXor(CompileInfo& info, const bool checkEqual);
+			CompiledNode CompileAndOr(OldCompileInfo& info, const bool checkTrue, const bool setTrue);
+			CompiledNode CompileAndOrOperand(OldCompileInfo& info, CompiledNode& cn, Boxx::List<Boxx::UInt>& jumps, const bool checkTrue);
+			CompiledNode CompileXor(OldCompileInfo& info, const bool checkEqual);
 		};
 	}
 }

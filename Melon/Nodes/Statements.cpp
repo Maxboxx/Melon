@@ -90,7 +90,7 @@ Ptr<Statements> Statements::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-CompiledNode Statements::Compile(CompileInfo& info) {
+CompiledNode Statements::Compile(OldCompileInfo& info) {
 	CompiledNode c;
 
 	for (Weak<Statement> statement : statements) {

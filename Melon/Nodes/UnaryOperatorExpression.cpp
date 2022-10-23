@@ -62,7 +62,7 @@ Name UnaryOperatorExpression::GetOperator() const {
 	return op;
 }
 
-CompiledNode UnaryOperatorExpression::Compile(CompileInfo& info) {
+CompiledNode UnaryOperatorExpression::Compile(OldCompileInfo& info) {
 	TypeSymbol* const type = operand->Type();
 
 	FunctionSymbol* const func = type->FindUnaryOperator(op, file);

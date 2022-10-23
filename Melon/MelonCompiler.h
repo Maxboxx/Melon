@@ -20,73 +20,61 @@ namespace Melon {
 		struct OptimizerInstruction;
 	}
 
-	///B CompilerOptions
 	/// Options for the compilation process
 	struct CompilerOptions {
-		///H Values
-
-		///T Include Directories
-		/// Contains the absolute file path for all include directories
-		/// The directories should end with a <code>/</code>
-		/// The directory the main melon file is located in is always added to the include directories by the compiler
+		/// Contains the absolute file path for all include directories.
+		/// The directories should end with a {/}.
+		/// The directory the main melon file is located in is always added to the include directories by the compiler.
 		Boxx::List<Boxx::String> includeDirectories;
 
-		///T AST Optimization Passes
-		/// The amount of times to perform optimizations on the AST
+		/// The amount of times to perform optimizations on the AST.
 		Boxx::UInt astOptimizationPasses = 0;
 
-		///T Kiwi Optimization Passes
-		/// The amount of times to perform optimizations on the kiwi instructions
+		/// The amount of times to perform optimizations on the kiwi instructions.
 		Boxx::UInt kiwiOptimizationPasses = 0;
 
-		///T Main file
-		/// The main melon file for the project
+		/// The main melon file for the project.
 		Boxx::String mainFile;
 
-		///T Output Directory
-		/// The directory of the output files
-		/// The directory should end with a <code>/</code>
-		/// Defaults to the directory of the main melon file
+		/// The directory of the output files.
+		/// The directory should end with a <code>/</code>.
+		/// Defaults to the directory of the main melon file.
 		Boxx::String outputDirectory;
 
-		///T Output Name
-		/// The name of the output files
-		/// Defaults to the name of the main melon file
+		/// The name of the output files.
+		/// Defaults to the name of the main melon file.
 		Boxx::String outputName;
 
-		///T Output files
-		/// Boolean values for choosing which files the compiler should output
-		///M
+		/// {true} if the compiler should output melon code.
 		bool outputMelon      = false;
-		bool outputKiwi       = false;
-		bool outputAssembly   = false;
-		bool outputExecutable = true;
-		///M
 
-		///T Create Error Log
+		/// {true} if the compiler should output kiwi code. 
+		bool outputKiwi       = false;
+
+		/// {true} if the compiler should output assembly code.
+		bool outputAssembly   = false;
+
+		/// {true} if the compiler should output an executable file.
+		bool outputExecutable = true;
+
+		/// {true} if an error log file should be created.
 		bool createErrorLog = true;
 
-		///T Converter
-		/// The kiwi converter to use for compiling
+		/// The kiwi converter to use for compiling.
 		Boxx::Pointer<KiwiOld::Converter> converter = new KiwiOld::x86_64Converter(KiwiOld::x86_64Syntax::Intel);
 
 		~CompilerOptions() {}
-
-		///H Static functions
 		
-		///T Load from Mango
-		/// Loads the compiler options from a mango file
+		/// Loads the compiler options from a mango file.
 		static CompilerOptions LoadFromFile(const Boxx::String& mangoFile);
 	};
 
-	///B MelonCompiler
-	/// The main class for compiling melon files
+	/// The main class for compiling melon files.
 	class MelonCompiler {
 	public:
-		///T Compile
-		/// Compiles a melon project
-		///A mainMelonFile: The main melon file for the project
-		///A options: The compiler options to use for the compilation
+		/// Compiles a melon project.
+		///A mainMelonFile: The main melon file for the project.
+		///A options: The compiler options to use for the compilation.
 		static void Compile(const CompilerOptions& options);
 
 	private:

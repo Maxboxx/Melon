@@ -24,7 +24,7 @@ StructStatement::~StructStatement() {
 
 }
 
-CompiledNode StructStatement::Compile(CompileInfo& info) {
+CompiledNode StructStatement::Compile(OldCompileInfo& info) {
 	return CompiledNode();
 }
 

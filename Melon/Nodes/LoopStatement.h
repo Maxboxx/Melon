@@ -96,7 +96,7 @@ namespace Melon {
 
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;
@@ -130,21 +130,21 @@ namespace Melon {
 				Boxx::UInt loopLbl = 0;
 			};
 
-			void AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+			void AddLabelIfNeeded(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
 
-			void CompileIfSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+			void CompileIfSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
 
-			void CompileWhileSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
-			void CompileWhileStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-			void CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+			void CompileWhileSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
+			void CompileWhileStart(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+			void CompileWhileEnd(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
 
-			void CompileForSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
-			void CompileForStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-			void CompileForEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+			void CompileForSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
+			void CompileForStart(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+			void CompileForEnd(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
 			
-			void CompileLoopBody(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
+			void CompileLoopBody(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
 
-			void CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+			void CompileNoneSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
 		};
 	}
 }

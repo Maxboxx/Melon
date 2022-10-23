@@ -44,7 +44,7 @@ List<TypeSymbol*> ReturnStatement::GetTypes() const {
 	return types;
 }
 
-CompiledNode ReturnStatement::Compile(CompileInfo& info) {
+CompiledNode ReturnStatement::Compile(OldCompileInfo& info) {
 	FunctionSymbol* const f = GetFunc();
 	if (!f) return CompiledNode();
 

@@ -14,7 +14,7 @@ namespace Melon {
 			TypeExpression(const Symbols::NameList& type);
 			~TypeExpression();
 
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};

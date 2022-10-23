@@ -16,7 +16,7 @@ TypeExpression::~TypeExpression() {
 
 }
 
-CompiledNode TypeExpression::Compile(CompileInfo& info) {
+CompiledNode TypeExpression::Compile(OldCompileInfo& info) {
 	return CompiledNode();
 }
 

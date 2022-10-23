@@ -39,7 +39,7 @@ Name LogicExpression::GetOperator() const {
 	return Name("logic");
 }
 
-CompiledNode LogicExpression::CompileToBool(Ptr<Expression>& node, CompileInfo& info) {
+CompiledNode LogicExpression::CompileToBool(Ptr<Expression>& node, OldCompileInfo& info) {
 	Ptr<TypeConversion> convert = new TypeConversion(node->scope, node->File());
 	convert->expression = node;
 	convert->type = NameList::Bool;
@@ -50,7 +50,7 @@ CompiledNode LogicExpression::CompileToBool(Ptr<Expression>& node, CompileInfo& 
 	return cn;
 }
 
-CompiledNode LogicExpression::CompileAndOrOperand(CompileInfo& info, CompiledNode& cn, List<UInt>& jumps, const bool checkTrue) {
+CompiledNode LogicExpression::CompileAndOrOperand(OldCompileInfo& info, CompiledNode& cn, List<UInt>& jumps, const bool checkTrue) {
 	// Compile operand
 	CompiledNode operand = CompileToBool(operand1, info);
 	cn.AddInstructions(operand.instructions);
@@ -72,7 +72,7 @@ CompiledNode LogicExpression::CompileAndOrOperand(CompileInfo& info, CompiledNod
 	return operand;
 }
 
-CompiledNode LogicExpression::CompileAndOr(CompileInfo& info, const bool checkTrue, const bool setTrue) {
+CompiledNode LogicExpression::CompileAndOr(OldCompileInfo& info, const bool checkTrue, const bool setTrue) {
 	CompiledNode cn;
 	cn.size = 1;
 
@@ -118,7 +118,7 @@ CompiledNode LogicExpression::CompileAndOr(CompileInfo& info, const bool checkTr
 	return cn;
 }
 
-CompiledNode LogicExpression::CompileXor(CompileInfo& info, const bool checkEqual) {
+CompiledNode LogicExpression::CompileXor(OldCompileInfo& info, const bool checkEqual) {
 	CompiledNode cn;
 	cn.argument = Argument(Register(info.index++));
 	cn.size = 1;
@@ -150,7 +150,7 @@ CompiledNode LogicExpression::CompileXor(CompileInfo& info, const bool checkEqua
 	return cn;
 }
 
-CompiledNode LogicExpression::Compile(CompileInfo& info) {
+CompiledNode LogicExpression::Compile(OldCompileInfo& info) {
 	switch (type) {
 		case TokenType::Or:   return CompileAndOr(info, true, true);
 		case TokenType::And:  return CompileAndOr(info, false, false);

@@ -63,7 +63,7 @@ Long Integer::GetImmediate() const {
 	return number;
 }
 
-CompiledNode Integer::Compile(CompileInfo& info) {
+CompiledNode Integer::Compile(OldCompileInfo& info) {
 	CompiledNode node;
 	node.argument = Argument(number);
 	

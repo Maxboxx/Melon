@@ -35,7 +35,7 @@ TypeSymbol* IfExpression::Type() const {
 	return type;
 }
 
-CompiledNode IfExpression::Compile(CompileInfo& info) {
+CompiledNode IfExpression::Compile(OldCompileInfo& info) {
 	CompiledNode cn;
 
 	// Setup return value

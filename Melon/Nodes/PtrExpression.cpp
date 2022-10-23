@@ -29,7 +29,7 @@ Symbol* PtrExpression::Symbol() const {
 	return address->Symbol();
 }
 
-CompiledNode PtrExpression::Compile(CompileInfo& info) {
+CompiledNode PtrExpression::Compile(OldCompileInfo& info) {
 	CompiledNode cn = address->Compile(info);
 
 	Register reg = Register(info.index++);

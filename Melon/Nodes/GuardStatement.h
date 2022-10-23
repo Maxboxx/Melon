@@ -25,7 +25,7 @@ namespace Melon {
 			
 			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;
@@ -36,7 +36,7 @@ namespace Melon {
 
 			void AddScopeBreak(ScanInfoStack& info);
 
-			void CompileElse(CompiledNode& compiled, CompileInfo& info, Boxx::List<Boxx::UInt>& jumps);
+			void CompileElse(CompiledNode& compiled, OldCompileInfo& info, Boxx::List<Boxx::UInt>& jumps);
 
 			Ptr<Statement> OptimizeFalseCondition(OptimizeInfo& info);
 			Ptr<Statement> OptimizeTrueCondition(OptimizeInfo& info);

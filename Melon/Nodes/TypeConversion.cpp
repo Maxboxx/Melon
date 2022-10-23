@@ -35,7 +35,7 @@ TypeSymbol* TypeConversion::Type() const {
 	return s;
 }
 
-CompiledNode TypeConversion::Compile(CompileInfo& info) {
+CompiledNode TypeConversion::Compile(OldCompileInfo& info) {
 	TypeSymbol* const convertType = Type();
 
 	// Check if the node needs conversion

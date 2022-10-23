@@ -84,7 +84,7 @@ Symbol* NameExpression::Symbol() const {
 	}
 }
 
-CompiledNode NameExpression::Compile(CompileInfo& info) {
+CompiledNode NameExpression::Compile(OldCompileInfo& info) {
 	CompiledNode cn;
 
 	// Get symbol

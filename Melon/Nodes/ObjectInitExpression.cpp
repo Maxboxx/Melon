@@ -39,7 +39,7 @@ TypeSymbol* ObjectInitExpression::Type() const {
 	return nullptr;
 }
 
-CompiledNode ObjectInitExpression::Compile(CompileInfo& info) {
+CompiledNode ObjectInitExpression::Compile(OldCompileInfo& info) {
 	CompiledNode c = expression->Compile(info);
 	
 	TypeSymbol* const type = Type();

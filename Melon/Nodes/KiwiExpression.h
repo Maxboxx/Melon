@@ -19,7 +19,7 @@ namespace Melon {
 			~KiwiExpression();
 
 			virtual Symbols::TypeSymbol* Type() const override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

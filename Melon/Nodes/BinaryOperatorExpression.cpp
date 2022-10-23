@@ -46,7 +46,7 @@ Name BinaryOperatorExpression::GetOperator() const {
 	return op;
 }
 
-CompiledNode BinaryOperatorExpression::Compile(CompileInfo& info) {
+CompiledNode BinaryOperatorExpression::Compile(OldCompileInfo& info) {
 	FunctionSymbol* const func = SymbolTable::FindOperator(GetOperator(), operand1->Type(), operand2->Type(), file);
 	if (!func) return CompiledNode();
 

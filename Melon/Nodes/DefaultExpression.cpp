@@ -45,7 +45,7 @@ TypeSymbol* DefaultExpression::Type() const {
 	return type;
 }
 
-CompiledNode DefaultExpression::Compile(CompileInfo& info) {
+CompiledNode DefaultExpression::Compile(OldCompileInfo& info) {
 	CompiledNode cn;
 	cn.size = info.stack.ptrSize;
 

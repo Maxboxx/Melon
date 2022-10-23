@@ -27,7 +27,7 @@ Long Boolean::GetImmediate() const {
 	return value ? 1 : 0;
 }
 
-CompiledNode Boolean::Compile(CompileInfo& info) {
+CompiledNode Boolean::Compile(OldCompileInfo& info) {
 	CompiledNode node;
 	node.argument = Argument(GetImmediate());
 	node.size = 1;

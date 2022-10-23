@@ -43,7 +43,7 @@ bool GuardStatement::IsScope() const {
 	return true;
 }
 
-void GuardStatement::CompileElse(CompiledNode& compiled, CompileInfo& info, List<UInt>& jumps) {
+void GuardStatement::CompileElse(CompiledNode& compiled, OldCompileInfo& info, List<UInt>& jumps) {
 	for (const OptimizerInstruction& in : else_->Compile(info).instructions) {
 		// Check for custom instructions
 		if (in.instruction.type != InstructionType::Custom) {
@@ -73,7 +73,7 @@ void GuardStatement::CompileElse(CompiledNode& compiled, CompileInfo& info, List
 	}
 }
 
-CompiledNode GuardStatement::Compile(CompileInfo& info) {
+CompiledNode GuardStatement::Compile(OldCompileInfo& info) {
 	const UInt frame = info.stack.frame;
 
 	// Compile condition
