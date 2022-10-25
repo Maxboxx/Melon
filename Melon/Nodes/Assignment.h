@@ -25,6 +25,7 @@ namespace Melon {
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual CompiledNode Compile(OldCompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;

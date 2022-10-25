@@ -31,7 +31,7 @@ CompiledNode OptionalAssignNode::Compile(Weak<Expression> operand1, Weak<Express
 	TypeSymbol* const type1 = operand1->Type();
 	TypeSymbol* const type2 = operand2->Type();
 
-	UInt compIndex = c1.instructions.Size();
+	UInt compIndex = c1.instructions.Count();
 
 	Instruction comp = Instruction(InstructionType::Eq, 1);
 	comp.arguments.Add(c2.argument);
@@ -50,7 +50,7 @@ CompiledNode OptionalAssignNode::Compile(Weak<Expression> operand1, Weak<Express
 	info.important = important;
 	c1.AddInstructions(Node::CompileAssignment(mn1, mn2, info, operand2->File()).instructions);
 
-	UInt jumpIndex = c1.instructions.Size();
+	UInt jumpIndex = c1.instructions.Count();
 	c1.instructions.Add(Instruction(InstructionType::Jmp));
 
 	c1.instructions.Add(Instruction::Label(info.label));

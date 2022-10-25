@@ -50,7 +50,7 @@ CompiledNode ObjectInitExpression::Compile(OldCompileInfo& info) {
 	UInt index = info.index;
 
 	// Compile vars
-	for (UInt i = 0; i < vars.Size(); i++) {
+	for (UInt i = 0; i < vars.Count(); i++) {
 		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
 
 		if (type->Is<StructSymbol>()) {
@@ -104,8 +104,8 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 	}
 
 	// Scan assignments
-	for (UInt i = 0; i < vars.Size(); i++) {
-		for (UInt u = i + 1; u < vars.Size(); u++) {
+	for (UInt i = 0; i < vars.Count(); i++) {
+		for (UInt u = i + 1; u < vars.Count(); u++) {
 			if (vars[i] == vars[u]) {
 				ErrorLog::Error(LogMessage("error.scan.init.multiple", vars[i].name), file);
 			}
@@ -160,7 +160,7 @@ StringBuilder ObjectInitExpression::ToMelon(const UInt indent) const {
 
 	String tabs = String('\t').Repeat(indent + 1);
 
-	for (UInt i = 0; i < vars.Size(); i++) {
+	for (UInt i = 0; i < vars.Count(); i++) {
 		if (i > 0) sb += ",\n";
 		sb += tabs;
 		sb += vars[i].ToString();

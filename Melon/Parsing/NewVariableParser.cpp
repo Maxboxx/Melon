@@ -23,7 +23,7 @@ Ptr<NewVariableNode> NewVariableParser::Parse(ParsingInfo& info, const bool sing
 	while (const Optional<NameList> type = ParseType(info)) {
 		node->types.Add(*type);
 
-		if (single && node->types.Size() == 1) break;
+		if (single && node->types.Count() == 1) break;
 
 		if (info.Current().type == TokenType::Comma) {
 			info.index++;
@@ -62,13 +62,13 @@ Ptr<NewVariableNode> NewVariableParser::Parse(ParsingInfo& info, const bool sing
 
 			if (info.Next().type != TokenType::Comma) break;
 
-			if (node->types.Size() > 1 && node->names.Size() >= node->types.Size()) {
+			if (node->types.Count() > 1 && node->names.Count() >= node->types.Count()) {
 				Parser::UnexpectedToken(info);
 				return nullptr;
 			}
 		}
 
-		if (node->names.Size() < node->types.Size()) {
+		if (node->names.Count() < node->types.Count()) {
 			ErrorLog::Error(LogMessage("error.syntax.assign.var.few"), info.GetFileInfoPrev());
 		}
 

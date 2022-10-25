@@ -50,7 +50,7 @@ inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes() const {
 	if (IsInit()) {
 		types.Add(expression->Type());
 	}
-	else for (UInt i = 0; i < f->returnValues.Size(); i++) {
+	else for (UInt i = 0; i < f->returnValues.Count(); i++) {
 		types.Add(f->ReturnType(i));
 	}
 
@@ -261,7 +261,7 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, OldCompi
 	UInt tempSize = 0;
 
 	// Check all arguments
-	for (UInt i = 0; i < arguments.Size(); i++) {
+	for (UInt i = 0; i < arguments.Count(); i++) {
 		callInfo.memoryOffsets.Add(0);
 		callInfo.assignFirst.Add(false);
 
@@ -302,9 +302,9 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, OldCompi
 				}
 
 				// Reserves space in temporary memory
-				callInfo.assignFirst[callInfo.assignFirst.Size() - 1] = true;
+				callInfo.assignFirst[callInfo.assignFirst.Count() - 1] = true;
 				tempSize += callInfo.func->ArgumentType(callInfo.isInit ? i + 1 : i)->Size();
-				callInfo.memoryOffsets[callInfo.memoryOffsets.Size() - 1] = tempSize;
+				callInfo.memoryOffsets[callInfo.memoryOffsets.Count() - 1] = tempSize;
 			}
 			else if (attributes[i] != CallArgAttributes::Ref) {
 				ErrorLog::Warning(LogMessage("warning.ref"), arguments[i]->File());
@@ -414,7 +414,7 @@ inline void BaseCallNode<T>::CompileRefArgument(CallInfo& callInfo, OldCompileIn
 
 		info.stack = temp;
 
-		for (UInt i = 0; i < n.instructions.Size(); i++) {
+		for (UInt i = 0; i < n.instructions.Count(); i++) {
 			callInfo.cn.instructions.Insert(i, n.instructions[i]);
 		}
 	}
@@ -458,7 +458,7 @@ inline void BaseCallNode<T>::CompileCopyArgument(CallInfo& callInfo, OldCompileI
 
 template <BaseCallType T>
 inline void BaseCallNode<T>::CompileArguments(CallInfo& callInfo, OldCompileInfo& info) {
-	for (UInt i = 0; i < callInfo.func->arguments.Size(); i++) {
+	for (UInt i = 0; i < callInfo.func->arguments.Count(); i++) {
 		TypeSymbol* const type = callInfo.func->ArgumentType(i);
 
 		// Compile ref argument
@@ -568,7 +568,7 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 	}
 
 	// Scan arguments
-	for (UInt i = 0; i < arguments.Size(); i++) {
+	for (UInt i = 0; i < arguments.Count(); i++) {
 		VariableSymbol* const arg = func->Argument(i);
 
 		if (arg && (arg->attributes & VariableAttributes::Ref) == VariableAttributes::None) {
@@ -588,7 +588,7 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 	const bool init = IsInit();
 
 	// Scan argument assignment
-	for (UInt u = 0; u < func->arguments.Size(); u++) {
+	for (UInt u = 0; u < func->arguments.Count(); u++) {
 		Int i = init ? u - 1 : u;
 
 		TypeSymbol* const type = func->ArgumentType(u);
@@ -635,7 +635,7 @@ inline StringBuilder BaseCallNode<T>::ToMelon(const UInt indent) const {
 
 	sb += "(";
 
-	for (UInt i = 0; i < arguments.Size(); i++) {
+	for (UInt i = 0; i < arguments.Count(); i++) {
 		if (i > 0) sb += ", ";
 		if (attributes[i] == CallArgAttributes::Ref)   sb += "ref ";
 		if (attributes[i] == CallArgAttributes::NoRef) sb += "noref ";

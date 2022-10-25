@@ -180,6 +180,14 @@ CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expressio
 	return CompiledNode();
 }
 
+Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file) {
+	const String type = assignable->Type()->AbsoluteName().ToString();
+	Ptr<Kiwi::Variable> kiwiVar = assignable->Compile(info).AsPtr<Kiwi::Variable>();
+	Ptr<Kiwi::Value> kiwiValue  = value->Compile(info);
+	info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, kiwiVar, kiwiValue));
+	return nullptr;
+}
+
 NameList Node::FindSideEffectScope(const bool assign) {
 	return scope ? scope->AbsoluteName() : NameList();
 }

@@ -61,7 +61,7 @@ CompiledNode LogicExpression::CompileAndOrOperand(OldCompileInfo& info, Compiled
 	comp.arguments.Add(Argument(0));
 
 	// Jump if next operand is not needed
-	jumps.Add(cn.instructions.Size());
+	jumps.Add(cn.instructions.Count());
 	cn.instructions.Add(comp);
 
 	// Free up register from operand

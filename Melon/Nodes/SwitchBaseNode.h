@@ -172,7 +172,7 @@ namespace Melon {
 					eq.arguments.Add(KiwiOld::Argument(0));
 					switchInfo.cn.instructions.Add(eq);
 
-					jumps.Add(switchInfo.cn.instructions.Size() - 1);
+					jumps.Add(switchInfo.cn.instructions.Count() - 1);
 				}
 
 				switchInfo.caseJumps.Add(jumps);
@@ -217,7 +217,7 @@ namespace Melon {
 							switchInfo.cn.instructions.Add(inst);
 						}
 						else {
-							switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
+							switchInfo.endJumps.Add(switchInfo.cn.instructions.Count());
 							switchInfo.cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0));
 						}
 					}
@@ -228,7 +228,7 @@ namespace Melon {
 				}
 
 				// Jump to end
-				switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
+				switchInfo.endJumps.Add(switchInfo.cn.instructions.Count());
 				switchInfo.cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0));
 			}
 		}
@@ -260,7 +260,7 @@ namespace Melon {
 							switchInfo.cn.instructions.Add(inst);
 						}
 						else {
-							switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
+							switchInfo.endJumps.Add(switchInfo.cn.instructions.Count());
 							switchInfo.cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0));
 						}
 					}
@@ -301,7 +301,7 @@ namespace Melon {
 
 			// Jump to default
 			KiwiOld::Instruction defJmp = KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0);
-			switchInfo.defaultJump = switchInfo.cn.instructions.Size();
+			switchInfo.defaultJump = switchInfo.cn.instructions.Count();
 			switchInfo.cn.instructions.Add(defJmp);
 
 			if constexpr (std::is_same<U, Expression>::value) {
@@ -404,7 +404,7 @@ namespace Melon {
 		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline void SwitchBaseNode<T, U>::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 			if constexpr (!std::is_same<U, Expression>::value) {
-				for (Boxx::UInt i = 0; i < switchInfo.cases.Size(); i++) {
+				for (Boxx::UInt i = 0; i < switchInfo.cases.Count(); i++) {
 					if (i == 0) {
 						switchInfo.scope = switchInfo.cases[i];
 					}
@@ -563,7 +563,7 @@ namespace Melon {
 
 			// Remove empty cases
 			if constexpr (!std::is_same<U, Expression>::value) {
-				for (Boxx::UInt i = 0; i < nodes.Size(); i++) {
+				for (Boxx::UInt i = 0; i < nodes.Count(); i++) {
 					if (Node::IsEmpty(nodes[i])) {
 						cases.RemoveAt(i);
 						nodes.RemoveAt(i);
@@ -589,12 +589,12 @@ namespace Melon {
 			Boxx::String tabs1 = Boxx::String('\t').Repeat(indent + 1);
 			Boxx::String tabs2 = Boxx::String('\t').Repeat(indent + 2);
 
-			for (Boxx::UInt i = 0; i < nodes.Size(); i++) {
+			for (Boxx::UInt i = 0; i < nodes.Count(); i++) {
 				sb += "\n";
 				sb += tabs1;
 				sb += "case ";
 
-				for (Boxx::UInt u = 0; u < cases[i].Size(); u++) {
+				for (Boxx::UInt u = 0; u < cases[i].Count(); u++) {
 					if (u > 0) sb += ", ";
 					sb += cases[i][u]->ToMelon(indent + 1);
 				}

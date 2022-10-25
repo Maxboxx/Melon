@@ -1,7 +1,2 @@
 
-function int: throw increment(int: i)
-	return i + 1
-end
-
-int: i = increment(3)
-
+int: i = 3

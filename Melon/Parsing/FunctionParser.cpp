@@ -362,7 +362,7 @@ List<NameList> FunctionParser::ParseReturnTypes(ParsingInfo& info) {
 				break;
 			}
 			else {
-				if (returnTypes.Size() > 1) {
+				if (returnTypes.Count() > 1) {
 					ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(":"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 				}
 

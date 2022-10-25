@@ -231,7 +231,7 @@ bool LoopParser::IsValidSegmentType(const TokenType t, Weak<Nodes::LoopStatement
 		return false;
 	}
 	else if (IsLoopAlso(t)) {
-		return loop->segments.Last().type != LoopStatement::LoopType::None && (loop->segments.Size() == 1 || loop->segments.Last().also);
+		return loop->segments.Last().type != LoopStatement::LoopType::None && (loop->segments.Count() == 1 || loop->segments.Last().also);
 	}
 	else {
 		return loop->segments.Last().also || loop->segments.Last().type != LoopStatement::LoopType::None;

@@ -15,6 +15,8 @@
 
 #include "Kiwi/Old/Kiwi.h"
 #include "Kiwi/Node.h"
+#include "Kiwi/Value.h"
+#include "Kiwi/KiwiProgram.h"
 
 #include "Structs/CompiledNode.h"
 #include "Structs/CompileInfo.h"
@@ -73,11 +75,14 @@ namespace Melon {
 			virtual CompiledNode [[deprecated("Use new Compile instead")]] Compile(OldCompileInfo& info) = 0;
 
 			/// Compiles the node.
-			//virtual Ptr<Kiwi::Node> Compile() = 0;
+			///R value: The kiwi value for the node. {nullptr} if the node has no value.
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) {
+				return nullptr;
+			}
 
 			/// Gets the byte size of the node.
 			///p This is only used by the compile step.
-			virtual Boxx::UInt GetSize() const;
+			virtual [[deprecated]] Boxx::UInt GetSize() const;
 
 			/// Checks if the node has side effects
 			bool HasSideEffects();
@@ -120,6 +125,7 @@ namespace Melon {
 			static void Optimize(Ptr<Node>& node, OptimizeInfo& info);
 
 			static CompiledNode CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, OldCompileInfo& info, const FileInfo& file);
+			static Ptr<Kiwi::Value> CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file);
 
 		protected:
 			friend RootNode;

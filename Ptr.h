@@ -250,6 +250,9 @@ public:
 			ref = ptr.ptr->ref;
 			if (ref) ref->ref++;
 		}
+		else {
+			ref = nullptr;
+		}
 	}
 
 	Weak(const Weak<T>& ptr) {
@@ -270,6 +273,9 @@ public:
 		if (ptr.ptr) {
 			ref = ptr.ptr->ref;
 			if (ref) ref->ref++;
+		}
+		else {
+			ref = nullptr;
 		}
 	}
 

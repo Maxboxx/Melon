@@ -28,6 +28,7 @@ namespace Melon {
 			~RootNode();
 
 			virtual CompiledNode Compile(OldCompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 
 			/// Returns the instruction list from {Node::Compile()}.
 			Boxx::List<Optimizing::OptimizerInstruction> Compile(const Boxx::Set<Symbols::VariableSymbol*>& usedVariables);

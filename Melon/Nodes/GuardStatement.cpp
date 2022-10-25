@@ -67,7 +67,7 @@ void GuardStatement::CompileElse(CompiledNode& compiled, OldCompileInfo& info, L
 		}
 		else {
 			Instruction jmp = Instruction(InstructionType::Jmp);
-			jumps.Add(compiled.instructions.Size());
+			jumps.Add(compiled.instructions.Count());
 			compiled.instructions.Add(jmp);
 		}
 	}
@@ -85,7 +85,7 @@ CompiledNode GuardStatement::Compile(OldCompileInfo& info) {
 	ne.arguments.Add(compiled.argument);
 	ne.arguments.Add(Argument(0));
 
-	UInt jumpIndex = compiled.instructions.Size();
+	UInt jumpIndex = compiled.instructions.Count();
 	compiled.instructions.Add(ne);
 
 	List<UInt> jumps;

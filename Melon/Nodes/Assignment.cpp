@@ -37,7 +37,7 @@ Assignment::~Assignment() {
 UInt Assignment::GetSize() const {
 	UInt size = 0;
 
-	for (UInt i = 0; i < assignableValues.Size(); i++) {
+	for (UInt i = 0; i < assignableValues.Count(); i++) {
 		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardExpression>()) continue;
 
 		if (VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>()) {
@@ -82,7 +82,7 @@ CompiledNode Assignment::Compile(OldCompileInfo& info) {
 	UInt varSize = 0;
 
 	// Calculate size and stack index of variables
-	for (UInt i = 0; i < assignableValues.Size(); i++) {
+	for (UInt i = 0; i < assignableValues.Count(); i++) {
 		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardExpression>()) continue;
 
 		VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>();
@@ -100,11 +100,11 @@ CompiledNode Assignment::Compile(OldCompileInfo& info) {
 	const UInt frame = info.stack.frame;
 
 	// Compile assignments
-	for (UInt i = 0; i < assignableValues.Size(); i++) {
+	for (UInt i = 0; i < assignableValues.Count(); i++) {
 		const UInt regIndex = info.index; 
 
 		// Assign values normally
-		if (i < this->values.Size()) {
+		if (i < this->values.Count()) {
 			if (!assignableValues[i].Is<DiscardExpression>()) {
 				info.important = true;
 				c.AddInstructions(CompileAssignment(assignableValues[i], values[i].value, info, assignableValues[i]->File()).instructions);
@@ -116,10 +116,10 @@ CompiledNode Assignment::Compile(OldCompileInfo& info) {
 			}
 
 			// Calculate offsets for extra return values
-			if (i + 1 >= this->values.Size()) {
+			if (i + 1 >= this->values.Count()) {
 				UInt size = info.stack.top + values[i].type->Size();
 
-				for (UInt u = i + 1; u < values.Size(); u++) {
+				for (UInt u = i + 1; u < values.Count(); u++) {
 					size += values[u].type->Size();
 					returnOffsets.Add(size);
 				}
@@ -130,7 +130,7 @@ CompiledNode Assignment::Compile(OldCompileInfo& info) {
 		}
 		// Assign extra return values
 		else if (!assignableValues[i].Is<DiscardExpression>()) {
-			Ptr<KiwiMemoryExpression> memory = new KiwiMemoryExpression(info.stack.Offset(returnOffsets[i - this->values.Size()]), values[i].type->AbsoluteName());
+			Ptr<KiwiMemoryExpression> memory = new KiwiMemoryExpression(info.stack.Offset(returnOffsets[i - this->values.Count()]), values[i].type->AbsoluteName());
 
 			info.important = true;
 			c.AddInstructions(CompileAssignment(assignableValues[i], memory, info, assignableValues[i]->File()).instructions);
@@ -147,16 +147,43 @@ CompiledNode Assignment::Compile(OldCompileInfo& info) {
 	return c;
 }
 
+Ptr<Kiwi::Value> Assignment::Compile(CompileInfo& info) {
+	// Setup
+	List<Value> values = Values();
+
+	// Compile assignments
+	for (UInt i = 0; i < assignableValues.Count(); i++) {
+		// Assign values normally
+		if (i < this->values.Count()) {
+			if (!assignableValues[i].Is<DiscardExpression>()) {
+				CompileAssignment(assignableValues[i], values[i].value, info, assignableValues[i]->File());
+			}
+			else {
+				// TODO: Cast to type
+				values[i].value->Compile(info);
+			}
+		}
+		// Assign extra return values
+		else if (!assignableValues[i].Is<DiscardExpression>()) {
+			//CompileAssignment(assignableValues[i], var, info, assignableValues[i]->File());
+		}
+
+		// TODO: compile values for discard vars
+	}
+
+	return nullptr;
+}
+
 NameList Assignment::FindSideEffectScope(const bool assign) {
 	NameList list = assignableValues[0] ? assignableValues[0]->GetSideEffectScope(true) : scope->AbsoluteName();
 
-	for (UInt i = 1; i < assignableValues.Size(); i++) {
+	for (UInt i = 1; i < assignableValues.Count(); i++) {
 		if (assignableValues[i]) {
 			list = CombineSideEffects(list, assignableValues[i]->GetSideEffectScope(true));
 		}
 	}
 
-	for (UInt i = 0; i < values.Size(); i++) {
+	for (UInt i = 0; i < values.Count(); i++) {
 		list = CombineSideEffects(list, values[i]->GetSideEffectScope(assign));
 	}
 
@@ -184,17 +211,17 @@ Ptr<Statement> Assignment::Optimize(OptimizeInfo& info) {
 	}
 
 	// Remove values
-	if (removed) for (UInt i = values.Size(); i > 0;) {
+	if (removed) for (UInt i = values.Count(); i > 0;) {
 		i--;
 
 		// Remove values without side effects
 		if (assignableValues[i].Is<DiscardExpression>() && !values[i]->HasSideEffects(scope->AbsoluteName())) {
 			// Check if the value is part of a multiple return
-			if (i >= values.Size() - 1) {
+			if (i >= values.Count() - 1) {
 				bool isDiscard = true;
 				
 				// Only remove value if multiple return is not affected
-				for (UInt u = i + 1; u < assignableValues.Size(); u++) {
+				for (UInt u = i + 1; u < assignableValues.Count(); u++) {
 					if (!assignableValues[u].Is<DiscardExpression>()) {
 						isDiscard = false;
 						break;
@@ -210,13 +237,13 @@ Ptr<Statement> Assignment::Optimize(OptimizeInfo& info) {
 	}
 
 	// Remove vars and values
-	if (removed) for (UInt i = assignableValues.Size(); i > 0;) {
+	if (removed) for (UInt i = assignableValues.Count(); i > 0;) {
 		i--;
 
 		if (assignableValues[i].Is<DiscardExpression>()) {
 			// Remove multiple return vars
-			if (i >= values.Size()) {
-				if (i == assignableValues.Size() - 1 || !values.Last()) {
+			if (i >= values.Count()) {
+				if (i == assignableValues.Count() - 1 || !values.Last()) {
 					assignableValues.RemoveAt(i);
 					types.RemoveAt(i);
 				}
@@ -281,7 +308,7 @@ StringBuilder Assignment::ToMelon(const UInt indent) const {
 	Optional<NameList> type = types[0];
 
 	// Check if all types are equal
-	for (UInt i = 1; i < types.Size(); i++) {
+	for (UInt i = 1; i < types.Count(); i++) {
 		if (types[0] != types[i]) {
 			type = nullptr;
 		}
@@ -296,7 +323,7 @@ StringBuilder Assignment::ToMelon(const UInt indent) const {
 	}
 	// Multiple types
 	else {
-		for (UInt i = 0; i < types.Size(); i++) {
+		for (UInt i = 0; i < types.Count(); i++) {
 			if (i > 0) sb += ", "; 
 			sb += types[i].ToSimpleString();
 		}
@@ -305,7 +332,7 @@ StringBuilder Assignment::ToMelon(const UInt indent) const {
 	}
 	
 	// Vars
-	for (UInt i = 0; i < assignableValues.Size(); i++) {
+	for (UInt i = 0; i < assignableValues.Count(); i++) {
 		if (i > 0) sb += ", ";
 		sb += assignableValues[i]->ToMelon(indent);
 	}
@@ -313,7 +340,7 @@ StringBuilder Assignment::ToMelon(const UInt indent) const {
 	sb += " = ";
 
 	// Values
-	for (UInt i = 0; i < values.Size(); i++) {
+	for (UInt i = 0; i < values.Count(); i++) {
 		if (i > 0) sb += ", ";
 		sb += values[i]->ToMelon(indent);
 	}
@@ -331,7 +358,7 @@ ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 	bool errors = errorCount < ErrorLog::ErrorCount();
 
 	// Scan all vars
-	for (UInt i = 0; i < assignableValues.Size(); i++) {
+	for (UInt i = 0; i < assignableValues.Count(); i++) {
 		if (assignableValues[i].Is<DiscardExpression>()) continue;
 
 		Weak<Expression> node = assignableValues[i];
@@ -374,11 +401,11 @@ ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 List<Assignment::Value> Assignment::Values() const {
 	List<Value> types;
 
-	for (UInt i = 0; i < assignableValues.Size(); i++) {
-		if (i + 1 >= values.Size()) {
+	for (UInt i = 0; i < assignableValues.Count(); i++) {
+		if (i + 1 >= values.Count()) {
 			List<TypeSymbol*> returnTypes = values[i]->Types();
 
-			for (UInt u = 0; u < assignableValues.Size() - i; u++) {
+			for (UInt u = 0; u < assignableValues.Count() - i; u++) {
 				types.Add(Value(returnTypes[u], values[i]));
 			}
 

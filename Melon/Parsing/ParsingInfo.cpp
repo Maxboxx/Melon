@@ -8,7 +8,7 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 
 Melon::Token ParsingInfo::Next() {
-	if (index + 1 >= tokens.Size()) {
+	if (index + 1 >= tokens.Count()) {
 		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line));
 		return Token();
 	}
@@ -17,7 +17,7 @@ Melon::Token ParsingInfo::Next() {
 }
 
 Melon::Token ParsingInfo::Next(const UInt steps) {
-	if (index + steps >= tokens.Size()) {
+	if (index + steps >= tokens.Count()) {
 		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line));
 		return Token();
 	}
@@ -27,7 +27,7 @@ Melon::Token ParsingInfo::Next(const UInt steps) {
 }
 
 Melon::Token ParsingInfo::Peek() const {
-	if (index + 1 >= tokens.Size()) {
+	if (index + 1 >= tokens.Count()) {
 		return Token();
 	}
 
@@ -35,7 +35,7 @@ Melon::Token ParsingInfo::Peek() const {
 }
 
 Melon::Token ParsingInfo::Peek(const UInt steps) const {
-	if (index + steps >= tokens.Size()) {
+	if (index + steps >= tokens.Count()) {
 		return Token();
 	}
 
@@ -43,7 +43,7 @@ Melon::Token ParsingInfo::Peek(const UInt steps) const {
 }
 
 Melon::Token ParsingInfo::Prev() const {
-	if (index - 1 >= tokens.Size()) {
+	if (index - 1 >= tokens.Count()) {
 		return Token();
 	}
 
@@ -51,7 +51,7 @@ Melon::Token ParsingInfo::Prev() const {
 }
 
 Melon::Token ParsingInfo::Prev(const UInt steps) const {
-	if (index - steps >= tokens.Size()) {
+	if (index - steps >= tokens.Count()) {
 		return Token();
 	}
 
@@ -59,11 +59,11 @@ Melon::Token ParsingInfo::Prev(const UInt steps) const {
 }
 
 bool ParsingInfo::EndOfFile() const {
-	return index >= tokens.Size();
+	return index >= tokens.Count();
 }
 
 Melon::Token ParsingInfo::Current() const {
-	if (index >= tokens.Size()) {
+	if (index >= tokens.Count()) {
 		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line));
 		return Token();
 	}

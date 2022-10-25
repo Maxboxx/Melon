@@ -76,13 +76,13 @@ CompiledNode RepeatStatement::Compile(OldCompileInfo& info) {
 			type == BreakStatement::scopeBreakInstName
 		) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
-			endJumps.Add(compiled.instructions.Size());
+			endJumps.Add(compiled.instructions.Count());
 			compiled.instructions.Add(jmp);
 		}
 		// Compile continue
 		else if (type == ContinueStatement::continueInstName) {
 			Instruction jmp = Instruction(InstructionType::Jmp);
-			condJumps.Add(compiled.instructions.Size());
+			condJumps.Add(compiled.instructions.Count());
 			compiled.instructions.Add(jmp);
 		}
 	}

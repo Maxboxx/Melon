@@ -31,7 +31,7 @@ Ptr<Assignment> AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 		return nullptr;
 	}
 
-	bool singleType = types.Size() == 1;
+	bool singleType = types.Count() == 1;
 
 	// Create assign node
 	Ptr<Assignment> assign = new Assignment(info.scope, info.GetFileInfo(startLine));
@@ -41,7 +41,7 @@ Ptr<Assignment> AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	ParseVariables(info, types, assign, symbols, singleType);
 
 	// Check for single flag
-	if ((flags & Flags::Single) != Flags::None && assign->assignableValues.Size() > 1) {
+	if ((flags & Flags::Single) != Flags::None && assign->assignableValues.Count() > 1) {
 		info.index = startIndex;
 		return nullptr;
 	}
@@ -72,7 +72,7 @@ Ptr<Assignment> AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	ParseExpressions(info, assign);
 
 	// Check if there are too many expressions
-	if (assign->values.Size() > assign->assignableValues.Size()) {
+	if (assign->values.Count() > assign->assignableValues.Count()) {
 		ErrorLog::Error(LogMessage("error.syntax.assign.expr.many"), info.GetFileInfoPrev());
 	}
 
@@ -164,7 +164,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 			info.index++;
 		}
 
-		if (i >= types.Size()) {
+		if (i >= types.Count()) {
 			if (singleType) {
 				NameList last = types.Last();
 				types.Add(last);

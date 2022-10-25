@@ -56,7 +56,7 @@ CompiledNode FunctionBody::Compile(OldCompileInfo& info) { // TODO: more accurat
 	Long size = info.stack.ptrSize;
 
 	// Set stack index of arguments
-	for (Long i = (Long)sym->arguments.Size() - 1; i >= 0; i--) {
+	for (Long i = (Long)sym->arguments.Count() - 1; i >= 0; i--) {
 		VariableSymbol* const arg = sym->Argument(i);
 		arg->stackIndex = -size;
 
@@ -88,7 +88,7 @@ CompiledNode FunctionBody::Compile(OldCompileInfo& info) { // TODO: more accurat
 }
 
 void FunctionBody::IncludeScan(ParsingInfo& info) {
-	for (UInt i = 0; i < sym->arguments.Size(); i++) {
+	for (UInt i = 0; i < sym->arguments.Count(); i++) {
 		if (VariableSymbol* const arg = sym->Argument(i)) {
 			if (!arg->Type()) {
 				Root()->AddTemplateSpecialization(arg->type, arg->Parent()->AbsoluteName(), arg->File());
@@ -130,7 +130,7 @@ ScanResult FunctionBody::Scan(ScanInfoStack& info) {
 	}
 
 	// Check if arguments are used
-	for (UInt i = 0; i < sym->arguments.Size(); i++) {
+	for (UInt i = 0; i < sym->arguments.Count(); i++) {
 		VariableSymbol* const arg = sym->Argument(i);
 
 		if (arg && (arg->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
@@ -140,7 +140,7 @@ ScanResult FunctionBody::Scan(ScanInfoStack& info) {
 
 	// Check if the function has not returned if it needs to
 	if (!info->scopeInfo.hasReturned && !sym->returnValues.IsEmpty()) {
-		ErrorLog::Error(LogMessage(sym->returnValues.Size() == 1 ? "error.scan.return.value" : "error.scan.return.values", sym->ToString()), file);
+		ErrorLog::Error(LogMessage(sym->returnValues.Count() == 1 ? "error.scan.return.value" : "error.scan.return.values", sym->ToString()), file);
 	}
 
 	info.Pop();
@@ -181,7 +181,7 @@ StringBuilder FunctionBody::ToMelon(const UInt indent) const {
 	}
 
 	// Add return types
-	for (UInt i = 0; i < sym->returnValues.Size(); i++) {
+	for (UInt i = 0; i < sym->returnValues.Count(); i++) {
 		if (i > 0) sb += ", ";
 		sb += sym->returnValues[i].ToSimpleString();
 	}
@@ -200,7 +200,7 @@ StringBuilder FunctionBody::ToMelon(const UInt indent) const {
 	if (!sym->templateArguments.IsEmpty()) {
 		sb += "<";
 
-		for (UInt i = 0; i < sym->templateArguments.Size(); i++) {
+		for (UInt i = 0; i < sym->templateArguments.Count(); i++) {
 			if (i > 0) sb += ", ";
 			sb += sym->templateArguments[i].ToSimpleString();
 		}
@@ -213,7 +213,7 @@ StringBuilder FunctionBody::ToMelon(const UInt indent) const {
 
 	const UInt start = (!sym->arguments.IsEmpty() && sym->arguments[0][0] == Name::Self) ? 1 : 0;
 
-	for (UInt i = start; i < sym->arguments.Size(); i++) {
+	for (UInt i = start; i < sym->arguments.Count(); i++) {
 		if (i > start) sb += ", ";
 
 		VariableSymbol* const arg = sym->Argument(i);

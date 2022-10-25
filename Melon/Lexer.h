@@ -26,10 +26,10 @@ namespace Melon {
 
 			Boxx::String match = whiteSpace.Match(code)->match;
 			Boxx::UInt line = 1 + Lines(match);
-			Boxx::UInt i = match.Size();
+			Boxx::UInt i = match.Length();
 			Boxx::List<Token> tokens;
         
-			while (i < code.Size()) {
+			while (i < code.Length()) {
 				bool found = false;
             
 				for (const TokenPattern& pattern : patterns) {
@@ -53,9 +53,9 @@ namespace Melon {
 					}
 				}
             
-				if (i < code.Size()) {
+				if (i < code.Length()) {
 					const Boxx::String match = whiteSpace.Match(code, i)->match;
-					i += match.Size();
+					i += match.Length();
 					line += Lines(match);
 				}
 			}

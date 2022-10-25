@@ -6,6 +6,9 @@
 
 #include "Kiwi/Old/Kiwi.h"
 #include "Kiwi/Old/x86_64Converter.h"
+#include "Kiwi/KiwiProgram.h"
+
+#include "Ptr.h"
 
 namespace Melon {
 	namespace Parsing {
@@ -82,9 +85,11 @@ namespace Melon {
 
 		static Parsing::ParsingInfo ParseProject(const CompilerOptions& options);
 		static Nodes::ScanInfoStack ScanProject(const CompilerOptions& options, Parsing::ParsingInfo& info);
-		static Boxx::List<Optimizing::OptimizerInstruction> CompileProject(Parsing::ParsingInfo& info, Nodes::ScanInfoStack& scanInfo);
+		static Boxx::List<Optimizing::OptimizerInstruction> CompileProjectOld(Parsing::ParsingInfo& info, Nodes::ScanInfoStack& scanInfo);
+		static Ptr<Kiwi::KiwiProgram> CompileProject(Parsing::ParsingInfo& info, Nodes::ScanInfoStack& scanInfo);
 
 		static void OutputKiwi(const CompilerOptions& options, const Boxx::List<KiwiOld::Instruction>& instructions);
+		static void OutputKiwi(const CompilerOptions& options, Weak<Kiwi::KiwiProgram> program);
 		static void OutputAssembly(const CompilerOptions& options, const Boxx::List<KiwiOld::Instruction>& instructions);
 	};
 }

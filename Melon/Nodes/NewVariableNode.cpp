@@ -22,7 +22,7 @@ NewVariableNode::~NewVariableNode() {
 }
 
 TypeSymbol* NewVariableNode::GetType(const UInt index) const {
-	NameList type = types[types.Size() > 1 ? index : 0];
+	NameList type = types[types.Count() > 1 ? index : 0];
 
 	if (type == NameList::Discard) {
 		return nullptr;
@@ -43,7 +43,7 @@ TypeSymbol* NewVariableNode::Type() const {
 }
 
 List<NameList> NewVariableNode::GetVariables() const {
-	List<NameList> vars{names.Size()};
+	List<NameList> vars{names.Count()};
 
 	for (const Name& n : names) {
 		if (n == NameList::Discard.Last()) {
@@ -60,7 +60,7 @@ List<NameList> NewVariableNode::GetVariables() const {
 UInt NewVariableNode::GetSize() const {
 	UInt size = 0;
 
-	for (UInt i = 0; i < names.Size(); i++) {
+	for (UInt i = 0; i < names.Count(); i++) {
 		if (names[i] == NameList::Discard.Last()) continue;
 
 		if ((attributes[i] & VariableAttributes::Ref) != VariableAttributes::None) {
@@ -92,7 +92,7 @@ CompiledNode NewVariableNode::Compile(OldCompileInfo& info) { // TODO: more accu
 
 	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
 
-	for (UInt i = 1; i < names.Size(); i++) {
+	for (UInt i = 1; i < names.Count(); i++) {
 		if (GetType(i) == nullptr) continue;
 
 		if ((attributes[i] & VariableAttributes::Ref) != VariableAttributes::None) {
@@ -137,11 +137,11 @@ void NewVariableNode::IncludeScan(ParsingInfo& info) {
 }
 
 ScanResult NewVariableNode::Scan(ScanInfoStack& info) {
-	for (UInt i = 0; i < types.Size(); i++) {
+	for (UInt i = 0; i < types.Count(); i++) {
 		GetType(i);
 	}
 
-	for (UInt i = 0; i < names.Size(); i++) {
+	for (UInt i = 0; i < names.Count(); i++) {
 		scope->Find(names[i], file);
 	}
 
@@ -151,14 +151,14 @@ ScanResult NewVariableNode::Scan(ScanInfoStack& info) {
 StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 	StringBuilder sb;
 
-	for (UInt i = 0; i < types.Size(); i++) {
+	for (UInt i = 0; i < types.Count(); i++) {
 		if (i > 0) sb += ", ";
 		sb += types[i].ToSimpleString();
 	}
 
 	sb += ": ";
 
-	for (UInt i = 0; i < names.Size(); i++) {
+	for (UInt i = 0; i < names.Count(); i++) {
 		if (i > 0) sb += ", ";
 
 		VariableSymbol* const var = SymbolTable::Find<VariableSymbol>(names[i], scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);

@@ -59,7 +59,7 @@ CompiledNode DefaultExpression::Compile(OldCompileInfo& info) {
 	cn.AddInstructions(c1.instructions);
 	cn.size = c1.size - 1;
 
-	UInt eqIndex = cn.instructions.Size();
+	UInt eqIndex = cn.instructions.Count();
 
 	// Check if the optional has a value
 	Instruction eq = Instruction(InstructionType::Eq, 1);
@@ -75,7 +75,7 @@ CompiledNode DefaultExpression::Compile(OldCompileInfo& info) {
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
 
 	// And jump to end
-	UInt jmp = cn.instructions.Size();
+	UInt jmp = cn.instructions.Count();
 	cn.instructions.Add(Instruction(InstructionType::Jmp));
 
 	// Add label for default value

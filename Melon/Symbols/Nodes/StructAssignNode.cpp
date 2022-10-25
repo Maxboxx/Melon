@@ -28,7 +28,7 @@ CompiledNode StructAssignNode::Compile(Weak<Expression> operand1, Weak<Expressio
 
 	StructSymbol* const type = operand1->Type()->Cast<StructSymbol>();
 
-	for (UInt i = 0; i < type->members.Size(); i++) {
+	for (UInt i = 0; i < type->members.Count(); i++) {
 		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], operand1->File());
 
 		Ptr<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem.offset + member->stackIndex, member->Type()->AbsoluteName());

@@ -95,12 +95,12 @@ CompiledNode IntegerBinaryOperatorNode::Compile(Weak<Expression> operand1, Weak<
 	}
 
 	if (inst.arguments[1].type == ArgumentType::Register && inst.arguments[1].reg.type == RegisterType::Register) {
-		if (inst.arguments.Size() < 3) {
+		if (inst.arguments.Count() < 3) {
 			info.index--;
 		}
 	}
 
-	c1.size = inst.arguments.Size() == 2 ? inst.sizes[0] : inst.sizes[2];
+	c1.size = inst.arguments.Count() == 2 ? inst.sizes[0] : inst.sizes[2];
 	c1.argument = arg1;
 	c1.instructions.Add(inst);
 

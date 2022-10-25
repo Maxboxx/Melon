@@ -30,7 +30,7 @@ Statements::~Statements() {
 UInt Statements::GetSize() const {
 	UInt size = 0;
 
-	for (UInt i = statements.Size(); i > 0;) {
+	for (UInt i = statements.Count(); i > 0;) {
 		i--;
 
 		if (statements[i]->IsScope()) {
@@ -75,7 +75,7 @@ Ptr<Statements> Statements::Optimize(OptimizeInfo& info) {
 		Node::Optimize(statement, info);
 	}
 
-	for (UInt i = 0; i < statements.Size(); i++) {
+	for (UInt i = 0; i < statements.Count(); i++) {
 		if (IsEmpty(statements[i])) {
 			statements.RemoveAt(i);
 			i--;
@@ -103,12 +103,20 @@ CompiledNode Statements::Compile(OldCompileInfo& info) {
 	return c;
 }
 
+Ptr<Kiwi::Value> Statements::Compile(CompileInfo& info) {
+	for (Weak<Statement> statement : statements) {
+		statement->Compile(info);
+	}
+	
+	return nullptr;
+}
+
 NameList Statements::FindSideEffectScope(const bool assign) {
 	if (statements.IsEmpty()) return scope->AbsoluteName();
 
 	NameList list = statements[0]->GetSideEffectScope(assign);
 
-	for (UInt i = 1; i < statements.Size(); i++) {
+	for (UInt i = 1; i < statements.Count(); i++) {
 		list = CombineSideEffects(list, statements[i]->GetSideEffectScope(assign));
 	}
 
@@ -121,7 +129,7 @@ StringBuilder Statements::ToMelon(const UInt indent) const {
 
 	bool prevSpace = false;
 
-	for (UInt i = 0; i < statements.Size(); i++) {
+	for (UInt i = 0; i < statements.Count(); i++) {
 		bool hasSpace = Statements::HasSpaceAround(statements[i]);
 
 		if (i > 0) {

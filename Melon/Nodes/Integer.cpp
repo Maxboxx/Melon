@@ -101,6 +101,10 @@ CompiledNode Integer::Compile(OldCompileInfo& info) {
 	return node;
 }
 
+Ptr<Kiwi::Value> Integer::Compile(CompileInfo& info) {
+	return new Kiwi::Integer(number);
+}
+
 StringBuilder Integer::ToMelon(const UInt indent) const {
 	return isUnsigned ? String::ToString((ULong)number) : String::ToString(number);
 }

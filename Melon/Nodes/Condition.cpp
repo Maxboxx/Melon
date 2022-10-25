@@ -72,7 +72,7 @@ CompiledNode Condition::CompileAssignCondition(OldCompileInfo& info) {
 	eq.arguments.Add(c.argument);
 	eq.arguments.Add(Argument(0));
 
-	UInt eqIndex = c.instructions.Size();
+	UInt eqIndex = c.instructions.Count();
 	c.instructions.Add(eq);
 
 	// Compile assignment and restore the value node

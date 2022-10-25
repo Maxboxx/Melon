@@ -64,7 +64,7 @@ CompiledNode DoStatement::Compile(OldCompileInfo& info) {
 		}
 		else {
 			Instruction jmp = Instruction(InstructionType::Jmp);
-			jumps.Add(compiled.instructions.Size());
+			jumps.Add(compiled.instructions.Count());
 			compiled.instructions.Add(jmp);
 		}
 	}

@@ -31,10 +31,10 @@ Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 		bool found = false;
 
 		if (Ptr<NewVariableNode> nn = ParseVariable(info)) {
-			for (UInt i = 0; i < nn->names.Size(); i++) {
+			for (UInt i = 0; i < nn->names.Count(); i++) {
 				VariableSymbol* const var = new VariableSymbol(info.GetFileInfo());
 
-				if (nn->types.Size() == 1)
+				if (nn->types.Count() == 1)
 					var->type = nn->types[0];
 				else
 					var->type = nn->types[i];

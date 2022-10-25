@@ -174,7 +174,7 @@ void IncludeParser::ParseDirectory(const String& directory, const NameList& incl
 	for (const String& file : System::GetFilesInDirectory(directory)) {
 		Array<String> parts = file.Split(".");
 
-		if (parts.Size() == 2 && parts[1] == "melon") {
+		if (parts.Length() == 2 && parts[1] == "melon") {
 			ParseFile(directory + "/" + file, include, Name(parts[0]), info);
 		}
 	}

@@ -6,6 +6,7 @@
 
 #include "Kiwi/Old/Kiwi.h"
 #include "Kiwi/Old/x86_64Converter.h"
+#include "Kiwi/KiwiProgram.h"
 
 #include "Melon/Errors.h"
 #include "Melon/Token.h"
@@ -140,8 +141,8 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		ScanInfoStack scanInfo = ScanProject(compOptions, info);
 
 		// Compile + Optimize
-		List<OptimizerInstruction> instructions = CompileProject(info, scanInfo);
-		List<Instruction> optimizedInstructions = KiwiOptimizer::Optimize(instructions, compOptions.kiwiOptimizationPasses);
+		Ptr<Kiwi::KiwiProgram> program = CompileProject(info, scanInfo);
+		//List<Instruction> optimizedInstructions = KiwiOptimizer::Optimize(instructions, compOptions.kiwiOptimizationPasses);
 
 		// Output melon
 		if (compOptions.outputMelon) {
@@ -150,12 +151,12 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		// Output kiwi
 		if (compOptions.outputKiwi) {
-			OutputKiwi(compOptions, optimizedInstructions);
+			OutputKiwi(compOptions, program);
 		}
 
 		// Output assembly
 		if (compOptions.outputAssembly) {
-			OutputAssembly(compOptions, optimizedInstructions);
+			//OutputAssembly(compOptions, optimizedInstructions);
 		}
 
 		ErrorLog::Success(LogMessage("success.compile"), FileInfo());
@@ -182,29 +183,29 @@ CompilerOptions MelonCompiler::SetupCompilerOptions(const CompilerOptions& optio
 	compOptions.includeDirectories.Add(Regex::Match("^(~[%/\\]*){[%/\\].*}?$", filename)->match);
 
 	// Setup output file
-	if (compOptions.outputName.Size() == 0) {
+	if (compOptions.outputName.Length() == 0) {
 		compOptions.outputName = Regex::Match("(~[%/\\]-){%.~[%/\\%.]*}?$", filename)->match;
 	}
 
 	// Format include directories correctly
-	for (UInt i = 0; i < compOptions.includeDirectories.Size(); i++) {
+	for (UInt i = 0; i < compOptions.includeDirectories.Count(); i++) {
 		const String dir = compOptions.includeDirectories[i];
 
-		if (dir[dir.Size() - 1] != '/' && dir[dir.Size() - 1] != '\\') {
+		if (dir[dir.Length() - 1] != '/' && dir[dir.Length() - 1] != '\\') {
 			compOptions.includeDirectories[i] += "/";
 		}
 	}
 
 	// Setup output directory
-	if (compOptions.outputDirectory.Size() == 0) {
+	if (compOptions.outputDirectory.IsEmpty()) {
 		compOptions.outputDirectory = compOptions.includeDirectories.Last();
 	}
-	else if (compOptions.outputDirectory[compOptions.outputDirectory.Size() - 1] != '/' && compOptions.outputDirectory[compOptions.outputDirectory.Size() - 1] != '\\') {
+	else if (compOptions.outputDirectory[compOptions.outputDirectory.Length() - 1] != '/' && compOptions.outputDirectory[compOptions.outputDirectory.Length() - 1] != '\\') {
 		compOptions.outputDirectory += "/";
 	}
 
 	// Clean up output directory
-	const String dir = compOptions.outputDirectory.Sub(0, compOptions.outputDirectory.Size() - 2);
+	const String dir = compOptions.outputDirectory.Sub(0, compOptions.outputDirectory.Length() - 2);
 
 	if (System::DirectoryExists(dir)) {
 		System::DeleteDirectory(dir);
@@ -265,7 +266,7 @@ ScanInfoStack MelonCompiler::ScanProject(const CompilerOptions& options, Parsing
 	return scanInfo;
 }
 
-List<OptimizerInstruction> MelonCompiler::CompileProject(ParsingInfo& info, ScanInfoStack& scanInfo) {
+List<OptimizerInstruction> MelonCompiler::CompileProjectOld(ParsingInfo& info, ScanInfoStack& scanInfo) {
 	List<OptimizerInstruction> instructions = info.root.Compile(scanInfo.usedVariables);
 
 	if (ErrorLog::HasError()) {
@@ -273,6 +274,21 @@ List<OptimizerInstruction> MelonCompiler::CompileProject(ParsingInfo& info, Scan
 	}
 
 	return instructions;
+}
+
+Ptr<Kiwi::KiwiProgram> MelonCompiler::CompileProject(ParsingInfo& info, ScanInfoStack& scanInfo) {
+	Ptr<Kiwi::KiwiProgram> program = new Kiwi::KiwiProgram();
+
+	CompileInfo compileInfo;
+	compileInfo.program = program;
+
+	info.root.Compile(compileInfo);
+
+	if (ErrorLog::HasError()) {
+		throw CompileError();
+	}
+
+	return program;
 }
 
 void MelonCompiler::OutputKiwi(const CompilerOptions& options, const List<Instruction>& instructions) {
@@ -283,6 +299,15 @@ void MelonCompiler::OutputKiwi(const CompilerOptions& options, const List<Instru
 			throw CompileError();
 		}
 	}
+}
+
+void MelonCompiler::OutputKiwi(const CompilerOptions& options, Weak<Kiwi::KiwiProgram> program) {
+	StringBuilder builder;
+	program->BuildString(builder);
+
+	FileWriter writer = FileWriter(options.outputDirectory + options.outputName + ".kiwi");
+	writer.Write(builder.ToString());
+	writer.Close();
 }
 
 void MelonCompiler::OutputAssembly(const CompilerOptions& options, const List<Instruction>& instructions) {

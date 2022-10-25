@@ -194,7 +194,7 @@ Name Name::Copy() const {
 }
 
 bool Name::IsEmpty() const {
-	return name.Size() == 0 && !types && !arguments;
+	return name.IsEmpty() && !types && !arguments;
 }
 
 bool Name::operator==(const Name& scope) const {
@@ -206,9 +206,9 @@ bool Name::operator==(const Name& scope) const {
 		const List<NameList> types1 = *types;
 		const List<NameList> types2 = *scope.types;
 
-		if (types1.Size() != types2.Size()) return false;
+		if (types1.Count() != types2.Count()) return false;
 
-		for (UInt i = 0; i < types1.Size(); i++) {
+		for (UInt i = 0; i < types1.Count(); i++) {
 			if (types1[i] != types2[i]) return false;
 		}
 	}
@@ -217,9 +217,9 @@ bool Name::operator==(const Name& scope) const {
 		const List<NameList> arguments1 = *arguments;
 		const List<NameList> arguments2 = *scope.arguments;
 
-		if (arguments1.Size() != arguments2.Size()) return false;
+		if (arguments1.Count() != arguments2.Count()) return false;
 
-		for (UInt i = 0; i < arguments1.Size(); i++) {
+		for (UInt i = 0; i < arguments1.Count(); i++) {
 			if (arguments1[i] != arguments2[i]) return false;
 		}
 	}
@@ -240,9 +240,9 @@ bool Name::operator<(const Name& scope) const {
 		const List<NameList> types1 = *types;
 		const List<NameList> types2 = *scope.types;
 
-		if (types1.Size() != types2.Size()) return types1.Size() < types2.Size();
+		if (types1.Count() != types2.Count()) return types1.Count() < types2.Count();
 
-		for (UInt i = 0; i < types1.Size(); i++) {
+		for (UInt i = 0; i < types1.Count(); i++) {
 			if (types1[i] < types2[i]) return true;
 		}
 	}
@@ -251,9 +251,9 @@ bool Name::operator<(const Name& scope) const {
 		const List<NameList> arguments1 = *types;
 		const List<NameList> arguments2 = *scope.types;
 
-		if (arguments1.Size() != arguments2.Size()) return arguments1.Size() < arguments2.Size();
+		if (arguments1.Count() != arguments2.Count()) return arguments1.Count() < arguments2.Count();
 
-		for (UInt i = 0; i < arguments1.Size(); i++) {
+		for (UInt i = 0; i < arguments1.Count(); i++) {
 			if (arguments1[i] < arguments2[i]) return true;
 		}
 	}
@@ -349,7 +349,7 @@ NameList NameList::AddNext(const String& scope) const {
 
 NameList NameList::Pop() const {
 	NameList list = *this;
-	list.names.RemoveAt(list.names.Size() - 1);
+	list.names.RemoveAt(list.names.Count() - 1);
 	return list;
 }
 
@@ -361,7 +361,7 @@ String NameList::ToString() const {
 	String str = "";
 
 	for (const Name& scope : names) {
-		if (str.Size() > 0) str += ".";
+		if (str.Length() > 0) str += ".";
 		str += scope.ToString();
 	}
 
@@ -377,7 +377,7 @@ String NameList::ToSimpleString() const {
 	String str = "";
 
 	for (Boxx::UInt i = start; i < list.Size(); i++) {
-		if (i > start && list[i].name.Size() > 0) {
+		if (i > start && list[i].name.Length() > 0) {
 			str += ".";
 		}
 
@@ -388,7 +388,7 @@ String NameList::ToSimpleString() const {
 }
 
 UInt NameList::Size() const {
-	 return names.Size();
+	 return names.Count();
 }
 
 NameList NameList::Split() const {
@@ -398,7 +398,7 @@ NameList NameList::Split() const {
 	for (Boxx::UInt i = 0; i < Size(); i++) {
 		Name scope = names[i].Copy();
 
-		if (scope.name.Size() > 0 && (scope.types || scope.arguments)) {
+		if (scope.name.Length() > 0 && (scope.types || scope.arguments)) {
 			list = list.Add(Name(scope.name));
 			scope.name = "";
 		}
@@ -422,7 +422,7 @@ NameList NameList::Split() const {
 }
 
 bool NameList::IsTemplate() const {
-	return names.Size() > 0 && names[0] == Name();
+	return names.Count() > 0 && names[0] == Name();
 }
 
 Name NameList::operator[](const Boxx::UInt i) const {
@@ -464,7 +464,7 @@ bool NameList::operator<(const NameList& scopeList) const {
 }
 
 void NameList::operator=(const NameList& scopeList) {
-	names = List<Name>(scopeList.names.Size());
+	names = List<Name>(scopeList.names.Count());
 	baseName = scopeList.baseName;
 	absolute = scopeList.absolute;
 

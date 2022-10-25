@@ -57,7 +57,7 @@ CompiledNode SafeUnwrapChain::Compile(OldCompileInfo& info)  {
 	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
 
 	// Add jump
-	UInt jmpIndex = cn.instructions.Size();
+	UInt jmpIndex = cn.instructions.Count();
 	cn.instructions.Add(Instruction(InstructionType::Jmp));
 
 	// Convert custom instructions to eq instructions with jump

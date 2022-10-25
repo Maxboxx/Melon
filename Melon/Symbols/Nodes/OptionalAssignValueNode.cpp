@@ -28,7 +28,7 @@ CompiledNode OptionalAssignValueNode::Compile(Weak<Expression> operand1, Weak<Ex
 
 	UInt offset = 0;
 
-	for (UInt i = 0; i < type->members.Size(); i++) {
+	for (UInt i = 0; i < type->members.Count(); i++) {
 		if (i > 0 && isNil) break;
 
 		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], operand1->File());

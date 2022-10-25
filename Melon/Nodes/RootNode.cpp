@@ -87,6 +87,26 @@ CompiledNode RootNode::Compile(OldCompileInfo& info) {
 	return cn;
 }
 
+Ptr<Kiwi::Value> RootNode::Compile(CompileInfo& info) {
+	Ptr<Kiwi::InstructionBlock> codeBlock = new Kiwi::InstructionBlock();
+	info.currentBlock = codeBlock;
+
+	// Compile nodes
+	for (Weak<Statements> statements : nodes) {
+		statements->Compile(info);
+	}
+
+	info.program->AddCodeBlock(codeBlock);
+	info.currentBlock = nullptr;
+
+	// Compile functions
+	for (Weak<FunctionBody> func : funcs) {
+		func->Node::Compile(info);
+	}
+
+	return nullptr;
+}
+
 List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVariables) {
 	CompiledNode c;
 
@@ -140,13 +160,13 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 
 	do {
 		// Create template symbols
-		for (; templateIndex < SymbolTable::templateSymbols.Size(); templateIndex++) {
+		for (; templateIndex < SymbolTable::templateSymbols.Count(); templateIndex++) {
 			SymbolTable::TemplateInfo info = SymbolTable::templateSymbols[templateIndex];
 			AddTemplateSpecialization(info.name, info.scope->AbsoluteName(), info.file, false);
 		}
 
 		// Scan failed nodes
-		for (UInt i = 0; i < failedNodes.Size();) {
+		for (UInt i = 0; i < failedNodes.Count();) {
 			try {
 				nodes[failedNodes[i]]->IncludeScan(info);
 				failedNodes.RemoveAt(i);
@@ -157,7 +177,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 		}
 
 		// Scan failed functions
-		for (UInt i = 0; i < failedFuncs.Size();) {
+		for (UInt i = 0; i < failedFuncs.Count();) {
 			try {
 				funcs[failedFuncs[i]]->IncludeScan(info);
 				failedFuncs.RemoveAt(i);
@@ -168,7 +188,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 		}
 
 		// Scan nodes
-		for (; nodeIndex < nodes.Size(); nodeIndex++) {
+		for (; nodeIndex < nodes.Count(); nodeIndex++) {
 			try {
 				nodes[nodeIndex]->IncludeScan(info);
 			}
@@ -178,7 +198,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 		}
 
 		// Scan functions
-		for (; funcIndex < funcs.Size(); funcIndex++) {
+		for (; funcIndex < funcs.Count(); funcIndex++) {
 			try {
 				funcs[funcIndex]->IncludeScan(info);
 			}
@@ -189,11 +209,11 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 	}
 	// Chech if scan is complete
 	while (
-		nodeIndex < nodes.Size() ||
-		funcIndex < funcs.Size() ||
+		nodeIndex < nodes.Count() ||
+		funcIndex < funcs.Count() ||
 		!failedNodes.IsEmpty() ||
 		!failedFuncs.IsEmpty() ||
-		templateIndex < SymbolTable::templateSymbols.Size()
+		templateIndex < SymbolTable::templateSymbols.Count()
 	);
 
 	includeScanning = false;
@@ -214,7 +234,7 @@ void RootNode::AddTemplateSpecialization(const NameList& name, const NameList& s
 	ReplacementMap<TypeSymbol*> templateTypes;
 
 	// Create replacement map for template arguments
-	for (UInt i = 0; i < templateInfo.value2.Size(); i++) {
+	for (UInt i = 0; i < templateInfo.value2.Count(); i++) {
 		if (TypeSymbol* const type = templateInfo.value1->TemplateArgument(i)) {
 			if (type->Is<TemplateSymbol>()) {
 				if (TypeSymbol* const t = SymbolTable::FindAbsolute<TypeSymbol>(templateInfo.value2[i], file)) {
@@ -272,7 +292,7 @@ Tuple<TemplateTypeSymbol*, List<NameList>> RootNode::FindTemplateArgs(const Name
 		}
 	}
 
-	NameList list = name.Last().name.Size() == 0 ? name.Pop() : name.Pop().Add(Name(name.Last().name));
+	NameList list = name.Last().name.Length() == 0 ? name.Pop() : name.Pop().Add(Name(name.Last().name));
 
 	// Find base template type symbol
 	TemplateTypeSymbol* const sym = SymbolTable::Find<TemplateTypeSymbol>(list, scope, file);
@@ -285,10 +305,10 @@ Tuple<TemplateTypeSymbol*, List<NameList>> RootNode::FindTemplateArgs(const Name
 
 	// Find best variant
 	for (TemplateTypeSymbol* const variant : sym->templateVariants) {
-		if (variant->templateArguments.Size() == templateArgs.Size()) {
+		if (variant->templateArguments.Count() == templateArgs.Count()) {
 			bool match = true;
 
-			for (UInt i = 0; i < templateArgs.Size(); i++) {
+			for (UInt i = 0; i < templateArgs.Count(); i++) {
 				TypeSymbol* const symArg = variant->TemplateArgument(i);
 
 				if (symArg->Is<TemplateSymbol>()) continue;
@@ -356,16 +376,16 @@ ScanInfoStack RootNode::Scan() {
 
 void RootNode::Optimize(OptimizeInfo& info) {
 	// Optimize nodes
-	for (UInt i = 0; i < nodes.Size(); i++) {
+	for (UInt i = 0; i < nodes.Count(); i++) {
 		FileInfo file = nodes[i]->file;
 		Node::Optimize(nodes[i], info);
 		nodes[i]->file = file;
 	}
 
 	// Remove unused functions
-	if (info.usedFunctions.Size() < funcs.Size()) {
+	if (info.usedFunctions.Count() < funcs.Count()) {
 		List<Ptr<FunctionBody>> functions = funcs;
-		funcs = List<Ptr<FunctionBody>>(info.usedFunctions.Size());
+		funcs = List<Ptr<FunctionBody>>(info.usedFunctions.Count());
 
 		for (Ptr<FunctionBody> func : functions) {
 			if (info.usedFunctions.Contains(func->sym)) {
@@ -377,7 +397,7 @@ void RootNode::Optimize(OptimizeInfo& info) {
 	}
 
 	// Optimize functions
-	for (UInt i = 0; i < funcs.Size(); i++) {
+	for (UInt i = 0; i < funcs.Count(); i++) {
 		funcs[i]->Optimize(info);
 	}
 }
@@ -428,7 +448,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 			}
 
 			// Get file name
-			if (fileDir.Size() != 0) fileDir += "/";
+			if (fileDir.Length() != 0) fileDir += "/";
 
 			if (Optional<Match> match = filename.Match(statements->file.filename)) {
 				fileDir += match->match;
@@ -443,13 +463,13 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 				sb += "\n";
 			}
 
-			if (sb.Size() > 0) sb += "\n";
+			if (sb.Length() > 0) sb += "\n";
 		}
 
 		// Convert node to melon string
 		StringBuilder s = statements->ToMelon(0);
 
-		if (s.Size() > 0) {
+		if (s.Length() > 0) {
 			sb += s;
 			sb += "\n";
 		}

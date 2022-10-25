@@ -76,16 +76,16 @@ void ErrorLog::Fatal(const LogMessage& message, const FileInfo& info) {
 }
 
 void ErrorLog::AddMarker() {
-	markers.Add(messages.Size());
+	markers.Add(messages.Count());
 }
 
 void ErrorLog::RemoveMarker() {
-	markers.RemoveAt(markers.Size() - 1);
+	markers.RemoveAt(markers.Count() - 1);
 }
 
 void ErrorLog::RevertToMarker() {
-	if (markers.Last() < messages.Size()) {
-		messages.RemoveAt(markers.Last(), messages.Size() - markers.Last());
+	if (markers.Last() < messages.Count()) {
+		messages.RemoveAt(markers.Last(), messages.Count() - markers.Last());
 	}
 }
 
@@ -110,7 +110,7 @@ void ErrorLog::LogErrors() {
 			if (sortedErrors.Contains(error.file.filename, errorList)) {
 				bool inserted = false;
 
-				for (UInt i = 0; i < errorList.Size(); i++) {
+				for (UInt i = 0; i < errorList.Count(); i++) {
 					if (errorList[i].file.line == error.file.line) {
 						if (errorList[i].message.message == error.message.message) {
 							inserted = true;

@@ -26,7 +26,7 @@ IfExpression::~IfExpression() {
 TypeSymbol* IfExpression::Type() const {
 	TypeSymbol* type = nodes[0]->Type();
 
-	for (UInt i = 1; i < nodes.Size(); i++) {
+	for (UInt i = 1; i < nodes.Count(); i++) {
 		if (type != nodes[i]->Type()) {
 			ErrorLog::Error(LogMessage("error.type.if"), file);
 		}
@@ -54,7 +54,7 @@ CompiledNode IfExpression::Compile(OldCompileInfo& info) {
 	StackPtr stack = info.stack;
 
 	// Compile conditions and segments
-	for (UInt i = 0; i < conditions.Size(); i++) {
+	for (UInt i = 0; i < conditions.Count(); i++) {
 		info.stack = stack;
 		info.stack.PopExpr(frame, cn);
 
@@ -69,7 +69,7 @@ CompiledNode IfExpression::Compile(OldCompileInfo& info) {
 		condInst.arguments.Add(Argument(0));
 		cn.instructions.Add(condInst);
 
-		UInt jump = cn.instructions.Size() - 1;
+		UInt jump = cn.instructions.Count() - 1;
 
 		// Compile value assignment
 		cn.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->File()).instructions);
@@ -77,7 +77,7 @@ CompiledNode IfExpression::Compile(OldCompileInfo& info) {
 		info.stack.PopExpr(frame, cn);
 
 		// Add jump and label
-		jumps.Add(cn.instructions.Size());
+		jumps.Add(cn.instructions.Count());
 		cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
 
 		cn.instructions[jump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
@@ -145,7 +145,7 @@ ScanResult IfExpression::Scan(ScanInfoStack& info) {
 NameList IfExpression::FindSideEffectScope(const bool assign) {
 	NameList list = conditions[0]->GetSideEffectScope(assign);
 
-	for (UInt i = 1; i < conditions.Size(); i++) {
+	for (UInt i = 1; i < conditions.Count(); i++) {
 		list = CombineSideEffects(list, conditions[i]->GetSideEffectScope(assign));
 	}
 
@@ -168,7 +168,7 @@ Ptr<Expression> IfExpression::Optimize(OptimizeInfo& info) {
 
 	// TODO: save type before this
 	// Remove segments
-	for (UInt i = 0; i < conditions.Size(); i++) {
+	for (UInt i = 0; i < conditions.Count(); i++) {
 		if (conditions[i]->IsImmediate()) {
 			// Remove segment if condition is false
 			if (conditions[i]->GetImmediate() == 0) {
@@ -179,8 +179,8 @@ Ptr<Expression> IfExpression::Optimize(OptimizeInfo& info) {
 			}
 			// Remove remaining segments if condition is true
 			else {
-				nodes.RemoveAt(i + 1, nodes.Size() - i - 1);
-				conditions.RemoveAt(i, conditions.Size() - i);
+				nodes.RemoveAt(i + 1, nodes.Count() - i - 1);
+				conditions.RemoveAt(i, conditions.Count() - i);
 				info.optimized = true;
 				break;
 			}
@@ -188,7 +188,7 @@ Ptr<Expression> IfExpression::Optimize(OptimizeInfo& info) {
 	}
 
 	// Replcae if expression with a value if there is only one segment
-	if (nodes.Size() == 1) {
+	if (nodes.Count() == 1) {
 		if (nodes[0]->Type() != Type()) {
 			Ptr<TypeConversion> cn = new TypeConversion(nodes[0]->scope, nodes[0]->File());
 			cn->isExplicit = true;
@@ -211,11 +211,11 @@ StringBuilder IfExpression::ToMelon(const UInt indent) const {
 	String tabs1 = String('\t').Repeat(indent);
 	String tabs2 = String('\t').Repeat(indent + 1);
 
-	for (UInt i = 0; i < nodes.Size(); i++) {
+	for (UInt i = 0; i < nodes.Count(); i++) {
 		if (i == 0) {
 			sb += "if ";
 		}
-		else if (i < conditions.Size()) {
+		else if (i < conditions.Count()) {
 			sb += tabs1;
 			sb += "elseif ";
 		}
@@ -224,7 +224,7 @@ StringBuilder IfExpression::ToMelon(const UInt indent) const {
 			sb += "else";
 		}
 
-		if (i < conditions.Size()) {
+		if (i < conditions.Count()) {
 			sb += conditions[i]->ToMelon(indent);
 			sb += " then\n";
 		}

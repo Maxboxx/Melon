@@ -2,6 +2,8 @@
 
 #include "StackPtr.h"
 
+#include "Kiwi/KiwiProgram.h"
+
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
@@ -20,6 +22,15 @@ namespace Melon {
 
 			/// {true} if assignments to memory values are important.
 			bool important = false;
+		};
+
+		/// Contains compile info.
+		struct CompileInfo {
+			/// The current kiwi program.
+			Weak<Kiwi::KiwiProgram> program;
+
+			/// The current instruction block.
+			Weak<Kiwi::InstructionBlock> currentBlock;
 		};
 	}
 }
