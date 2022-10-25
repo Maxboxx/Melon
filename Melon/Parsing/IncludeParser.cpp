@@ -2,6 +2,7 @@
 
 #include "Boxx/System.h"
 #include "Boxx/Array.h"
+#include "Boxx/Path.h"
 
 #include "Melon/Symbols/SymbolTable.h"
 #include "Melon/Symbols/NamespaceSymbol.h"
@@ -34,23 +35,25 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 				}
 			}
 
-			const String fileDir = Regex::Match("^(./)~[%/\\]+$", info.filename)->groups[0];
+			const String fileDir = Path::GetDirectory(info.filename);
 			String includeDir = include[0].ToString();
 
 			for (UInt i = 1; i < include.Size(); i++) {
-				includeDir += "/" + include[i].ToString();
+				includeDir = Path::Combine(includeDir, include[i].ToString());
 			}
+
+			const String fullDir = Path::Combine(fileDir, includeDir);
 
 			bool found = false;
 
-			if (System::FileExists(fileDir + includeDir + ".melon")) {
+			if (System::FileExists(Path::SetExtension(fullDir, "melon"))) {
 				found = true;
 				include = info.currentNamespace.Add(include);
-				ParseFile(fileDir + includeDir + ".melon", include.Pop(), include.Last(), info);
+				ParseFile(Path::SetExtension(fullDir, "melon"), include.Pop(), include.Last(), info);
 
 				if (include.Size() == 1) include = include.Pop();
 			}
-			else if (System::DirectoryExists(fileDir + includeDir)) {
+			else if (System::DirectoryExists(fullDir)) {
 				found = true;
 				include = info.currentNamespace.Add(include);
 				ParseDirectory(fileDir + includeDir, include, info);
@@ -58,11 +61,11 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 
 			if (!found) {
 				for (String dir : info.options.includeDirectories) {
-					dir += includeDir;
+					dir = Path::Combine(dir, includeDir);
 
-					if (System::FileExists(dir + ".melon")) {
+					if (System::FileExists(Path::SetExtension(dir, "melon"))) {
 						found = true;
-						ParseFile(dir + ".melon", include.Pop(), include.Last(), info);
+						ParseFile(Path::SetExtension(dir, "melon"), include.Pop(), include.Last(), info);
 						if (include.Size() == 1) include = include.Pop();
 						break;
 					}
@@ -91,7 +94,7 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 
 void IncludeParser::ParseInclude(const NameList& include, ParsingInfo& info) {
 	if (NamespaceSymbol* const ns = SymbolTable::FindAbsolute<NamespaceSymbol>(include.Pop(), FileInfo())) {
-		String dir = ns->IncludedPath() + "/" + include.Last().ToString();
+		String dir = Path::Combine(ns->IncludedPath(), include.Last().ToString());
 
 		if (System::DirectoryExists(dir)) {
 			ParseDirectory(dir, include, info);
@@ -159,7 +162,7 @@ void IncludeParser::CreateIncludeSymbols(const String& filename, const NameList&
 			String path = dirs[0];
 
 			for (UInt u = 1; u < includeScopes.Size() + 1; u++) {
-				path += "/" + dirs[u];
+				path = Path::Combine(path, dirs[u]);
 			}
 
 			NamespaceSymbol* const ns = SymbolTable::FindAbsolute<NamespaceSymbol>(includeScopes.Pop(), FileInfo());
@@ -172,10 +175,10 @@ void IncludeParser::ParseDirectory(const String& directory, const NameList& incl
 	CreateIncludeSymbols(directory, include);
 
 	for (const String& file : System::GetFilesInDirectory(directory)) {
-		Array<String> parts = file.Split(".");
+		String ext = Path::GetExtension(file);
 
-		if (parts.Length() == 2 && parts[1] == "melon") {
-			ParseFile(directory + "/" + file, include, Name(parts[0]), info);
+		if (ext == "melon") {
+			ParseFile(Path::Combine(directory, file), include, Name(Path::GetFileName(file)), info);
 		}
 	}
 }

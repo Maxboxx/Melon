@@ -19,6 +19,7 @@
 #include "Boxx/File.h"
 #include "Boxx/Math.h"
 #include "Boxx/ReplacementMap.h"
+#include "Boxx/Path.h"
 
 using namespace Boxx;
 using namespace KiwiOld;
@@ -408,13 +409,11 @@ StringBuilder RootNode::ToMelon(const UInt indent) const {
 
 void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 	// Create output directory
-	const String dir = options.outputDirectory + "melon/";
-	System::CreateDirectory(options.outputDirectory + "melon");
+	const String dir = Path::Combine(options.outputDirectory, "melon");
+	System::CreateDirectory(dir);
 
 	NameList currentNamespace = NameList::undefined;
 	String fileDir = dir;
-
-	Regex filename = Regex("~[/\\]+%.melon$");
 
 	bool writeToFile = false;
 	StringBuilder sb;
@@ -425,9 +424,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 		if (statements->file.currentNamespace != currentNamespace) {
 			// Write old namespace contents to file
 			if (writeToFile) {
-				FileWriter file = FileWriter(fileDir);
-				file.Write(sb.ToString());
-				file.Close();
+				FileWriter::WriteText(fileDir, sb.ToString());
 			}
 			else {
 				writeToFile = true;
@@ -439,20 +436,14 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 
 			// Create directory for new namespace
 			for (UInt i = 0; i < currentNamespace.Size(); i++) {
-				if (i > 0) fileDir += "/";
-				fileDir += currentNamespace[i].ToString();
+				fileDir = Path::Combine(fileDir, currentNamespace[i].ToString());
 
 				if (!System::DirectoryExists(fileDir)) {
 					System::CreateDirectory(fileDir);
 				}
 			}
 
-			// Get file name
-			if (fileDir.Length() != 0) fileDir += "/";
-
-			if (Optional<Match> match = filename.Match(statements->file.filename)) {
-				fileDir += match->match;
-			}
+			fileDir = Path::Combine(fileDir, Path::GetFile(statements->file.filename));
 
 			sb = StringBuilder();
 
@@ -477,8 +468,6 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 
 	// Write last text to file
 	if (writeToFile) {
-		FileWriter file = FileWriter(fileDir);
-		file.Write(sb.ToString());
-		file.Close();
+		FileWriter::WriteText(fileDir, sb.ToString());
 	}
 }

@@ -3,6 +3,7 @@
 #include "Boxx/File.h"
 #include "Boxx/Mango.h"
 #include "Boxx/System.h"
+#include "Boxx/Path.h"
 
 #include "Kiwi/Old/Kiwi.h"
 #include "Kiwi/Old/x86_64Converter.h"
@@ -169,8 +170,6 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 }
 
 CompilerOptions MelonCompiler::SetupCompilerOptions(const CompilerOptions& options) {
-	const String filename = options.mainFile;
-
 	CompilerOptions compOptions = options;
 	compOptions.includeDirectories = List<String>();
 
@@ -180,39 +179,25 @@ CompilerOptions MelonCompiler::SetupCompilerOptions(const CompilerOptions& optio
 	}
 
 	// Add main directory
-	compOptions.includeDirectories.Add(Regex::Match("^(~[%/\\]*){[%/\\].*}?$", filename)->match);
+	compOptions.includeDirectories.Add(Path::GetDirectory(options.mainFile));
 
 	// Setup output file
 	if (compOptions.outputName.Length() == 0) {
-		compOptions.outputName = Regex::Match("(~[%/\\]-){%.~[%/\\%.]*}?$", filename)->match;
+		compOptions.outputName = Path::GetFileName(options.mainFile);
 	}
 
-	// Format include directories correctly
-	for (UInt i = 0; i < compOptions.includeDirectories.Count(); i++) {
-		const String dir = compOptions.includeDirectories[i];
-
-		if (dir[dir.Length() - 1] != '/' && dir[dir.Length() - 1] != '\\') {
-			compOptions.includeDirectories[i] += "/";
-		}
-	}
-
-	// Setup output directory
+	// Setup output directory as main directory
 	if (compOptions.outputDirectory.IsEmpty()) {
 		compOptions.outputDirectory = compOptions.includeDirectories.Last();
 	}
-	else if (compOptions.outputDirectory[compOptions.outputDirectory.Length() - 1] != '/' && compOptions.outputDirectory[compOptions.outputDirectory.Length() - 1] != '\\') {
-		compOptions.outputDirectory += "/";
+
+	// Cleanup output directory
+	if (System::DirectoryExists(compOptions.outputDirectory)) {
+		System::DeleteDirectory(compOptions.outputDirectory);
 	}
 
-	// Clean up output directory
-	const String dir = compOptions.outputDirectory.Sub(0, compOptions.outputDirectory.Length() - 2);
-
-	if (System::DirectoryExists(dir)) {
-		System::DeleteDirectory(dir);
-	}
-
-	if (!System::DirectoryExists(dir)) {
-		System::CreateDirectory(dir);
+	if (!System::DirectoryExists(compOptions.outputDirectory)) {
+		System::CreateDirectory(compOptions.outputDirectory);
 	}
 
 	return compOptions;
@@ -292,7 +277,7 @@ Ptr<Kiwi::KiwiProgram> MelonCompiler::CompileProject(ParsingInfo& info, ScanInfo
 }
 
 void MelonCompiler::OutputKiwi(const CompilerOptions& options, const List<Instruction>& instructions) {
-	KiwiLang::WriteToFile(options.outputDirectory + options.outputName + ".kiwi", ErrorLog::logger, instructions);
+	KiwiLang::WriteToFile(Path::SetExtension(Path::Combine(options.outputDirectory, options.outputName), "kiwi"), ErrorLog::logger, instructions);
 
 	for (const Tuple<Logger::LogLevel, String>& err : ErrorLog::logger) {
 		if (err.value1 == Logger::LogLevel::Error) {
@@ -305,13 +290,11 @@ void MelonCompiler::OutputKiwi(const CompilerOptions& options, Weak<Kiwi::KiwiPr
 	StringBuilder builder;
 	program->BuildString(builder);
 
-	FileWriter writer = FileWriter(options.outputDirectory + options.outputName + ".kiwi");
-	writer.Write(builder.ToString());
-	writer.Close();
+	FileWriter::WriteText(Path::SetExtension(Path::Combine(options.outputDirectory, options.outputName), "kiwi"), builder.ToString());
 }
 
 void MelonCompiler::OutputAssembly(const CompilerOptions& options, const List<Instruction>& instructions) {
-	KiwiLang::WriteToFile(options.outputDirectory + options.outputName + ".asm", options.converter, instructions);
+	KiwiLang::WriteToFile(Path::SetExtension(Path::Combine(options.outputDirectory, options.outputName), "asm"), options.converter, instructions);
 
 	for (const Tuple<Logger::LogLevel, String>& err : ErrorLog::logger) {
 		if (err.value1 == Logger::LogLevel::Error) {
