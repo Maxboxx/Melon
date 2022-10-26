@@ -20,7 +20,7 @@ TypeSymbol* Integer::Type() const {
 	// Unsigned integers
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {
-			return (TypeSymbol*)SymbolTable::UByte;
+			return (TypeSymbol*)SymbolTable::UTiny;
 		}
 		else if ((ULong)number <= Math::UShortMax()) {
 			return (TypeSymbol*)SymbolTable::UShort;
@@ -38,7 +38,7 @@ TypeSymbol* Integer::Type() const {
 	// Signed integers
 	else {
 		if (number >= Math::ByteMin()) {
-			return (TypeSymbol*)SymbolTable::Byte;
+			return (TypeSymbol*)SymbolTable::Tiny;
 		}
 		else if (number >= Math::ShortMin()) {
 			return (TypeSymbol*)SymbolTable::Short;

@@ -31,6 +31,19 @@ namespace Melon {
 
 			/// The current instruction block.
 			Weak<Kiwi::InstructionBlock> currentBlock;
+
+			/// Creates a new register and returns the name of it.
+			Boxx::String NewRegister() {
+				return Boxx::String::ToString(regIndex++);
+			}
+
+			/// Clears all registers.
+			void ClearRegisters() {
+				regIndex = 0;
+			}
+
+		private:
+			Boxx::UInt regIndex = 0;
 		};
 	}
 }

@@ -92,6 +92,8 @@ Ptr<Kiwi::Value> RootNode::Compile(CompileInfo& info) {
 	Ptr<Kiwi::InstructionBlock> codeBlock = new Kiwi::InstructionBlock();
 	info.currentBlock = codeBlock;
 
+	info.ClearRegisters();
+
 	// Compile nodes
 	for (Weak<Statements> statements : nodes) {
 		statements->Compile(info);
@@ -102,6 +104,7 @@ Ptr<Kiwi::Value> RootNode::Compile(CompileInfo& info) {
 
 	// Compile functions
 	for (Weak<FunctionBody> func : funcs) {
+		info.ClearRegisters();
 		func->Node::Compile(info);
 	}
 
@@ -113,8 +116,8 @@ List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVar
 
 	// Static values for integers
 	List<Tuple<IntegerSymbol*, InstructionType, Long, Long>> integers;
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Byte,   InstructionType::Byte,  Math::ByteMin(),   Math::ByteMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UByte,  InstructionType::Byte,  Math::UByteMin(),  Math::UByteMax()));
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Tiny,   InstructionType::Byte,  Math::ByteMin(),   Math::ByteMax()));
+	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UTiny,  InstructionType::Byte,  Math::UByteMin(),  Math::UByteMax()));
 	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Short,  InstructionType::Short, Math::ShortMin(),  Math::ShortMax()));
 	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UShort, InstructionType::Short, Math::UShortMin(), Math::UShortMax()));
 	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Int,    InstructionType::Int,   Math::IntMin(),    Math::IntMax()));

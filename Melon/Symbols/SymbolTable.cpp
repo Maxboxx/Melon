@@ -432,8 +432,8 @@ void SymbolTable::Setup() {
 	SetupOptional();
 }
 
-IntegerSymbol* SymbolTable::Byte   = nullptr;
-IntegerSymbol* SymbolTable::UByte  = nullptr;
+IntegerSymbol* SymbolTable::Tiny   = nullptr;
+IntegerSymbol* SymbolTable::UTiny  = nullptr;
 IntegerSymbol* SymbolTable::Short  = nullptr;
 IntegerSymbol* SymbolTable::UShort = nullptr;
 IntegerSymbol* SymbolTable::Int    = nullptr;
@@ -443,8 +443,8 @@ IntegerSymbol* SymbolTable::ULong  = nullptr;
 
 void SymbolTable::SetupIntegers() {
 	Map<NameList, Boxx::Byte> integers;
-	integers.Add(NameList::Byte, -1);
-	integers.Add(NameList::UByte, 1);
+	integers.Add(NameList::Tiny, -1);
+	integers.Add(NameList::UTiny, 1);
 	integers.Add(NameList::Short, -2);
 	integers.Add(NameList::UShort, 2);
 	integers.Add(NameList::Int, -4);
@@ -578,8 +578,8 @@ void SymbolTable::SetupIntegers() {
 		}
 	}
 
-	SymbolTable::Byte   = FindAbsolute<IntegerSymbol>(NameList::Byte,   FileInfo());
-	SymbolTable::UByte  = FindAbsolute<IntegerSymbol>(NameList::UByte,  FileInfo());
+	SymbolTable::Tiny   = FindAbsolute<IntegerSymbol>(NameList::Tiny,   FileInfo());
+	SymbolTable::UTiny  = FindAbsolute<IntegerSymbol>(NameList::UTiny,  FileInfo());
 	SymbolTable::Short  = FindAbsolute<IntegerSymbol>(NameList::Short,  FileInfo());
 	SymbolTable::UShort = FindAbsolute<IntegerSymbol>(NameList::UShort, FileInfo());
 	SymbolTable::Int    = FindAbsolute<IntegerSymbol>(NameList::Int,    FileInfo());

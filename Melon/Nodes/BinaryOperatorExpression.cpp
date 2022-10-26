@@ -4,6 +4,11 @@
 #include "TypeExpression.h"
 #include "Boolean.h"
 
+#include "Kiwi/Expressions.h"
+#include "Kiwi/Value.h"
+#include "Kiwi/KiwiProgram.h"
+#include "Kiwi/Interpreter/Interpreter.h"
+
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/TemplateSymbol.h"
@@ -68,6 +73,42 @@ CompiledNode BinaryOperatorExpression::Compile(OldCompileInfo& info) {
 		operand1 = args[0];
 		operand2 = args[1];
 		return c;
+	}
+}
+
+Ptr<Kiwi::Value> BinaryOperatorExpression::Compile(CompileInfo& info) {
+	FunctionSymbol* const func = SymbolTable::FindOperator(GetOperator(), operand1->Type(), operand2->Type(), file);
+	if (!func) return nullptr;
+
+	// Compile symbol node
+	if (func->symbolNode) {
+		//return func->symbolNode->Compile(operand1, operand2, info);
+		if (op.name == "+") {
+			Ptr<Kiwi::Variable> reg = new Kiwi::Variable(info.NewRegister());
+
+			info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(
+				func->ReturnType(0)->AbsoluteName().ToString(), 
+				reg, 
+				new Kiwi::AddExpression(operand1->Compile(info), operand2->Compile(info))
+			));
+
+			return reg;
+		}
+
+		return nullptr;
+	}
+	// Compile operator function
+	else {
+		List<Ptr<Expression>> args;
+		args.Add(operand1);
+		args.Add(operand2);
+
+		Ptr<CallExpression> cn = new CallExpression(scope, file);
+		cn->arguments  = args;
+		cn->expression = new TypeExpression(func->Parent()->Parent()->AbsoluteName());
+
+		//return cn->Compile(info);
+		return nullptr;
 	}
 }
 

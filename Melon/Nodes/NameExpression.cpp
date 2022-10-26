@@ -111,6 +111,19 @@ CompiledNode NameExpression::Compile(OldCompileInfo& info) {
 	return cn;
 }
 
+Ptr<Kiwi::Value> NameExpression::Compile(CompileInfo& info) {
+	VariableSymbol* const sym = Symbol()->Cast<VariableSymbol>();
+
+	if (!sym) return nullptr;
+
+	if (!ignoreRef && sym->HasAttribute(VariableAttributes::Ref)) {
+		return nullptr;
+	}
+	else {
+		return new Kiwi::Variable(name.ToString());
+	}
+}
+
 ScanResult NameExpression::Scan(ScanInfoStack& info) {
 	ScanResult result;
 	Symbols::Symbol* const s = Symbol();
