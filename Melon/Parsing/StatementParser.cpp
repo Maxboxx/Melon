@@ -13,6 +13,7 @@
 #include "RepeatParser.h"
 #include "EnumParser.h"
 #include "GuardParser.h"
+#include "DebugParser.h"
 
 #include "Melon/Nodes/GuardStatement.h"
 
@@ -25,7 +26,10 @@ using namespace Melon::Symbols;
 Ptr<Statement> StatementParser::Parse(ParsingInfo& info, const bool single) {
 	if (info.EndOfFile()) return nullptr;
 
-	if (Ptr<Statement> node = CallParser::ParseStatement(info)) {
+	if (Ptr<Statement> node = DebugParser::Parse(info)) {
+		return node;
+	}
+	else if (Ptr<Statement> node = CallParser::ParseStatement(info)) {
 		return node;
 	}
 	else if (Ptr<Statement> node = AssignmentParser::Parse(info, single ? AssignmentParser::Flags::Single : AssignmentParser::Flags::None)) {

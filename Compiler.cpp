@@ -17,8 +17,6 @@ using namespace KiwiOld;
 using namespace Melon;
 
 int main() {
-	Ptr<int> a = nullptr;
-
 	/*
 	DragonfruitInfo info;
 	info.docComment = "///";

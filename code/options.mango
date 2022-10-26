@@ -22,4 +22,6 @@
 		ast:  false
 		kiwi: true
 	}
+	
+	interpret: true
 }

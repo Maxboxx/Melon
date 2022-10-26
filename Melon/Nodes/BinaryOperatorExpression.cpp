@@ -87,7 +87,7 @@ Ptr<Kiwi::Value> BinaryOperatorExpression::Compile(CompileInfo& info) {
 			Ptr<Kiwi::Variable> reg = new Kiwi::Variable(info.NewRegister());
 
 			info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(
-				func->ReturnType(0)->AbsoluteName().ToString(), 
+				func->ReturnType(0)->KiwiName(), 
 				reg, 
 				new Kiwi::AddExpression(operand1->Compile(info), operand2->Compile(info))
 			));

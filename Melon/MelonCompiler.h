@@ -66,6 +66,9 @@ namespace Melon {
 		/// The kiwi converter to use for compiling.
 		Boxx::Pointer<KiwiOld::Converter> converter = new KiwiOld::x86_64Converter(KiwiOld::x86_64Syntax::Intel);
 
+		/// {true} if the output should be interpreted.
+		bool interpret = false;
+
 		~CompilerOptions() {}
 		
 		/// Loads the compiler options from a mango file.

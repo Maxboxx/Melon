@@ -127,6 +127,15 @@ CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 		}
 	}
 
+	// Interpret options
+	if (optionsMap.Contains("interpret")) {
+		Mango interpret = optionsMap["interpret"];
+
+		if (interpret.Type() == MangoType::Boolean) {
+			options.interpret = (bool)interpret;
+		}
+	}
+
 	return options;
 }
 
@@ -162,6 +171,13 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		ErrorLog::Success(LogMessage("success.compile"), FileInfo());
 		ErrorLog::LogErrors();
+
+		// Interpret kiwi
+		if (compOptions.interpret) {
+			Kiwi::Interpreter::InterpreterData data;
+			data.program = program;
+			program->Interpret(data);
+		}
 	}
 	catch (CompileError& e) {
 		ErrorLog::Fatal(LogMessage("fatal.compile"), FileInfo());

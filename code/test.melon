@@ -1,3 +1,5 @@
 
 tiny: a = 3 + 5
+_debug print a
 int: b = 7 + a + 1
+_debug print b

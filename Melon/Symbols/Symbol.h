@@ -57,6 +57,9 @@ namespace Melon {
 			/// Gets the absolute name of the symbol.
 			virtual NameList AbsoluteName();
 
+			/// Gets the kiwi name of the symbol.
+			virtual Boxx::String KiwiName();
+
 			/// Gets the type of the symbol.
 			virtual TypeSymbol* Type();
 

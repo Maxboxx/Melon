@@ -181,7 +181,7 @@ CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expressio
 }
 
 Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file) {
-	const String type = assignable->Type()->AbsoluteName().ToString();
+	const String type = assignable->Type()->KiwiName();
 	Ptr<Kiwi::Variable> kiwiVar = assignable->Compile(info).AsPtr<Kiwi::Variable>();
 	Ptr<Kiwi::Value> kiwiValue  = value->Compile(info);
 	info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, kiwiVar, kiwiValue));
