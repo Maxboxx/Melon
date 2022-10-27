@@ -148,6 +148,8 @@ namespace Melon {
 			Symbol* parent = nullptr;
 			Symbols::Name name;
 
+			Boxx::List<Symbols::Name> aliases;
+
 			friend MapSymbol;
 			friend SymbolTable;
 		};

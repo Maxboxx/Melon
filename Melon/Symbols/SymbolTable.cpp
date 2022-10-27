@@ -257,7 +257,7 @@ FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, Type
 		return op;
 	}
 
-	// TODO: error
+	ErrorLog::Error(LogMessage("error.symbol.implicit", from->AbsoluteName().ToSimpleString(), to->AbsoluteName().ToSimpleString()), file);
 	return nullptr;
 }
 
@@ -272,7 +272,7 @@ FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, Type
 		return op;
 	}
 
-	// TODO: error
+	ErrorLog::Error(LogMessage("error.symbol.explicit", from->AbsoluteName().ToSimpleString(), to->AbsoluteName().ToSimpleString()), file);
 	return nullptr;
 }
 
@@ -432,6 +432,7 @@ void SymbolTable::Setup() {
 	SetupOptional();
 }
 
+IntegerSymbol* SymbolTable::Byte   = nullptr;
 IntegerSymbol* SymbolTable::Tiny   = nullptr;
 IntegerSymbol* SymbolTable::UTiny  = nullptr;
 IntegerSymbol* SymbolTable::Short  = nullptr;
@@ -444,7 +445,7 @@ IntegerSymbol* SymbolTable::ULong  = nullptr;
 void SymbolTable::SetupIntegers() {
 	Map<NameList, Boxx::Byte> integers;
 	integers.Add(NameList::Tiny, -1);
-	integers.Add(NameList::UTiny, 1);
+	integers.Add(NameList::Byte, 1);
 	integers.Add(NameList::Short, -2);
 	integers.Add(NameList::UShort, 2);
 	integers.Add(NameList::Int, -4);
@@ -474,8 +475,14 @@ void SymbolTable::SetupIntegers() {
 	binOps.Add(Name::Greater,      InstructionType::Gt);
 
 	for (const Pair<NameList, Boxx::Byte> integer : integers) {
+		List<Name> aliases;
+
+		if (integer.key == NameList::Byte) {
+			aliases.Add(NameList::UTiny[0]);
+		}
+
 		// Type
-		IntegerSymbol* const intSym = symbols->AddSymbol(integer.key[0], new IntegerSymbol(
+		IntegerSymbol* const intSym = symbols->AddSymbol(integer.key[0], aliases, new IntegerSymbol(
 			integer.value < 0 ? -integer.value : integer.value,
 			integer.value < 0,
 			FileInfo()

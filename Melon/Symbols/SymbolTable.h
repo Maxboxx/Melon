@@ -162,6 +162,9 @@ namespace Melon {
 
 			///H Basic Types
 			
+			/// The symbol for the {byte} type.
+			static IntegerSymbol* Byte;
+
 			/// The symbol for the {tiny} type.
 			static IntegerSymbol* Tiny;
 

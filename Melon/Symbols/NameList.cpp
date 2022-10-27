@@ -63,6 +63,7 @@ const Name Name::HasValue       = Name("<hasvalue>");
 const Name Name::Value          = Name("<value>");
 
 const NameList NameList::Bool    = NameList(true, Name("bool"));
+const NameList NameList::Byte    = NameList(true, Name("byte"));
 const NameList NameList::Tiny    = NameList(true, Name("tiny"));
 const NameList NameList::UTiny   = NameList(true, Name("utiny"));
 const NameList NameList::Short   = NameList(true, Name("short"));

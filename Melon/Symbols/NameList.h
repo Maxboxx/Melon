@@ -313,6 +313,9 @@ namespace Melon {
 			/// A name List for the {bool} type.
 			static const NameList Bool;
 
+			/// A name List for the {byte} type.
+			static const NameList Byte;
+
 			/// A name List for the {tiny} type.
 			static const NameList Tiny;
 

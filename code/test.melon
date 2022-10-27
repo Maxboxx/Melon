@@ -1,8 +1,9 @@
 
-function int: add(int: a, int: b)
-	return a + b
-end
-
-long: u = 4 == 4
-int: i = add(3, 5)
-_debug print i
+tiny:  a = 3
+utiny: b = 2
+byte:  c = 43
+bool:  d = true
+_debug print a
+_debug print b
+_debug print c
+_debug print d

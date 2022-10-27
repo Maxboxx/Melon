@@ -19,8 +19,14 @@ MapSymbol::MapSymbol(const FileInfo& file) : Symbol(file) {
 }
 
 MapSymbol::~MapSymbol() {
+	Set<Symbol*> set;
+
 	for (const Pair<Symbols::Name, Symbol*>& symbol : symbols) {
-		delete symbol.value;
+		set.Add(symbol.value);
+	}
+
+	for (Symbol* symbol : set) {
+		delete symbol;
 	}
 }
 
