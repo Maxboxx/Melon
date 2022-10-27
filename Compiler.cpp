@@ -59,5 +59,6 @@ int main() {
 	}
 	//*/
 
+	System::Execute("pause");
 	return 0;
 }

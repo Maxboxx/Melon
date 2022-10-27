@@ -84,6 +84,49 @@ CompiledNode UnaryOperatorExpression::Compile(OldCompileInfo& info) {
 	}
 }
 
+
+Ptr<Kiwi::Value> UnaryOperatorExpression::Compile(CompileInfo& info) {
+	TypeSymbol* const type = operand->Type();
+
+	FunctionSymbol* const func = type->FindUnaryOperator(op, file);
+	if (!func) return nullptr;
+
+	// Compile symbol node
+	if (func->symbolNode) {
+		//return func->symbolNode->Compile(operand, info);
+		Ptr<Kiwi::Expression> expression;
+
+		if (op.name == Name::Neg.name) {
+			expression = new Kiwi::NegExpression(operand->Compile(info));
+		}
+		else if (op.name == Name::BitNot.name) {
+			expression = new Kiwi::BitNotExpression(operand->Compile(info));
+		}
+
+		Ptr<Kiwi::Variable> reg = new Kiwi::Variable(info.NewRegister());
+
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(
+			func->ReturnType(0)->KiwiName(), 
+			reg, 
+			expression
+		));
+
+		return reg;
+	}
+	// Compile operator function
+	else {
+		List<Ptr<Expression>> args;
+		args.Add(new WeakExpression(operand));
+
+		Ptr<CallExpression> cn = new CallExpression(scope, file);
+		cn->arguments  = args;
+		cn->expression = new TypeExpression(func->ParentType()->AbsoluteName());
+
+		//return cn->Compile(info);
+		return nullptr;
+	}
+}
+
 void UnaryOperatorExpression::IncludeScan(ParsingInfo& info) {
 	operand->IncludeScan(info);
 }

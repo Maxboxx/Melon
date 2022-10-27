@@ -94,6 +94,11 @@ FunctionSymbol* TypeSymbol::FindMethod(const Symbols::Name& name, const List<Typ
 }
 
 FunctionSymbol* TypeSymbol::FindUnaryOperator(const Symbols::Name& name, const FileInfo& file) {
+	if (FunctionSymbol* const f = Find<FunctionSymbol>(name, file)) {
+		List<TypeSymbol*> args;
+		return f->FindMethodOverload(args, file);
+	}
+
 	return nullptr;
 }
 
