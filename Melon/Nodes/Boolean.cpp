@@ -34,6 +34,10 @@ CompiledNode Boolean::Compile(OldCompileInfo& info) {
 	return node;
 }
 
+Ptr<Kiwi::Value> Boolean::Compile(CompileInfo& info) {
+	return new Kiwi::Integer(value ? 1 : 0);
+}
+
 StringBuilder Boolean::ToMelon(const UInt indent) const {
 	return String(value ? "true" : "false");
 }

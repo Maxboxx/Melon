@@ -41,10 +41,10 @@ namespace Melon {
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info);
 
 			/// {true} if the expression is an immediate Kiwi value.
-			virtual bool IsImmediate() const;
+			virtual [[deprecated]] bool IsImmediate() const;
 
 			/// Returns the immediate value of the expression.
-			virtual Boxx::Long GetImmediate() const;
+			virtual [[deprecated]] Boxx::Long GetImmediate() const;
 		};
 
 		/// A weak expression.

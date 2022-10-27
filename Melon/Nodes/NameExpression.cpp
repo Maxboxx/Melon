@@ -120,7 +120,7 @@ Ptr<Kiwi::Value> NameExpression::Compile(CompileInfo& info) {
 		return nullptr;
 	}
 	else {
-		return new Kiwi::Variable(name.ToString());
+		return new Kiwi::Variable(sym->KiwiName());
 	}
 }
 

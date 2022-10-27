@@ -53,6 +53,7 @@ namespace Melon {
 			bool IsInit() const;
 
 			virtual CompiledNode Compile(OldCompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<T> Optimize(OptimizeInfo& info) override;

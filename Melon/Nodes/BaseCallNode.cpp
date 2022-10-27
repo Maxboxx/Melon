@@ -540,6 +540,27 @@ inline CompiledNode BaseCallNode<T>::Compile(OldCompileInfo& info) { // TODO: mo
 }
 
 template <BaseCallType T>
+inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+	FunctionSymbol* func = GetFunc();
+
+	Ptr<Kiwi::CallExpression> call = new Kiwi::CallExpression(func->KiwiName());
+
+	for (Weak<Expression> arg : arguments) {
+		call->args.Add(arg->Compile(info));
+	}
+	
+	if (func->returnValues.IsEmpty()) {
+		info.currentBlock->AddInstruction(new Kiwi::CallInstruction(call));
+		return nullptr;
+	}
+	else {
+		Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(func->ReturnType(0)->KiwiName(), var, call));
+		return var;
+	}
+}
+
+template <BaseCallType T>
 inline void BaseCallNode<T>::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 

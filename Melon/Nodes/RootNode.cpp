@@ -105,7 +105,7 @@ Ptr<Kiwi::Value> RootNode::Compile(CompileInfo& info) {
 	// Compile functions
 	for (Weak<FunctionBody> func : funcs) {
 		info.ClearRegisters();
-		func->Node::Compile(info);
+		func->Compile(info);
 	}
 
 	return nullptr;

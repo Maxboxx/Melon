@@ -87,6 +87,36 @@ CompiledNode FunctionBody::Compile(OldCompileInfo& info) { // TODO: more accurat
 	return c;
 }
 
+Ptr<Kiwi::Value> FunctionBody::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+	if (sym->IsNotSpecialized()) return nullptr;
+	scope->SetTemplateValues(sym);
+
+	Ptr<Kiwi::Function> func = new Kiwi::Function(sym->KiwiName());
+
+	Weak<Kiwi::InstructionBlock> prevBlock = info.currentBlock;
+	info.currentBlock = func->block;
+	info.returnRegisters.Clear();
+
+	for (UInt i = 0; i < sym->arguments.Count(); i++) {
+		VariableSymbol* arg = sym->Argument(i);
+		func->AddArgument(arg->Type()->KiwiName(), arg->KiwiName());
+	}
+
+	for (UInt i = 0; i < sym->returnValues.Count(); i++) {
+		TypeSymbol* ret = sym->ReturnType(i);
+		String reg = info.NewRegister();
+		info.returnRegisters.Add(reg);
+		func->AddReturnValue(ret->KiwiName(), reg);
+	}
+
+	statements->Compile(info);
+
+	info.currentBlock = prevBlock;
+
+	info.program->AddFunction(func);
+	return nullptr;
+}
+
 void FunctionBody::IncludeScan(ParsingInfo& info) {
 	for (UInt i = 0; i < sym->arguments.Count(); i++) {
 		if (VariableSymbol* const arg = sym->Argument(i)) {

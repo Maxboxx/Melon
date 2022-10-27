@@ -1,19 +1,8 @@
 
-tiny: i = 3
-_debug print -i
-_debug print ~4
-_debug print 2 + 4
-_debug print 8 - 3
-_debug print 4 * 8
-_debug print 64 // 4
-_debug print 3 | 8
-_debug print 3 & 7
-_debug print 3 ^ 1
-_debug print 3 << 2
-_debug print 34 >> 1
-_debug print 3 == 4
-_debug print 3 != 4
-_debug print 3 < 4
-_debug print 3 > 4
-_debug print 3 <= 3
-_debug print 3 >= 4
+function int: add(int: a, int: b)
+	return a + b
+end
+
+long: u = 4 == 4
+int: i = add(3, 5)
+_debug print i

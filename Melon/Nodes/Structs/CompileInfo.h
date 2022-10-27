@@ -32,6 +32,9 @@ namespace Melon {
 			/// The current instruction block.
 			Weak<Kiwi::InstructionBlock> currentBlock;
 
+			/// The return registers for the current function.
+			Boxx::List<Boxx::String> returnRegisters;
+
 			/// Creates a new register and returns the name of it.
 			Boxx::String NewRegister() {
 				return Boxx::String::ToString(regIndex++);

@@ -1,6 +1,7 @@
 #include "ReturnStatement.h"
 
 #include "KiwiMemoryExpression.h"
+#include "KiwiVariable.h"
 #include "TypeExpression.h"
 
 #include "Kiwi/Old/Kiwi.h"
@@ -74,6 +75,22 @@ CompiledNode ReturnStatement::Compile(OldCompileInfo& info) {
 	c.instructions.Add(Instruction(InstructionType::Ret));
 
 	return c;
+}
+
+Ptr<Kiwi::Value> ReturnStatement::Compile(CompileInfo& info) {
+	FunctionSymbol* const f = GetFunc();
+	if (!f) return nullptr;
+
+	List<TypeSymbol*> types = GetTypes();
+
+	for (UInt i = 0; i < values.Count(); i++) {
+		Ptr<KiwiVariable> reg = new KiwiVariable(info.returnRegisters[i], f->ReturnType(i)->AbsoluteName());
+		CompileAssignment(reg, values[i], info, values[i]->File());
+	}
+
+	info.currentBlock->AddInstruction(new Kiwi::ReturnInstruction());
+
+	return nullptr;
 }
 
 void ReturnStatement::IncludeScan(ParsingInfo& info) {
