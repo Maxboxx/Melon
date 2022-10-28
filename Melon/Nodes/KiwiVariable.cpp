@@ -7,7 +7,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-KiwiVariable::KiwiVariable(const String& var, const NameList& type) : Expression(nullptr, FileInfo()) {
+KiwiVariable::KiwiVariable(Ptr<Kiwi::Variable> var, const NameList& type) : Expression(nullptr, FileInfo()) {
 	this->var = var;
 	this->type = type;
 }
@@ -21,7 +21,7 @@ CompiledNode KiwiVariable::Compile(OldCompileInfo& info) {
 }
 
 Ptr<Kiwi::Value> KiwiVariable::Compile(CompileInfo& info) {
-	return new Kiwi::Variable(var);
+	return var->Copy();
 }
 
 StringBuilder KiwiVariable::ToMelon(const UInt indent) const {

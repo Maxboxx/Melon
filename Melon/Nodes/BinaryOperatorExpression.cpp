@@ -136,7 +136,7 @@ Ptr<Kiwi::Value> BinaryOperatorExpression::Compile(CompileInfo& info) {
 
 		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(
 			func->ReturnType(0)->KiwiName(), 
-			reg, 
+			reg->name, 
 			expression
 		));
 

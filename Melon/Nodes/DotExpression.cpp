@@ -104,6 +104,18 @@ CompiledNode DotExpression::Compile(OldCompileInfo& info) {
 	return c;
 }
 
+Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
+	TypeSymbol* const sym = expression->Type();
+
+	Ptr<Kiwi::Variable> value = expression->Compile(info).AsPtr<Kiwi::Variable>();
+
+	if (value) {
+		return new Kiwi::SubVariable(value, Symbol()->KiwiName());
+	}
+
+	return nullptr;
+}
+
 void DotExpression::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 	

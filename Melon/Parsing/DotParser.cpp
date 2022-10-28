@@ -21,8 +21,10 @@ Ptr<DotExpression> DotParser::Parse(ParsingInfo& info) {
 
 	info.index++;
 
-	if (Optional<List<NameList>> templateArgs = TemplateParser::Parse(info)) {
-		dn->name.types = templateArgs;
+	if (!info.EndOfFile()) {
+		if (Optional<List<NameList>> templateArgs = TemplateParser::Parse(info)) {
+			dn->name.types = templateArgs;
+		}
 	}
 
 	return dn;

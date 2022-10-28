@@ -84,7 +84,7 @@ Ptr<Kiwi::Value> ReturnStatement::Compile(CompileInfo& info) {
 	List<TypeSymbol*> types = GetTypes();
 
 	for (UInt i = 0; i < values.Count(); i++) {
-		Ptr<KiwiVariable> reg = new KiwiVariable(info.returnRegisters[i], f->ReturnType(i)->AbsoluteName());
+		Ptr<KiwiVariable> reg = new KiwiVariable(new Kiwi::Variable(info.returnRegisters[i]), f->ReturnType(i)->AbsoluteName());
 		CompileAssignment(reg, values[i], info, values[i]->File());
 	}
 

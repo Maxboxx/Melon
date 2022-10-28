@@ -555,7 +555,7 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 	}
 	else {
 		Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(func->ReturnType(0)->KiwiName(), var, call));
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(func->ReturnType(0)->KiwiName(), var->name, call));
 		return var;
 	}
 }

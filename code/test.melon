@@ -1,9 +1,10 @@
 
-tiny:  a = 3
-utiny: b = 2
-byte:  c = 43
-bool:  d = true
-_debug print a
-_debug print b
-_debug print c
-_debug print d
+struct A
+	int: i
+end
+
+A: a = A {
+	i = 5
+}
+
+_debug print a.i

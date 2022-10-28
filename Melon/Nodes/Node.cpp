@@ -184,7 +184,14 @@ Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expre
 	const String type = assignable->Type()->KiwiName();
 	Ptr<Kiwi::Variable> kiwiVar = assignable->Compile(info).AsPtr<Kiwi::Variable>();
 	Ptr<Kiwi::Value> kiwiValue  = value->Compile(info);
-	info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, kiwiVar, kiwiValue));
+
+	if (kiwiVar.Is<Kiwi::SubVariable>()) {
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(kiwiVar, kiwiValue));
+	}
+	else {
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, kiwiVar, kiwiValue));
+	}
+
 	return nullptr;
 }
 

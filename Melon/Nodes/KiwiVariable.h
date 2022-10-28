@@ -8,14 +8,14 @@ namespace Melon {
 		/// Node for a kiwi variable.
 		class KiwiVariable : public Expression {
 		public:
-			/// The kiwi variable name.
-			Boxx::String var;
+			/// The kiwi variable.
+			Ptr<Kiwi::Variable> var;
 
 			/// The absolute type name for the variable.
 			Symbols::NameList type;
 
 			/// Create from kiwi argument.
-			KiwiVariable(const Boxx::String& var, const Symbols::NameList& type);
+			KiwiVariable(Ptr<Kiwi::Variable> var, const Symbols::NameList& type);
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual CompiledNode Compile(OldCompileInfo& info) override;

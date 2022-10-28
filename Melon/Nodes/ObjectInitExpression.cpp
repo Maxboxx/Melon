@@ -1,6 +1,7 @@
 #include "ObjectInitExpression.h"
 
 #include "KiwiMemoryExpression.h"
+#include "KiwiVariable.h"
 #include "TypeExpression.h"
 
 #include "Melon/Parsing/Parser.h"
@@ -64,6 +65,29 @@ CompiledNode ObjectInitExpression::Compile(OldCompileInfo& info) {
 	c.argument = Argument(MemoryLocation(info.stack.Offset()));
 	info.stack.Pop(type->Size());
 	return c;
+}
+
+Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
+	Ptr<Kiwi::Variable> value = expression->Compile(info).AsPtr<Kiwi::Variable>();
+
+	TypeSymbol* const type = Type();
+
+	if (!value) {
+		value = new Kiwi::Variable(info.NewRegister());
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type->KiwiName(), value->Copy(), nullptr));
+	}
+
+	// Compile vars
+	for (UInt i = 0; i < vars.Count(); i++) {
+		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
+
+		if (type->Is<StructSymbol>()) {
+			Ptr<KiwiVariable> kv = new KiwiVariable(new Kiwi::SubVariable(value->Copy(), var->KiwiName()), var->Type()->AbsoluteName());
+			CompileAssignment(kv, expressions[i], info, expressions[i]->File());
+		}
+	}
+
+	return value;
 }
 
 void ObjectInitExpression::IncludeScan(ParsingInfo& info) {

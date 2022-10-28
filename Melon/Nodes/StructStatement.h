@@ -20,9 +20,9 @@ namespace Melon {
 			Symbols::StructSymbol* symbol;
 
 			StructStatement(Symbols::Symbol* const scope, const FileInfo& file);
-			~StructStatement();
 
 			virtual CompiledNode Compile(OldCompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 

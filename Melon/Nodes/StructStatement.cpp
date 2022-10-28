@@ -20,12 +20,22 @@ StructStatement::StructStatement(Symbol* const scope, const FileInfo& file) : St
 
 }
 
-StructStatement::~StructStatement() {
-
-}
-
 CompiledNode StructStatement::Compile(OldCompileInfo& info) {
 	return CompiledNode();
+}
+
+Ptr<Kiwi::Value> StructStatement::Compile(CompileInfo& info) {
+	Ptr<Kiwi::Struct> struct_ = new Kiwi::Struct(symbol->KiwiName());
+	
+	for (const Name& name : symbol->members) {
+		if (VariableSymbol* const var = symbol->Find<VariableSymbol>(name, file)) {
+			struct_->AddVariable(var->Type()->KiwiName(), var->KiwiName());
+		}
+	}
+
+	info.program->AddStruct(struct_);
+
+	return nullptr;
 }
 
 bool StructStatement::IsRecursive(StructSymbol* const symbol) const {
