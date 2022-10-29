@@ -74,7 +74,7 @@ Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 
 	if (!value) {
 		value = new Kiwi::Variable(info.NewRegister());
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type->KiwiName(), value->Copy(), nullptr));
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), value->Copy(), nullptr));
 	}
 
 	// Compile vars

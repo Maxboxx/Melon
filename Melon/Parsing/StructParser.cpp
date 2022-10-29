@@ -39,7 +39,7 @@ Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 				else
 					var->type = nn->types[i];
 
-				var->attributes = nn->attributes[i];
+				var->modifiers = nn->modifiers[i];
 				sn->symbol->AddSymbol(nn->names[i], var);
 				sn->symbol->members.Add(nn->names[i]);
 			}

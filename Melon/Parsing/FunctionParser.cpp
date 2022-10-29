@@ -47,7 +47,7 @@ Ptr<EmptyStatement> FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const p
 		funcSym = functionParent->AddOverload(funcSym);
 		funcSym->returnValues = funcHead.returnTypes;
 		funcSym->modifiers    = funcHead.modifiers;
-		funcSym->attributes   = funcHead.attributes;
+		funcSym->modifiers   = funcHead.modifiers;
 
 		for (const NameList& arg : funcHead.templateArgs) {
 			if (arg[0].IsEmpty()) {
@@ -64,10 +64,10 @@ Ptr<EmptyStatement> FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const p
 			var->type = parent->AbsoluteName();
 
 			if (parent->Is<StructSymbol>()) {
-				var->attributes = VariableAttributes::Ref;
+				var->modifiers = VariableModifiers::Ref;
 			}
 			else if (parent->Is<EnumSymbol>()) {
-				var->attributes = VariableAttributes::Ref;
+				var->modifiers = VariableModifiers::Ref;
 			}
 
 			funcSym->AddSymbol(Name::Self, var);
@@ -79,7 +79,7 @@ Ptr<EmptyStatement> FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const p
 			file.statement = 0;
 			VariableSymbol* const var = new VariableSymbol(file);
 			var->type = arg.type;
-			var->attributes = arg.attributes;
+			var->modifiers = arg.modifiers;
 			funcSym->AddSymbol(arg.name, var);
 
 			funcSym->arguments.Add(NameList(arg.name));
@@ -320,7 +320,7 @@ FunctionModifiers FunctionParser::ParseModifiers(ParsingInfo& info, const bool i
 }
 
 FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool isPlain) {
-	FunctionAttributes attributes = FunctionAttributes::None;
+	FunctionAttributes modifiers = FunctionAttributes::None;
 
 	bool loop = true;
 
@@ -328,11 +328,11 @@ FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool
 		// TODO: Error for invalid attributes
 		switch (info.Current().type) {
 			case TokenType::Throw: {
-				if ((attributes & FunctionAttributes::Throw) != FunctionAttributes::None) {
+				if ((modifiers & FunctionAttributes::Throw) != FunctionAttributes::None) {
 					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "throw"), info.GetFileInfo());
 				}
 
-				attributes |= FunctionAttributes::Throw;
+				modifiers |= FunctionAttributes::Throw;
 				break;
 			}
 			default: {
@@ -345,7 +345,7 @@ FunctionAttributes FunctionParser::ParseAttributes(ParsingInfo& info, const bool
 		info.index++;
 	}
 
-	return attributes;
+	return modifiers;
 }
 
 List<NameList> FunctionParser::ParseReturnTypes(ParsingInfo& info) {
@@ -410,7 +410,7 @@ List<FunctionParser::Argument> FunctionParser::ParseArguments(ParsingInfo& info)
 
 			Argument argument;
 			argument.type       = *type;
-			argument.attributes = VariableAttributeParser::Parse(info, true);
+			argument.modifiers = VariableAttributeParser::Parse(info, true);
 
 			if (info.Current().type != TokenType::Name) {
 				ErrorLog::Error(LogMessage("error.syntax.expected.name.argument"), info.GetFileInfoPrev());

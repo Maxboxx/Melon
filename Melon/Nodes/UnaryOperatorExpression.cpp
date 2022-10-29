@@ -106,7 +106,7 @@ Ptr<Kiwi::Value> UnaryOperatorExpression::Compile(CompileInfo& info) {
 		Ptr<Kiwi::Variable> reg = new Kiwi::Variable(info.NewRegister());
 
 		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(
-			func->ReturnType(0)->KiwiName(), 
+			func->ReturnType(0)->KiwiType(),
 			reg->name, 
 			expression
 		));

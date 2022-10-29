@@ -23,12 +23,26 @@ VariableSymbol::~VariableSymbol() {
 	
 }
 
-bool VariableSymbol::HasAttribute(const VariableAttributes attribute) {
-	return (this->attributes & attribute) != VariableAttributes::None;
+bool VariableSymbol::HasAttribute(const VariableModifiers modifier) {
+	return (this->modifiers & modifier) != VariableModifiers::None;
 }
 
 Boxx::UInt VariableSymbol::Size() {
-	return HasAttribute(VariableAttributes::Ref) ? StackPtr::ptrSize : Type()->Size();
+	return HasAttribute(VariableModifiers::Ref) ? StackPtr::ptrSize : Type()->Size();
+}
+
+Kiwi::Type VariableSymbol::KiwiType() {
+	if (TypeSymbol* type = Type()) {
+		Kiwi::Type kiwiType = type->KiwiType();
+
+		if ((modifiers & VariableModifiers::Ref) != VariableModifiers::None) {
+			kiwiType.pointers++;
+		}
+
+		return kiwiType;
+	}
+
+	return Kiwi::Type();
 }
 
 TypeSymbol* VariableSymbol::Type() {
@@ -37,7 +51,7 @@ TypeSymbol* VariableSymbol::Type() {
 
 VariableSymbol* VariableSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
 	VariableSymbol* const sym = new VariableSymbol(file);
-	sym->attributes = attributes;
+	sym->modifiers = modifiers;
 	sym->type = ReplaceTypeScope(Type(), replacement, file);
 	return sym;
 }

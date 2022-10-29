@@ -62,7 +62,7 @@ UInt FunctionSymbol::ArgumentSize() {
 	for (UInt i = 0; i < arguments.Count(); i++) {
 		VariableSymbol* const var = Argument(i);
 
-		if (var->HasAttribute(VariableAttributes::Ref)) {
+		if (var->HasAttribute(VariableModifiers::Ref)) {
 			size += StackPtr::ptrSize;
 		}
 		else {

@@ -60,7 +60,7 @@ CompiledNode FunctionBody::Compile(OldCompileInfo& info) { // TODO: more accurat
 		VariableSymbol* const arg = sym->Argument(i);
 		arg->stackIndex = -size;
 
-		if (arg->HasAttribute(VariableAttributes::Ref)) {
+		if (arg->HasAttribute(VariableModifiers::Ref)) {
 			size += info.stack.ptrSize;
 		}
 		else {
@@ -99,14 +99,14 @@ Ptr<Kiwi::Value> FunctionBody::Compile(CompileInfo& info) { // TODO: more accura
 
 	for (UInt i = 0; i < sym->arguments.Count(); i++) {
 		VariableSymbol* arg = sym->Argument(i);
-		func->AddArgument(arg->Type()->KiwiName(), arg->KiwiName());
+		func->AddArgument(arg->KiwiType(), arg->KiwiName());
 	}
 
 	for (UInt i = 0; i < sym->returnValues.Count(); i++) {
 		TypeSymbol* ret = sym->ReturnType(i);
 		String reg = info.NewRegister();
 		info.returnRegisters.Add(reg);
-		func->AddReturnValue(ret->KiwiName(), reg);
+		func->AddReturnValue(ret->KiwiType(), reg);
 	}
 
 	statements->Compile(info);
@@ -163,7 +163,7 @@ ScanResult FunctionBody::Scan(ScanInfoStack& info) {
 	for (UInt i = 0; i < sym->arguments.Count(); i++) {
 		VariableSymbol* const arg = sym->Argument(i);
 
-		if (arg && (arg->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+		if (arg && (arg->modifiers & VariableModifiers::Ref) != VariableModifiers::None) {
 			info.usedVariables.Add(arg);
 		}
 	}
@@ -251,11 +251,11 @@ StringBuilder FunctionBody::ToMelon(const UInt indent) const {
 		sb += arg->type.ToSimpleString();
 		sb += ": ";
 
-		if ((arg->attributes & VariableAttributes::Const) != VariableAttributes::None) {
+		if ((arg->modifiers & VariableModifiers::Const) != VariableModifiers::None) {
 			sb += "const ";
 		}
 
-		if ((arg->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+		if ((arg->modifiers & VariableModifiers::Ref) != VariableModifiers::None) {
 			sb += "ref ";
 		}
 

@@ -92,7 +92,7 @@ CompiledNode DotExpression::Compile(OldCompileInfo& info) {
 	}
 	// Compile variable
 	else if (VariableSymbol* const var = sym->Find<VariableSymbol>(name, file)) {
-		if (var->HasAttribute(VariableAttributes::Static)) {
+		if (var->HasAttribute(VariableModifiers::Static)) {
 			c.argument = MemoryLocation(0);
 			c.argument.mem.memptr = var->AbsoluteName().ToString();
 		}
@@ -148,7 +148,7 @@ ScanResult DotExpression::Scan(ScanInfoStack& info) {
 
 	// Scan variable
 	if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
-		if ((var->attributes & VariableAttributes::Static) != VariableAttributes::None) {
+		if ((var->modifiers & VariableModifiers::Static) != VariableModifiers::None) {
 			info.usedVariables.Add(var);
 		}
 	}

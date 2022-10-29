@@ -29,7 +29,7 @@ Ptr<Kiwi::Value> StructStatement::Compile(CompileInfo& info) {
 	
 	for (const Name& name : symbol->members) {
 		if (VariableSymbol* const var = symbol->Find<VariableSymbol>(name, file)) {
-			struct_->AddVariable(var->Type()->KiwiName(), var->KiwiName());
+			struct_->AddVariable(var->Type()->KiwiType(), var->KiwiName());
 		}
 	}
 

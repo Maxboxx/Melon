@@ -35,7 +35,7 @@ namespace Melon {
 			Boxx::List<Ptr<Expression>> arguments;
 
 			/// The argument attributes for the call.
-			Boxx::List<CallArgAttributes> attributes;
+			Boxx::List<CallArgAttributes> modifiers;
 
 			BaseCallNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~BaseCallNode();

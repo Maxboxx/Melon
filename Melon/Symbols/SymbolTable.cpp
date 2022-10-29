@@ -490,11 +490,11 @@ void SymbolTable::SetupIntegers() {
 
 		// Min max
 		VariableSymbol* const min = intSym->AddSymbol(Name("min"), new VariableSymbol(FileInfo()));
-		min->attributes = VariableAttributes::Const | VariableAttributes::Static;
+		min->modifiers = VariableModifiers::Const | VariableModifiers::Static;
 		min->type = intSym->AbsoluteName();
 
 		VariableSymbol* const max = intSym->AddSymbol(Name("max"), new VariableSymbol(FileInfo()));
-		max->attributes = VariableAttributes::Const | VariableAttributes::Static;
+		max->modifiers = VariableModifiers::Const | VariableModifiers::Static;
 		max->type = intSym->AbsoluteName();
 
 		// Neg

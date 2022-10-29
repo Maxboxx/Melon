@@ -143,6 +143,10 @@ Map<TemplateSymbol*, TypeSymbol*> TypeSymbol::DeduceTemplates(TypeSymbol* const 
 	return templateMap;
 }
 
+Kiwi::Type TypeSymbol::KiwiType() {
+	return Kiwi::Type(KiwiName());
+}
+
 void TypeSymbol::DeduceTemplates(TemplateTypeSymbol* const type1, TemplateTypeSymbol* const type2, Map<TemplateSymbol*, TypeSymbol*>& templateMap) {
 	for (UInt i = 0; i < type1->templateArguments.Count(); i++) {
 		TypeSymbol* const arg1 = type1->TemplateArgument(i);

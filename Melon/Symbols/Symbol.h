@@ -8,6 +8,8 @@
 #include "Boxx/Map.h"
 #include "Boxx/ReplacementMap.h"
 
+#include "Kiwi/Structs.h"
+
 #include "NameList.h"
 
 #include "Melon/Errors.h"
@@ -59,6 +61,9 @@ namespace Melon {
 
 			/// Gets the kiwi name of the symbol.
 			virtual Boxx::String KiwiName();
+
+			/// Gets the kiwi type of the symbol.
+			virtual Kiwi::Type KiwiType();
 
 			/// Gets the type of the symbol.
 			virtual TypeSymbol* Type();

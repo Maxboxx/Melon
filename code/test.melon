@@ -1,10 +1,13 @@
 
 struct A
 	int: i
+	
+	function init(int: i)
+		self.i = i
+		_debug print self
+	end
 end
 
-A: a = A {
-	i = 5
-}
+A: a = A(3)
 
-_debug print a.i
+_debug print a

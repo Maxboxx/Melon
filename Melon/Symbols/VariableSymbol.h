@@ -5,22 +5,22 @@
 ///N Melon::Symbols
 namespace Melon {
 	namespace Symbols {
-		/// Bit flags for the different attributes a variable can have.
-		enum class VariableAttributes : Boxx::UByte {
+		/// Bit flags for the different modifiers a variable can have.
+		enum class VariableModifiers : Boxx::UByte {
 			/// No attribute.
 			None = 0,
 
-			/// The {const} attribute.
+			/// The {const} modifier.
 			Const = 1,
 
-			/// The {ref} attribute.
+			/// The {ref} modifier.
 			Ref = 2,
 
-			/// The {static} attribute.
+			/// The {static} modifier.
 			Static = 4
 		};
 
-		BOXX_ENUM_FLAGS(VariableAttributes);
+		BOXX_ENUM_FLAGS(VariableModifiers);
 
 		/// Contains information about a variable.
 		class VariableSymbol : public Symbol {
@@ -28,8 +28,8 @@ namespace Melon {
 			/// The relative type of the variable.
 			NameList type;
 
-			/// The attributes of the variable.
-			VariableAttributes attributes = VariableAttributes::None;
+			/// The modifiers of the variable.
+			VariableModifiers modifiers = VariableModifiers::None;
 
 			/// {true} if the variable has been assigned.
 			bool isAssigned = false;
@@ -41,11 +41,12 @@ namespace Melon {
 			~VariableSymbol();
 
 			/// Checks if the variable has the spceified attribute.
-			bool HasAttribute(const VariableAttributes attribute);
+			bool HasAttribute(const VariableModifiers attribute);
 
 			/// Gets the memory size of the variable.
 			Boxx::UInt Size();
 
+			virtual Kiwi::Type KiwiType() override;
 			virtual TypeSymbol* Type() override;
 			virtual VariableSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 		};

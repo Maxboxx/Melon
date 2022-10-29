@@ -38,10 +38,10 @@ Ptr<NewVariableNode> NewVariableParser::Parse(ParsingInfo& info, const bool sing
 	if (info.Current().type == TokenType::Colon) {
 		while (true) {
 			info.index++;
-			node->attributes.Add(VariableAttributeParser::Parse(info));
+			node->modifiers.Add(VariableAttributeParser::Parse(info));
 
 			if (info.Current().type != TokenType::Name && info.Current().type != TokenType::Discard) {
-				if (node->attributes.Last() != VariableAttributes::None) {
+				if (node->modifiers.Last() != VariableModifiers::None) {
 					ErrorLog::Error(LogMessage("error.syntax.expected.name.var", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 				}
 

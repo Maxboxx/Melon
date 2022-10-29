@@ -175,7 +175,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 		}
 
 		if (types[i] != NameList::Discard) {
-			VariableAttributes attributes = VariableAttributeParser::Parse(info);
+			VariableModifiers modifiers = VariableAttributeParser::Parse(info);
 			Name name;
 
 			if (info.Current().type == TokenType::Discard) {
@@ -206,7 +206,7 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 
 			VariableSymbol* v = new VariableSymbol(info.GetFileInfoPrev());
 			v->type = types[i];
-			v->attributes = attributes;
+			v->modifiers = modifiers;
 
 			symbols.Add(Tuple<Name, Symbol*>(name, v));
 		}

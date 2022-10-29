@@ -93,7 +93,7 @@ CompiledNode NameExpression::Compile(OldCompileInfo& info) {
 	if (!sym) return cn;
 
 	// Compile reference variable
-	if (!ignoreRef && sym->HasAttribute(VariableAttributes::Ref)) {
+	if (!ignoreRef && sym->HasAttribute(VariableModifiers::Ref)) {
 		Ptr<NameExpression> name = new NameExpression(scope, file);
 		name->name = this->name;
 		name->ignoreRef = true;
@@ -116,7 +116,7 @@ Ptr<Kiwi::Value> NameExpression::Compile(CompileInfo& info) {
 
 	if (!sym) return nullptr;
 
-	if (!ignoreRef && sym->HasAttribute(VariableAttributes::Ref)) {
+	if (!ignoreRef && sym->HasAttribute(VariableModifiers::Ref)) {
 		return nullptr;
 	}
 	else {
@@ -146,7 +146,7 @@ NameList NameExpression::FindSideEffectScope(const bool assign) {
 	if (assign) {
 		Symbols::Symbol* const s = Symbol();
 
-		if (s->Is<VariableSymbol>() && (s->Cast<VariableSymbol>()->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+		if (s->Is<VariableSymbol>() && (s->Cast<VariableSymbol>()->modifiers & VariableModifiers::Ref) != VariableModifiers::None) {
 			return s->Parent()->Parent()->AbsoluteName();
 		}
 		else {

@@ -63,7 +63,7 @@ UInt NewVariableNode::GetSize() const {
 	for (UInt i = 0; i < names.Count(); i++) {
 		if (names[i] == NameList::Discard.Last()) continue;
 
-		if ((attributes[i] & VariableAttributes::Ref) != VariableAttributes::None) {
+		if ((modifiers[i] & VariableModifiers::Ref) != VariableModifiers::None) {
 			size += StackPtr::ptrSize;
 		}
 		else {
@@ -79,7 +79,7 @@ CompiledNode NewVariableNode::Compile(OldCompileInfo& info) { // TODO: more accu
 	cn.size = Type()->Size();
 
 	if (GetType(0) != nullptr) {
-		if ((attributes[0] & VariableAttributes::Ref) != VariableAttributes::None) {
+		if ((modifiers[0] & VariableModifiers::Ref) != VariableModifiers::None) {
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
@@ -95,7 +95,7 @@ CompiledNode NewVariableNode::Compile(OldCompileInfo& info) { // TODO: more accu
 	for (UInt i = 1; i < names.Count(); i++) {
 		if (GetType(i) == nullptr) continue;
 
-		if ((attributes[i] & VariableAttributes::Ref) != VariableAttributes::None) {
+		if ((modifiers[i] & VariableModifiers::Ref) != VariableModifiers::None) {
 			info.stack.Push(info.stack.ptrSize);
 		}
 		else {
@@ -163,7 +163,7 @@ StringBuilder NewVariableNode::ToMelon(const UInt indent) const {
 
 		VariableSymbol* const var = SymbolTable::Find<VariableSymbol>(names[i], scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
-		if ((var->attributes & VariableAttributes::Const) != VariableAttributes::None) {
+		if ((var->modifiers & VariableModifiers::Const) != VariableModifiers::None) {
 			sb += "const ";
 		}
 

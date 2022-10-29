@@ -25,7 +25,7 @@ namespace Melon {
 			struct Argument {
 				Symbols::Name name;
 				Symbols::NameList type;
-				Symbols::VariableAttributes attributes;
+				Symbols::VariableModifiers modifiers;
 			};
 
 			struct FunctionHead {

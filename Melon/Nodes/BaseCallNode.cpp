@@ -266,7 +266,7 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, OldCompi
 		callInfo.assignFirst.Add(false);
 
 		// Check if the argument is a reference
-		if (callInfo.func->Argument(callInfo.isInit ? i + 1 : i)->HasAttribute(VariableAttributes::Ref)) {
+		if (callInfo.func->Argument(callInfo.isInit ? i + 1 : i)->HasAttribute(VariableModifiers::Ref)) {
 			StackPtr stack = info.stack;
 			CompiledNode n = arguments[i]->Compile(info);
 
@@ -284,7 +284,7 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, OldCompi
 			const bool needsConversion = !arguments[i]->Type()->IsOfType(callInfo.func->ArgumentType(i));
 
 			// Is the value a noref value
-			const bool hasNoRef = attributes[i] == CallArgAttributes::NoRef;
+			const bool hasNoRef = modifiers[i] == CallArgAttributes::NoRef;
 
 			// Check if the value needs to be assigned to temporary memory
 			if (notMemory || aboveTop || needsConversion || hasNoRef) {
@@ -306,7 +306,7 @@ inline UInt BaseCallNode<T>::CalculateTemporarySize(CallInfo& callInfo, OldCompi
 				tempSize += callInfo.func->ArgumentType(callInfo.isInit ? i + 1 : i)->Size();
 				callInfo.memoryOffsets[callInfo.memoryOffsets.Count() - 1] = tempSize;
 			}
-			else if (attributes[i] != CallArgAttributes::Ref) {
+			else if (modifiers[i] != CallArgAttributes::Ref) {
 				ErrorLog::Warning(LogMessage("warning.ref"), arguments[i]->File());
 			}
 		}
@@ -462,7 +462,7 @@ inline void BaseCallNode<T>::CompileArguments(CallInfo& callInfo, OldCompileInfo
 		TypeSymbol* const type = callInfo.func->ArgumentType(i);
 
 		// Compile ref argument
-		if (callInfo.func->Argument(i)->HasAttribute(VariableAttributes::Ref)) {
+		if (callInfo.func->Argument(i)->HasAttribute(VariableModifiers::Ref)) {
 			CompileRefArgument(callInfo, info, type, callInfo.isInit ? i - 1 : i);
 		}
 		// Compile copy argument
@@ -541,21 +541,39 @@ inline CompiledNode BaseCallNode<T>::Compile(OldCompileInfo& info) { // TODO: mo
 
 template <BaseCallType T>
 inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+	Console::Print("yay");
+
 	FunctionSymbol* func = GetFunc();
 
 	Ptr<Kiwi::CallExpression> call = new Kiwi::CallExpression(func->KiwiName());
 
-	for (Weak<Expression> arg : arguments) {
-		call->args.Add(arg->Compile(info));
+	Ptr<Kiwi::Value> instance = nullptr;
+
+	if (IsInit()) {
+		Kiwi::Type type = func->Argument(0)->Type()->KiwiType();
+
+		Ptr<Kiwi::Variable> self = new Kiwi::Variable(info.NewRegister());
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), nullptr));
+		
+		Ptr<Kiwi::Variable> ref = new Kiwi::Variable(info.NewRegister());
+		type.pointers++;
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, ref->Copy(), new Kiwi::RefExpression(self->Copy())));
+
+		call->args.Add(ref);
+		instance = self;
+	}
+
+	for (UInt i = 0; i < arguments.Count(); i++) {
+		call->args.Add(arguments[i]->Compile(info));
 	}
 	
 	if (func->returnValues.IsEmpty()) {
 		info.currentBlock->AddInstruction(new Kiwi::CallInstruction(call));
-		return nullptr;
+		return instance;
 	}
 	else {
 		Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(func->ReturnType(0)->KiwiName(), var->name, call));
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(func->ReturnType(0)->KiwiType(), var->name, call));
 		return var;
 	}
 }
@@ -592,11 +610,11 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 	for (UInt i = 0; i < arguments.Count(); i++) {
 		VariableSymbol* const arg = func->Argument(i);
 
-		if (arg && (arg->attributes & VariableAttributes::Ref) == VariableAttributes::None) {
-			if (attributes[i] == CallArgAttributes::NoRef) {
+		if (arg && (arg->modifiers & VariableModifiers::Ref) == VariableModifiers::None) {
+			if (modifiers[i] == CallArgAttributes::NoRef) {
 				ErrorLog::Error(LogMessage("error.scan.use.noref"), arguments[i]->File());
 			}
-			else if (attributes[i] == CallArgAttributes::Ref) {
+			else if (modifiers[i] == CallArgAttributes::Ref) {
 				ErrorLog::Error(LogMessage("error.scan.use.ref"), arguments[i]->File());
 			}
 		}
@@ -658,8 +676,8 @@ inline StringBuilder BaseCallNode<T>::ToMelon(const UInt indent) const {
 
 	for (UInt i = 0; i < arguments.Count(); i++) {
 		if (i > 0) sb += ", ";
-		if (attributes[i] == CallArgAttributes::Ref)   sb += "ref ";
-		if (attributes[i] == CallArgAttributes::NoRef) sb += "noref ";
+		if (modifiers[i] == CallArgAttributes::Ref)   sb += "ref ";
+		if (modifiers[i] == CallArgAttributes::NoRef) sb += "noref ";
 		sb += arguments[i]->ToMelon(indent);
 	}
 

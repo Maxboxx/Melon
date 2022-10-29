@@ -368,7 +368,7 @@ ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 		VariableSymbol* const var = node->Symbol<VariableSymbol>();
 
 		// Check for const assign
-		if (types[i] == NameList::Discard && var && var->HasAttribute(VariableAttributes::Const)) {
+		if (types[i] == NameList::Discard && var && var->HasAttribute(VariableModifiers::Const)) {
 			ErrorLog::Error(LogMessage("error.scan.assign.const"), node->File());
 		}
 

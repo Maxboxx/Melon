@@ -29,7 +29,7 @@ Ptr<CallExpression> CallParser::Parse(ParsingInfo& info) {
 				info.index++;
 			}
 
-			call->attributes.Add(ParseArgumentAttributes(info));
+			call->modifiers.Add(ParseArgumentAttributes(info));
 
 			if (Ptr<Expression> node = ExpressionParser::Parse(info)) {
 				call->arguments.Add(node);
@@ -58,7 +58,7 @@ Ptr<CallStatement> CallParser::ParseStatement(ParsingInfo& info) {
 
 			Ptr<CallStatement> call = new CallStatement(callExpr->scope, callExpr->File());
 			call->arguments  = callExpr->arguments;
-			call->attributes = callExpr->attributes;
+			call->modifiers = callExpr->modifiers;
 			call->expression = callExpr->expression;
 			return call;
 		}
