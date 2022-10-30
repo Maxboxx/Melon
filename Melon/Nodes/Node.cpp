@@ -181,6 +181,17 @@ CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expressio
 }
 
 Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file) {
+	List<TypeSymbol*> args;
+	args.Add(value->Type());
+
+	FunctionSymbol* assign = nullptr;
+
+	if (TypeSymbol* const type = assignable->Type()) {
+		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
+			assign = func->FindOverload(args, file);
+		}
+	}
+
 	const Kiwi::Type type = assignable->Type()->KiwiType();
 	Ptr<Kiwi::Variable> kiwiVar = assignable->Compile(info).AsPtr<Kiwi::Variable>();
 	Ptr<Kiwi::Value> kiwiValue  = value->Compile(info);

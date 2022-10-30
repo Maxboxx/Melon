@@ -541,8 +541,6 @@ inline CompiledNode BaseCallNode<T>::Compile(OldCompileInfo& info) { // TODO: mo
 
 template <BaseCallType T>
 inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
-	Console::Print("yay");
-
 	FunctionSymbol* func = GetFunc();
 
 	Ptr<Kiwi::CallExpression> call = new Kiwi::CallExpression(func->KiwiName());

@@ -117,7 +117,7 @@ Ptr<Kiwi::Value> NameExpression::Compile(CompileInfo& info) {
 	if (!sym) return nullptr;
 
 	if (!ignoreRef && sym->HasAttribute(VariableModifiers::Ref)) {
-		return nullptr;
+		return new Kiwi::DerefVariable(sym->KiwiName());
 	}
 	else {
 		return new Kiwi::Variable(sym->KiwiName());
