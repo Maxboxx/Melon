@@ -7,6 +7,7 @@
 #include "TypeConversion.h"
 #include "EmptyStatement.h"
 #include "RootNode.h"
+#include "KiwiVariable.h"
 
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
@@ -196,7 +197,9 @@ Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expre
 	Ptr<Kiwi::Variable> kiwiVar = assignable->Compile(info).AsPtr<Kiwi::Variable>();
 	Ptr<Kiwi::Value> kiwiValue  = value->Compile(info);
 
-	if (kiwiVar.Is<Kiwi::SubVariable>()) {
+	Weak<KiwiVariable> var = assignable.As<KiwiVariable>();
+
+	if ((var && var->excludeAssignType) || kiwiVar.Is<Kiwi::SubVariable>()) {
 		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(kiwiVar, kiwiValue));
 	}
 	else {

@@ -6,8 +6,12 @@ struct A
 		self.i = i
 		_debug print self
 	end
+	
+	function int: getValue()
+		return self.i
+	end
 end
 
 A: a = A(3)
 
-_debug print a
+_debug print a.getValue()

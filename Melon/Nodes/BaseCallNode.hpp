@@ -1,3 +1,5 @@
+#pragma once
+
 #include "BaseCallNode.h"
 
 #include "RefExpression.h"
@@ -547,11 +549,18 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 
 	Ptr<Kiwi::Value> instance = nullptr;
 
-	if (IsInit()) {
+	if (IsInit() || IsSelfPassing()) {
 		Kiwi::Type type = func->Argument(0)->Type()->KiwiType();
 
-		Ptr<Kiwi::Variable> self = new Kiwi::Variable(info.NewRegister());
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), nullptr));
+		Ptr<Kiwi::Variable> self = nullptr;
+		
+		if (IsInit()) {
+			self = new Kiwi::Variable(info.NewRegister());
+			info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), nullptr));
+		}
+		else if (Weak<DotExpression> dot = expression.As<DotExpression>()) {
+			self = dot->expression->Compile(info).AsPtr<Kiwi::Variable>();
+		}
 		
 		Ptr<Kiwi::Variable> ref = new Kiwi::Variable(info.NewRegister());
 		type.pointers++;

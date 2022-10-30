@@ -8,6 +8,9 @@ namespace Melon {
 		/// Node for a kiwi variable.
 		class KiwiVariable : public Expression {
 		public:
+			/// {true} if the type should be excluded for kiwi assign instructions.
+			bool excludeAssignType = false;
+
 			/// The kiwi variable.
 			Ptr<Kiwi::Variable> var;
 
