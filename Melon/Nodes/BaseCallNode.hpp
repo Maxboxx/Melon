@@ -566,12 +566,8 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 		else if (Weak<DotExpression> dot = expression.As<DotExpression>()) {
 			self = dot->expression->Compile(info).AsPtr<Kiwi::Variable>();
 		}
-		
-		Ptr<Kiwi::Variable> ref = new Kiwi::Variable(info.NewRegister());
-		type.pointers++;
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, ref->Copy(), new Kiwi::RefExpression(self->Copy())));
 
-		call->args.Add(ref);
+		call->args.Add(new Kiwi::RefValue(self->Copy()));
 		instance = self;
 	}
 
@@ -580,11 +576,16 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 
 		if ((arg->modifiers & VariableModifiers::Ref) != VariableModifiers::None) {
 			Kiwi::Type type = func->Argument(i + argOffset)->Type()->KiwiType();
-			type.pointers++;
 
-			Ptr<Kiwi::Variable> ref = new Kiwi::Variable(info.NewRegister());
-			info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, ref->Copy(), new Kiwi::RefExpression(arguments[i]->Compile(info).AsPtr<Kiwi::Variable>())));
-			call->args.Add(ref);
+			Ptr<Kiwi::Variable> value = arguments[i]->Compile(info).AsPtr<Kiwi::Variable>();
+
+			if ((modifiers[i] & CallArgAttributes::NoRef) != CallArgAttributes::None) {
+				Ptr<Kiwi::Variable> tempVar = new Kiwi::Variable(info.NewRegister());
+				info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, tempVar->Copy(), value));
+				value = tempVar;
+			}
+
+			call->args.Add(new Kiwi::RefValue(value));
 		}
 		else {
 			call->args.Add(arguments[i]->Compile(info));

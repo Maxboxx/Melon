@@ -4,7 +4,6 @@ struct A
 	
 	function init(int: i)
 		self.i = i
-		_debug print self
 	end
 	
 	function int: getValue()
@@ -14,12 +13,18 @@ struct A
 	function updateValue(int: ref i)
 		i = self.i
 	end
+	
+	function updateValue(A: ref a)
+		a = self
+	end
 end
 
 A: a = A(3)
+A: b = A(0)
 int: i = 0
 
 a.updateValue(ref i)
+a.updateValue(ref b)
 
-_debug print a.getValue()
 _debug print i
+_debug print b

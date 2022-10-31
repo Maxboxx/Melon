@@ -246,7 +246,7 @@ FunctionSymbol* SymbolTable::FindOperator(const Name& op, TypeSymbol* const type
 	return nullptr;
 }
 
-FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file) {
+FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file, bool logErrors) {
 	if (!from || !to) return nullptr;
 
 	if (FunctionSymbol* const op = from->ImplicitConversionTo(to)) {
@@ -257,11 +257,14 @@ FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, Type
 		return op;
 	}
 
-	ErrorLog::Error(LogMessage("error.symbol.implicit", from->AbsoluteName().ToSimpleString(), to->AbsoluteName().ToSimpleString()), file);
+	if (logErrors) {
+		ErrorLog::Error(LogMessage("error.symbol.implicit", from->AbsoluteName().ToSimpleString(), to->AbsoluteName().ToSimpleString()), file);
+	}
+
 	return nullptr;
 }
 
-FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file) {
+FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file, bool logErrors) {
 	if (!from || !to) return nullptr;
 
 	if (FunctionSymbol* const op = from->ExplicitConversionTo(to)) {
@@ -272,7 +275,10 @@ FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, Type
 		return op;
 	}
 
-	ErrorLog::Error(LogMessage("error.symbol.explicit", from->AbsoluteName().ToSimpleString(), to->AbsoluteName().ToSimpleString()), file);
+	if (logErrors) {
+		ErrorLog::Error(LogMessage("error.symbol.explicit", from->AbsoluteName().ToSimpleString(), to->AbsoluteName().ToSimpleString()), file);
+	}
+
 	return nullptr;
 }
 
