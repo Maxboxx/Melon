@@ -10,6 +10,7 @@
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -549,7 +550,11 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 
 	Ptr<Kiwi::Value> instance = nullptr;
 
+	UInt argOffset = 0;
+
 	if (IsInit() || IsSelfPassing()) {
+		argOffset++;
+
 		Kiwi::Type type = func->Argument(0)->Type()->KiwiType();
 
 		Ptr<Kiwi::Variable> self = nullptr;
@@ -571,7 +576,19 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 	}
 
 	for (UInt i = 0; i < arguments.Count(); i++) {
-		call->args.Add(arguments[i]->Compile(info));
+		VariableSymbol* arg = func->Argument(i + argOffset);
+
+		if ((arg->modifiers & VariableModifiers::Ref) != VariableModifiers::None) {
+			Kiwi::Type type = func->Argument(i + argOffset)->Type()->KiwiType();
+			type.pointers++;
+
+			Ptr<Kiwi::Variable> ref = new Kiwi::Variable(info.NewRegister());
+			info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, ref->Copy(), new Kiwi::RefExpression(arguments[i]->Compile(info).AsPtr<Kiwi::Variable>())));
+			call->args.Add(ref);
+		}
+		else {
+			call->args.Add(arguments[i]->Compile(info));
+		}
 	}
 	
 	if (func->returnValues.IsEmpty()) {

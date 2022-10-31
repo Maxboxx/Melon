@@ -10,8 +10,16 @@ struct A
 	function int: getValue()
 		return self.i
 	end
+	
+	function updateValue(int: ref i)
+		i = self.i
+	end
 end
 
 A: a = A(3)
+int: i = 0
+
+a.updateValue(ref i)
 
 _debug print a.getValue()
+_debug print i

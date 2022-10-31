@@ -199,7 +199,7 @@ Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expre
 
 	Weak<KiwiVariable> var = assignable.As<KiwiVariable>();
 
-	if ((var && var->excludeAssignType) || kiwiVar.Is<Kiwi::SubVariable>()) {
+	if ((var && var->excludeAssignType) || kiwiVar.Is<Kiwi::SubVariable>() || kiwiVar.Is<Kiwi::DerefVariable>()) {
 		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(kiwiVar, kiwiValue));
 	}
 	else {
