@@ -28,6 +28,9 @@ namespace Melon {
 		template <BaseCallType T>
 		class BaseCallNode : public T {
 		public:
+			/// The operator function to call.
+			Symbols::FunctionSymbol* operatorFunction = nullptr;
+
 			/// The expression to call.
 			Ptr<Expression> expression;
 

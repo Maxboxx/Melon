@@ -120,10 +120,9 @@ Ptr<Kiwi::Value> UnaryOperatorExpression::Compile(CompileInfo& info) {
 
 		Ptr<CallExpression> cn = new CallExpression(scope, file);
 		cn->arguments  = args;
-		cn->expression = new TypeExpression(func->ParentType()->AbsoluteName());
+		cn->operatorFunction = func;
 
-		//return cn->Compile(info);
-		return nullptr;
+		return cn->Compile(info);
 	}
 }
 

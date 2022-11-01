@@ -145,15 +145,14 @@ Ptr<Kiwi::Value> BinaryOperatorExpression::Compile(CompileInfo& info) {
 	// Compile operator function
 	else {
 		List<Ptr<Expression>> args;
-		args.Add(operand1);
-		args.Add(operand2);
+		args.Add(new WeakExpression(operand1));
+		args.Add(new WeakExpression(operand2));
 
 		Ptr<CallExpression> cn = new CallExpression(scope, file);
 		cn->arguments  = args;
-		cn->expression = new TypeExpression(func->Parent()->Parent()->AbsoluteName());
+		cn->operatorFunction = func;
 
-		//return cn->Compile(info);
-		return nullptr;
+		return cn->Compile(info);
 	}
 }
 

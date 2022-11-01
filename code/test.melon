@@ -2,6 +2,10 @@
 struct A
 	int: i
 	
+	function init()
+		self.i = 0
+	end
+	
 	function init(int: i)
 		self.i = i
 	end
@@ -17,14 +21,29 @@ struct A
 	function updateValue(A: ref a)
 		a = self
 	end
+	
+	function operator A: -()
+		return A {
+			i = -self.i
+		}
+	end
+	
+	static function operator A: +(A: a, A: b)
+		return A {
+			i = a.i + b.i
+		}
+	end
 end
 
-A: a = A(3)
-A: b = A(0)
+A: a = -A(3)
+A: b = A()
 int: i = 0
 
 a.updateValue(ref i)
 a.updateValue(ref b)
 
+A: c = a + b
+
 _debug print i
 _debug print b
+_debug print c

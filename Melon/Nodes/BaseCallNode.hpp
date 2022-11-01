@@ -190,6 +190,8 @@ inline bool BaseCallNode<T>::IsMethod() const {
 
 template <BaseCallType T>
 inline FunctionSymbol* BaseCallNode<T>::GetFunc() const {
+	if (operatorFunction) return operatorFunction;
+
 	List<TypeSymbol*> argTypes;
 	Optional<List<TypeSymbol*>> templateTypes = nullptr;
 
@@ -552,7 +554,7 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 
 	UInt argOffset = 0;
 
-	if (IsInit() || IsSelfPassing()) {
+	if (!operatorFunction && (IsInit() || IsSelfPassing())) {
 		argOffset++;
 
 		Kiwi::Type type = func->Argument(0)->Type()->KiwiType();
@@ -579,7 +581,7 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 
 			Ptr<Kiwi::Variable> value = arguments[i]->Compile(info).AsPtr<Kiwi::Variable>();
 
-			if ((modifiers[i] & CallArgAttributes::NoRef) != CallArgAttributes::None) {
+			if (i < modifiers.Count() && (modifiers[i] & CallArgAttributes::NoRef) != CallArgAttributes::None) {
 				Ptr<Kiwi::Variable> tempVar = new Kiwi::Variable(info.NewRegister());
 				info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, tempVar->Copy(), value));
 				value = tempVar;

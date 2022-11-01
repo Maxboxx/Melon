@@ -65,6 +65,7 @@ namespace Melon {
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override {expression->IncludeScan(info);}
 			virtual ScanResult Scan(ScanInfoStack& info) override {return expression->Scan(info);}
 			virtual CompiledNode Compile(OldCompileInfo& info) override {return expression->Compile(info);}
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override {return expression->Compile(info);}
 			virtual Boxx::UInt GetSize() const override {return expression->GetSize();}
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override {return expression->ToMelon(indent);}
 		};
