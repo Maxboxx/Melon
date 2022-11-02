@@ -109,7 +109,12 @@ Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
 
 	Ptr<Kiwi::Variable> value = expression->Compile(info).AsPtr<Kiwi::Variable>();
 
-	if (value) {
+	// Compile enum value
+	if (EnumSymbol* enumSym = sym->Cast<EnumSymbol>()) {
+		return new Kiwi::Integer(sym->Find<ValueSymbol>(name, file)->value);
+	}
+	// Compile struct value
+	else if (value) {
 		return new Kiwi::SubVariable(value, Symbol()->KiwiName());
 	}
 

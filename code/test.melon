@@ -1,49 +1,17 @@
 
-struct A
-	int: i
+enum E
+	a,
+	b,
+	c,
+	d
 	
-	function init()
-		self.i = 0
-	end
-	
-	function init(int: i)
-		self.i = i
-	end
-	
-	function int: getValue()
-		return self.i
-	end
-	
-	function updateValue(int: ref i)
-		i = self.i
-	end
-	
-	function updateValue(A: ref a)
-		a = self
-	end
-	
-	function operator A: -()
-		return A {
-			i = -self.i
-		}
-	end
-	
-	static function operator A: +(A: a, A: b)
-		return A {
-			i = a.i + b.i
-		}
+	function bool: isB()
+		return self == E.b
 	end
 end
 
-A: a = -A(3)
-A: b = A()
-int: i = 0
+E: a = E.a
+E: b = E.b
 
-a.updateValue(ref i)
-a.updateValue(ref b)
-
-A: c = a + b
-
-_debug print i
-_debug print b
-_debug print c
+_debug print a.isB()
+_debug print b.isB()
