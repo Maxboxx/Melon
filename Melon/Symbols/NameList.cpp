@@ -144,7 +144,7 @@ String Name::ToString() const {
 }
 
 String Name::ToSimpleString() const {
-	if (name == Name::Optional.name && !types->IsEmpty()) return types.Value()[0].ToSimpleString() + "?";
+	if (name == Name::Optional.name && types && !types->IsEmpty()) return types.Value()[0].ToSimpleString() + "?";
 
 	String scope = name;
 
@@ -435,6 +435,7 @@ Name& NameList::operator[](const Boxx::UInt i) {
 }
 
 bool NameList::operator==(const NameList& scopeList) const {
+	if (absolute != scopeList.absolute) return false;
 	if (Size() != scopeList.Size()) return false;
 
 	for (Boxx::UInt i = 0; i < Size(); i++) {

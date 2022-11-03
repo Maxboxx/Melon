@@ -1,17 +1,4 @@
 
-enum E
-	a,
-	b,
-	c,
-	d
-	
-	function bool: isB()
-		return self == E.b
-	end
-end
+int?: i = 3
 
-E: a = E.a
-E: b = E.b
-
-_debug print a.isB()
-_debug print b.isB()
+_debug print i

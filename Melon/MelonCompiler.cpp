@@ -170,7 +170,6 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		}
 
 		ErrorLog::Success(LogMessage("success.compile"), FileInfo());
-		ErrorLog::LogErrors();
 
 		// Interpret kiwi
 		if (compOptions.interpret) {
@@ -181,7 +180,6 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 	}
 	catch (CompileError& e) {
 		ErrorLog::Fatal(LogMessage("fatal.compile"), FileInfo());
-		ErrorLog::LogErrors();
 	}
 }
 

@@ -395,7 +395,7 @@ NameList SymbolTable::ReplaceTemplates(const NameList& name, const NameList& sco
 					temp = temp.Add(type[1]);
 				}
 
-				if (Symbol* const sym = Find(temp, scope, file, SymbolTable::SearchOptions::ReplaceTemplates)) {
+				if (Symbol* const sym = Find(temp, scope, file, temp == name ? SymbolTable::SearchOptions::None : SymbolTable::SearchOptions::ReplaceTemplates)) {
 					NameList absolute = ReplaceTemplatesAbsolute(sym->AbsoluteName(), file);
 					
 					if (temp != absolute) {
@@ -674,17 +674,20 @@ void SymbolTable::SetupOptional() {
 	Name scope = Name("");
 	scope.types = args;
 
-	StructSymbol* const optional = optionalSym->AddSymbol(scope, new StructSymbol(FileInfo()));
+	StructSymbol* const optional = new StructSymbol(FileInfo());
 	optional->templateArguments.Add(args[0]);
+	optionalSym->AddTemplateVariant(optional);
 
 	TemplateSymbol* const templateSym = optional->AddSymbol(Name("T"), new TemplateSymbol(FileInfo()));
 	templateSym->type = templateSym->AbsoluteName();
 
 	VariableSymbol* const hasValue = optional->AddSymbol(Name::HasValue, new VariableSymbol(FileInfo()));
 	hasValue->type = NameList::Bool;
+	optional->members.Add(Name::HasValue);
 
 	VariableSymbol* const value = optional->AddSymbol(Name::Value, new VariableSymbol(FileInfo()));
 	value->type = templateSym->AbsoluteName();
+	optional->members.Add(Name::Value);
 
 	FunctionSymbol* const assign  = optional->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 
