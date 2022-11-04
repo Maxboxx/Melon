@@ -103,30 +103,50 @@ CompiledNode LoopStatement::Compile(OldCompileInfo& info) {
 }
 
 Ptr<Kiwi::Value> LoopStatement::Compile(CompileInfo& info) {
-	String endLabel = info.NewLabel();
+	Array<String> segmentLabels = Array<String>(segments.Count());
+
+	for (UInt i = 0; i < segmentLabels.Length(); i++) {
+		segmentLabels[i] = info.NewLabel();
+	}
 
 	for (UInt i = 0; i < segments.Count(); i++) {
+		UInt nextTrue, nextFalse;
+		GetNextSegments(i, nextTrue, nextFalse);
+
+		String trueLabel  = segmentLabels[nextTrue - 1];
+		String falseLabel = segmentLabels[nextFalse - 1];
+
+		const LoopSegment& segment = segments[i];
+
+		if (i > 0) {
+			info.NewInstructionBlock(segmentLabels[i - 1]);
+		}
+
 		switch (segments[i].type) {
 			case LoopType::If: {
-				const LoopSegment& segment = segments[i];
-
 				String label = info.NewLabel();
-				info.currentBlock->AddInstruction(new Kiwi::IfInstruction(segment.condition->Compile(info), label, endLabel));
+				info.currentBlock->AddInstruction(new Kiwi::IfInstruction(segment.condition->Compile(info), label, falseLabel));
 				info.NewInstructionBlock(label);
 
 				segment.statements->Compile(info);
-				info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(endLabel));
+				info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(trueLabel));
 
 				break;
 			}
 
 			case LoopType::While: break;
 			case LoopType::For:   break;
-			case LoopType::None:  break;
+
+			case LoopType::None: {
+				segment.statements->Compile(info);
+				info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(trueLabel));
+
+				break;
+			}
 		}
 	}
 
-	info.NewInstructionBlock(endLabel);
+	info.NewInstructionBlock(segmentLabels.Last());
 
 	return nullptr;
 }
@@ -136,32 +156,34 @@ void LoopStatement::GetNextSegments(const UInt segment, UInt& nextTrue, UInt& ne
 	nextFalse = segment + 1;
 
 	// Check if the current segment is the last segment
-	if (IsSegmentLast(segment)) {
-		// Set next false to end for also mismatch
-		if (segments[segment].also != segments[nextFalse].also) {
-			nextFalse = segments.Count();
+	if (segment != 0 && !IsSegmentLast(segment)) {
+		return;
+	}
+
+	// Set next false to end for also mismatch
+	if (segments[segment].also != segments[nextFalse].also) {
+		nextFalse = segments.Count();
+	}
+
+	// Get next for main segment
+	if (segment == 0) {
+		nextTrue = segments.Count();
+
+		// Set next true to first also
+		for (UInt u = 1; u < segments.Count(); u++) {
+			if (segments[u].also) {
+				nextTrue = u;
+				break;
+			}
 		}
 
-		// Get next for main segment
-		if (segment == 0) {
-			nextTrue = segments.Count();
+		nextFalse = segments.Count();
 
-			// Set next true to first also
-			for (UInt u = 1; u < segments.Count(); u++) {
-				if (segments[u].also) {
-					nextTrue = u;
-					break;
-				}
-			}
-
-			nextFalse = segments.Count();
-
-			// Set next false to first else
-			for (UInt u = 1; u < segments.Count(); u++) {
-				if (!segments[u].also) {
-					nextFalse = u;
-					break;
-				}
+		// Set next false to first else
+		for (UInt u = 1; u < segments.Count(); u++) {
+			if (!segments[u].also) {
+				nextFalse = u;
+				break;
 			}
 		}
 	}
@@ -955,13 +977,14 @@ StringBuilder LoopStatement::ToMelon(const UInt indent) const {
 		const LoopSegment& segment = segments[i];
 
 		if (i > 0) {
-			sb += segment.also ? "also" : "else";
+			sb += segment.also ? "al" : "el";
 		}
 
 		switch (segment.type) {
 			case LoopType::If:    sb += "if ";    break;
 			case LoopType::While: sb += "while "; break;
 			case LoopType::For:   sb += "for ";   break;
+			case LoopType::None:  sb += segment.also ? "so" : "se"; break;
 		}
 
 		if (segment.type != LoopType::None) {

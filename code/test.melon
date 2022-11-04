@@ -3,6 +3,14 @@ int: i = 0
 
 if i == 0 then
 	i = 3
+alif i == 3 then
+	i = 4
+also
+	i = 5
+elif i == 1 then
+	i = 6
+else
+	i = 7
 end
 
 _debug print i
