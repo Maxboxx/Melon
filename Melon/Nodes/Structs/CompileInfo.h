@@ -29,13 +29,16 @@ namespace Melon {
 			/// The current kiwi program.
 			Weak<Kiwi::KiwiProgram> program;
 
+			/// The current code block.
+			Weak<Kiwi::CodeBlock> currentCodeBlock;
+
 			/// The current instruction block.
 			Weak<Kiwi::InstructionBlock> currentBlock;
 
 			/// The return registers for the current function.
 			Boxx::List<Boxx::String> returnRegisters;
 
-			/// Creates a new register and returns the name of it.
+			/// Returns the name of a new register.
 			Boxx::String NewRegister() {
 				return Boxx::String::ToString(regIndex++);
 			}
@@ -45,8 +48,26 @@ namespace Melon {
 				regIndex = 0;
 			}
 
+			/// Returns the name of a new label.
+			Boxx::String NewLabel() {
+				return 'L' + Boxx::String::ToString(lblIndex++);
+			}
+
+			/// Creates a new instruction block.
+			void NewInstructionBlock(const Boxx::String& label) {
+				currentCodeBlock->AddInstructionBlock(new Kiwi::InstructionBlock(label));
+				currentBlock = currentCodeBlock->blocks.Last();
+			}
+
+			/// Sets the current code block.
+			void SetCodeBlock(Weak<Kiwi::CodeBlock> codeBlock) {
+				currentCodeBlock = codeBlock;
+				currentBlock = codeBlock->mainBlock;
+			}
+
 		private:
 			Boxx::UInt regIndex = 0;
+			Boxx::UInt lblIndex = 0;
 		};
 	}
 }

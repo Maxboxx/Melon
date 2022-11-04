@@ -89,8 +89,8 @@ CompiledNode RootNode::Compile(OldCompileInfo& info) {
 }
 
 Ptr<Kiwi::Value> RootNode::Compile(CompileInfo& info) {
-	Ptr<Kiwi::InstructionBlock> codeBlock = new Kiwi::InstructionBlock();
-	info.currentBlock = codeBlock;
+	Ptr<Kiwi::CodeBlock> codeBlock = new Kiwi::CodeBlock();
+	info.SetCodeBlock(codeBlock);
 
 	info.ClearRegisters();
 

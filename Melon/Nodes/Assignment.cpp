@@ -156,7 +156,7 @@ Ptr<Kiwi::Value> Assignment::Compile(CompileInfo& info) {
 		// Assign values normally
 		if (i < this->values.Count()) {
 			if (!assignableValues[i].Is<DiscardExpression>()) {
-				CompileAssignment(assignableValues[i], values[i].value, info, assignableValues[i]->File());
+				CompileAssignment(assignableValues[i], values[i].value, info, assignableValues[i]->File(), types.Count() > i && types[i] != NameList::Discard);
 			}
 			else {
 				// TODO: Cast to type

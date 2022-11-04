@@ -101,6 +101,19 @@ CompiledNode Condition::Compile(OldCompileInfo& info) {
 	}
 }
 
+Ptr<Kiwi::Value> Condition::Compile(CompileInfo& info) {
+	if (assign) {
+		return nullptr;
+	}
+	else {
+		Ptr<TypeConversion> convert = new TypeConversion(scope, file);
+		convert->isExplicit = true;
+		convert->expression = new WeakExpression(expression);
+		convert->type = NameList::Bool;
+		return convert->Compile(info);
+	}
+}
+
 void Condition::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 }

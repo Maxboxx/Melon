@@ -67,6 +67,37 @@ CompiledNode TypeConversion::Compile(OldCompileInfo& info) {
 	}
 }
 
+Ptr<Kiwi::Value> TypeConversion::Compile(CompileInfo& info) {
+	TypeSymbol* const convertType = Type();
+
+	// Check if the node needs conversion
+	if (expression->Type() == convertType) {
+		return expression->Compile(info);
+	}
+
+	// Find conversion operator
+	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(expression->Type(), convertType, file);
+	if (!convert) return nullptr;
+
+	// Compile symbol node
+	if (convert->symbolNode) {
+		return nullptr;//convert->symbolNode->Compile(expression, info);
+	}
+	// Compile call to operator function
+	else {
+		List<Ptr<Expression>> args;
+		args.Add(expression);
+
+		Ptr<CallExpression> cn = new CallExpression(scope, file);
+		cn->arguments  = args;
+		cn->expression = new TypeExpression(convert->ParentType()->AbsoluteName());
+
+		Ptr<Kiwi::Value> v = cn->Compile(info);
+		expression = args[0];
+		return v;
+	}
+}
+
 void TypeConversion::IncludeScan(ParsingInfo& info) {
 	expression->IncludeScan(info);
 }

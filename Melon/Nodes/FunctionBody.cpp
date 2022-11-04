@@ -94,7 +94,7 @@ Ptr<Kiwi::Value> FunctionBody::Compile(CompileInfo& info) { // TODO: more accura
 	Ptr<Kiwi::Function> func = new Kiwi::Function(sym->KiwiName());
 
 	Weak<Kiwi::InstructionBlock> prevBlock = info.currentBlock;
-	info.currentBlock = func->block;
+	info.SetCodeBlock(func->block);
 	info.returnRegisters.Clear();
 
 	for (UInt i = 0; i < sym->arguments.Count(); i++) {

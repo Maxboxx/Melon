@@ -181,7 +181,7 @@ CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expressio
 	return CompiledNode();
 }
 
-Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file) {
+Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
@@ -197,9 +197,7 @@ Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expre
 	Ptr<Kiwi::Variable> kiwiVar = assignable->Compile(info).AsPtr<Kiwi::Variable>();
 	Ptr<Kiwi::Value> kiwiValue  = value->Compile(info);
 
-	Weak<KiwiVariable> var = assignable.As<KiwiVariable>();
-
-	if ((var && var->excludeAssignType) || kiwiVar.Is<Kiwi::SubVariable>() || kiwiVar.Is<Kiwi::DerefVariable>()) {
+	if (!includeType || kiwiVar.Is<Kiwi::SubVariable>() || kiwiVar.Is<Kiwi::DerefVariable>()) {
 		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(kiwiVar, kiwiValue));
 	}
 	else {

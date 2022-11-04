@@ -102,6 +102,35 @@ CompiledNode LoopStatement::Compile(OldCompileInfo& info) {
 	return c;
 }
 
+Ptr<Kiwi::Value> LoopStatement::Compile(CompileInfo& info) {
+	String endLabel = info.NewLabel();
+
+	for (UInt i = 0; i < segments.Count(); i++) {
+		switch (segments[i].type) {
+			case LoopType::If: {
+				const LoopSegment& segment = segments[i];
+
+				String label = info.NewLabel();
+				info.currentBlock->AddInstruction(new Kiwi::IfInstruction(segment.condition->Compile(info), label, endLabel));
+				info.NewInstructionBlock(label);
+
+				segment.statements->Compile(info);
+				info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(endLabel));
+
+				break;
+			}
+
+			case LoopType::While: break;
+			case LoopType::For:   break;
+			case LoopType::None:  break;
+		}
+	}
+
+	info.NewInstructionBlock(endLabel);
+
+	return nullptr;
+}
+
 void LoopStatement::GetNextSegments(const UInt segment, UInt& nextTrue, UInt& nextFalse) const {
 	nextTrue = segments.Count();
 	nextFalse = segment + 1;
