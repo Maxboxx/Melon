@@ -1,16 +1,13 @@
 
-int: i = 0
+int: i = 2
 
-if i == 0 then
-	i = 3
-alif i == 3 then
-	i = 4
+while i < 5 do
+	i = i + 1
 also
-	i = 5
-elif i == 1 then
-	i = 6
+	i = 9
 else
-	i = 7
+	i = 3
 end
 
 _debug print i
+

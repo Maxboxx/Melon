@@ -134,8 +134,41 @@ Ptr<Kiwi::Value> LoopStatement::Compile(CompileInfo& info) {
 				break;
 			}
 
-			case LoopType::While: break;
-			case LoopType::For:   break;
+			case LoopType::While: {
+				Ptr<Kiwi::Variable> success = nullptr; 
+
+				if (nextTrue < segmentLabels.Length() || nextFalse < segmentLabels.Length()) {
+					success = new Kiwi::Variable(info.NewRegister());
+					info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(Kiwi::Type("u8"), success->Copy(), new Kiwi::Integer(0)));
+				}
+
+				String outer = info.NewLabel();
+				String inner = info.NewLabel();
+				info.NewInstructionBlock(outer);
+
+				Ptr<Kiwi::Value> cond = segment.condition->Compile(info);
+
+				if (success) {
+					info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, inner));
+					info.currentBlock->AddInstruction(new Kiwi::IfInstruction(success->Copy(), trueLabel, falseLabel));
+				}
+				else {
+					info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, inner, segmentLabels.Last()));
+				}
+
+				info.NewInstructionBlock(inner);
+
+				if (success) {
+					info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(success->Copy(), new Kiwi::Integer(1)));
+				}
+
+				segment.statements->Compile(info);
+				info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(outer));
+
+				break;
+			}
+
+			case LoopType::For: break;
 
 			case LoopType::None: {
 				segment.statements->Compile(info);
