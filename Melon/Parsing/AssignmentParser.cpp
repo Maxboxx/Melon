@@ -69,7 +69,7 @@ Ptr<Assignment> AssignmentParser::Parse(ParsingInfo& info, const Flags flags) {
 	info.index++;
 
 	// Parse expressions
-	ParseExpressions(info, assign);
+	ParseExpressions(info, assign, flags);
 
 	// Check if there are too many expressions
 	if (assign->values.Count() > assign->assignableValues.Count()) {
@@ -221,9 +221,13 @@ void AssignmentParser::ParseVariables(ParsingInfo& info, List<NameList>& types, 
 	}
 }
 
-void AssignmentParser::ParseExpressions(ParsingInfo& info, Ptr<Assignment>& assign) {
+void AssignmentParser::ParseExpressions(ParsingInfo& info, Ptr<Assignment>& assign, const Flags flags) {
 	for (UInt i = 0; true; i++) {
 		if (i > 0) {
+			if ((flags & Flags::Single) != Flags::None) {
+				break;
+			}
+
 			if (info.EndOfFile() || info.Current().type != TokenType::Comma) {
 				break;
 			}

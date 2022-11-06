@@ -1,13 +1,11 @@
 
-int: i = 2
+int: a = 2
 
-while i < 5 do
-	i = i + 1
+for int: i = 0, i < 5, i = i + 1 do
+	a = a + 1
 also
-	i = 9
-else
-	i = 3
+	a = a * 2
 end
 
-_debug print i
+_debug print a
 

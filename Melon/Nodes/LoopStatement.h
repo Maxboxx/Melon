@@ -122,6 +122,8 @@ namespace Melon {
 				Boxx::Array<Boxx::UInt> segmentLabels;
 				Boxx::List<Boxx::Tuple<Boxx::UInt, Boxx::UInt>> jumps;
 				Boxx::Long stackTop;
+
+				~SegmentInfo() {}
 			};
 
 			struct LoopInfo {
@@ -129,6 +131,14 @@ namespace Melon {
 				Boxx::UInt loopEndLbl = 0;
 				Boxx::UInt loopEndJmp = 0;
 				Boxx::UInt loopLbl = 0;
+			};
+
+			struct LabelInfo {
+				Boxx::String trueLabel;
+				Boxx::String falseLabel;
+				Boxx::String endLabel;
+
+				~LabelInfo() {}
 			};
 
 			void AddLabelIfNeeded(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
@@ -146,6 +156,11 @@ namespace Melon {
 			void CompileLoopBody(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
 
 			void CompileNoneSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
+
+			void CompileIfSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;
+			void CompileWhileSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;
+			void CompileForSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;
+			void CompileNoneSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;
 		};
 	}
 }
