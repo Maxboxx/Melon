@@ -187,14 +187,39 @@ void LoopStatement::CompileForSegment(LoopSegment& segment, LabelInfo& labels, C
 
 	info.NewInstructionBlock(outer);
 
-	Ptr<Kiwi::Value> cond = segment.condition->Compile(info);
+	Ptr<Kiwi::Value> cond;
+
+	if (segment.conditionOperator) {
+		Ptr<BinaryOperatorExpression> binOp = new BinaryOperatorExpression(segment.condition->scope, *segment.conditionOperator, segment.condition->File());
+		binOp->operand1 = new WeakExpression(segment.init->assignableValues[0]);
+		binOp->operand2 = new WeakExpression(segment.condition->expression);
+
+		Ptr<Condition> condition = new Condition(segment.condition->scope, segment.condition->File());
+
+		cond = binOp->Compile(info);
+	}
+	else {
+		cond = segment.condition->Compile(info);
+	}
+
 	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, inner, labels.trueLabel));
 
 	info.NewInstructionBlock(inner);
 	segment.statements->Compile(info);
 
 	info.NewInstructionBlock(end);
-	segment.step->Compile(info);
+
+	if (segment.stepOperator) {
+		Ptr<BinaryOperatorExpression> binOp = new BinaryOperatorExpression(segment.step->scope, *segment.stepOperator, segment.step->File());
+		binOp->operand1 = new WeakExpression(segment.init->assignableValues[0]);
+		binOp->operand2 = new WeakExpression(segment.step.As<Expression>());
+
+		CompileAssignment(segment.init->assignableValues[0], binOp, info, segment.step->File(), false);
+	}
+	else {
+		segment.step->Compile(info);
+	}
+
 	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(outer));
 }
 
@@ -473,10 +498,10 @@ void LoopStatement::CompileForStart(CompiledNode& compiled, OldCompileInfo& info
 	// Compile loop step
 	if (segment.stepOperator) {
 		Ptr<Assignment> assign = new Assignment(segment.step->scope, segment.step->File());
-		assign->assignableValues.Add(segment.init->assignableValues[0]);
+		assign->assignableValues.Add(new WeakExpression(segment.init->assignableValues[0]));
 
 		Ptr<BinaryOperatorExpression> add = new BinaryOperatorExpression(segment.step->scope, *segment.stepOperator, segment.step->File());
-		add->operand1 = assign->assignableValues[0];
+		add->operand1 = new WeakExpression(assign->assignableValues[0]);
 		add->operand2 = new WeakExpression(segment.step.As<Expression>());
 
 		assign->values.Add(add);
@@ -814,8 +839,8 @@ ScanResult LoopStatement::ScanForCondition(const LoopSegment& segment, ScanInfoS
 	// Scan condition with condition operator
 	else {
 		Pointer<BinaryOperatorExpression> op = new BinaryOperatorExpression(segment.condition->scope, *segment.conditionOperator, segment.condition->File());
-		op->operand1 = segment.init->assignableValues[0];
-		op->operand2 = segment.condition->expression;
+		op->operand1 = new WeakExpression(segment.init->assignableValues[0]);
+		op->operand2 = new WeakExpression(segment.condition->expression);
 
 		ScanResult r = op->Scan(info);
 		r.SelfUseCheck(info, segment.condition->File());
@@ -830,11 +855,11 @@ ScanResult LoopStatement::ScanForCondition(const LoopSegment& segment, ScanInfoS
 	}
 	// Scan step with step operator
 	else {
-		Ptr<Assignment> assign = new Assignment(segment.step->scope, segment.step->File());
-		assign->assignableValues.Add(segment.init->assignableValues[0]);
+		Ptr<Assignment> assign  = new Assignment(segment.step->scope, segment.step->File()); 
+		assign->assignableValues.Add(new WeakExpression(segment.init->assignableValues[0]));
 
 		Ptr<BinaryOperatorExpression> op = new BinaryOperatorExpression(segment.step->scope, *segment.stepOperator, segment.step->File());
-		op->operand1 = assign->assignableValues[0];
+		op->operand1 = new WeakExpression(assign->assignableValues[0]);
 		op->operand2 = new WeakExpression(segment.step.As<Expression>());
 
 		assign->values.Add(op);
