@@ -95,7 +95,9 @@ bool LoopParser::ParseWhile(LoopStatement::LoopSegment& ls, const Boxx::String& 
 		const bool single = info.Current().type == TokenType::Arrow;
 
 		info.scopeCount++;
+		info.loops++;
 		ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Do, ScopeParser::Info("do", "while condition"), true);
+		info.loops--;
 		info.scopeCount--;
 
 		return single;
@@ -140,7 +142,9 @@ bool LoopParser::ParseFor(LoopStatement::LoopSegment& ls, const Boxx::String& va
 				const bool single = info.Current().type == TokenType::Arrow;
 
 				info.scopeCount++;
+				info.loops++;
 				ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Do, ScopeParser::Info("do", "for condition"), true);
+				info.loops--;
 				info.scopeCount--;
 
 				return single;

@@ -39,6 +39,22 @@ CompiledNode BreakStatement::Compile(OldCompileInfo& info) {
 	return c;
 }
 
+Ptr<Kiwi::Value> BreakStatement::Compile(CompileInfo& info) {
+	LoopInfo loop = info.loops.Peek();
+
+	String label;
+
+	if (isBreak) {
+		label = breakBool ? loop.trueLabel : loop.falseLabel;
+	}
+	else {
+		label = loop.endLabel;
+	}
+
+	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(label));
+	return nullptr;
+}
+
 ScanResult BreakStatement::Scan(ScanInfoStack& info) {
 	// Regular break or abort
 	if (!scopewise) {

@@ -174,7 +174,15 @@ void LoopStatement::CompileWhileSegment(LoopSegment& segment, LabelInfo& labels,
 		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(success->Copy(), new Kiwi::Integer(1)));
 	}
 
+	Nodes::LoopInfo loopInfo;
+	loopInfo.trueLabel  = labels.trueLabel;
+	loopInfo.falseLabel = labels.falseLabel;
+	loopInfo.endLabel   = labels.endLabel;
+
+	info.loops.Push(loopInfo);
 	segment.statements->Compile(info);
+	info.loops.Pop();
+
 	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(outer));
 }
 
@@ -205,7 +213,15 @@ void LoopStatement::CompileForSegment(LoopSegment& segment, LabelInfo& labels, C
 	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, inner, labels.trueLabel));
 
 	info.NewInstructionBlock(inner);
+
+	Nodes::LoopInfo loopInfo;
+	loopInfo.trueLabel  = labels.trueLabel;
+	loopInfo.falseLabel = labels.falseLabel;
+	loopInfo.endLabel   = labels.endLabel;
+
+	info.loops.Push(loopInfo);
 	segment.statements->Compile(info);
+	info.loops.Pop();
 
 	info.NewInstructionBlock(end);
 

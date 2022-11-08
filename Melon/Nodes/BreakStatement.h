@@ -5,7 +5,7 @@
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		/// Statement for breaking or aborting loops.
+		/// Statement for breaking loops.
 		class BreakStatement : public Statement {
 		public:
 			///i {true} for {break}.
@@ -25,6 +25,7 @@ namespace Melon {
 			~BreakStatement();
 
 			virtual CompiledNode Compile(OldCompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 

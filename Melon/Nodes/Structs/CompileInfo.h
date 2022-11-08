@@ -1,8 +1,11 @@
 #pragma once
 
 #include "StackPtr.h"
+#include "LoopInfo.h"
 
 #include "Kiwi/KiwiProgram.h"
+
+#include "Boxx/Stack.h"
 
 ///N Melon::Nodes
 namespace Melon {
@@ -37,6 +40,9 @@ namespace Melon {
 
 			/// The return registers for the current function.
 			Boxx::List<Boxx::String> returnRegisters;
+
+			/// The loop stack.
+			Boxx::Stack<LoopInfo> loops;
 
 			/// Returns the name of a new register.
 			Boxx::String NewRegister() {
