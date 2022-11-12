@@ -11,6 +11,9 @@ namespace Melon {
 
 		/// Contains label info.
 		struct LoopInfo {
+			/// The continue label.
+			Boxx::String continueLabel;
+
 			/// The true label.
 			Boxx::String trueLabel;
 

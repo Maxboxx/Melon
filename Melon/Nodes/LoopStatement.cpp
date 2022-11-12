@@ -175,9 +175,10 @@ void LoopStatement::CompileWhileSegment(LoopSegment& segment, LabelInfo& labels,
 	}
 
 	Nodes::LoopInfo loopInfo;
-	loopInfo.trueLabel  = labels.trueLabel;
-	loopInfo.falseLabel = labels.falseLabel;
-	loopInfo.endLabel   = labels.endLabel;
+	loopInfo.continueLabel = outer;
+	loopInfo.trueLabel     = labels.trueLabel;
+	loopInfo.falseLabel    = labels.falseLabel;
+	loopInfo.endLabel      = labels.endLabel;
 
 	info.loops.Push(loopInfo);
 	segment.statements->Compile(info);
@@ -215,9 +216,10 @@ void LoopStatement::CompileForSegment(LoopSegment& segment, LabelInfo& labels, C
 	info.NewInstructionBlock(inner);
 
 	Nodes::LoopInfo loopInfo;
-	loopInfo.trueLabel  = labels.trueLabel;
-	loopInfo.falseLabel = labels.falseLabel;
-	loopInfo.endLabel   = labels.endLabel;
+	loopInfo.continueLabel = end;
+	loopInfo.trueLabel     = labels.trueLabel;
+	loopInfo.falseLabel    = labels.falseLabel;
+	loopInfo.endLabel      = labels.endLabel;
 
 	info.loops.Push(loopInfo);
 	segment.statements->Compile(info);

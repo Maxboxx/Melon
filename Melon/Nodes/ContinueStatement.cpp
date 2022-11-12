@@ -26,6 +26,11 @@ CompiledNode ContinueStatement::Compile(OldCompileInfo& info) {
 	return c;
 }
 
+Ptr<Kiwi::Value> ContinueStatement::Compile(CompileInfo& info) {
+	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(info.loops.Peek().continueLabel));
+	return nullptr;
+}
+
 ScanResult ContinueStatement::Scan(ScanInfoStack& info) {
 	if (info->scopeInfo.CanContinue()) {
 		info->scopeInfo.loopBreakCount = Math::Max(info->scopeInfo.loopBreakCount, loops);
