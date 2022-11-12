@@ -121,6 +121,26 @@ CompiledNode GuardStatement::Compile(OldCompileInfo& info) {
 	return compiled;
 }
 
+Ptr<Kiwi::Value> GuardStatement::Compile(CompileInfo& info) {
+	Ptr<Kiwi::Value> condition = cond->Compile(info);
+
+	const String endLbl = info.NewLabel(); 
+
+	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(condition, endLbl));
+
+	if (else_) {
+		else_->Compile(info);
+	}
+
+	if (end) {
+		end->Compile(info);
+	}
+
+	info.NewInstructionBlock(endLbl);
+	continue_->Compile(info);
+	return nullptr;
+}
+
 void GuardStatement::IncludeScan(ParsingInfo& info) {
 	cond->IncludeScan(info);
 
@@ -272,17 +292,19 @@ void GuardStatement::AddScopeWiseBreak(ScanInfoStack& info) {
 	bn->isBreak = true;
 	bn->loops = 1;
 	bn->scopewise = true;
-	end = bn;
 
 	info->scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info->scopeInfo.maxScopeBreakCount);
+
+	end = bn;
 }
 
 void GuardStatement::AddContinue(ScanInfoStack& info) {
 	Ptr<ContinueStatement> cn = new ContinueStatement(scope, file);
 	cn->loops = 1;
-	end = cn;
 
 	info->scopeInfo.maxLoopBreakCount = Math::Max(cn->loops, info->scopeInfo.maxLoopBreakCount);
+
+	end = cn;
 }
 
 void GuardStatement::AddReturn(ScanInfoStack& info) {

@@ -769,6 +769,8 @@ void LoopStatement::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, cons
 		}
 	}
 
+	ScopeInfo::ScopeType type = info.scopeInfo.type;
+
 	// Copy scope branch
 	if (!segment.also) {
 		info.scopeInfo = loopInfo.scope.CopyBranch();
@@ -776,6 +778,8 @@ void LoopStatement::ScanPreContents(LoopScanInfo& loopInfo, ScanInfo& info, cons
 	else {
 		info.scopeInfo = loopInfo.mainSegment.CopyBranch();
 	}
+
+	info.scopeInfo.type = type;
 }
 
 void LoopStatement::ScanFirstPostContents(LoopScanInfo& loopInfo, ScanInfo& info) const {
