@@ -126,6 +126,8 @@ namespace Melon {
 
 			static CompiledNode CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, OldCompileInfo& info, const FileInfo& file);
 			static Ptr<Kiwi::Value> CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType = true);
+			static Ptr<Kiwi::Value> CompileAssignmentSimple(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType = true);
+			static bool IncludeType(Weak<Kiwi::Variable> var, bool includeType);
 
 		protected:
 			friend RootNode;

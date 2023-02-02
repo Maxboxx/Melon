@@ -393,7 +393,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, cons
 				}
 			}
 
-			if (!SymbolTable::FindImplicitConversion(arg, args[i], file, false)) {
+			if (args[i] != arg && !SymbolTable::FindImplicitConversion(args[i], arg, file, false)) {
 				match = false;
 				break;
 			}

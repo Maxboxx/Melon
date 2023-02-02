@@ -190,21 +190,34 @@ Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expre
 	if (TypeSymbol* const type = assignable->Type()) {
 		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
 			assign = func->FindOverload(args, file);
+
+			if (assign && assign->symbolNode) {
+				assign->symbolNode->Compile(assignable, value, info, includeType);
+				return nullptr;
+			}
 		}
 	}
 
-	const Kiwi::Type type = assignable->Type()->KiwiType();
+	return CompileAssignmentSimple(assignable, value, info, file, includeType);
+}
+
+Ptr<Kiwi::Value> Node::CompileAssignmentSimple(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {
+	const Kiwi::Type type       = assignable->Type()->KiwiType();
 	Ptr<Kiwi::Variable> kiwiVar = assignable->Compile(info).AsPtr<Kiwi::Variable>();
 	Ptr<Kiwi::Value> kiwiValue  = value->Compile(info);
 
-	if (!includeType || kiwiVar.Is<Kiwi::SubVariable>() || kiwiVar.Is<Kiwi::DerefVariable>()) {
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(kiwiVar, kiwiValue));
+	if (IncludeType(kiwiVar, includeType)) {
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, kiwiVar, kiwiValue));
 	}
 	else {
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, kiwiVar, kiwiValue));
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(kiwiVar, kiwiValue));
 	}
 
 	return nullptr;
+}
+
+bool Node::IncludeType(Weak<Kiwi::Variable> var, bool includeType) {
+	return includeType && !(var.Is<Kiwi::SubVariable>() || var.Is<Kiwi::DerefVariable>());
 }
 
 NameList Node::FindSideEffectScope(const bool assign) {

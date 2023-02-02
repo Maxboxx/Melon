@@ -1,10 +1,9 @@
 
-int: a = 2
+int?: i = 3
 
-for int: i = 0, < 10 do
-	guard i <= 5
-	a = a + 1
-end
+_debug print i
 
-_debug print a
+i = nil
+
+_debug print i
 
