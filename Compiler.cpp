@@ -50,7 +50,7 @@ int main() {
 	catch (FatalLoggerError& e) {
 		ErrorLog::LogErrors();
 	}
-	/*
+	//*
 	catch (Error& e) {
 		try {
 			ErrorLog::Fatal(LogMessage::Message(e.Name() + ": " + e.Message()), FileInfo());

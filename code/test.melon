@@ -1,9 +1,6 @@
 
-int?: i = 3
-
-_debug print i
-
-bool: u = i as bool
+int?: i = nil
+int: u = i ?? 1
 
 _debug print u
 

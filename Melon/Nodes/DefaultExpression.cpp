@@ -2,6 +2,7 @@
 
 #include "KiwiMemoryExpression.h"
 #include "TypeExpression.h"
+#include "KiwiVariable.h"
 
 #include "Melon/Symbols/VariableSymbol.h"
 
@@ -38,7 +39,7 @@ TypeSymbol* DefaultExpression::Type() const {
 	// TODO: error?
 	if (type == nullptr) return nullptr;
 
-	if (SymbolTable::FindImplicitConversion(operand2->Type(), type, file)) {
+	if (!SymbolTable::FindImplicitConversion(operand2->Type(), type, file)) {
 		ErrorLog::Error(LogMessage("error.type.default"), file);
 	}
 
@@ -92,6 +93,36 @@ CompiledNode DefaultExpression::Compile(OldCompileInfo& info) {
 	info.stack.Pop(Type()->Size());
 
 	return cn;
+}
+
+Ptr<Kiwi::Value> DefaultExpression::Compile(CompileInfo& info) {
+	Ptr<Kiwi::Variable> optional = operand1->Compile(info).AsPtr<Kiwi::Variable>();
+	if (!optional) return nullptr;
+
+	Ptr<Kiwi::Variable> var  = new Kiwi::Variable(info.NewRegister());
+	info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), var->Copy(), nullptr));
+
+	// Condition
+	Ptr<Kiwi::Expression> cond = new Kiwi::SubVariable(optional->Copy(), operand1->Type()->Find(Name::HasValue, operand1->File())->KiwiName());
+	const String trueLbl  = info.NewLabel();
+	const String falseLbl = info.NewLabel();
+	const String endLbl   = info.NewLabel();
+
+	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, trueLbl, falseLbl));
+
+	// Unwrap
+	info.NewInstructionBlock(trueLbl);
+	info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(var->Copy(), new Kiwi::SubVariable(optional->Copy(), operand1->Type()->Find(Name::Value, operand1->File())->KiwiName())));
+	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(endLbl));
+
+	// Default value
+	info.NewInstructionBlock(falseLbl);
+	Ptr<KiwiVariable> target = new KiwiVariable(var->Copy(), Type()->AbsoluteName());
+	Node::CompileAssignment(target, operand2, info, operand2->File(), false);
+
+	// End
+	info.NewInstructionBlock(endLbl);
+	return var;
 }
 
 void DefaultExpression::IncludeScan(ParsingInfo& info) {
