@@ -357,10 +357,12 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 
 	if (!best) {
 		// TODO: error
+		ErrorLog::Error(LogMessage::Message("Overload not found (temporary error message)"), file);
 		return nullptr;
 	}
 	else if (isAmbig) {
 		// TODO: error
+		ErrorLog::Error(LogMessage::Message("Overload is ambiguous (temporary error message)"), file);
 		return nullptr;
 	}
 	else if (!isTemplate || bestNum == 0) {

@@ -12,14 +12,12 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalUnwrapNode::Compile(Weak<Expression> operand, OldCompileInfo& info) const {
-	CompiledNode c = operand->Compile(info);
+Ptr<Kiwi::Value> OptionalUnwrapNode::Compile(Weak<Expression> operand, CompileInfo& info, bool includeType) const {
+	Ptr<Kiwi::Variable> optional = operand->Compile(info).AsPtr<Kiwi::Variable>();
+	if (!optional) return nullptr;
 
 	FunctionSymbol* const func = operand->Type()->FindUnaryOperator(Name::Unwrap, operand->File());
-	if (!func) return c;
+	if (!func) return nullptr;
 
-	c.size = func->ReturnType(0)->Size();
-	c.argument.mem.offset += 1;
-
-	return c;
+	return new Kiwi::SubVariable(optional, operand->Type()->Find(Name::Value, operand->File())->KiwiName());
 }

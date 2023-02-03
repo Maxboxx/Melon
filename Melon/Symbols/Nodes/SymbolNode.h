@@ -27,12 +27,16 @@ namespace Melon {
 			public:
 				/// Compiles the symbol node.
 				///A operand: The operand.
-				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info, bool includeType) const {return nullptr;};
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info, bool includeType) const {
+					throw SymbolNodeError("SymbolNode does not override Compile");
+				}
 
 				/// Compiles the symbol node.
 				///A operand1: The first operand.
 				///A operand2: The second operand.
-				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info, bool includeType) const {return nullptr;};
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info, bool includeType) const {
+					throw SymbolNodeError("SymbolNode does not override Compile");
+				}
 
 				/// Compiles the symbol node.
 				///A operand: The operand.
@@ -99,7 +103,7 @@ namespace Melon {
 
 				/// Compiles the symbol node.
 				virtual Ptr<Kiwi::Value> Compile(Melon::Nodes::CompileInfo& info) const {
-					return nullptr;
+					throw SymbolNodeError("ConstantSymbolNode does not override Compile");
 				};
 
 				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::OldCompileInfo& info) const override final {

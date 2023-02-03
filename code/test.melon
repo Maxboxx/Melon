@@ -3,7 +3,7 @@ int?: i = 3
 
 _debug print i
 
-i = nil
+bool: u = i as bool
 
-_debug print i
+_debug print u
 

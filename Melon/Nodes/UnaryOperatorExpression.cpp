@@ -93,25 +93,7 @@ Ptr<Kiwi::Value> UnaryOperatorExpression::Compile(CompileInfo& info) {
 
 	// Compile symbol node
 	if (func->symbolNode) {
-		//return func->symbolNode->Compile(operand, info);
-		Ptr<Kiwi::Expression> expression;
-
-		if (op.name == Name::Neg.name) {
-			expression = new Kiwi::NegExpression(operand->Compile(info));
-		}
-		else if (op.name == Name::BitNot.name) {
-			expression = new Kiwi::BitNotExpression(operand->Compile(info));
-		}
-
-		Ptr<Kiwi::Variable> reg = new Kiwi::Variable(info.NewRegister());
-
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(
-			func->ReturnType(0)->KiwiType(),
-			reg->name, 
-			expression
-		));
-
-		return reg;
+		return func->symbolNode->Compile(operand, info, false);
 	}
 	// Compile operator function
 	else {

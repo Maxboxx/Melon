@@ -82,6 +82,7 @@ Ptr<Kiwi::Value> BinaryOperatorExpression::Compile(CompileInfo& info) {
 
 	// Compile symbol node
 	if (func->symbolNode) {
+		return func->symbolNode->Compile(operand1, operand2, info, false);
 		Ptr<Kiwi::Expression> expression;
 
 		if (op.name == Name::Add.name) {

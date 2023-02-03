@@ -81,7 +81,7 @@ Ptr<Kiwi::Value> TypeConversion::Compile(CompileInfo& info) {
 
 	// Compile symbol node
 	if (convert->symbolNode) {
-		return nullptr;//convert->symbolNode->Compile(expression, info);
+		return convert->symbolNode->Compile(expression, info, false);
 	}
 	// Compile call to operator function
 	else {
