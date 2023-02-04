@@ -42,6 +42,15 @@ CompiledNode SafeUnwrapExpression::Compile(OldCompileInfo& info)  {
 	return cn;
 }
 
+Ptr<Kiwi::Value> SafeUnwrapExpression::Compile(CompileInfo& info)  {
+	Ptr<Kiwi::Variable> var = expression->Compile(info).AsPtr<Kiwi::Variable>();
+	if (!var) return nullptr;
+
+	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(new Kiwi::SubVariable(var->Copy(), expression->Type()->Find(Name::HasValue, expression->File())->KiwiName()), nullptr, info.optionalChains.Peek()));
+
+	return new Kiwi::SubVariable(var, expression->Type()->Find(Name::Value, expression->File())->KiwiName());
+}
+
 void SafeUnwrapExpression::IncludeScan(ParsingInfo& info)  {
 	expression->IncludeScan(info);
 }

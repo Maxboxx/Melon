@@ -3,7 +3,6 @@
 #include "TypeConversion.h"
 #include "Assignment.h"
 #include "Boolean.h"
-#include "KiwiExpression.h"
 #include "TypeExpression.h"
 #include "DiscardExpression.h"
 
@@ -53,11 +52,11 @@ CompiledNode Condition::CompileAssignCondition(OldCompileInfo& info) {
 	argCopy.mem.offset++;
 
 	// Temporary replaces the value node with argCopy
-	Ptr<KiwiExpression> value = new KiwiExpression(argCopy);
-	value->type = type->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
+	//Ptr<KiwiExpression> value = new KiwiExpression(argCopy);
+	//value->type = type->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName();
 
 	Ptr<Expression> tempValue = assign->values[0];
-	assign->values[0] = value;
+	//assign->values[0] = value;
 
 	// Stores the condition result in a register
 	OptimizerInstruction mov = Instruction(InstructionType::Mov, 1);

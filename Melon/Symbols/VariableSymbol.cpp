@@ -45,6 +45,14 @@ Kiwi::Type VariableSymbol::KiwiType() {
 	return Kiwi::Type();
 }
 
+String VariableSymbol::KiwiName() {
+	if (Parent<TypeSymbol>()) {
+		return Name().name;
+	}
+
+	return Symbol::KiwiName();
+}
+
 TypeSymbol* VariableSymbol::Type() {
 	return SymbolTable::Find<TypeSymbol>(type, Parent()->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 }

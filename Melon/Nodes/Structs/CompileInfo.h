@@ -44,6 +44,9 @@ namespace Melon {
 			/// The loop stack.
 			Boxx::Stack<LoopInfo> loops;
 
+			/// The optional chain stack.
+			Boxx::Stack<Boxx::String> optionalChains;
+
 			/// Returns the name of a new register.
 			Boxx::String NewRegister() {
 				return Boxx::String::ToString(regIndex++);
@@ -69,6 +72,11 @@ namespace Melon {
 			void SetCodeBlock(Weak<Kiwi::CodeBlock> codeBlock) {
 				currentCodeBlock = codeBlock;
 				currentBlock = codeBlock->mainBlock;
+			}
+
+			/// Adds an instruction to the current block.
+			void AddInstruction(Ptr<Kiwi::Instruction> instruction) {
+				currentBlock->AddInstruction(instruction);
 			}
 
 		private:

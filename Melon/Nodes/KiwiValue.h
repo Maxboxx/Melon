@@ -5,21 +5,22 @@
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
-		/// Node for a kiwi argument.
-		class KiwiExpression : public Expression {
+		/// Node for a kiwi value.
+		class KiwiValue : public Expression {
 		public:
-			/// The kiwi argument.
-			KiwiOld::Argument argument;
+			/// The kiwi value.
+			Ptr<Kiwi::Value> value;
 
-			/// The absolute type name for the argument value.
+			/// The absolute type name for the value.
 			Symbols::NameList type;
 
 			/// Create from kiwi argument.
-			KiwiExpression(const KiwiOld::Argument& arg);
-			~KiwiExpression();
+			KiwiValue(Ptr<Kiwi::Value> value, const Symbols::NameList& type);
+			~KiwiValue();
 
 			virtual Symbols::TypeSymbol* Type() const override;
 			virtual CompiledNode Compile(OldCompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

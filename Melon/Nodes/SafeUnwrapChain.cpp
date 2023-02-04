@@ -2,6 +2,8 @@
 
 #include "KiwiMemoryExpression.h"
 #include "RootNode.h"
+#include "KiwiVariable.h"
+#include "NilValue.h"
 
 #include "Kiwi/Old/Kiwi.h"
 
@@ -88,6 +90,26 @@ CompiledNode SafeUnwrapChain::Compile(OldCompileInfo& info)  {
 	info.stack.Pop(cn.size);
 
 	return cn;
+}
+
+Ptr<Kiwi::Value> SafeUnwrapChain::Compile(CompileInfo& info)  {
+	info.optionalChains.Push(info.NewLabel());
+
+	Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+	info.AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), var->Copy(), nullptr));
+
+	Ptr<KiwiVariable> kiwiVar = new KiwiVariable(var->Copy(), Type()->AbsoluteName());
+	CompileAssignment(kiwiVar, expression, info, expression->File(), false);
+
+	const String lbl = info.NewLabel();
+	info.AddInstruction(new Kiwi::GotoInstruction(lbl));
+
+	info.NewInstructionBlock(info.optionalChains.Pop());
+	Ptr<NilValue> nil = new NilValue(File());
+	CompileAssignment(kiwiVar, nil, info, expression->File(), false);
+
+	info.NewInstructionBlock(lbl);
+	return var;
 }
 
 void SafeUnwrapChain::IncludeScan(ParsingInfo& info)  {

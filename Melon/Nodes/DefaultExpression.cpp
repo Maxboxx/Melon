@@ -104,14 +104,12 @@ Ptr<Kiwi::Value> DefaultExpression::Compile(CompileInfo& info) {
 
 	// Condition
 	Ptr<Kiwi::Expression> cond = new Kiwi::SubVariable(optional->Copy(), operand1->Type()->Find(Name::HasValue, operand1->File())->KiwiName());
-	const String trueLbl  = info.NewLabel();
 	const String falseLbl = info.NewLabel();
 	const String endLbl   = info.NewLabel();
 
-	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, trueLbl, falseLbl));
+	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, nullptr, falseLbl));
 
 	// Unwrap
-	info.NewInstructionBlock(trueLbl);
 	info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(var->Copy(), new Kiwi::SubVariable(optional->Copy(), operand1->Type()->Find(Name::Value, operand1->File())->KiwiName())));
 	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(endLbl));
 
