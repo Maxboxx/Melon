@@ -1,21 +1,10 @@
 
-struct A
-	B?: b
+int: i = if false then
+	2
+elif false then
+	4
+else
+	8
 end
-
-struct B
-	C?: c
-end
-
-struct C
-	int: i
-end
-
-A?: a = A {b = B {c = C {i = 3}}}
-
-_debug print a
-
-int: i = a?.b?.c?.i ?? 5
 
 _debug print i
-

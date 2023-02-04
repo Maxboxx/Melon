@@ -85,6 +85,10 @@ CompiledNode DoStatement::Compile(OldCompileInfo& info) {
 	return compiled;
 }
 
+Ptr<Kiwi::Value> DoStatement::Compile(CompileInfo& info) {
+	return statements->Compile(info);
+}
+
 void DoStatement::IncludeScan(ParsingInfo& info) {
 	statements->IncludeScan(info);
 }

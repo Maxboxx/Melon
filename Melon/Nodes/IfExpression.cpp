@@ -103,6 +103,33 @@ CompiledNode IfExpression::Compile(OldCompileInfo& info) {
 	return cn;
 }
 
+Ptr<Kiwi::Value> IfExpression::Compile(CompileInfo& info) {
+	const String endLbl = info.NewLabel();
+	String nextLbl;
+
+	Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+	info.AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), var->Copy(), nullptr));
+
+	for (UInt i = 0; i < conditions.Count(); i++) {
+		nextLbl = info.NewLabel();
+
+		Ptr<Kiwi::Value> cond = conditions[i]->Compile(info);
+		info.AddInstruction(new Kiwi::IfInstruction(cond, nullptr, nextLbl));
+
+		Ptr<Kiwi::Value> value = nodes[i]->Compile(info);
+		info.AddInstruction(new Kiwi::AssignInstruction(var->Copy(), value));
+
+		info.AddInstruction(new Kiwi::GotoInstruction(endLbl));
+		info.NewInstructionBlock(nextLbl);
+	}
+
+	Ptr<Kiwi::Value> value = nodes.Last()->Compile(info);
+	info.AddInstruction(new Kiwi::AssignInstruction(var->Copy(), value));
+
+	info.NewInstructionBlock(endLbl);
+	return var;
+}
+
 void IfExpression::IncludeScan(ParsingInfo& info) {
 	for (Weak<Expression> node : nodes) {
 		node->IncludeScan(info);

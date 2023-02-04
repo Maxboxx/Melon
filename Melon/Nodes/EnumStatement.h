@@ -25,6 +25,7 @@ namespace Melon {
 			~EnumStatement();
 
 			virtual CompiledNode Compile(OldCompileInfo& info) override;
+			// Empty new Compile
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}
