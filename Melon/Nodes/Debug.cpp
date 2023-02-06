@@ -35,7 +35,8 @@ CompiledNode Debug::Compile(OldCompileInfo& info) {
 
 Ptr<Kiwi::Value> Debug::Compile(CompileInfo& info) {
 	if (type == "print" && argument) {
-		info.currentBlock->AddInstruction(new Kiwi::DebugPrintInstruction(argument->Compile(info)));
+		Ptr<Kiwi::Value> value = argument->Compile(info);
+		info.AddInstruction(new Kiwi::DebugPrintInstruction(value));
 	}
 
 	return nullptr;

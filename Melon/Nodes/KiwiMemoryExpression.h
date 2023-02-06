@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Expression for a memory location.
-		class KiwiMemoryExpression : public Expression {
+		class [[deprecated]] KiwiMemoryExpression : public Expression {
 		public:
 			/// The memory location.
 			KiwiOld::MemoryLocation mem;

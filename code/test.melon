@@ -1,10 +1,5 @@
 
-int: i = if false then
-	2
-elif false then
-	4
-else
-	8
-end
-
-_debug print i
+_debug print false xnor false
+_debug print false xnor true
+_debug print true  xnor false
+_debug print true  xnor true
