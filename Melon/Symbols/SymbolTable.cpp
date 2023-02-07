@@ -18,7 +18,6 @@
 #include "Nodes/BooleanAssignNode.h"
 #include "Nodes/BooleanBinaryOperatorNode.h"
 #include "Nodes/BooleanNotNode.h"
-#include "Nodes/BooleanToBooleanNode.h"
 #include "Nodes/BooleanConstantNode.h"
 #include "Nodes/EmptySymbolNode.h"
 #include "Nodes/OptionalAssignNode.h"
@@ -546,7 +545,7 @@ void SymbolTable::SetupIntegers() {
 		// Assign
 		FunctionSymbol* const assign  = intSym->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
-		assign1->symbolNode = new IntegerAssignNode(integer.value);
+		assign1->symbolNode = new IntegerAssignNode();
 		assign1->arguments.Add(integer.key);
 	}
 
@@ -560,15 +559,9 @@ void SymbolTable::SetupIntegers() {
 			IntegerSymbol* const intSym2 = intSymbols[integer2.key];
 
 			FunctionSymbol* const convert1 = intSym->Contains<FunctionSymbol>(Name::As)->AddOverload(new FunctionSymbol(FileInfo()));
-			
-			IntegerConvertNode* const cn = new IntegerConvertNode();
-			cn->size = Math::Abs(integer.value);
-			cn->sign = integer.value < 0;
-			cn->targetSize = Math::Abs(integer2.value);
-
 			convert1->arguments.Add(integer.key);
 			convert1->returnValues.Add(integer2.key);
-			convert1->symbolNode = cn;
+			convert1->symbolNode = new IntegerConvertNode(intSym2->KiwiType());
 			convert1->isExplicit = false;
 
 			for (const Pair<Name, bool>& op : binOps) {

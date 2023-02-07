@@ -84,7 +84,7 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	FunctionSymbol* const assign  = enumSymbol->AddSymbol(Name::Assign, new FunctionSymbol(info.GetFileInfo()));
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 	assign1->arguments.Add(enumSymbol->AbsoluteName());
-	assign1->symbolNode = new IntegerAssignNode(enumSymbol->Size());
+	assign1->symbolNode = new IntegerAssignNode();
 
 	FunctionSymbol* const eq  = enumSymbol->AddSymbol(Name::Equal, new FunctionSymbol(info.GetFileInfo()));
 	FunctionSymbol* const eq1 = eq->AddOverload(new FunctionSymbol(info.GetFileInfo()));
@@ -105,13 +105,7 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	as1->arguments.Add(enumSymbol->AbsoluteName());
 	as1->returnValues.Add(enumSymbol->AbsoluteName());
 	as1->isExplicit = false;
-
-	IntegerConvertNode* const cn = new IntegerConvertNode();
-	cn->size = 1;
-	cn->sign = false;
-	cn->targetSize = 1;
-
-	as1->symbolNode = cn;
+	as1->symbolNode = new IntegerConvertNode(SymbolTable::Byte->KiwiType());
 
 	info.index++;
 

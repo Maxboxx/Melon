@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IntegerBaseNode.h"
+#include "SymbolNode.h"
 
 #include "Kiwi/Old/Kiwi.h"
 
@@ -9,7 +9,7 @@ namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
 			/// Node for unary operators on integers.
-			class IntegerUnaryOperatorNode : public IntegerBaseNode<UnarySymbolNode> {
+			class IntegerUnaryOperatorNode : public UnarySymbolNode {
 			public:
 				/// The binary operator.
 				Symbols::Name op;

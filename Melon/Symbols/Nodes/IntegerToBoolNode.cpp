@@ -1,5 +1,7 @@
 #include "IntegerToBoolNode.h"
 
+#include "Melon/Symbols/IntegerSymbol.h"
+
 #include "Kiwi/Old/Kiwi.h"
 
 using namespace Boxx;
@@ -8,17 +10,9 @@ using namespace KiwiOld;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode IntegerToBoolNode::Compile(Weak<Expression> operand, OldCompileInfo& info) const {
-	CompiledNode c = operand->Compile(info);
-
-	Instruction ne = Instruction(InstructionType::Ne, c.size);
-	ne.arguments.Add(c.argument);
-	ne.arguments.Add(Argument(0));
-	ne.arguments.Add(Argument(Register(info.index++)));
-	ne.sizes[2] = 1;
-	c.instructions.Add(ne);
-
-	c.argument = ne.arguments[2];
-	return c;
+Ptr<Kiwi::Value> IntegerToBoolNode::Compile(Weak<Expression> operand, CompileInfo& info, bool includeType) const {
+	Ptr<Kiwi::Value> value  = operand->Compile(info);
+	Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+	info.AddInstruction(new Kiwi::AssignInstruction(SymbolTable::Bool->KiwiType(), var->Copy(), new Kiwi::NotEqualExpression(value, new Kiwi::Integer(0))));
+	return var;
 }
-

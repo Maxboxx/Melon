@@ -16,10 +16,6 @@ using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 using namespace Melon::Optimizing;
 
-IntegerAssignNode::IntegerAssignNode(const UByte size) {
-	this->size = size;
-}
-
 Ptr<Kiwi::Value> IntegerAssignNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info, bool includeType) const {
 	return Node::CompileAssignmentSimple(operand1, operand2, info, operand1->File(), includeType);
 }
