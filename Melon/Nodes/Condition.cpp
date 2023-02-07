@@ -114,7 +114,12 @@ Ptr<Kiwi::Value> Condition::Compile(CompileInfo& info) {
 }
 
 void Condition::IncludeScan(ParsingInfo& info) {
-	expression->IncludeScan(info);
+	if (assign) {
+		assign->IncludeScan(info);
+	}
+	else {
+		expression->IncludeScan(info);
+	}
 }
 
 ScanResult Condition::Scan(ScanInfoStack& info) {
@@ -122,7 +127,7 @@ ScanResult Condition::Scan(ScanInfoStack& info) {
 	if (assign) {
 		Ptr<Expression> tempValue = assign->values[0];
 		
-		TypeSymbol* const type = assign->values[0]->Type();
+		TypeSymbol* const type = tempValue->Type();
 
 		// Check if the types match
 		if (type && type->AbsoluteName()[0].name == Name::Optional.name) {

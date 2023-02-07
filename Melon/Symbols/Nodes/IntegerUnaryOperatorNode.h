@@ -11,13 +11,13 @@ namespace Melon {
 			/// Node for unary operators on integers.
 			class IntegerUnaryOperatorNode : public IntegerBaseNode<UnarySymbolNode> {
 			public:
-				/// The unary operation.
-				KiwiOld::InstructionType op;
+				/// The binary operator.
+				Symbols::Name op;
 
 				/// Constructor.
-				IntegerUnaryOperatorNode(const Boxx::UByte size, const KiwiOld::InstructionType name);
+				IntegerUnaryOperatorNode(const Symbols::Name& op);
 
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::OldCompileInfo& info) const override;
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info, bool includeType) const override;
 			};
 		}
 	}

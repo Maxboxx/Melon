@@ -9,7 +9,7 @@ namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
 			/// Node for comparing boolean values.
-			class BooleanCompareNode : public BinarySymbolNode {
+			class [[deprecated]] BooleanCompareNode : public BinarySymbolNode {
 			public:
 				/// The compare operator.
 				KiwiOld::InstructionType op;

@@ -16,7 +16,7 @@
 #include "Nodes/IntegerAssignNode.h"
 #include "Nodes/IntegerConvertNode.h"
 #include "Nodes/BooleanAssignNode.h"
-#include "Nodes/BooleanCompareNode.h"
+#include "Nodes/BooleanBinaryOperatorNode.h"
 #include "Nodes/BooleanNotNode.h"
 #include "Nodes/BooleanToBooleanNode.h"
 #include "Nodes/BooleanConstantNode.h"
@@ -510,7 +510,7 @@ void SymbolTable::SetupIntegers() {
 		// Neg
 		FunctionSymbol* const neg  = intSym->AddSymbol(Name::Neg, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const neg1 = neg->AddOverload(new FunctionSymbol(FileInfo()));
-		neg1->symbolNode = new IntegerUnaryOperatorNode(Math::Abs(integer.value), InstructionType::Neg);
+		neg1->symbolNode = new IntegerUnaryOperatorNode(Name::Neg);
 
 		if (integer.value > 0) {
 			neg1->arguments.Add(NameList(true).Add(Name(integer.key[0].name.Sub(1))));
@@ -524,7 +524,7 @@ void SymbolTable::SetupIntegers() {
 		// Bit Not
 		FunctionSymbol* const bnot  = intSym->AddSymbol(Name::BitNot, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const bnot1 = bnot->AddOverload(new FunctionSymbol(FileInfo()));
-		bnot1->symbolNode = new IntegerUnaryOperatorNode(Math::Abs(integer.value), InstructionType::Not);
+		bnot1->symbolNode = new IntegerUnaryOperatorNode(Name::BitNot);
 		bnot1->arguments.Add(integer.key);
 		bnot1->returnValues.Add(integer.key);
 
@@ -623,32 +623,27 @@ void SymbolTable::SetupBoolean() {
 	assign1->symbolNode = new BooleanAssignNode();
 	assign1->arguments.Add(NameList::Bool);
 
-	FunctionSymbol* const eq  = boolSym->AddSymbol(Name::Equal, new FunctionSymbol(FileInfo()));
-	FunctionSymbol* const eq1 = eq->AddOverload(new FunctionSymbol(FileInfo()));
-	eq1->symbolNode = new BooleanCompareNode(InstructionType::Eq);
-	eq1->arguments.Add(NameList::Bool);
-	eq1->arguments.Add(NameList::Bool);
-	eq1->returnValues.Add(NameList::Bool);
+	List<Name> binOps;
+	binOps.Add(Name::BitOr);
+	binOps.Add(Name::BitAnd);
+	binOps.Add(Name::BitXor);
+	binOps.Add(Name::Equal);
+	binOps.Add(Name::NotEqual);
 
-	FunctionSymbol* const ne  = boolSym->AddSymbol(Name::NotEqual, new FunctionSymbol(FileInfo()));
-	FunctionSymbol* const ne1 = ne->AddOverload(new FunctionSymbol(FileInfo()));
-	ne1->symbolNode = new BooleanCompareNode(InstructionType::Ne);
-	ne1->arguments.Add(NameList::Bool);
-	ne1->arguments.Add(NameList::Bool);
-	ne1->returnValues.Add(NameList::Bool);
+	for (const Name& op : binOps) {
+		FunctionSymbol* const func  = boolSym->AddSymbol(op, new FunctionSymbol(FileInfo()));
+		FunctionSymbol* const func1 = func->AddOverload(new FunctionSymbol(FileInfo()));
+		func1->symbolNode = new BooleanBinaryOperatorNode(op);
+		func1->arguments.Add(NameList::Bool);
+		func1->arguments.Add(NameList::Bool);
+		func1->returnValues.Add(NameList::Bool);
+	}
 
 	FunctionSymbol* const boolNot  = boolSym->AddSymbol(Name::Not, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const boolNot1 = boolNot->AddOverload(new FunctionSymbol(FileInfo()));
 	boolNot1->symbolNode = new BooleanNotNode();
 	boolNot1->arguments.Add(NameList::Bool);
 	boolNot1->returnValues.Add(NameList::Bool);
-
-	FunctionSymbol* const toBool  = boolSym->AddSymbol(Name::As, new FunctionSymbol(FileInfo()));
-	FunctionSymbol* const toBool1 = toBool->AddOverload(new FunctionSymbol(FileInfo()));
-	toBool1->symbolNode = new BooleanToBooleanNode();
-	toBool1->arguments.Add(NameList::Bool);
-	toBool1->returnValues.Add(NameList::Bool);
-	toBool1->isExplicit = false;
 
 	SymbolTable::Bool = boolSym;
 }

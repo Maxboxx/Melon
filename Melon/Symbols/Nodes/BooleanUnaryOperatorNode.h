@@ -9,7 +9,7 @@ namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
 			/// Node for unary operators on boolean values.
-			class BooleanUnaryOperatorNode : public UnarySymbolNode {
+			class [[deprecated]] BooleanUnaryOperatorNode : public UnarySymbolNode {
 			public:
 				/// The unary operation.
 				KiwiOld::InstructionType op;

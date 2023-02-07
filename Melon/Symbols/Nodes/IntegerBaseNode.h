@@ -8,7 +8,7 @@ namespace Melon {
 		namespace Nodes {
 			/// Base for integer symbols.
 			template <class T>
-			class IntegerBaseNode : public T {
+			class [[deprecated]] IntegerBaseNode : public T {
 			public:
 				/// The byte size for the integer.
 				Boxx::UByte size;

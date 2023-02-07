@@ -6,30 +6,23 @@ using namespace KiwiOld;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-IntegerUnaryOperatorNode::IntegerUnaryOperatorNode(const UByte size, const InstructionType name) {
-	this->size = size;
-	this->op = name;
+IntegerUnaryOperatorNode::IntegerUnaryOperatorNode(const Name& op) {
+	this->op = op;
 }
 
-CompiledNode IntegerUnaryOperatorNode::Compile(Weak<Expression> operand, OldCompileInfo& info) const {
-	CompiledNode c1 = operand->Compile(info);
+Ptr<Kiwi::Value> IntegerUnaryOperatorNode::Compile(Weak<Expression> operand, CompileInfo& info, bool includeType) const {
+	Ptr<Kiwi::Value> value = operand->Compile(info);
+	Ptr<Kiwi::Expression> expression;
 
-	if (c1.argument.type != ArgumentType::Register) {
-		Argument reg = Argument(Register(info.index++));
-
-		Instruction mov = Instruction(InstructionType::Mov, size);
-		mov.arguments.Add(reg);
-		mov.arguments.Add(c1.argument);
-
-		c1.instructions.Add(mov);
-		c1.argument = reg;
+	if (op.name == Name::Neg.name) {
+		expression = new Kiwi::NegExpression(value);
+	}
+	else if (op.name == Name::BitNot.name) {
+		expression = new Kiwi::BitNotExpression(value);
 	}
 
-	Instruction in = Instruction(op, size);
-	in.arguments.Add(c1.argument);
-
-	c1.instructions.Add(in);
-
-	return c1;
+	Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+	info.AddInstruction(new Kiwi::AssignInstruction(operand->Type()->KiwiType(), var->Copy(), expression));
+	return var;
 }
 
