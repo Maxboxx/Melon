@@ -1,5 +1,10 @@
 
-_debug print false xnor false
-_debug print false xnor true
-_debug print true  xnor false
-_debug print true  xnor true
+int: i = 1
+
+repeat
+	i = i + 1
+	continue
+	_debug print i
+until i > 5
+
+_debug print i

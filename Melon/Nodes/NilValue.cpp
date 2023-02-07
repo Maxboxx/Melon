@@ -33,6 +33,10 @@ CompiledNode NilValue::Compile(OldCompileInfo& info) {
 	return node;
 }
 
+Ptr<Kiwi::Value> NilValue::Compile(CompileInfo& info) {
+	return nullptr;
+}
+
 StringBuilder NilValue::ToMelon(const UInt indent) const {
 	return "nil";
 }

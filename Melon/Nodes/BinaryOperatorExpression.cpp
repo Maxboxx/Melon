@@ -83,63 +83,6 @@ Ptr<Kiwi::Value> BinaryOperatorExpression::Compile(CompileInfo& info) {
 	// Compile symbol node
 	if (func->symbolNode) {
 		return func->symbolNode->Compile(operand1, operand2, info, false);
-		Ptr<Kiwi::Expression> expression;
-
-		if (op.name == Name::Add.name) {
-			expression = new Kiwi::AddExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::Sub.name) {
-			expression = new Kiwi::SubExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::Mul.name) {
-			expression = new Kiwi::MulExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::IDiv.name) {
-			expression = new Kiwi::DivExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::BitOr.name) {
-			expression = new Kiwi::BitOrExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::BitAnd.name) {
-			expression = new Kiwi::BitAndExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::BitXor.name) {
-			expression = new Kiwi::BitXorExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::ShiftLeft.name) {
-			expression = new Kiwi::LeftShiftExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::ShiftRight.name) {
-			expression = new Kiwi::RightShiftExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::Equal.name) {
-			expression = new Kiwi::EqualExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::NotEqual.name) {
-			expression = new Kiwi::NotEqualExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::Less.name) {
-			expression = new Kiwi::LessExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::Greater.name) {
-			expression = new Kiwi::GreaterExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::LessEqual.name) {
-			expression = new Kiwi::LessEqualExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-		else if (op.name == Name::GreaterEqual.name) {
-			expression = new Kiwi::GreaterEqualExpression(operand1->Compile(info), operand2->Compile(info));
-		}
-
-		Ptr<Kiwi::Variable> reg = new Kiwi::Variable(info.NewRegister());
-
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(
-			func->ReturnType(0)->KiwiType(), 
-			reg->name, 
-			expression
-		));
-
-		return reg;
 	}
 	// Compile operator function
 	else {

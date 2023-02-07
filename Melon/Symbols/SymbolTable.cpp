@@ -459,26 +459,28 @@ void SymbolTable::SetupIntegers() {
 	integers.Add(NameList::Long, -8);
 	integers.Add(NameList::ULong, 8);
 
-	Map<Name, InstructionType> binOps;
-	binOps.Add(Name::Add,          InstructionType::Add);
-	binOps.Add(Name::Sub,          InstructionType::Sub);
-	binOps.Add(Name::Mul,          InstructionType::Mul);
-	binOps.Add(Name::IDiv,         InstructionType::Div);
-	binOps.Add(Name::Mod,          InstructionType::Mod);
-	binOps.Add(Name::BitOr,        InstructionType::Or);
-	binOps.Add(Name::BitAnd,       InstructionType::And);
-	binOps.Add(Name::BitXor,       InstructionType::Xor);
-	binOps.Add(Name::BitNor,       InstructionType::Nor);
-	binOps.Add(Name::BitNand,      InstructionType::Nand);
-	binOps.Add(Name::BitXnor,      InstructionType::Xnor);
-	binOps.Add(Name::ShiftLeft,    InstructionType::ShL);
-	binOps.Add(Name::ShiftRight,   InstructionType::ShR);
-	binOps.Add(Name::Equal,        InstructionType::Eq);
-	binOps.Add(Name::NotEqual,     InstructionType::Ne);
-	binOps.Add(Name::LessEqual,    InstructionType::Le);
-	binOps.Add(Name::GreaterEqual, InstructionType::Ge);
-	binOps.Add(Name::Less,         InstructionType::Lt);
-	binOps.Add(Name::Greater,      InstructionType::Gt);
+	Map<NameList, IntegerSymbol*> intSymbols;
+
+	Map<Name, bool> binOps;
+	binOps.Add(Name::Add, false);
+	binOps.Add(Name::Sub, false);
+	binOps.Add(Name::Mul, false);
+	binOps.Add(Name::IDiv, false);
+	binOps.Add(Name::Mod, false);
+	binOps.Add(Name::BitOr, false);
+	binOps.Add(Name::BitAnd, false);
+	binOps.Add(Name::BitXor, false);
+	binOps.Add(Name::BitNor, false);
+	binOps.Add(Name::BitNand, false);
+	binOps.Add(Name::BitXnor, false);
+	binOps.Add(Name::ShiftLeft, false);
+	binOps.Add(Name::ShiftRight, false);
+	binOps.Add(Name::Equal, true);
+	binOps.Add(Name::NotEqual, true);
+	binOps.Add(Name::LessEqual, true);
+	binOps.Add(Name::GreaterEqual, true);
+	binOps.Add(Name::Less, true);
+	binOps.Add(Name::Greater, true);
 
 	for (const Pair<NameList, Boxx::Byte> integer : integers) {
 		List<Name> aliases;
@@ -493,6 +495,8 @@ void SymbolTable::SetupIntegers() {
 			integer.value < 0,
 			FileInfo()
 		));
+
+		intSymbols.Add(integer.key, intSym);
 
 		// Min max
 		VariableSymbol* const min = intSym->AddSymbol(Name("min"), new VariableSymbol(FileInfo()));
@@ -544,9 +548,17 @@ void SymbolTable::SetupIntegers() {
 		FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
 		assign1->symbolNode = new IntegerAssignNode(integer.value);
 		assign1->arguments.Add(integer.key);
+	}
 
-		// Binary operators
-		for (const Pair<NameList, Boxx::Byte> integer2 : integers) {
+	Kiwi::Type boolType = intSymbols[NameList::Byte]->KiwiType();
+
+	// Binary operators
+	for (const Pair<NameList, Boxx::Byte>& integer : integers) {
+		IntegerSymbol* const intSym = intSymbols[integer.key];
+
+		for (const Pair<NameList, Boxx::Byte>& integer2 : integers) {
+			IntegerSymbol* const intSym2 = intSymbols[integer2.key];
+
 			FunctionSymbol* const convert1 = intSym->Contains<FunctionSymbol>(Name::As)->AddOverload(new FunctionSymbol(FileInfo()));
 			
 			IntegerConvertNode* const cn = new IntegerConvertNode();
@@ -559,7 +571,7 @@ void SymbolTable::SetupIntegers() {
 			convert1->symbolNode = cn;
 			convert1->isExplicit = false;
 
-			for (const Pair<Name, InstructionType>& op : binOps) {
+			for (const Pair<Name, bool>& op : binOps) {
 				FunctionSymbol* binOp = intSym->Contains<FunctionSymbol>(op.key);
 				if (!binOp) binOp = intSym->AddSymbol(op.key, new FunctionSymbol(FileInfo()));
 
@@ -569,36 +581,36 @@ void SymbolTable::SetupIntegers() {
 				const Boxx::UByte v2 = integer2.value < 0 ? -integer2.value : integer2.value;
 				const bool sign = integer.value < 0 || integer2.value < 0;
 
-				if (Instruction::IsComp(op.value))
+				if (op.value) {
 					binOp1->returnValues.Add(NameList::Bool);
+				}
 				else {
 					const NameList name = v1 > v2 ? integer.key : integer2.key;
 
-					if (sign && name[0].name[0] == 'u')
+					if (sign && name[0].name[0] == 'u') {
 						binOp1->returnValues.Add(NameList(true).Add(Name(name[0].name.Sub(1))));
-					else
+					}
+					else {
 						binOp1->returnValues.Add(name);
+					}
 				}
 
 				binOp1->arguments.Add(integer.key);
 				binOp1->arguments.Add(integer2.key);
-				binOp1->symbolNode = new IntegerBinaryOperatorNode(
-					v1 > v2 ? v1 : v2,
-					sign,
-					op.value
-				);
+
+				binOp1->symbolNode = new IntegerBinaryOperatorNode(op.key, op.value ? boolType : (v1 > v2 ? intSym->KiwiType() : intSym2->KiwiType()));
 			}
 		}
 	}
 
-	SymbolTable::Tiny   = FindAbsolute<IntegerSymbol>(NameList::Tiny,   FileInfo());
-	SymbolTable::UTiny  = FindAbsolute<IntegerSymbol>(NameList::UTiny,  FileInfo());
-	SymbolTable::Short  = FindAbsolute<IntegerSymbol>(NameList::Short,  FileInfo());
-	SymbolTable::UShort = FindAbsolute<IntegerSymbol>(NameList::UShort, FileInfo());
-	SymbolTable::Int    = FindAbsolute<IntegerSymbol>(NameList::Int,    FileInfo());
-	SymbolTable::UInt   = FindAbsolute<IntegerSymbol>(NameList::UInt,   FileInfo());
-	SymbolTable::Long   = FindAbsolute<IntegerSymbol>(NameList::Long,   FileInfo());
-	SymbolTable::ULong  = FindAbsolute<IntegerSymbol>(NameList::ULong,  FileInfo());
+	SymbolTable::Tiny   = intSymbols[NameList::Tiny];
+	SymbolTable::UTiny  = intSymbols[NameList::Byte];
+	SymbolTable::Short  = intSymbols[NameList::Short];
+	SymbolTable::UShort = intSymbols[NameList::UShort];
+	SymbolTable::Int    = intSymbols[NameList::Int];
+	SymbolTable::UInt   = intSymbols[NameList::UInt];
+	SymbolTable::Long   = intSymbols[NameList::Long];
+	SymbolTable::ULong  = intSymbols[NameList::ULong];
 }
 
 IntegerSymbol* SymbolTable::Bool = nullptr;

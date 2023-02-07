@@ -91,14 +91,14 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	eq1->arguments.Add(enumSymbol->AbsoluteName());
 	eq1->arguments.Add(enumSymbol->AbsoluteName());
 	eq1->returnValues.Add(NameList::Bool);
-	eq1->symbolNode = new IntegerBinaryOperatorNode(enumSymbol->Size(), enumSymbol->IsSigned(), InstructionType::Eq);
+	eq1->symbolNode = new IntegerBinaryOperatorNode(Name::Equal, enumSymbol->KiwiType());
 
 	FunctionSymbol* const ne  = enumSymbol->AddSymbol(Name::NotEqual, new FunctionSymbol(info.GetFileInfo()));
 	FunctionSymbol* const ne1 = ne->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 	ne1->arguments.Add(enumSymbol->AbsoluteName());
 	ne1->arguments.Add(enumSymbol->AbsoluteName());
 	ne1->returnValues.Add(NameList::Bool);
-	ne1->symbolNode = new IntegerBinaryOperatorNode(enumSymbol->Size(), enumSymbol->IsSigned(), InstructionType::Ne);
+	ne1->symbolNode = new IntegerBinaryOperatorNode(Name::NotEqual, enumSymbol->KiwiType());
 
 	FunctionSymbol* const as  = enumSymbol->AddSymbol(Name::As, new FunctionSymbol(info.GetFileInfo()));
 	FunctionSymbol* const as1 = as->AddOverload(new FunctionSymbol(info.GetFileInfo()));
