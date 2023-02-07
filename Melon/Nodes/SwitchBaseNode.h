@@ -7,6 +7,7 @@
 #include "KiwiMemoryExpression.h"
 #include "BreakStatement.h"
 #include "TypeExpression.h"
+#include "KiwiVariable.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -91,6 +92,7 @@ namespace Melon {
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual CompiledNode Compile(OldCompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
@@ -339,6 +341,68 @@ namespace Melon {
 			}
 
 			return switchInfo.cn;
+		}
+
+		template <BaseSwitchType T, BaseSwitchType2 U>
+		inline Ptr<Kiwi::Value> SwitchBaseNode<T, U>::Compile(CompileInfo& info) {
+			Ptr<Kiwi::Value> matchValue = this->match->Compile(info);
+			Ptr<Kiwi::Variable> match = new Kiwi::Variable(info.NewRegister());
+			Ptr<KiwiVariable> kiwiVar = new KiwiVariable(match->Copy(), this->match->Type()->AbsoluteName());
+			info.AddInstruction(new Kiwi::AssignInstruction(this->match->Type()->KiwiType(), match->Copy(), matchValue));
+
+			Boxx::List<Boxx::String> labels;
+
+			Ptr<Kiwi::Variable> result;
+
+			if constexpr (std::is_same<U, Expression>::value) {
+				result = new Kiwi::Variable(info.NewRegister());
+				info.AddInstruction(new Kiwi::AssignInstruction(SwitchType()->KiwiType(), result->Copy(), nullptr));
+			}
+			
+			for (const Boxx::List<Ptr<Expression>>& values : cases) {
+				labels.Add(info.NewLabel());
+
+				for (Weak<Expression> expr : values) {
+					Symbols::FunctionSymbol* const sym = Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, this->match->Type(), expr->Type(), expr->File()); 
+					Ptr<Kiwi::Value> comp = sym->symbolNode->Compile(kiwiVar, expr, info, false);
+					info.AddInstruction(new Kiwi::IfInstruction(comp, labels.Last()));
+				}
+			}
+
+			Boxx::String endLbl = info.NewLabel();
+			Boxx::String defaultLbl;
+			
+			if (def) {
+				defaultLbl = info.NewLabel();
+				info.AddInstruction(new Kiwi::GotoInstruction(defaultLbl));
+			}
+			else {
+				info.AddInstruction(new Kiwi::GotoInstruction(endLbl));
+			}
+
+			for (Boxx::UInt i = 0; i < nodes.Count(); i++) {
+				info.NewInstructionBlock(labels[i]);
+				Ptr<Kiwi::Value> value = nodes[i]->Compile(info);
+
+				if constexpr (std::is_same<U, Expression>::value) {
+					info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), value));
+				}
+
+				info.AddInstruction(new Kiwi::GotoInstruction(endLbl));
+			}
+
+			if (def) {
+				info.NewInstructionBlock(defaultLbl);
+				Ptr<Kiwi::Value> value = def->Compile(info);
+
+				if constexpr (std::is_same<U, Expression>::value) {
+					info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), value));
+				}
+			}
+
+			info.NewInstructionBlock(endLbl);
+
+			return result;
 		}
 
 		template <BaseSwitchType T, BaseSwitchType2 U>
