@@ -56,8 +56,8 @@ Symbol* DotExpression::Symbol() const {
 	if (nodeSym->Is<VariableSymbol>()) {
 		TypeSymbol* const type = nodeSym->Type();
 
-		if (StructSymbol* const s = type->Cast<StructSymbol>()) {
-			return s->Find(name, file);
+		if (type->Is<StructSymbol>() || type->Is<EnumSymbol>()) {
+			return type->Find(name, file);
 		}
 	}
 	// Get other symbols

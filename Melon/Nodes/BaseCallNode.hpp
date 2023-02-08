@@ -28,6 +28,8 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
+// Note: Delete BaseCallNode.obj and CallExpresion.obj for this file to build correctly
+
 template <BaseCallType T>
 inline BaseCallNode<T>::BaseCallNode(Symbols::Symbol* const scope, const FileInfo& file) : T(scope, file) {
 
@@ -619,7 +621,15 @@ inline void BaseCallNode<T>::IncludeScan(ParsingInfo& info) {
 template <BaseCallType T>
 inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 	// Scan called node
-	ScanResult result = expression->Scan(info);
+	ScanResult result;
+	
+	if (expression->Symbol<FunctionSymbol>()) {
+		result = expression.As<DotExpression>()->expression->Scan(info);
+	}
+	else {
+		result = expression->Scan(info);
+	}
+
 	result.SelfUseCheck(info, expression->File());
 
 	// Scan function
@@ -665,7 +675,12 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 
 		if (IsSelfPassing()) {
 			if (i == 0) {
-				arg = expression;
+				if (expression->Symbol<FunctionSymbol>()) {
+					arg = expression.As<DotExpression>()->expression;
+				}
+				else {
+					arg = expression;
+				}
 			}
 			else {
 				arg = this->arguments[i - 1];

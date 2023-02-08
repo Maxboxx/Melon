@@ -110,9 +110,11 @@ Symbol* SymbolTable::Find(NameList name, NameList scope, const FileInfo& file, c
 		while (list.Size() > 0) {
 			Symbol* const s = FindInNamespaces(list, file);
 
-			if (Symbol* const sym = s->Contains(name)) {
-				if (ignoreOrder || sym->file.statement < file.statement || sym->Is<TemplateSymbol>()) {
-					return sym;
+			if (s) {
+				if (Symbol* const sym = s->Contains(name)) {
+					if (ignoreOrder || sym->file.statement < file.statement || sym->Is<TemplateSymbol>()) {
+						return sym;
+					}
 				}
 			}
 
@@ -598,6 +600,7 @@ void SymbolTable::SetupIntegers() {
 
 	SymbolTable::Tiny   = intSymbols[NameList::Tiny];
 	SymbolTable::UTiny  = intSymbols[NameList::Byte];
+	SymbolTable::Byte   = intSymbols[NameList::Byte];
 	SymbolTable::Short  = intSymbols[NameList::Short];
 	SymbolTable::UShort = intSymbols[NameList::UShort];
 	SymbolTable::Int    = intSymbols[NameList::Int];

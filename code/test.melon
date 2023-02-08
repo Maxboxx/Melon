@@ -1,10 +1,10 @@
 
-int?: i = 3
-
-do
-	guard int: a = i else
-		_debug print 0 
+struct A
+	function int: num()
+		return 3
 	end
-	
-	_debug print a
 end
+
+A: a = A {}
+
+_debug print a.num()

@@ -147,7 +147,7 @@ Symbol* FunctionSymbol::FindSymbol(const NameList& scopeList, const UInt index, 
 		}
 	}
 	else {
-		return MapSymbol::FindSymbol(scopeList, index, file);
+		return ScopeSymbol::FindSymbol(scopeList, index, file);
 	}
 
 	FindError(scopeList, index, file);
