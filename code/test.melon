@@ -1,5 +1,10 @@
 
+int?: i = 3
 
-int?: i = nil
-
-_debug print not i
+do
+	guard int: a = i else
+		_debug print 0 
+	end
+	
+	_debug print a
+end

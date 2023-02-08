@@ -382,10 +382,20 @@ namespace Melon {
 
 			for (Boxx::UInt i = 0; i < nodes.Count(); i++) {
 				info.NewInstructionBlock(labels[i]);
+
+				LoopInfo scope = LoopInfo(i < nodes.Count() - 1 ? labels[i + 1] : (def ? defaultLbl : endLbl), endLbl);
+
+				if constexpr (!std::is_same<U, Expression>::value) {
+					info.PushScope(scope);
+				}
+
 				Ptr<Kiwi::Value> value = nodes[i]->Compile(info);
 
 				if constexpr (std::is_same<U, Expression>::value) {
 					info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), value));
+				}
+				else {
+					info.PopScope();
 				}
 
 				info.AddInstruction(new Kiwi::GotoInstruction(endLbl));
@@ -393,10 +403,20 @@ namespace Melon {
 
 			if (def) {
 				info.NewInstructionBlock(defaultLbl);
+
+				LoopInfo scope = LoopInfo(endLbl);
+
+				if constexpr (!std::is_same<U, Expression>::value) {
+					info.PushScope(scope);
+				}
+
 				Ptr<Kiwi::Value> value = def->Compile(info);
 
 				if constexpr (std::is_same<U, Expression>::value) {
 					info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), value));
+				}
+				else {
+					info.PopScope();
 				}
 			}
 

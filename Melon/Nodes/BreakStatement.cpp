@@ -40,7 +40,7 @@ CompiledNode BreakStatement::Compile(OldCompileInfo& info) {
 }
 
 Ptr<Kiwi::Value> BreakStatement::Compile(CompileInfo& info) {
-	LoopInfo loop = info.loops.Peek();
+	LoopInfo loop = scopewise ? info.PeekScope(loops - 1) : info.PeekLoop(loops - 1);
 
 	String label;
 

@@ -86,7 +86,13 @@ CompiledNode DoStatement::Compile(OldCompileInfo& info) {
 }
 
 Ptr<Kiwi::Value> DoStatement::Compile(CompileInfo& info) {
-	return statements->Compile(info);
+	LoopInfo scope = LoopInfo(info.NewLabel());
+	info.PushScope(scope);
+	statements->Compile(info);
+	info.PopScope();
+
+	info.NewInstructionBlock(scope.endLabel);
+	return nullptr;
 }
 
 void DoStatement::IncludeScan(ParsingInfo& info) {

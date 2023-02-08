@@ -27,7 +27,7 @@ CompiledNode ContinueStatement::Compile(OldCompileInfo& info) {
 }
 
 Ptr<Kiwi::Value> ContinueStatement::Compile(CompileInfo& info) {
-	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(info.loops.Peek().continueLabel));
+	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(info.PeekLoop().continueLabel));
 	return nullptr;
 }
 

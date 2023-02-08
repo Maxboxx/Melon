@@ -126,13 +126,9 @@ CompiledNode RepeatStatement::Compile(OldCompileInfo& info) {
 Ptr<Kiwi::Value> RepeatStatement::Compile(CompileInfo& info) {
 	const String topLbl = info.NewLabel();
 
-	LoopInfo loop;
-	loop.continueLabel = info.NewLabel();
-	loop.trueLabel     = info.NewLabel();
-	loop.falseLabel    = loop.trueLabel;
-	loop.endLabel      = loop.trueLabel;
+	LoopInfo loop = LoopInfo(info.NewLabel(), info.NewLabel());
 
-	info.loops.Push(loop);
+	info.PushLoop(loop);
 
 	info.NewInstructionBlock(topLbl);
 	statements->Compile(info);
@@ -142,7 +138,7 @@ Ptr<Kiwi::Value> RepeatStatement::Compile(CompileInfo& info) {
 	info.AddInstruction(new Kiwi::IfInstruction(value, nullptr, topLbl));
 
 	info.NewInstructionBlock(loop.endLabel);
-	info.loops.Pop();
+	info.PopLoop();
 
 	return nullptr;
 }

@@ -5,6 +5,7 @@
 #include "Boolean.h"
 #include "TypeExpression.h"
 #include "DiscardExpression.h"
+#include "KiwiVariable.h"
 
 #include "Melon/Symbols/VariableSymbol.h"
 
@@ -102,7 +103,22 @@ CompiledNode Condition::Compile(OldCompileInfo& info) {
 
 Ptr<Kiwi::Value> Condition::Compile(CompileInfo& info) {
 	if (assign) {
-		return nullptr;
+		TypeSymbol* const optionalType = assign->values[0]->Type();
+
+		Ptr<Kiwi::Variable> optional = assign->values[0]->Compile(info).AsPtr<Kiwi::Variable>();
+		Ptr<Kiwi::SubVariable> hasValue = new Kiwi::SubVariable(optional->Copy(), optionalType->Find(Name::HasValue, assign->values[0]->File())->KiwiName());
+		Ptr<Kiwi::Variable> var = new Kiwi::Variable(assign->assignableValues[0]->Symbol()->KiwiName());
+
+		const String lbl = info.NewLabel();
+
+		info.AddInstruction(new Kiwi::IfInstruction(hasValue->Copy(), nullptr, lbl));
+
+		Ptr<KiwiVariable> kiwiVar1 = new KiwiVariable(var->Copy(), assign->assignableValues[0]->Type()->AbsoluteName());
+		Ptr<KiwiVariable> kiwiVar2 = new KiwiVariable(new Kiwi::SubVariable(optional->Copy(), optionalType->Find(Name::Value, assign->values[0]->File())->KiwiName()), optionalType->Find(Name::Value, assign->values[0]->File())->Type()->AbsoluteName());
+		CompileAssignment(kiwiVar1, kiwiVar2, info, File(), true);
+
+		info.NewInstructionBlock(lbl);
+		return hasValue;
 	}
 	else {
 		Ptr<TypeConversion> convert = new TypeConversion(scope, file);
@@ -137,7 +153,7 @@ ScanResult Condition::Scan(ScanInfoStack& info) {
 			ErrorLog::Error(LogMessage("error.type.conditional_assign", tempValue->Type()->ToString()), tempValue->File());
 		}
 
-		ScanResult result = expression->Scan(info) | tempValue->Scan(info);
+		ScanResult result = assign->Scan(info);
 		assign->values[0] = tempValue;
 		return result;
 	}
@@ -182,7 +198,12 @@ Ptr<Condition> Condition::Optimize(OptimizeInfo& info) {
 }
 
 StringBuilder Condition::ToMelon(const UInt indent) const {
-	return expression->ToMelon(indent);
+	if (assign) {
+		return assign->ToMelon(indent);
+	}
+	else {
+		return expression->ToMelon(indent);
+	}
 }
 
 Ptr<Condition> Condition::FromExpression(Ptr<Expression> expression) {

@@ -41,11 +41,10 @@ namespace Melon {
 			/// The return registers for the current function.
 			Boxx::List<Boxx::String> returnRegisters;
 
-			/// The loop stack.
-			Boxx::Stack<LoopInfo> loops;
-
 			/// The optional chain stack.
 			Boxx::Stack<Boxx::String> optionalChains;
+
+			~CompileInfo() {}
 
 			/// Returns the name of a new register.
 			Boxx::String NewRegister() {
@@ -79,9 +78,59 @@ namespace Melon {
 				currentBlock->AddInstruction(instruction);
 			}
 
+			/// Pushes a loop.
+			void PushLoop(const LoopInfo& loop) {
+				loops.Add(loop);
+				scopes.Add(loop);
+			}
+
+			/// Pushes a scope.
+			void PushScope(const LoopInfo& scope) {
+				scopes.Add(scope);
+			}
+
+			/// Pops a loop.
+			LoopInfo PopLoop() {
+				scopes.RemoveLast();
+
+				LoopInfo loop = loops.Last();
+				loops.RemoveLast();
+				return loop;
+			}
+
+			/// Pops a scope.
+			LoopInfo PopScope() {
+				LoopInfo scope = scopes.Last();
+				scopes.RemoveLast();
+				return scope;
+			}
+
+			/// Peeks the current loop.
+			LoopInfo PeekLoop() {
+				return loops.Last();
+			}
+
+			/// Peeks the current scope.
+			LoopInfo PeekScope() {
+				return scopes.Last();
+			}
+
+			/// Peeks a loop.
+			LoopInfo PeekLoop(int depth) {
+				return loops.Last(depth);
+			}
+
+			/// Peeks a scope.
+			LoopInfo PeekScope(int depth) {
+				return scopes.Last(depth);
+			}
+
 		private:
 			Boxx::UInt regIndex = 0;
 			Boxx::UInt lblIndex = 0;
+			
+			Boxx::List<LoopInfo> loops;
+			Boxx::List<LoopInfo> scopes;
 		};
 	}
 }

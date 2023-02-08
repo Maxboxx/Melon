@@ -139,11 +139,11 @@ Ptr<Kiwi::Value> LoopStatement::Compile(CompileInfo& info) {
 
 void LoopStatement::CompileIfSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const {
 	String label = info.NewLabel();
-	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(segment.condition->Compile(info), label, labels.falseLabel));
+	info.AddInstruction(new Kiwi::IfInstruction(segment.condition->Compile(info), label, labels.falseLabel));
 	info.NewInstructionBlock(label);
 
 	segment.statements->Compile(info);
-	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(labels.trueLabel));
+	info.AddInstruction(new Kiwi::GotoInstruction(labels.trueLabel));
 }
 
 void LoopStatement::CompileWhileSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const {
@@ -151,7 +151,7 @@ void LoopStatement::CompileWhileSegment(LoopSegment& segment, LabelInfo& labels,
 
 	if (labels.trueLabel != labels.endLabel || labels.falseLabel != labels.endLabel) {
 		success = new Kiwi::Variable(info.NewRegister());
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(Kiwi::Type("u8"), success->Copy(), new Kiwi::Integer(0)));
+		info.AddInstruction(new Kiwi::AssignInstruction(Kiwi::Type("u8"), success->Copy(), new Kiwi::Integer(0)));
 	}
 
 	String outer = info.NewLabel();
@@ -161,17 +161,17 @@ void LoopStatement::CompileWhileSegment(LoopSegment& segment, LabelInfo& labels,
 	Ptr<Kiwi::Value> cond = segment.condition->Compile(info);
 
 	if (success) {
-		info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, inner));
-		info.currentBlock->AddInstruction(new Kiwi::IfInstruction(success->Copy(), labels.trueLabel, labels.falseLabel));
+		info.AddInstruction(new Kiwi::IfInstruction(cond, inner));
+		info.AddInstruction(new Kiwi::IfInstruction(success->Copy(), labels.trueLabel, labels.falseLabel));
 	}
 	else {
-		info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, inner, labels.endLabel));
+		info.AddInstruction(new Kiwi::IfInstruction(cond, inner, labels.endLabel));
 	}
 
 	info.NewInstructionBlock(inner);
 
 	if (success) {
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(success->Copy(), new Kiwi::Integer(1)));
+		info.AddInstruction(new Kiwi::AssignInstruction(success->Copy(), new Kiwi::Integer(1)));
 	}
 
 	Nodes::LoopInfo loopInfo;
@@ -180,11 +180,11 @@ void LoopStatement::CompileWhileSegment(LoopSegment& segment, LabelInfo& labels,
 	loopInfo.falseLabel    = labels.falseLabel;
 	loopInfo.endLabel      = labels.endLabel;
 
-	info.loops.Push(loopInfo);
+	info.PushLoop(loopInfo);
 	segment.statements->Compile(info);
-	info.loops.Pop();
+	info.PopLoop();
 
-	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(outer));
+	info.AddInstruction(new Kiwi::GotoInstruction(outer));
 }
 
 void LoopStatement::CompileForSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const {
@@ -211,7 +211,7 @@ void LoopStatement::CompileForSegment(LoopSegment& segment, LabelInfo& labels, C
 		cond = segment.condition->Compile(info);
 	}
 
-	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, inner, labels.trueLabel));
+	info.AddInstruction(new Kiwi::IfInstruction(cond, inner, labels.trueLabel));
 
 	info.NewInstructionBlock(inner);
 
@@ -221,9 +221,9 @@ void LoopStatement::CompileForSegment(LoopSegment& segment, LabelInfo& labels, C
 	loopInfo.falseLabel    = labels.falseLabel;
 	loopInfo.endLabel      = labels.endLabel;
 
-	info.loops.Push(loopInfo);
+	info.PushLoop(loopInfo);
 	segment.statements->Compile(info);
-	info.loops.Pop();
+	info.PopLoop();
 
 	info.NewInstructionBlock(end);
 
@@ -238,12 +238,12 @@ void LoopStatement::CompileForSegment(LoopSegment& segment, LabelInfo& labels, C
 		segment.step->Compile(info);
 	}
 
-	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(outer));
+	info.AddInstruction(new Kiwi::GotoInstruction(outer));
 }
 
 void LoopStatement::CompileNoneSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const {
 	segment.statements->Compile(info);
-	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(labels.trueLabel));
+	info.AddInstruction(new Kiwi::GotoInstruction(labels.trueLabel));
 }
 
 void LoopStatement::GetNextSegments(const UInt segment, UInt& nextTrue, UInt& nextFalse) const {

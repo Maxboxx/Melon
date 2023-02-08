@@ -128,6 +128,8 @@ Ptr<Kiwi::Value> GuardStatement::Compile(CompileInfo& info) {
 
 	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(condition, endLbl));
 
+	info.PushScope(LoopInfo(endLbl));
+
 	if (else_) {
 		else_->Compile(info);
 	}
@@ -135,6 +137,8 @@ Ptr<Kiwi::Value> GuardStatement::Compile(CompileInfo& info) {
 	if (end) {
 		end->Compile(info);
 	}
+
+	info.PopScope();
 
 	info.NewInstructionBlock(endLbl);
 	continue_->Compile(info);
@@ -290,7 +294,7 @@ void GuardStatement::AddScopeBreak(ScanInfoStack& info) {
 void GuardStatement::AddScopeWiseBreak(ScanInfoStack& info) {
 	Ptr<BreakStatement> bn = new BreakStatement(scope, file);
 	bn->isBreak = true;
-	bn->loops = 1;
+	bn->loops = 2;
 	bn->scopewise = true;
 
 	info->scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info->scopeInfo.maxScopeBreakCount);
