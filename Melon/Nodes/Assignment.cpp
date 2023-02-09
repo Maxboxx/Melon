@@ -8,6 +8,9 @@
 #include "EmptyStatement.h"
 #include "Statements.h"
 #include "DiscardExpression.h"
+#include "KiwiVariable.h"
+#include "CallExpression.h"
+#include "BaseCallNode.hpp"
 
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
@@ -151,21 +154,46 @@ Ptr<Kiwi::Value> Assignment::Compile(CompileInfo& info) {
 	// Setup
 	List<Value> values = Values();
 
+	List<Ptr<KiwiVariable>> callValues;
+
 	// Compile assignments
 	for (UInt i = 0; i < assignableValues.Count(); i++) {
 		// Assign values normally
 		if (i < this->values.Count()) {
+			if (i == this->values.Count() - 1) {
+				if (Weak<CallExpression> call = this->values[i].As<CallExpression>()) {
+					FunctionSymbol* func = call->GetFunc();
+
+					List<Optional<Kiwi::Type>> types;
+					List<Ptr<Kiwi::Variable>> vars;
+
+					for (UInt i = 0; i < func->returnValues.Count(); i++) {
+						TypeSymbol* type = func->ReturnType(i);
+						types.Add(type->KiwiType());
+						vars.Add(new Kiwi::Variable(info.NewRegister()));
+						callValues.Add(new KiwiVariable(vars.Last()->Copy(), type->AbsoluteName()));
+					}
+
+					List<Ptr<Kiwi::Expression>> expressions;
+					expressions.Add(call->CompileCallExpression(info));
+
+					info.AddInstruction(new Kiwi::MultiAssignInstruction(types, vars, expressions));
+				}
+			}
+
+			Weak<Expression> value = callValues.IsEmpty() ? values[i].value : callValues[0];
+
 			if (!assignableValues[i].Is<DiscardExpression>()) {
-				CompileAssignment(assignableValues[i], values[i].value, info, assignableValues[i]->File(), types.Count() > i && types[i] != NameList::Discard);
+				CompileAssignment(assignableValues[i], value, info, assignableValues[i]->File(), types.Count() > i && types[i] != NameList::Discard);
 			}
 			else {
 				// TODO: Cast to type
-				values[i].value->Compile(info);
+				value->Compile(info);
 			}
 		}
 		// Assign extra return values
 		else if (!assignableValues[i].Is<DiscardExpression>()) {
-			//CompileAssignment(assignableValues[i], var, info, assignableValues[i]->File());
+			CompileAssignment(assignableValues[i], callValues[this->values.Count() - i + 1], info, assignableValues[i]->File(), types.Count() > i && types[i] != NameList::Discard);
 		}
 
 		// TODO: compile values for discard vars

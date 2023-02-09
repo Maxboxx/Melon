@@ -1,10 +1,11 @@
 
-struct A
-	function int: num()
-		return 3
-	end
+function int, bool: f()
+	return 5, true
 end
 
-A: a = A {}
+int, bool: i, b = 1, false
 
-_debug print a.num()
+_, bool: i, a = f()
+
+_debug print i
+_debug print a

@@ -55,6 +55,9 @@ namespace Melon {
 			/// {true} if the function is a constructor.
 			bool IsInit() const;
 
+			/// Compiles a call expression.
+			Ptr<Kiwi::CallExpression> CompileCallExpression(CompileInfo& info);
+
 			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
@@ -64,6 +67,14 @@ namespace Melon {
 
 		protected:
 			bool isStatement;
+
+			struct CompileResult {
+				Ptr<Kiwi::CallExpression> call;
+				Ptr<Kiwi::Value> instance;
+				Symbols::FunctionSymbol* func;
+			};
+
+			CompileResult CompileWithResult(CompileInfo& info);
 
 			Boxx::List<Symbols::TypeSymbol*> GetReturnTypes() const;
 

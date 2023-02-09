@@ -28,7 +28,8 @@ using namespace Melon::Parsing;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-// Note: Delete BaseCallNode.obj and CallExpresion.obj for this file to build correctly
+// Note: Delete CallExpresion.obj for this file to build correctly.
+// Include this file in all cpp files that references call nodes.
 
 template <BaseCallType T>
 inline BaseCallNode<T>::BaseCallNode(Symbols::Symbol* const scope, const FileInfo& file) : T(scope, file) {
@@ -547,7 +548,7 @@ inline CompiledNode BaseCallNode<T>::Compile(OldCompileInfo& info) { // TODO: mo
 }
 
 template <BaseCallType T>
-inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
+inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(CompileInfo& info) { // TODO: more accurate arg error lines
 	FunctionSymbol* func = GetFunc();
 
 	Ptr<Kiwi::CallExpression> call = new Kiwi::CallExpression(func->KiwiName());
@@ -565,7 +566,7 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 		
 		if (IsInit()) {
 			self = new Kiwi::Variable(info.NewRegister());
-			info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), nullptr));
+			info.AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), nullptr));
 		}
 		else if (Weak<DotExpression> dot = expression.As<DotExpression>()) {
 			self = dot->expression->Compile(info).AsPtr<Kiwi::Variable>();
@@ -585,7 +586,7 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 
 			if (i < modifiers.Count() && (modifiers[i] & CallArgAttributes::NoRef) != CallArgAttributes::None) {
 				Ptr<Kiwi::Variable> tempVar = new Kiwi::Variable(info.NewRegister());
-				info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, tempVar->Copy(), value));
+				info.AddInstruction(new Kiwi::AssignInstruction(type, tempVar->Copy(), value));
 				value = tempVar;
 			}
 
@@ -596,15 +597,32 @@ inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) { // TODO: m
 		}
 	}
 	
-	if (func->returnValues.IsEmpty()) {
-		info.currentBlock->AddInstruction(new Kiwi::CallInstruction(call));
-		return instance;
+	CompileResult result;
+	result.call = call;
+	result.instance = instance;
+	result.func = func;
+	return result;
+}
+
+template <BaseCallType T>
+inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) {
+	CompileResult result = CompileWithResult(info);
+
+	if (result.func->returnValues.IsEmpty()) {
+		info.AddInstruction(new Kiwi::CallInstruction(result.call));
+		return result.instance;
 	}
 	else {
 		Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(func->ReturnType(0)->KiwiType(), var->name, call));
+		info.AddInstruction(new Kiwi::AssignInstruction(result.func->ReturnType(0)->KiwiType(), var->name, result.call));
 		return var;
 	}
+}
+
+template <BaseCallType T>
+inline Ptr<Kiwi::CallExpression> BaseCallNode<T>::CompileCallExpression(CompileInfo& info) {
+	CompileResult result = CompileWithResult(info);
+	return result.call;
 }
 
 template <BaseCallType T>
@@ -623,7 +641,7 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 	// Scan called node
 	ScanResult result;
 	
-	if (expression->Symbol<FunctionSymbol>()) {
+	if (IsMethod()) {
 		result = expression.As<DotExpression>()->expression->Scan(info);
 	}
 	else {
@@ -675,7 +693,7 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 
 		if (IsSelfPassing()) {
 			if (i == 0) {
-				if (expression->Symbol<FunctionSymbol>()) {
+				if (IsMethod()) {
 					arg = expression.As<DotExpression>()->expression;
 				}
 				else {
