@@ -6,7 +6,6 @@
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
 
-#include "Melon/Nodes/KiwiMemoryExpression.h"
 #include "Melon/Nodes/Boolean.h"
 
 #include "Kiwi/Old/Kiwi.h"

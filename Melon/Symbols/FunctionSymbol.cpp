@@ -56,47 +56,6 @@ VariableSymbol* FunctionSymbol::Argument(const UInt index) {
 	}
 }
 
-UInt FunctionSymbol::ArgumentSize() {
-	UInt size = 0;
-
-	for (UInt i = 0; i < arguments.Count(); i++) {
-		VariableSymbol* const var = Argument(i);
-
-		if (var->HasAttribute(VariableModifiers::Ref)) {
-			size += StackPtr::ptrSize;
-		}
-		else {
-			size += var->Type()->Size();
-		}
-	}
-
-	return size;
-}
-
-UInt FunctionSymbol::ErrorTypeSize() {
-	if ((attributes & FunctionAttributes::Throw) == FunctionAttributes::None) return 0;
-
-	return 1;
-}
-
-UInt FunctionSymbol::ErrorSize() {
-	return 0;
-}
-
-UInt FunctionSymbol::ReturnValueSize() {
-	UInt retSize = 0; 
-
-	for (UInt i = 0; i < returnValues.Count(); i++) {
-		retSize += ReturnType(i)->Size();
-	}
-
-	return retSize;
-}
-
-UInt FunctionSymbol::ReturnSize() {
-	return ErrorTypeSize() + Math::Max(ErrorSize(), ReturnValueSize());
-}
-
 TypeSymbol* FunctionSymbol::TemplateArgument(const UInt index) {
 	if (index >= templateArguments.Count()) return nullptr;
 

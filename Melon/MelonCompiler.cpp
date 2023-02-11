@@ -265,16 +265,6 @@ ScanInfoStack MelonCompiler::ScanProject(const CompilerOptions& options, Parsing
 	return scanInfo;
 }
 
-List<OptimizerInstruction> MelonCompiler::CompileProjectOld(ParsingInfo& info, ScanInfoStack& scanInfo) {
-	List<OptimizerInstruction> instructions = info.root.Compile(scanInfo.usedVariables);
-
-	if (ErrorLog::HasError()) {
-		throw CompileError();
-	}
-
-	return instructions;
-}
-
 Ptr<Kiwi::KiwiProgram> MelonCompiler::CompileProject(ParsingInfo& info, ScanInfoStack& scanInfo) {
 	Ptr<Kiwi::KiwiProgram> program = new Kiwi::KiwiProgram();
 

@@ -1,6 +1,5 @@
 #include "ObjectInitExpression.h"
 
-#include "KiwiMemoryExpression.h"
 #include "KiwiVariable.h"
 #include "TypeExpression.h"
 
@@ -38,33 +37,6 @@ TypeSymbol* ObjectInitExpression::Type() const {
 	}
 
 	return nullptr;
-}
-
-CompiledNode ObjectInitExpression::Compile(OldCompileInfo& info) {
-	CompiledNode c = expression->Compile(info);
-	
-	TypeSymbol* const type = Type();
-
-	UInt offset = type->Size();
-	info.stack.PushExpr(offset, c);
-
-	UInt index = info.index;
-
-	// Compile vars
-	for (UInt i = 0; i < vars.Count(); i++) {
-		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
-
-		if (type->Is<StructSymbol>()) {
-			Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(info.stack.Offset() + var->stackIndex, var->Type()->AbsoluteName());
-			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->File()).instructions);
-		}
-
-		info.index = index;
-	}
-
-	c.argument = Argument(MemoryLocation(info.stack.Offset()));
-	info.stack.Pop(type->Size());
-	return c;
 }
 
 Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {

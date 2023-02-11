@@ -29,10 +29,6 @@ ScanResult Debug::Scan(ScanInfoStack& info) {
 	return ScanResult();
 }
 
-CompiledNode Debug::Compile(OldCompileInfo& info) {
-	return CompiledNode();
-}
-
 Ptr<Kiwi::Value> Debug::Compile(CompileInfo& info) {
 	if (type == "print" && argument) {
 		Ptr<Kiwi::Value> value = argument->Compile(info);

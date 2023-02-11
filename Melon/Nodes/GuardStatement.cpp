@@ -35,90 +35,8 @@ GuardStatement::~GuardStatement() {
 
 }
 
-UInt GuardStatement::GetSize() const {
-	return Math::Max(cond->GetSize() + continue_->GetSize(), else_ ? else_->GetSize() : 0);
-}
-
 bool GuardStatement::IsScope() const {
 	return true;
-}
-
-void GuardStatement::CompileElse(CompiledNode& compiled, OldCompileInfo& info, List<UInt>& jumps) {
-	for (const OptimizerInstruction& in : else_->Compile(info).instructions) {
-		// Check for custom instructions
-		if (in.instruction.type != InstructionType::Custom) {
-			compiled.instructions.Add(in);
-			continue;
-		}
-
-		const String type = in.instruction.instructionName;
-
-		// Check for scope wise breaks
-		if (type != BreakStatement::scopeBreakInstName) {
-			compiled.instructions.Add(in);
-			continue;
-		}
-
-		// Handle scope wise breaks
-		if (in.instruction.sizes[0] > 1) {
-			OptimizerInstruction inst = in;
-			inst.instruction.sizes[0]--;
-			compiled.instructions.Add(inst);
-		}
-		else {
-			Instruction jmp = Instruction(InstructionType::Jmp);
-			jumps.Add(compiled.instructions.Count());
-			compiled.instructions.Add(jmp);
-		}
-	}
-}
-
-CompiledNode GuardStatement::Compile(OldCompileInfo& info) {
-	const UInt frame = info.stack.frame;
-
-	// Compile condition
-	CompiledNode compiled = cond->Compile(info);
-
-	info.stack.PopExpr(frame, compiled);
-
-	Instruction ne = Instruction(InstructionType::Ne, 1);
-	ne.arguments.Add(compiled.argument);
-	ne.arguments.Add(Argument(0));
-
-	UInt jumpIndex = compiled.instructions.Count();
-	compiled.instructions.Add(ne);
-
-	List<UInt> jumps;
-
-	// Compile else statements
-	if (else_) {
-		CompileElse(compiled, info, jumps);
-	}
-
-	// Add labels for breaks
-	if (!jumps.IsEmpty()) {
-		Instruction lbl = Instruction::Label(info.label);
-		compiled.instructions.Add(lbl);
-
-		for (const UInt jump : jumps) {
-			compiled.instructions[jump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
-		}
-
-		info.label++;
-	}
-
-	// Compile extra break
-	if (end) {
-		compiled.AddInstructions(end->Compile(info).instructions);
-	}
-
-	// Compile the continue statements
-	compiled.instructions.Add(Instruction::Label(info.label));
-	compiled.instructions[jumpIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
-
-	compiled.AddInstructions(continue_->Compile(info).instructions);
-
-	return compiled;
 }
 
 Ptr<Kiwi::Value> GuardStatement::Compile(CompileInfo& info) {
@@ -217,21 +135,6 @@ Ptr<Statement> GuardStatement::Optimize(OptimizeInfo& info) {
 	if (else_) Node::Optimize(else_, info);
 
 	Node::Optimize(continue_, info);
-
-	// Optimize condition for immediate values
-	if (cond->IsImmediate()) {
-		info.optimized = true;
-
-		// Optimize false
-		if (cond->GetImmediate() == 0) {
-			return OptimizeFalseCondition(info);
-		}
-		// Optimize true
-		else {
-			return OptimizeTrueCondition(info);
-		}
-	}
-
 	return nullptr;
 }
 

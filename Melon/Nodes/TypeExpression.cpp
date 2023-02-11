@@ -16,8 +16,8 @@ TypeExpression::~TypeExpression() {
 
 }
 
-CompiledNode TypeExpression::Compile(OldCompileInfo& info) {
-	return CompiledNode();
+Ptr<Kiwi::Value> TypeExpression::Compile(CompileInfo& info) {
+	return nullptr;
 }
 
 TypeSymbol* TypeExpression::Type() const {

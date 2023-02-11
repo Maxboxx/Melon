@@ -20,10 +20,6 @@ StructStatement::StructStatement(Symbol* const scope, const FileInfo& file) : St
 
 }
 
-CompiledNode StructStatement::Compile(OldCompileInfo& info) {
-	return CompiledNode();
-}
-
 Ptr<Kiwi::Value> StructStatement::Compile(CompileInfo& info) {
 	Ptr<Kiwi::Struct> struct_ = new Kiwi::Struct(symbol->KiwiName());
 	

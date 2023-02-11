@@ -16,10 +16,6 @@ TypeSymbol* KiwiVariable::Type() const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 
-CompiledNode KiwiVariable::Compile(OldCompileInfo& info) {
-	return CompiledNode();
-}
-
 Ptr<Kiwi::Value> KiwiVariable::Compile(CompileInfo& info) {
 	return var->Copy();
 }

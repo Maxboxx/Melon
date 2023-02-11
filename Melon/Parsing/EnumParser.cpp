@@ -1,6 +1,5 @@
 #include "EnumParser.h"
 
-#include "NewVariableParser.h"
 #include "FunctionParser.h"
 #include "IntegerParser.h"
 
@@ -12,7 +11,6 @@
 #include "Melon/Symbols/Nodes/IntegerConvertNode.h"
 #include "Melon/Symbols/Nodes/IntegerBinaryOperatorNode.h"
 
-#include "Melon/Nodes/NewVariableNode.h"
 #include "Melon/Nodes/EmptyStatement.h"
 #include "Melon/Nodes/FunctionBody.h"
 #include "Melon/Nodes/Integer.h"

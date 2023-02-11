@@ -18,7 +18,6 @@ namespace Melon {
 			KiwiVariable(Ptr<Kiwi::Variable> var, const Symbols::NameList& type);
 
 			virtual Symbols::TypeSymbol* Type() const override;
-			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};

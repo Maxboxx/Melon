@@ -1,6 +1,5 @@
 #include "ReturnStatement.h"
 
-#include "KiwiMemoryExpression.h"
 #include "KiwiVariable.h"
 #include "TypeExpression.h"
 
@@ -43,38 +42,6 @@ List<TypeSymbol*> ReturnStatement::GetTypes() const {
 	}
 
 	return types;
-}
-
-CompiledNode ReturnStatement::Compile(OldCompileInfo& info) {
-	FunctionSymbol* const f = GetFunc();
-	if (!f) return CompiledNode();
-
-	UInt stackOffset  = info.stack.ptrSize + info.stack.frame;
-	UInt argumentSize = f->ArgumentSize();
-	UInt returnSize   = f->ReturnSize();
-	
-	stackOffset += argumentSize;
-	stackOffset += returnSize;
-
-	CompiledNode c;
-	List<TypeSymbol*> types = GetTypes();
-
-	// Compile return values
-	for (UInt i = 0; i < values.Count(); i++) {
-		stackOffset -= types[i]->Size();
-
-		Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(stackOffset, types[i]->AbsoluteName());
-
-		info.important = true;
-		c.AddInstructions(CompileAssignment(sn, values[i], info, values[i]->File()).instructions);
-		info.important = false;
-	}
-
-	// Add return instruction
-	info.stack.PopExpr(0, c);
-	c.instructions.Add(Instruction(InstructionType::Ret));
-
-	return c;
 }
 
 Ptr<Kiwi::Value> ReturnStatement::Compile(CompileInfo& info) {

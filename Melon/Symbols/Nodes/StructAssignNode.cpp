@@ -5,8 +5,6 @@
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 
-#include "Melon/Nodes/KiwiMemoryExpression.h"
-
 #include "Kiwi/Old/Kiwi.h"
 
 using namespace Boxx;

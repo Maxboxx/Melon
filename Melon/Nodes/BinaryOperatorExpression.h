@@ -23,7 +23,6 @@ namespace Melon {
 			/// Gets the operator.
 			virtual Symbols::Name GetOperator() const;
 
-			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;

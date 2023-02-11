@@ -58,7 +58,6 @@ namespace Melon {
 			/// Compiles a call expression.
 			Ptr<Kiwi::CallExpression> CompileCallExpression(CompileInfo& info);
 
-			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
@@ -87,35 +86,6 @@ namespace Melon {
 			Symbols::FunctionSymbol* GetInitFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetStaticOrPlainFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetMethod(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
-
-			struct CallInfo {
-				Symbols::FunctionSymbol* func;
-				bool isInit;
-
-				Boxx::Int retSize, argSize;
-				Boxx::UInt tempSize, pushSize;
-
-				Boxx::List<Boxx::UInt> memoryOffsets;
-				Boxx::List<bool> assignFirst;
-
-				Boxx::UInt frame, initialTop, stackIndex;
-
-				StackPtr initialStack;
-
-				CompiledNode cn;
-			};
-
-			Boxx::UInt CalculateReturnSize(CallInfo& callInfo);
-			Boxx::UInt CalculateArgumentSize(CallInfo& callInfo, OldCompileInfo& info);
-			Boxx::UInt CalculateTemporarySize(CallInfo& callInfo, OldCompileInfo info);
-			Boxx::UInt CalculatePushSize(CallInfo& callInfo, OldCompileInfo& info);
-
-			void SetupStackFrame(CallInfo& callInfo, OldCompileInfo& info);
-			void CompileArguments(CallInfo& callInfo, OldCompileInfo& info);
-			void CompileRefArgument(CallInfo& callInfo, OldCompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			Ptr<Expression> GetRefArgument(CallInfo& callInfo, OldCompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			void CompileCopyArgument(CallInfo& callInfo, OldCompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			void CompileCall(CallInfo& callInfo, OldCompileInfo& info);
 		};
 	}
 }

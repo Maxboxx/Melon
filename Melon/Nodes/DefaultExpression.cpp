@@ -1,6 +1,5 @@
 #include "DefaultExpression.h"
 
-#include "KiwiMemoryExpression.h"
 #include "TypeExpression.h"
 #include "KiwiVariable.h"
 
@@ -44,55 +43,6 @@ TypeSymbol* DefaultExpression::Type() const {
 	}
 
 	return type;
-}
-
-CompiledNode DefaultExpression::Compile(OldCompileInfo& info) {
-	CompiledNode cn;
-	cn.size = info.stack.ptrSize;
-
-	List<UInt> jumps;
-
-	info.stack.PushExpr(Type()->Size(), cn);
-	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
-
-	// Compile the optional value
-	CompiledNode c1 = operand1->Compile(info);
-	cn.AddInstructions(c1.instructions);
-	cn.size = c1.size - 1;
-
-	UInt eqIndex = cn.instructions.Count();
-
-	// Check if the optional has a value
-	Instruction eq = Instruction(InstructionType::Eq, 1);
-	eq.arguments.Add(c1.argument);
-	eq.arguments.Add(Argument(0));
-	cn.instructions.Add(eq);
-
-	// Get memory location for the result and the optional value
-	Ptr<KiwiMemoryExpression> sn1 = new KiwiMemoryExpression(cn.argument.mem, Type()->AbsoluteName());
-	Ptr<KiwiMemoryExpression> sn2 = new KiwiMemoryExpression(c1.argument.mem.offset + 1, operand1->Type()->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName());
-
-	// Assign the optional value to the result
-	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
-
-	// And jump to end
-	UInt jmp = cn.instructions.Count();
-	cn.instructions.Add(Instruction(InstructionType::Jmp));
-
-	// Add label for default value
-	cn.instructions.Add(Instruction::Label(info.label));
-	cn.instructions[eqIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
-
-	// Assign default value to result
-	cn.AddInstructions(CompileAssignment(sn1, operand2, info, file).instructions);
-
-	// Add label to the end
-	cn.instructions.Add(Instruction::Label(info.label));
-	cn.instructions[jmp].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
-
-	info.stack.Pop(Type()->Size());
-
-	return cn;
 }
 
 Ptr<Kiwi::Value> DefaultExpression::Compile(CompileInfo& info) {

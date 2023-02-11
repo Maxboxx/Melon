@@ -62,29 +62,6 @@ Name UnaryOperatorExpression::GetOperator() const {
 	return op;
 }
 
-CompiledNode UnaryOperatorExpression::Compile(OldCompileInfo& info) {
-	TypeSymbol* const type = operand->Type();
-
-	FunctionSymbol* const func = type->FindUnaryOperator(op, file);
-
-	// Compile symbol node
-	if (func->symbolNode) {
-		return func->symbolNode->Compile(operand, info);
-	}
-	// Compile operator function
-	else {
-		List<Ptr<Expression>> args;
-		args.Add(new WeakExpression(operand));
-
-		Ptr<CallExpression> cn = new CallExpression(scope, file);
-		cn->arguments  = args;
-		cn->expression = new TypeExpression(func->ParentType()->AbsoluteName());
-
-		return cn->Compile(info);
-	}
-}
-
-
 Ptr<Kiwi::Value> UnaryOperatorExpression::Compile(CompileInfo& info) {
 	TypeSymbol* const type = operand->Type();
 
@@ -135,17 +112,6 @@ NameList UnaryOperatorExpression::FindSideEffectScope(const bool assign) {
 
 Ptr<Expression> UnaryOperatorExpression::Optimize(OptimizeInfo& info) {
 	Node::Optimize(operand, info);
-
-	// TODO: Add more operators
-	if (operand->IsImmediate()) {
-		if (op == Name::Not) {
-			Ptr<Boolean> bn = new Boolean(operand->File());
-			bn->value = operand->GetImmediate() == 0;
-			info.optimized = true;
-			return bn;
-		}
-	}
-
 	return nullptr;
 }
 

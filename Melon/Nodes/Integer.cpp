@@ -55,52 +55,6 @@ TypeSymbol* Integer::Type() const {
 	}
 }
 
-bool Integer::IsImmediate() const {
-	return true;
-}
-
-Long Integer::GetImmediate() const {
-	return number;
-}
-
-CompiledNode Integer::Compile(OldCompileInfo& info) {
-	CompiledNode node;
-	node.argument = Argument(number);
-	
-	// Size of unsigned integers
-	if (isUnsigned) {
-		if ((ULong)number <= Math::UByteMax()) {
-			node.size = 1;
-		}
-		else if ((ULong)number <= Math::UShortMax()) {
-			node.size = 2;
-		}
-		else if ((ULong)number <= Math::UIntMax()) {
-			node.size = 4;
-		}
-		else if ((ULong)number <= Math::ULongMax()) {
-			node.size = 8;
-		}
-	}
-	// Size of signed integers
-	else {
-		if (number >= Math::ByteMin()) {
-			node.size = 1;
-		}
-		else if (number >= Math::ShortMin()) {
-			node.size = 2;
-		}
-		else if (number >= Math::IntMin()) {
-			node.size = 4;
-		}
-		else if (number >= Math::LongMin()) {
-			node.size = 8;
-		}
-	}
-
-	return node;
-}
-
 Ptr<Kiwi::Value> Integer::Compile(CompileInfo& info) {
 	return new Kiwi::Integer(number);
 }

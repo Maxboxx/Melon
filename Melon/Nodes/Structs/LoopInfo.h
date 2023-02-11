@@ -1,7 +1,5 @@
 #pragma once
 
-#include "StackPtr.h"
-
 #include "Kiwi/KiwiProgram.h"
 
 ///N Melon::Nodes

@@ -5,7 +5,6 @@
 #include "TemplateSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
-#include "Melon/Nodes/Structs/StackPtr.h"
 
 #include "Boxx/Map.h"
 
@@ -28,7 +27,7 @@ bool VariableSymbol::HasAttribute(const VariableModifiers modifier) {
 }
 
 Boxx::UInt VariableSymbol::Size() {
-	return HasAttribute(VariableModifiers::Ref) ? StackPtr::ptrSize : Type()->Size();
+	return HasAttribute(VariableModifiers::Ref) ? Kiwi::KiwiProgram::ptrSize : Type()->Size();
 }
 
 Kiwi::Type VariableSymbol::KiwiType() {

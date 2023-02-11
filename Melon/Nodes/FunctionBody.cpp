@@ -29,64 +29,6 @@ bool FunctionBody::IsScope() const {
 	return true;
 }
 
-CompiledNode FunctionBody::Compile(OldCompileInfo& info) { // TODO: more accurate arg error lines
-	if (sym->IsNotSpecialized()) return CompiledNode();
-	scope->SetTemplateValues(sym);
-
-	CompiledNode c;
-
-	// Function instruction
-	Instruction func = Instruction(InstructionType::Function);
-	func.instructionName = sym->AbsoluteName().ToString();
-	c.instructions.Add(func);
-
-	UInt funcSize = statements->GetSize();
-
-	// Add push if the function needs memory
-	if (funcSize > 0) {
-		OptimizerInstruction push = Instruction(InstructionType::Push, funcSize);
-		push.important = true;
-		c.instructions.Add(push);
-	}
-
-	StackPtr stack = info.stack;
-	info.stack.frame = funcSize;
-	info.stack.top = 0;
-
-	Long size = info.stack.ptrSize;
-
-	// Set stack index of arguments
-	for (Long i = (Long)sym->arguments.Count() - 1; i >= 0; i--) {
-		VariableSymbol* const arg = sym->Argument(i);
-		arg->stackIndex = -size;
-
-		if (arg->HasAttribute(VariableModifiers::Ref)) {
-			size += info.stack.ptrSize;
-		}
-		else {
-			size += arg->Type()->Size();
-		}
-	}
-
-	// Compile function body
-	c.AddInstructions(statements->Compile(info).instructions);
-
-	info.stack = stack;
-
-	// Add return and pop if needed
-	if (c.instructions.Last().instruction.type != InstructionType::Ret) {
-		if (funcSize > 0) {
-			OptimizerInstruction pop = Instruction(InstructionType::Pop, funcSize);
-			pop.important = true;
-			c.instructions.Add(pop);
-		}
-
-		c.instructions.Add(Instruction(InstructionType::Ret));
-	}
-
-	return c;
-}
-
 Ptr<Kiwi::Value> FunctionBody::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
 	if (sym->IsNotSpecialized()) return nullptr;
 	scope->SetTemplateValues(sym);

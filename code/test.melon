@@ -1,11 +1,17 @@
 
-function int, bool: f()
-	return 5, true
+struct A
+	int: i
+	
+	function init(int: i)
+		self.i = i
+	end
+	
+	static function operator A: +(A: a, A: b)
+		return A(a.i + b.i)
+	end
 end
 
-int, bool: i, b = 1, false
+A: a = A(2)
+A: b = A(5)
 
-_, bool: i, a = f()
-
-_debug print i
-_debug print a
+_debug print a + b

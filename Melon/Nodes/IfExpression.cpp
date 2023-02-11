@@ -35,74 +35,6 @@ TypeSymbol* IfExpression::Type() const {
 	return type;
 }
 
-CompiledNode IfExpression::Compile(OldCompileInfo& info) {
-	CompiledNode cn;
-
-	// Setup return value
-	cn.size = Type()->Size();
-
-	List<UInt> jumps;
-
-	info.stack.PushExpr(cn.size, cn);
-	const UInt frame = info.stack.frame; 
-
-	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
-
-	Ptr<StackExpression> sn = new StackExpression(info.stack.top);
-	sn->type = Type()->AbsoluteName();
-
-	StackPtr stack = info.stack;
-
-	// Compile conditions and segments
-	for (UInt i = 0; i < conditions.Count(); i++) {
-		info.stack = stack;
-		info.stack.PopExpr(frame, cn);
-
-		// Compile condition
-		CompiledNode cond = conditions[i]->Compile(info);
-		cn.AddInstructions(cond.instructions);
-
-		stack = info.stack;
-
-		Instruction condInst = Instruction(InstructionType::Eq, 1);
-		condInst.arguments.Add(cond.argument);
-		condInst.arguments.Add(Argument(0));
-		cn.instructions.Add(condInst);
-
-		UInt jump = cn.instructions.Count() - 1;
-
-		// Compile value assignment
-		cn.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->File()).instructions);
-
-		info.stack.PopExpr(frame, cn);
-
-		// Add jump and label
-		jumps.Add(cn.instructions.Count());
-		cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
-
-		cn.instructions[jump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
-		cn.instructions.Add(Instruction::Label(info.label++));
-	}
-
-	info.stack = stack;
-
-	// Compile else
-	cn.AddInstructions(CompileAssignment(sn, nodes.Last(), info, nodes.Last()->File()).instructions);
-
-	info.stack.PopExpr(frame, cn);
-
-	// Add jumps to end
-	for (UInt i : jumps) {
-		cn.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
-	}
-
-	// End label
-	cn.instructions.Add(Instruction::Label(info.label++));
-
-	info.stack.Pop(Type()->Size());
-	return cn;
-}
-
 Ptr<Kiwi::Value> IfExpression::Compile(CompileInfo& info) {
 	const String endLbl = info.NewLabel();
 	String nextLbl;
@@ -191,27 +123,6 @@ Ptr<Expression> IfExpression::Optimize(OptimizeInfo& info) {
 
 	for (Ptr<Condition>& cond : conditions) {
 		Node::Optimize(cond, info);
-	}
-
-	// TODO: save type before this
-	// Remove segments
-	for (UInt i = 0; i < conditions.Count(); i++) {
-		if (conditions[i]->IsImmediate()) {
-			// Remove segment if condition is false
-			if (conditions[i]->GetImmediate() == 0) {
-				conditions.RemoveAt(i);
-				nodes.RemoveAt(i);
-				i--;
-				info.optimized = true;
-			}
-			// Remove remaining segments if condition is true
-			else {
-				nodes.RemoveAt(i + 1, nodes.Count() - i - 1);
-				conditions.RemoveAt(i, conditions.Count() - i);
-				info.optimized = true;
-				break;
-			}
-		}
 	}
 
 	// Replcae if expression with a value if there is only one segment

@@ -35,38 +35,6 @@ TypeSymbol* TypeConversion::Type() const {
 	return s;
 }
 
-CompiledNode TypeConversion::Compile(OldCompileInfo& info) {
-	TypeSymbol* const convertType = Type();
-
-	// Check if the node needs conversion
-	if (expression->Type() == convertType) {
-		return expression->Compile(info);
-	}
-
-	// Find conversion operator
-	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(expression->Type(), convertType, file);
-	if (!convert) return CompiledNode();
-
-
-	// Compile symbol node
-	if (convert->symbolNode) {
-		return convert->symbolNode->Compile(expression, info);
-	}
-	// Compile call to operator function
-	else {
-		List<Ptr<Expression>> args;
-		args.Add(expression);
-
-		Ptr<CallExpression> cn = new CallExpression(scope, file);
-		cn->arguments  = args;
-		cn->expression = new TypeExpression(convert->ParentType()->AbsoluteName());
-
-		CompiledNode c = cn->Compile(info);
-		expression = args[0];
-		return c;
-	}
-}
-
 Ptr<Kiwi::Value> TypeConversion::Compile(CompileInfo& info) {
 	TypeSymbol* const convertType = Type();
 

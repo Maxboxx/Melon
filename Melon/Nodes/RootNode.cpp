@@ -38,56 +38,6 @@ RootNode::~RootNode() {
 
 }
 
-CompiledNode RootNode::Compile(OldCompileInfo& info) {
-	CompiledNode cn;
-
-	// Get size of statements
-	UInt size = 0;
-
-	for (Weak<Statements> statements : nodes) {
-		size += statements->GetSize();
-	}
-
-	// Push
-	if (size > 0) {
-		OptimizerInstruction push = Instruction(InstructionType::Push, size);
-		push.important = true;
-		cn.instructions.Add(push);
-	}
-
-	info.stack.PushFrame(size);
-
-	// Compile nodes
-	for (Weak<Statements> statements : nodes) {
-		for (const OptimizerInstruction& instruction : statements->Compile(info).instructions) {
-			cn.instructions.Add(instruction);
-		}
-	}
-
-	// Pop
-	if (size > 0) {
-		OptimizerInstruction pop = Instruction(InstructionType::Pop, size);
-		pop.important = true;
-		cn.instructions.Add(pop);
-	}
-
-	info.stack.PopFrame(size);
-
-	// Add exit instruction
-	Instruction in = Instruction(InstructionType::Exit, info.stack.ptrSize);
-	in.arguments.Add(Argument(0));
-	cn.instructions.Add(in);
-
-	// Compile functions
-	for (Weak<FunctionBody> func : funcs) {
-		for (const OptimizerInstruction& instruction : func->Compile(info).instructions) {
-			cn.instructions.Add(instruction);
-		}
-	}
-
-	return cn;
-}
-
 Ptr<Kiwi::Value> RootNode::Compile(CompileInfo& info) {
 	Ptr<Kiwi::CodeBlock> codeBlock = new Kiwi::CodeBlock();
 	info.SetCodeBlock(codeBlock);
@@ -109,51 +59,6 @@ Ptr<Kiwi::Value> RootNode::Compile(CompileInfo& info) {
 	}
 
 	return nullptr;
-}
-
-List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVariables) {
-	CompiledNode c;
-
-	// Static values for integers
-	List<Tuple<IntegerSymbol*, InstructionType, Long, Long>> integers;
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Tiny,   InstructionType::Byte,  Math::ByteMin(),   Math::ByteMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UTiny,  InstructionType::Byte,  Math::UByteMin(),  Math::UByteMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Short,  InstructionType::Short, Math::ShortMin(),  Math::ShortMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UShort, InstructionType::Short, Math::UShortMin(), Math::UShortMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Int,    InstructionType::Int,   Math::IntMin(),    Math::IntMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UInt,   InstructionType::Int,   Math::UIntMin(),   Math::UIntMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Long,   InstructionType::Long,  Math::LongMin(),   Math::LongMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::ULong,  InstructionType::Long,  Math::ULongMin(),  Math::ULongMax()));
-
-	// Compile static memory
-	for (const Tuple<IntegerSymbol*, InstructionType, Long, Long>& integer : integers) {
-		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Name("min"), file))) {
-			Instruction name = Instruction(InstructionType::Static);
-			name.instructionName = integer.value1->Find<VariableSymbol>(Name("min"), file)->AbsoluteName().ToString();
-			c.instructions.Add(name);
-
-			Instruction value = Instruction(integer.value2);
-			value.arguments.Add(integer.value3);
-			c.instructions.Add(value);
-		}
-
-		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Name("max"), file))) {
-			Instruction name = Instruction(InstructionType::Static);
-			name.instructionName = integer.value1->Find<VariableSymbol>(Name("max"), file)->AbsoluteName().ToString();
-			c.instructions.Add(name);
-
-			Instruction value = Instruction(integer.value2);
-			value.arguments.Add(integer.value4);
-			c.instructions.Add(value);
-		}
-	}
-
-	// Compile code
-	UByte index = 0;
-	OldCompileInfo info;
-	c.instructions.Add(Instruction(InstructionType::Code));
-	c.AddInstructions(Compile(info).instructions);
-	return c.instructions;
 }
 
 void RootNode::IncludeScan(ParsingInfo& info) {

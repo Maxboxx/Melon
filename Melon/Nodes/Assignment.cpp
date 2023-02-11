@@ -1,8 +1,5 @@
 #include "Assignment.h"
 
-#include "NewVariableNode.h"
-#include "RefExpression.h"
-#include "KiwiMemoryExpression.h"
 #include "NameExpression.h"
 #include "TypeExpression.h"
 #include "EmptyStatement.h"
@@ -37,20 +34,6 @@ Assignment::~Assignment() {
 	
 }
 
-UInt Assignment::GetSize() const {
-	UInt size = 0;
-
-	for (UInt i = 0; i < assignableValues.Count(); i++) {
-		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardExpression>()) continue;
-
-		if (VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>()) {
-			size += var->Size();
-		}
-	}
-
-	return size;
-}
-
 void Assignment::IncludeScan(ParsingInfo& info) {
 	for (const NameList& type : types) {
 		if (type != NameList::Discard) {
@@ -79,77 +62,6 @@ ScanResult Assignment::Scan(ScanInfoStack& info) {
 	return result;
 }
 
-CompiledNode Assignment::Compile(OldCompileInfo& info) {
-	CompiledNode c;
-
-	UInt varSize = 0;
-
-	// Calculate size and stack index of variables
-	for (UInt i = 0; i < assignableValues.Count(); i++) {
-		if (types[i] == NameList::Discard || assignableValues[i].Is<DiscardExpression>()) continue;
-
-		VariableSymbol* const var = assignableValues[i]->Symbol<VariableSymbol>();
-
-		const UInt size = var->Size();
-		varSize += size;
-		info.stack.Push(size);
-
-		var->stackIndex = info.stack.top;
-	}
-
-	// Setup
-	List<Value> values = Values();
-	List<UInt> returnOffsets;
-	const UInt frame = info.stack.frame;
-
-	// Compile assignments
-	for (UInt i = 0; i < assignableValues.Count(); i++) {
-		const UInt regIndex = info.index; 
-
-		// Assign values normally
-		if (i < this->values.Count()) {
-			if (!assignableValues[i].Is<DiscardExpression>()) {
-				info.important = true;
-				c.AddInstructions(CompileAssignment(assignableValues[i], values[i].value, info, assignableValues[i]->File()).instructions);
-				info.important = false;
-			}
-			else {
-				// TODO: Cast to type
-				c.AddInstructions(values[i].value->Compile(info).instructions);
-			}
-
-			// Calculate offsets for extra return values
-			if (i + 1 >= this->values.Count()) {
-				UInt size = info.stack.top + values[i].type->Size();
-
-				for (UInt u = i + 1; u < values.Count(); u++) {
-					size += values[u].type->Size();
-					returnOffsets.Add(size);
-				}
-			}
-			else {
-				info.stack.PopExpr(frame, c);
-			}
-		}
-		// Assign extra return values
-		else if (!assignableValues[i].Is<DiscardExpression>()) {
-			Ptr<KiwiMemoryExpression> memory = new KiwiMemoryExpression(info.stack.Offset(returnOffsets[i - this->values.Count()]), values[i].type->AbsoluteName());
-
-			info.important = true;
-			c.AddInstructions(CompileAssignment(assignableValues[i], memory, info, assignableValues[i]->File()).instructions);
-			info.important = false;
-		}
-
-		// TODO: compile values for discard vars
-
-		info.index = regIndex;
-	}
-
-	info.stack.PopExpr(frame, c);
-
-	return c;
-}
-
 Ptr<Kiwi::Value> Assignment::Compile(CompileInfo& info) {
 	// Setup
 	List<Value> values = Values();
@@ -164,20 +76,22 @@ Ptr<Kiwi::Value> Assignment::Compile(CompileInfo& info) {
 				if (Weak<CallExpression> call = this->values[i].As<CallExpression>()) {
 					FunctionSymbol* func = call->GetFunc();
 
-					List<Optional<Kiwi::Type>> types;
-					List<Ptr<Kiwi::Variable>> vars;
+					if (func && func->returnValues.Count() > 1) {
+						List<Optional<Kiwi::Type>> types;
+						List<Ptr<Kiwi::Variable>> vars;
 
-					for (UInt i = 0; i < func->returnValues.Count(); i++) {
-						TypeSymbol* type = func->ReturnType(i);
-						types.Add(type->KiwiType());
-						vars.Add(new Kiwi::Variable(info.NewRegister()));
-						callValues.Add(new KiwiVariable(vars.Last()->Copy(), type->AbsoluteName()));
+						for (UInt i = 0; i < func->returnValues.Count(); i++) {
+							TypeSymbol* type = func->ReturnType(i);
+							types.Add(type->KiwiType());
+							vars.Add(new Kiwi::Variable(info.NewRegister()));
+							callValues.Add(new KiwiVariable(vars.Last()->Copy(), type->AbsoluteName()));
+						}
+
+						List<Ptr<Kiwi::Expression>> expressions;
+						expressions.Add(call->CompileCallExpression(info));
+
+						info.AddInstruction(new Kiwi::MultiAssignInstruction(types, vars, expressions));
 					}
-
-					List<Ptr<Kiwi::Expression>> expressions;
-					expressions.Add(call->CompileCallExpression(info));
-
-					info.AddInstruction(new Kiwi::MultiAssignInstruction(types, vars, expressions));
 				}
 			}
 

@@ -6,24 +6,12 @@ using namespace KiwiOld;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-String ContinueStatement::continueInstName = "continue";
-
 ContinueStatement::ContinueStatement(Symbols::Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 	
 }
 
 ContinueStatement::~ContinueStatement() {
 
-}
-
-CompiledNode ContinueStatement::Compile(OldCompileInfo& info) {
-	CompiledNode c;
-
-	Instruction in = Instruction(InstructionType::Custom, loops);
-	in.instructionName = continueInstName;
-	c.instructions.Add(in);
-
-	return c;
 }
 
 Ptr<Kiwi::Value> ContinueStatement::Compile(CompileInfo& info) {

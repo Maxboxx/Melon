@@ -88,7 +88,6 @@ namespace Melon {
 
 		static Parsing::ParsingInfo ParseProject(const CompilerOptions& options);
 		static Nodes::ScanInfoStack ScanProject(const CompilerOptions& options, Parsing::ParsingInfo& info);
-		static Boxx::List<Optimizing::OptimizerInstruction> CompileProjectOld(Parsing::ParsingInfo& info, Nodes::ScanInfoStack& scanInfo);
 		static Ptr<Kiwi::KiwiProgram> CompileProject(Parsing::ParsingInfo& info, Nodes::ScanInfoStack& scanInfo);
 
 		static void OutputKiwi(const CompilerOptions& options, const Boxx::List<KiwiOld::Instruction>& instructions);

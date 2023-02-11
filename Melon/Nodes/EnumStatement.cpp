@@ -17,8 +17,8 @@ EnumStatement::~EnumStatement() {
 
 }
 
-CompiledNode EnumStatement::Compile(OldCompileInfo& info) {
-	return CompiledNode();
+Ptr<Kiwi::Value> EnumStatement::Compile(CompileInfo& info) {
+	return nullptr;
 }
 
 StringBuilder EnumStatement::ToMelon(const UInt indent) const {

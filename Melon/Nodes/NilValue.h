@@ -12,9 +12,6 @@ namespace Melon {
 			~NilValue();
 
 			virtual Symbols::TypeSymbol* Type() const override;
-			virtual bool IsImmediate() const override;
-			virtual Boxx::Long GetImmediate() const override;
-			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};

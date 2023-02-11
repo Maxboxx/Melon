@@ -1,7 +1,5 @@
 #include "NameExpression.h"
 
-#include "PtrExpression.h"
-
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/TypeSymbol.h"
@@ -82,33 +80,6 @@ Symbol* NameExpression::Symbol() const {
 	else {
 		return sym;
 	}
-}
-
-CompiledNode NameExpression::Compile(OldCompileInfo& info) {
-	CompiledNode cn;
-
-	// Get symbol
-	VariableSymbol* const sym = Symbol()->Cast<VariableSymbol>();
-
-	if (!sym) return cn;
-
-	// Compile reference variable
-	if (!ignoreRef && sym->HasAttribute(VariableModifiers::Ref)) {
-		Ptr<NameExpression> name = new NameExpression(scope, file);
-		name->name = this->name;
-		name->ignoreRef = true;
-
-		Ptr<PtrExpression> ptr = new PtrExpression(name);
-		return ptr->Compile(info);
-	}
-	// Compile stack variable
-	else {
-		cn.argument = Argument(MemoryLocation(info.stack.Offset(sym->stackIndex)));
-	}
-
-	cn.size = sym->Type()->Size();
-
-	return cn;
 }
 
 Ptr<Kiwi::Value> NameExpression::Compile(CompileInfo& info) {

@@ -80,30 +80,6 @@ Symbol* DotExpression::Symbol() const {
 	return nullptr;
 }
 
-CompiledNode DotExpression::Compile(OldCompileInfo& info) {
-	TypeSymbol* const sym = expression->Type();
-
-	CompiledNode c = expression->Compile(info);
-
-	// Compile enum value
-	if (EnumSymbol* enumSym = sym->Cast<EnumSymbol>()) {
-		c.argument = Argument(sym->Find<ValueSymbol>(name, file)->value);
-		c.size = enumSym->Size();
-	}
-	// Compile variable
-	else if (VariableSymbol* const var = sym->Find<VariableSymbol>(name, file)) {
-		if (var->HasAttribute(VariableModifiers::Static)) {
-			c.argument = MemoryLocation(0);
-			c.argument.mem.memptr = var->AbsoluteName().ToString();
-		}
-
-		c.argument.mem.offset += var->stackIndex;
-		c.size = var->Type()->Size();
-	}
-
-	return c;
-}
-
 Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
 	TypeSymbol* const sym = expression->Type();
 

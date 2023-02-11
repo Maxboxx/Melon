@@ -28,10 +28,3 @@ Ptr<Expression> Expression::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
-bool Expression::IsImmediate() const {
-	return false;
-}
-
-Long Expression::GetImmediate() const {
-	return 0;
-}

@@ -45,10 +45,6 @@ ScanResult Node::Scan(ScanInfoStack& info) {
 	return ScanResult();
 }
 
-UInt Node::GetSize() const {
-	return 0;
-}
-
 bool Node::HasSideEffects() {
 	return HasSideEffects(scope->AbsoluteName());
 }
@@ -155,30 +151,6 @@ ScanResult Node::ScanAssignment(Weak<Expression> assignable, Weak<Expression> va
 	}
 
 	return ScanResult();
-}
-
-CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, OldCompileInfo& info, const FileInfo& file) {
-	List<TypeSymbol*> args;
-	args.Add(value->Type());
-
-	FunctionSymbol* assign = nullptr;
-
-	if (TypeSymbol* const type = assignable->Type()) {
-		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
-			assign = func->FindOverload(args, file);
-		}
-	}
-
-	if (assign) {
-		Ptr<TypeConversion> cn = new TypeConversion(value->scope, value->file);
-		cn->isExplicit = false;
-		cn->expression = new WeakExpression(value);
-		cn->type = assign->ArgumentType(0)->AbsoluteName();
-
-		return assign->symbolNode->Compile(assignable, cn, info);
-	}
-
-	return CompiledNode();
 }
 
 Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {

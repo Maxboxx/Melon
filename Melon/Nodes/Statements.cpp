@@ -27,23 +27,6 @@ Statements::~Statements() {
 	
 }
 
-UInt Statements::GetSize() const {
-	UInt size = 0;
-
-	for (UInt i = statements.Count(); i > 0;) {
-		i--;
-
-		if (statements[i]->IsScope()) {
-			size = Math::Max(size, statements[i]->GetSize());
-		}
-		else {
-			size += statements[i]->GetSize();
-		}
-	}
-
-	return size;
-}
-
 void Statements::IncludeScan(ParsingInfo& info) {
 	for (Weak<Statement> statement : statements) {
 		statement->IncludeScan(info);
@@ -88,19 +71,6 @@ Ptr<Statements> Statements::Optimize(OptimizeInfo& info) {
 	}
 
 	return nullptr;
-}
-
-CompiledNode Statements::Compile(OldCompileInfo& info) {
-	CompiledNode c;
-
-	for (Weak<Statement> statement : statements) {
-		info.index = 0;
-		c.AddInstructions(statement->Compile(info).instructions);
-	}
-
-	info.index = 0;
-
-	return c;
 }
 
 Ptr<Kiwi::Value> Statements::Compile(CompileInfo& info) {

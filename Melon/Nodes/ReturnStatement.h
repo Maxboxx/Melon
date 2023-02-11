@@ -23,7 +23,6 @@ namespace Melon {
 			/// Get the symbols of the return value types.
 			Boxx::List<Symbols::TypeSymbol*> GetTypes() const;
 
-			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;

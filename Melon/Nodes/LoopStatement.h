@@ -94,9 +94,7 @@ namespace Melon {
 			/// {true} if at least one segment will run.
 			bool WillASegmentRun() const;
 
-			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
-			virtual CompiledNode Compile(OldCompileInfo& info) override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
@@ -140,22 +138,6 @@ namespace Melon {
 
 				~LabelInfo() {}
 			};
-
-			void AddLabelIfNeeded(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
-
-			void CompileIfSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
-
-			void CompileWhileSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
-			void CompileWhileStart(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-			void CompileWhileEnd(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-
-			void CompileForSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
-			void CompileForStart(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-			void CompileForEnd(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-			
-			void CompileLoopBody(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-
-			void CompileNoneSegment(CompiledNode& compiled, OldCompileInfo& info, SegmentInfo& segmentInfo) const;
 
 			void CompileIfSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;
 			void CompileWhileSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;

@@ -28,20 +28,6 @@ Symbol* SafeUnwrapExpression::Symbol() const {
 	return Type();
 }
 
-CompiledNode SafeUnwrapExpression::Compile(OldCompileInfo& info)  {
-	CompiledNode cn = expression->Compile(info);
-
-	Instruction jmp = Instruction(SafeUnwrapChain::jumpInstName, 1);
-	jmp.arguments.Add(cn.argument);
-	jmp.arguments.Add(Argument(0));
-	cn.instructions.Add(jmp);
-
-	cn.argument.mem.offset += 1;
-	cn.size -= 1;
-
-	return cn;
-}
-
 Ptr<Kiwi::Value> SafeUnwrapExpression::Compile(CompileInfo& info)  {
 	Ptr<Kiwi::Variable> var = expression->Compile(info).AsPtr<Kiwi::Variable>();
 	if (!var) return nullptr;
