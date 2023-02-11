@@ -19,19 +19,8 @@ TypeSymbol* Boolean::Type() const {
 	return (TypeSymbol*)SymbolTable::Bool;
 }
 
-bool Boolean::IsImmediate() const {
-	return true;
-}
-
-Long Boolean::GetImmediate() const {
-	return value ? 1 : 0;
-}
-
-CompiledNode Boolean::Compile(CompileInfo& info) {
-	CompiledNode node;
-	node.argument = Argument(GetImmediate());
-	node.size = 1;
-	return node;
+Ptr<Kiwi::Value> Boolean::Compile(CompileInfo& info) {
+	return new Kiwi::Integer(value ? 1 : 0);
 }
 
 StringBuilder Boolean::ToMelon(const UInt indent) const {

@@ -12,12 +12,12 @@ namespace Melon {
 			class BooleanBinaryOperatorNode : public BinarySymbolNode {
 			public:
 				/// The operator.
-				KiwiOld::InstructionType op;
+				Symbols::Name op;
 
 				/// Constructor with operator.
-				BooleanBinaryOperatorNode(const KiwiOld::InstructionType op);
+				BooleanBinaryOperatorNode(const Symbols::Name& op);
 
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const override;
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info, bool includeType) const override;
 			};
 		}
 	}

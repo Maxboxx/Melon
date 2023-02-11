@@ -25,7 +25,7 @@ void TemplateTypeSymbol::AddTemplateVariant(TemplateTypeSymbol* const sym) {
 }
 
 TypeSymbol* TemplateTypeSymbol::TemplateArgument(const UInt index) {
-	if (index >= templateArguments.Size()) return nullptr;
+	if (index >= templateArguments.Count()) return nullptr;
 
 	Symbols::NameList arg = templateArguments[index];
 
@@ -39,9 +39,9 @@ TypeSymbol* TemplateTypeSymbol::TemplateArgument(const UInt index) {
 
 bool TemplateTypeSymbol::CanBeDeduced(TemplateTypeSymbol* const type) {
 	if (Parent() != type->Parent()) return false;
-	if (templateArguments.Size() != type->templateArguments.Size()) return false;
+	if (templateArguments.Count() != type->templateArguments.Count()) return false;
 
-	for (UInt i = 0; i < templateArguments.Size(); i++) {
+	for (UInt i = 0; i < templateArguments.Count(); i++) {
 		TypeSymbol* const arg1 = TemplateArgument(i);
 		TypeSymbol* const arg2 = type->TemplateArgument(i);
 		
@@ -74,7 +74,7 @@ Symbols::Name TemplateTypeSymbol::Name() {
 		Symbols::Name name = Symbols::Name();
 		List<Symbols::NameList> args;
 
-		for (UInt i = 0; i < templateArguments.Size(); i++) {
+		for (UInt i = 0; i < templateArguments.Count(); i++) {
 			if (templateArguments[i][0].IsEmpty()) {
 				args.Add(templateArguments[i]);
 			}
@@ -92,7 +92,7 @@ Symbols::Name TemplateTypeSymbol::Name() {
 }
 
 bool TemplateTypeSymbol::IsNotSpecialized() {
-	for (UInt i = 0; i < templateArguments.Size(); i++) {
+	for (UInt i = 0; i < templateArguments.Count(); i++) {
 		if (TypeSymbol* const type = TemplateArgument(i)) {
 			if (type->Is<TemplateSymbol>()) {
 				return true;
@@ -111,12 +111,12 @@ void TemplateTypeSymbol::SetTemplateValues(Symbol* const symbol) {
 		return;
 	}
 
-	if (templateArguments.Size() != sym->templateArguments.Size()) {
+	if (templateArguments.Count() != sym->templateArguments.Count()) {
 		// TODO: error?
 		return;
 	}
 
-	for (UInt i = 0; i < templateArguments.Size(); i++) {
+	for (UInt i = 0; i < templateArguments.Count(); i++) {
 		TypeSymbol* const type1 = TemplateArgument(i);
 		TypeSymbol* const type2 = sym->TemplateArgument(i);
 
@@ -135,15 +135,15 @@ Symbol* TemplateTypeSymbol::FindSymbol(const NameList& nameList, const UInt inde
 
 	const Symbols::Name& scope = nameList[index];
 
-	if (scope.name.Size() == 0 && scope.types && !scope.arguments) {
+	if (scope.name.Length() == 0 && scope.types && !scope.arguments) {
 		for (TemplateTypeSymbol* const variant : templateVariants) {
 			const List<NameList> types = *scope.types;
 
-			if (types.Size() != variant->templateArguments.Size()) continue;
+			if (types.Count() != variant->templateArguments.Count()) continue;
 
 			bool match = true;
 
-			for (UInt i = 0; i < types.Size(); i++) {
+			for (UInt i = 0; i < types.Count(); i++) {
 				if (types[i] != variant->templateArguments[i]) {
 					match = false;
 					break;

@@ -94,6 +94,11 @@ FunctionSymbol* TypeSymbol::FindMethod(const Symbols::Name& name, const List<Typ
 }
 
 FunctionSymbol* TypeSymbol::FindUnaryOperator(const Symbols::Name& name, const FileInfo& file) {
+	if (FunctionSymbol* const f = Find<FunctionSymbol>(name, file)) {
+		List<TypeSymbol*> args;
+		return f->FindMethodOverload(args, file);
+	}
+
 	return nullptr;
 }
 
@@ -138,8 +143,12 @@ Map<TemplateSymbol*, TypeSymbol*> TypeSymbol::DeduceTemplates(TypeSymbol* const 
 	return templateMap;
 }
 
+Kiwi::Type TypeSymbol::KiwiType() {
+	return Kiwi::Type(KiwiName());
+}
+
 void TypeSymbol::DeduceTemplates(TemplateTypeSymbol* const type1, TemplateTypeSymbol* const type2, Map<TemplateSymbol*, TypeSymbol*>& templateMap) {
-	for (UInt i = 0; i < type1->templateArguments.Size(); i++) {
+	for (UInt i = 0; i < type1->templateArguments.Count(); i++) {
 		TypeSymbol* const arg1 = type1->TemplateArgument(i);
 		TypeSymbol* const arg2 = type2->TemplateArgument(i);
 

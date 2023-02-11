@@ -7,7 +7,7 @@
 ///N Melon::Parsing
 namespace Melon {
 	namespace Symbols {
-		enum class VariableAttributes : Boxx::UByte;
+		enum class VariableModifiers : Boxx::UByte;
 	}
 
 	namespace Parsing {
@@ -15,7 +15,7 @@ namespace Melon {
 		class VariableAttributeParser {
 		public:
 			/// Parses variable attributes.
-			static Symbols::VariableAttributes Parse(ParsingInfo& info, const bool includeRef = false);
+			static Symbols::VariableModifiers Parse(ParsingInfo& info, const bool includeRef = false);
 		};
 	}
 }

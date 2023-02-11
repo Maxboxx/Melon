@@ -5,7 +5,8 @@
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 
-#include "Melon/Nodes/KiwiMemoryExpression.h"
+#include "Melon/Nodes/KiwiVariable.h"
+#include "Melon/Nodes/KiwiValue.h"
 #include "Melon/Nodes/Boolean.h"
 
 #include "Kiwi/Old/Kiwi.h"
@@ -17,40 +18,25 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalAssignValueNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info) const {
-	bool important = info.important;
-	info.important = false;
-
-	CompiledNode c1 = operand1->Compile(info);
+Ptr<Kiwi::Value> OptionalAssignValueNode::Compile(Weak<Expression> operand1, Weak<Expression> operand2, CompileInfo& info, bool includeType) const {
+	Ptr<Kiwi::Variable> optional = operand1->Compile(info).AsPtr<Kiwi::Variable>();
 
 	StructSymbol* const type = operand1->Type()->Cast<StructSymbol>();
-	const bool isNil = operand2->Type() == SymbolTable::Nil;
 
-	UInt offset = 0;
-
-	for (UInt i = 0; i < type->members.Size(); i++) {
-		if (i > 0 && isNil) break;
-
-		VariableSymbol* const member = type->Find<VariableSymbol>(type->members[i], operand1->File());
-		
-		Ptr<KiwiMemoryExpression> mn1 = new KiwiMemoryExpression(c1.argument.mem.offset + offset, member->Type()->AbsoluteName());
-		offset++;
-
-		info.important = important;
-
-		if (i == 1) {
-			c1.AddInstructions(Node::CompileAssignment(mn1, operand2, info, operand2->File()).instructions);
-		}
-		else {
-			Ptr<Boolean> bn = new Boolean(operand1->File());
-			bn->value = !isNil;
-			c1.AddInstructions(Node::CompileAssignment(mn1, bn, info, operand2->File()).instructions);
-		}
-
-		info.important = false;
+	if (Node::IncludeType(optional, includeType)) {
+		info.AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), optional->Copy(), nullptr));
 	}
 
-	info.important = important;
+	if (operand2->Type() == SymbolTable::Nil) {
+		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(optional->Copy(), type->Find(Name::HasValue, operand1->File())->KiwiName()), new Kiwi::Integer(0)));
+	}
+	else {
+		Ptr<KiwiVariable> var = new KiwiVariable(new Kiwi::SubVariable(optional->Copy(), type->Find(Name::Value, operand1->File())->KiwiName()), type->Find<VariableSymbol>(NameList(Name::Value), operand1->File())->Type()->AbsoluteName());
+		Ptr<KiwiValue> value = new KiwiValue(operand2->Compile(info), operand2->Type()->AbsoluteName());
+		
+		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(optional->Copy(), type->Find(Name::HasValue, operand1->File())->KiwiName()), new Kiwi::Integer(1)));
+		Node::CompileAssignment(var, value, info, operand2->File(), false);
+	}
 
-	return c1;
+	return nullptr;
 }

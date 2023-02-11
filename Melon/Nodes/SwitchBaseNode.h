@@ -4,9 +4,9 @@
 
 #include "Boxx/Math.h"
 
-#include "KiwiMemoryExpression.h"
 #include "BreakStatement.h"
 #include "TypeExpression.h"
+#include "KiwiVariable.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -59,38 +59,9 @@ namespace Melon {
 				bool willACaseRun = false;
 			};
 
-			/// Compile info for {switch} nodes.
-			struct SwitchCompileInfo {
-				/// The compiled node.
-				CompiledNode cn;
-
-				/// The memory location of the match value.
-				Ptr<KiwiMemoryExpression> match;
-
-				/// Indices for jump to end.
-				Boxx::List<Boxx::UInt> endJumps;
-
-				/// Indicies for jump to case contents.
-				Boxx::List<Boxx::List<Boxx::UInt>> caseJumps;
-
-				/// The current case index.
-				Boxx::UInt caseIndex;
-
-				/// The jump to the default case.
-				Boxx::UInt defaultJump;
-
-				/// Result argument.
-				KiwiOld::Argument result;
-
-				/// Result node.
-				Ptr<KiwiMemoryExpression> resultNode;
-			};
-
-
-			virtual Boxx::UInt GetSize() const override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
 		protected:
@@ -108,10 +79,6 @@ namespace Melon {
 			void ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const;
 
 			ScanResult ScanNodes(ScanInfoStack& info) const;
-
-			void CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info);
-			void CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info);
-			void CompileDefault(SwitchCompileInfo& switchInfo, CompileInfo& info);
 		};
 
 		template <BaseSwitchType T, BaseSwitchType2 U>
@@ -143,202 +110,85 @@ namespace Melon {
 		}
 
 		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline Boxx::UInt SwitchBaseNode<T, U>::GetSize() const {
-			if constexpr (std::is_same<U, Expression>::value) return 0;
+		inline Ptr<Kiwi::Value> SwitchBaseNode<T, U>::Compile(CompileInfo& info) {
+			Ptr<Kiwi::Value> matchValue = this->match->Compile(info);
+			Ptr<Kiwi::Variable> match = new Kiwi::Variable(info.NewRegister());
+			Ptr<KiwiVariable> kiwiVar = new KiwiVariable(match->Copy(), this->match->Type()->AbsoluteName());
+			info.AddInstruction(new Kiwi::AssignInstruction(this->match->Type()->KiwiType(), match->Copy(), matchValue));
 
-			Boxx::UInt size = 0;
+			Boxx::List<Boxx::String> labels;
 
-			for (Weak<U> node : nodes) {
-				size = Boxx::Math::Max(size, node->GetSize());
+			Ptr<Kiwi::Variable> result;
+
+			if constexpr (std::is_same<U, Expression>::value) {
+				result = new Kiwi::Variable(info.NewRegister());
+				info.AddInstruction(new Kiwi::AssignInstruction(SwitchType()->KiwiType(), result->Copy(), nullptr));
 			}
-
-			return size;
-		}
-
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::CompileCaseMatches(SwitchCompileInfo& switchInfo, CompileInfo& info) {
-			// Compile cases
+			
 			for (const Boxx::List<Ptr<Expression>>& values : cases) {
-				Boxx::List<Boxx::UInt> jumps;
+				labels.Add(info.NewLabel());
 
-				// Compile case values
-				for (Weak<Expression> node : values) {
-					Symbols::FunctionSymbol* const sym = Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, this->match->Type(), node->Type(), node->File());
-					CompiledNode comp = sym->symbolNode->Compile(switchInfo.match, node, info);
-					switchInfo.cn.AddInstructions(comp.instructions);
-
-					KiwiOld::Instruction eq = KiwiOld::Instruction(KiwiOld::InstructionType::Ne, 1);
-					eq.arguments.Add(comp.argument);
-					eq.arguments.Add(KiwiOld::Argument(0));
-					switchInfo.cn.instructions.Add(eq);
-
-					jumps.Add(switchInfo.cn.instructions.Size() - 1);
+				for (Weak<Expression> expr : values) {
+					Symbols::FunctionSymbol* const sym = Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, this->match->Type(), expr->Type(), expr->File()); 
+					Ptr<Kiwi::Value> comp = sym->symbolNode->Compile(kiwiVar, expr, info, false);
+					info.AddInstruction(new Kiwi::IfInstruction(comp, labels.Last()));
 				}
-
-				switchInfo.caseJumps.Add(jumps);
 			}
-		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::CompileCaseBodies(SwitchCompileInfo& switchInfo, CompileInfo& info) {
-			// Compile nodes
-			for (Weak<U> expr : nodes) {
-				// Add label for case
-				switchInfo.cn.instructions.Add(KiwiOld::Instruction::Label(info.label));
-
-				for (const Boxx::UInt i : switchInfo.caseJumps[switchInfo.caseIndex]) {
-					switchInfo.cn.instructions[i].instruction.arguments.Add(KiwiOld::Argument(KiwiOld::ArgumentType::Label, info.label));
-				}
-
-				info.label++;
-				switchInfo.caseIndex++;
-
-				// Compile statements
-				if constexpr (!std::is_same<U, Expression>::value) {
-					CompiledNode compExpr = expr->Compile(info);
-
-					// Check for scopewise breaks
-					for (const Optimizing::OptimizerInstruction& in : compExpr.instructions) {
-						if (in.instruction.type != KiwiOld::InstructionType::Custom) {
-							switchInfo.cn.instructions.Add(in);
-							continue;
-						}
-
-						const Boxx::String type = in.instruction.instructionName;
-
-						if (type != BreakStatement::scopeBreakInstName) {
-							switchInfo.cn.instructions.Add(in);
-							continue;
-						}
-
-						if (in.instruction.sizes[0] > 1) {
-							Optimizing::OptimizerInstruction inst = in;
-							inst.instruction.sizes[0]--;
-							switchInfo.cn.instructions.Add(inst);
-						}
-						else {
-							switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
-							switchInfo.cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0));
-						}
-					}
-				}
-				// Compile expression
-				else {
-					switchInfo.cn.AddInstructions(this->CompileAssignment(switchInfo.resultNode, expr, info, expr->File()).instructions);
-				}
-
-				// Jump to end
-				switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
-				switchInfo.cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0));
-			}
-		}
-
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::CompileDefault(SwitchCompileInfo& switchInfo, CompileInfo& info) {
+			Boxx::String endLbl = info.NewLabel();
+			Boxx::String defaultLbl;
+			
 			if (def) {
-				// Compile statements
+				defaultLbl = info.NewLabel();
+				info.AddInstruction(new Kiwi::GotoInstruction(defaultLbl));
+			}
+			else {
+				info.AddInstruction(new Kiwi::GotoInstruction(endLbl));
+			}
+
+			for (Boxx::UInt i = 0; i < nodes.Count(); i++) {
+				info.NewInstructionBlock(labels[i]);
+
+				LoopInfo scope = LoopInfo(i < nodes.Count() - 1 ? labels[i + 1] : (def ? defaultLbl : endLbl), endLbl);
+
 				if constexpr (!std::is_same<U, Expression>::value) {
-					CompiledNode defNode = def->Compile(info);
-
-					// Check for scopewise breaks
-					for (const Optimizing::OptimizerInstruction& in : defNode.instructions) {
-						if (in.instruction.type != KiwiOld::InstructionType::Custom) {
-							switchInfo.cn.instructions.Add(in);
-							continue;
-						}
-
-						const Boxx::String type = in.instruction.instructionName;
-
-						if (type != BreakStatement::scopeBreakInstName) {
-							switchInfo.cn.instructions.Add(in);
-							continue;
-						}
-
-						if (in.instruction.sizes[0] > 1) {
-							Optimizing::OptimizerInstruction inst = in;
-							inst.instruction.sizes[0]--;
-							switchInfo.cn.instructions.Add(inst);
-						}
-						else {
-							switchInfo.endJumps.Add(switchInfo.cn.instructions.Size());
-							switchInfo.cn.instructions.Add(KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0));
-						}
-					}
+					info.PushScope(scope);
 				}
-				// Compile expression
+
+				Ptr<Kiwi::Value> value = nodes[i]->Compile(info);
+
+				if constexpr (std::is_same<U, Expression>::value) {
+					info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), value));
+				}
 				else {
-					switchInfo.cn.AddInstructions(this->CompileAssignment(switchInfo.resultNode, def, info, def->File()).instructions);
+					info.PopScope();
+				}
+
+				info.AddInstruction(new Kiwi::GotoInstruction(endLbl));
+			}
+
+			if (def) {
+				info.NewInstructionBlock(defaultLbl);
+
+				LoopInfo scope = LoopInfo(endLbl);
+
+				if constexpr (!std::is_same<U, Expression>::value) {
+					info.PushScope(scope);
+				}
+
+				Ptr<Kiwi::Value> value = def->Compile(info);
+
+				if constexpr (std::is_same<U, Expression>::value) {
+					info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), value));
+				}
+				else {
+					info.PopScope();
 				}
 			}
-		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline CompiledNode SwitchBaseNode<T, U>::Compile(CompileInfo& info) {
-			// Setup compile info
-			SwitchCompileInfo switchInfo;
-			switchInfo.caseIndex = 0;
+			info.NewInstructionBlock(endLbl);
 
-			// Get size of return type
-			if constexpr (std::is_same<U, Expression>::value) {
-				switchInfo.cn.size = SwitchType()->Size();
-			}
-
-			// Compile match expression
-			info.stack.PushExpr(this->match->Type()->Size(), switchInfo.cn);
-			switchInfo.match = new KiwiMemoryExpression(info.stack.Offset(), this->match->Type()->AbsoluteName());
-
-			const Boxx::UInt frame = info.stack.frame;
-			switchInfo.cn.AddInstructions(this->CompileAssignment(switchInfo.match, this->match, info, this->match->File()).instructions);
-
-			// Compile cases
-			CompileCaseMatches(switchInfo, info);
-
-			if constexpr (!std::is_same<U, Expression>::value) {
-				info.stack.PopExpr(frame, switchInfo.cn);
-			}
-
-			info.stack.Pop(this->match->Type()->Size());
-
-			// Jump to default
-			KiwiOld::Instruction defJmp = KiwiOld::Instruction(KiwiOld::InstructionType::Jmp, 0);
-			switchInfo.defaultJump = switchInfo.cn.instructions.Size();
-			switchInfo.cn.instructions.Add(defJmp);
-
-			if constexpr (std::is_same<U, Expression>::value) {
-				info.stack.PushExpr(SwitchType()->Size(), switchInfo.cn);
-
-				// Get result memory location
-				switchInfo.result = KiwiOld::Argument(KiwiOld::MemoryLocation(info.stack.Offset()));
-				switchInfo.resultNode = new KiwiMemoryExpression(switchInfo.result.mem.offset, SwitchType()->AbsoluteName());
-			}
-
-			// Compile case bodies
-			CompileCaseBodies(switchInfo, info);
-
-			// Add default label
-			switchInfo.cn.instructions.Add(KiwiOld::Instruction::Label(info.label));
-			switchInfo.cn.instructions[switchInfo.defaultJump].instruction.arguments.Add(KiwiOld::Argument(KiwiOld::ArgumentType::Label, info.label));
-			info.label++;
-
-			// Compile default case
-			CompileDefault(switchInfo, info);
-
-			// Add end label
-			switchInfo.cn.instructions.Add(KiwiOld::Instruction::Label(info.label));
-
-			for (const Boxx::UInt i : switchInfo.endJumps) {
-				switchInfo.cn.instructions[i].instruction.arguments.Add(KiwiOld::Argument(KiwiOld::ArgumentType::Label, info.label));
-			}
-
-			info.label++;
-
-			// Set result argument
-			if constexpr (std::is_same<U, Expression>::value) {
-				switchInfo.cn.argument = switchInfo.result;
-				info.stack.Pop(SwitchType()->Size());
-			}
-
-			return switchInfo.cn;
+			return result;
 		}
 
 		template <BaseSwitchType T, BaseSwitchType2 U>
@@ -404,7 +254,7 @@ namespace Melon {
 		template <BaseSwitchType T, BaseSwitchType2 U>
 		inline void SwitchBaseNode<T, U>::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
 			if constexpr (!std::is_same<U, Expression>::value) {
-				for (Boxx::UInt i = 0; i < switchInfo.cases.Size(); i++) {
+				for (Boxx::UInt i = 0; i < switchInfo.cases.Count(); i++) {
 					if (i == 0) {
 						switchInfo.scope = switchInfo.cases[i];
 					}
@@ -563,7 +413,7 @@ namespace Melon {
 
 			// Remove empty cases
 			if constexpr (!std::is_same<U, Expression>::value) {
-				for (Boxx::UInt i = 0; i < nodes.Size(); i++) {
+				for (Boxx::UInt i = 0; i < nodes.Count(); i++) {
 					if (Node::IsEmpty(nodes[i])) {
 						cases.RemoveAt(i);
 						nodes.RemoveAt(i);
@@ -589,12 +439,12 @@ namespace Melon {
 			Boxx::String tabs1 = Boxx::String('\t').Repeat(indent + 1);
 			Boxx::String tabs2 = Boxx::String('\t').Repeat(indent + 2);
 
-			for (Boxx::UInt i = 0; i < nodes.Size(); i++) {
+			for (Boxx::UInt i = 0; i < nodes.Count(); i++) {
 				sb += "\n";
 				sb += tabs1;
 				sb += "case ";
 
-				for (Boxx::UInt u = 0; u < cases[i].Size(); u++) {
+				for (Boxx::UInt u = 0; u < cases[i].Count(); u++) {
 					if (u > 0) sb += ", ";
 					sb += cases[i][u]->ToMelon(indent + 1);
 				}

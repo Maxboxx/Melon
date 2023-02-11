@@ -1,6 +1,6 @@
 #include "ObjectInitExpression.h"
 
-#include "KiwiMemoryExpression.h"
+#include "KiwiVariable.h"
 #include "TypeExpression.h"
 
 #include "Melon/Parsing/Parser.h"
@@ -39,31 +39,27 @@ TypeSymbol* ObjectInitExpression::Type() const {
 	return nullptr;
 }
 
-CompiledNode ObjectInitExpression::Compile(CompileInfo& info) {
-	CompiledNode c = expression->Compile(info);
-	
+Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
+	Ptr<Kiwi::Variable> value = expression->Compile(info).AsPtr<Kiwi::Variable>();
+
 	TypeSymbol* const type = Type();
 
-	UInt offset = type->Size();
-	info.stack.PushExpr(offset, c);
-
-	UInt index = info.index;
+	if (!value) {
+		value = new Kiwi::Variable(info.NewRegister());
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), value->Copy(), nullptr));
+	}
 
 	// Compile vars
-	for (UInt i = 0; i < vars.Size(); i++) {
+	for (UInt i = 0; i < vars.Count(); i++) {
 		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
 
 		if (type->Is<StructSymbol>()) {
-			Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(info.stack.Offset() + var->stackIndex, var->Type()->AbsoluteName());
-			c.AddInstructions(CompileAssignment(sn, expressions[i], info, expressions[i]->File()).instructions);
+			Ptr<KiwiVariable> kv = new KiwiVariable(new Kiwi::SubVariable(value->Copy(), var->KiwiName()), var->Type()->AbsoluteName());
+			CompileAssignment(kv, expressions[i], info, expressions[i]->File());
 		}
-
-		info.index = index;
 	}
 
-	c.argument = Argument(MemoryLocation(info.stack.Offset()));
-	info.stack.Pop(type->Size());
-	return c;
+	return value;
 }
 
 void ObjectInitExpression::IncludeScan(ParsingInfo& info) {
@@ -104,8 +100,8 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 	}
 
 	// Scan assignments
-	for (UInt i = 0; i < vars.Size(); i++) {
-		for (UInt u = i + 1; u < vars.Size(); u++) {
+	for (UInt i = 0; i < vars.Count(); i++) {
+		for (UInt u = i + 1; u < vars.Count(); u++) {
 			if (vars[i] == vars[u]) {
 				ErrorLog::Error(LogMessage("error.scan.init.multiple", vars[i].name), file);
 			}
@@ -160,7 +156,7 @@ StringBuilder ObjectInitExpression::ToMelon(const UInt indent) const {
 
 	String tabs = String('\t').Repeat(indent + 1);
 
-	for (UInt i = 0; i < vars.Size(); i++) {
+	for (UInt i = 0; i < vars.Count(); i++) {
 		if (i > 0) sb += ",\n";
 		sb += tabs;
 		sb += vars[i].ToString();

@@ -4,6 +4,11 @@
 #include "TypeExpression.h"
 #include "Boolean.h"
 
+#include "Kiwi/Expressions.h"
+#include "Kiwi/Value.h"
+#include "Kiwi/KiwiProgram.h"
+#include "Kiwi/Interpreter/Interpreter.h"
+
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/TemplateSymbol.h"
@@ -46,28 +51,25 @@ Name BinaryOperatorExpression::GetOperator() const {
 	return op;
 }
 
-CompiledNode BinaryOperatorExpression::Compile(CompileInfo& info) {
+Ptr<Kiwi::Value> BinaryOperatorExpression::Compile(CompileInfo& info) {
 	FunctionSymbol* const func = SymbolTable::FindOperator(GetOperator(), operand1->Type(), operand2->Type(), file);
-	if (!func) return CompiledNode();
+	if (!func) return nullptr;
 
 	// Compile symbol node
 	if (func->symbolNode) {
-		return func->symbolNode->Compile(operand1, operand2, info);
+		return func->symbolNode->Compile(operand1, operand2, info, false);
 	}
 	// Compile operator function
 	else {
 		List<Ptr<Expression>> args;
-		args.Add(operand1);
-		args.Add(operand2);
+		args.Add(new WeakExpression(operand1));
+		args.Add(new WeakExpression(operand2));
 
 		Ptr<CallExpression> cn = new CallExpression(scope, file);
 		cn->arguments  = args;
-		cn->expression = new TypeExpression(func->Parent()->Parent()->AbsoluteName());
+		cn->operatorFunction = func;
 
-		CompiledNode c = cn->Compile(info);
-		operand1 = args[0];
-		operand2 = args[1];
-		return c;
+		return cn->Compile(info);
 	}
 }
 
@@ -105,29 +107,6 @@ NameList BinaryOperatorExpression::FindSideEffectScope(const bool assign) {
 Ptr<Expression> BinaryOperatorExpression::Optimize(OptimizeInfo& info) {
 	Node::Optimize(operand1, info);
 	Node::Optimize(operand2, info);
-
-	// TODO: Add more operators
-	// Optimize immediate operands
-	if (operand1->IsImmediate() && operand2->IsImmediate()) {
-		// Bool operands
-		if (operand1->Type()->AbsoluteName() == NameList::Bool && operand2->Type()->AbsoluteName() == NameList::Bool) {
-			// Equal
-			if (op == Name::Equal) {
-				Ptr<Boolean> bn = new Boolean(operand1->File());
-				bn->value = operand1->GetImmediate() == operand2->GetImmediate();
-				info.optimized = true;
-				return bn;
-			}
-			// Not Equal
-			else if (op == Name::NotEqual) {
-				Ptr<Boolean> bn = new Boolean(operand1->File());
-				bn->value = operand1->GetImmediate() != operand2->GetImmediate();
-				info.optimized = true;
-				return bn;
-			}
-		}
-	}
-
 	return nullptr;
 }
 

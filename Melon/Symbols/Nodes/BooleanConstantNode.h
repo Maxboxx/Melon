@@ -15,7 +15,7 @@ namespace Melon {
 				/// Constructor for a boolean value.
 				BooleanConstantNode(const bool value);
 
-				virtual Melon::Nodes::CompiledNode Compile(Melon::Nodes::CompileInfo& info) const override;
+				virtual Ptr<Kiwi::Value> Compile(Melon::Nodes::CompileInfo& info) const override;
 			};
 		}
 	}

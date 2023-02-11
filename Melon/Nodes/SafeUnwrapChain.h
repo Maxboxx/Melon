@@ -15,13 +15,11 @@ namespace Melon {
 			~SafeUnwrapChain();
 
 			virtual Symbols::TypeSymbol* Type() const override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
-
-			static Boxx::String jumpInstName;
 
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);

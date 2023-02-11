@@ -39,12 +39,6 @@ namespace Melon {
 			/// Optimizes the expression.
 			///R A new optimized node or {nullptr} if the node was not optimized.
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info);
-
-			/// {true} if the expression is an immediate Kiwi value.
-			virtual bool IsImmediate() const;
-
-			/// Returns the immediate value of the expression.
-			virtual Boxx::Long GetImmediate() const;
 		};
 
 		/// A weak expression.
@@ -60,12 +54,9 @@ namespace Melon {
 			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override {return expression->Types();}
 			virtual Symbols::Symbol* Symbol() const override {return expression->Symbol();}
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override {return nullptr;}
-			virtual bool IsImmediate() const override {return expression->IsImmediate();}
-			virtual Boxx::Long GetImmediate() const override {return expression->GetImmediate();}
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override {expression->IncludeScan(info);}
 			virtual ScanResult Scan(ScanInfoStack& info) override {return expression->Scan(info);}
-			virtual CompiledNode Compile(CompileInfo& info) override {return expression->Compile(info);}
-			virtual Boxx::UInt GetSize() const override {return expression->GetSize();}
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override {return expression->Compile(info);}
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override {return expression->ToMelon(indent);}
 		};
 	}

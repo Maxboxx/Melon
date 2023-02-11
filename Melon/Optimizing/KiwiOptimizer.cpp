@@ -22,7 +22,7 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 		// Optimize each segment
 		for (Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>& segment : segments) {
 			// Copy instructions
-			List<Instruction> copy{segment.value.Size()};
+			List<Instruction> copy{segment.value.Count()};
 
 			for (const OptimizerInstruction& inst : segment.value) {
 				copy.Add(inst.instruction.Copy());
@@ -44,10 +44,10 @@ List<Instruction> KiwiOptimizer::Optimize(const List<OptimizerInstruction>& inst
 			RenameRegisters(segment.value);
 
 			// Check if the instructions have been changed
-			if (copy.Size() != segment.value.Size()) {
+			if (copy.Count() != segment.value.Count()) {
 				optimized = true;
 			}
-			else for (UInt i = 0; i < copy.Size(); i++) {
+			else for (UInt i = 0; i < copy.Count(); i++) {
 				if (copy[i] != segment.value[i].instruction) {
 					optimized = true;
 					break;
@@ -93,7 +93,7 @@ List<Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>> KiwiOptimizer
 	Pair<List<OptimizerInstruction>, List<OptimizerInstruction>> segment;
 
 	// Split instructions
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		bool start = false;
 		OptimizerInstruction inst = instructions[i];
 
@@ -130,17 +130,17 @@ List<Pair<List<OptimizerInstruction>, List<OptimizerInstruction>>> KiwiOptimizer
 }
 
 void KiwiOptimizer::ReduceMov(List<OptimizerInstruction>& instructions) {
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 
 		// Check if instruction has three arguments
-		if (inst.instruction.arguments.Size() == 3) {
+		if (inst.instruction.arguments.Count() == 3) {
 			ReduceMov3(instructions, i);
 		}
 		// Check if instruction has two arguments
-		else if (inst.instruction.arguments.Size() == 2) {
+		else if (inst.instruction.arguments.Count() == 2) {
 			ReduceMov2(instructions, i);
 		}
 	}
@@ -155,15 +155,15 @@ void KiwiOptimizer::ReduceMov3(List<OptimizerInstruction>& instructions, UInt& i
 		i--;
 	}
 	// Check if number of moves can be reduced
-	else for (UInt j = i; j < instructions.Size(); j++) {
+	else for (UInt j = i; j < instructions.Count(); j++) {
 		if (instructions[j].IsStackBreak()) break;
 		if (inst.important) break;
 
 		// Get next assignment of the argument
 		UInt nextAssign = NextAssign(instructions, i, inst.instruction.arguments[2]);
 
-		if (nextAssign > instructions.Size()) {
-			nextAssign = instructions.Size();
+		if (nextAssign > instructions.Count()) {
+			nextAssign = instructions.Count();
 		}
 
 		// Break if the argument is used before next assignment
@@ -208,15 +208,15 @@ void KiwiOptimizer::ReduceMov2(List<OptimizerInstruction>& instructions, UInt& i
 	}
 
 	// Check if moves can be reduced
-	for (UInt j = i; j < instructions.Size(); j++) {
+	for (UInt j = i; j < instructions.Count(); j++) {
 		if (instructions[j].IsStackBreak()) break;
 		if (instructions[i].important) break;
 
 		// Get the next assignment of the argument
 		UInt nextAssign = NextAssign(instructions, i, instructions[i].instruction.arguments[0]);
 
-		if (nextAssign > instructions.Size()) {
-			nextAssign = instructions.Size();
+		if (nextAssign > instructions.Count()) {
+			nextAssign = instructions.Count();
 		}
 
 		// Break if the argument is used before the next assignment
@@ -247,7 +247,7 @@ void KiwiOptimizer::ReduceMov2(List<OptimizerInstruction>& instructions, UInt& i
 }
 
 void KiwiOptimizer::CombineMov(List<OptimizerInstruction>& instructions) {
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		const OptimizerInstruction inst = instructions[i];
 
 		if (inst.IsStackBreak()) continue;
@@ -287,7 +287,7 @@ void KiwiOptimizer::CombineMemoryMov(List<OptimizerInstruction>& instructions, U
 	sizes.Add(totalSize);
 
 	// Check if mov can be combined
-	for (UInt u = i + 1; u < instructions.Size(); u++) {
+	for (UInt u = i + 1; u < instructions.Count(); u++) {
 		if (instructions[u].IsStackBreak()) break;
 
 		const OptimizerInstruction inst2 = instructions[u];
@@ -342,20 +342,20 @@ void KiwiOptimizer::CombineMemoryMov(List<OptimizerInstruction>& instructions, U
 			offset2 += sizes.Last();
 		}
 
-		sizes.RemoveAt(sizes.Size() - 1);
-		important.RemoveAt(important.Size() - 1);
-		insts.RemoveAt(insts.Size() - 1);
+		sizes.RemoveAt(sizes.Count() - 1);
+		important.RemoveAt(important.Count() - 1);
+		insts.RemoveAt(insts.Count() - 1);
 	}
 
 	// Combine movs
-	if (insts.Size() != 1) {
+	if (insts.Count() != 1) {
 		instructions[i].instruction.sizes[0] = totalSize;
 		instructions[i].instruction.sizes[1] = totalSize;
 		instructions[i].instruction.arguments[0].mem.offset = offsetDir < 1 ? offset1 : startOffset1;
 		instructions[i].instruction.arguments[1].mem.offset = offsetDir < 1 ? offset2 : startOffset2;
 		instructions[i].important = important.Contains(true);
 
-		for (UInt u = i + 1; u < i + insts.Size(); u++) {
+		for (UInt u = i + 1; u < i + insts.Count(); u++) {
 			instructions.RemoveAt(i + 1);
 		}
 	}
@@ -381,7 +381,7 @@ void KiwiOptimizer::CombineNumberMov(List<OptimizerInstruction>& instructions, U
 	numbers.Add(num);
 
 	// Check if mov can be combined
-	for (UInt u = i + 1; u < instructions.Size(); u++) {
+	for (UInt u = i + 1; u < instructions.Count(); u++) {
 		if (instructions[u].IsStackBreak()) break;
 
 		const OptimizerInstruction inst2 = instructions[u];
@@ -422,14 +422,14 @@ void KiwiOptimizer::CombineNumberMov(List<OptimizerInstruction>& instructions, U
 	// Remove movs if combined size is too large
 	while (!KiwiLang::IsValidSize(totalSize)) {
 		totalSize -= sizes.Last();
-		sizes.RemoveAt(sizes.Size() - 1);
-		insts.RemoveAt(insts.Size() - 1);
-		numbers.RemoveAt(numbers.Size() - 1);
-		important.RemoveAt(important.Size() - 1);
+		sizes.RemoveAt(sizes.Count() - 1);
+		insts.RemoveAt(insts.Count() - 1);
+		numbers.RemoveAt(numbers.Count() - 1);
+		important.RemoveAt(important.Count() - 1);
 	}
 
 	// Combine movs
-	if (insts.Size() != 1) {
+	if (insts.Count() != 1) {
 		instructions[i].instruction.sizes[0] = totalSize;
 		instructions[i].instruction.sizes[1] = totalSize;
 		instructions[i].instruction.arguments[0].mem.offset -= offsetDir < 1 ? totalSize - sizes[0] : 0;
@@ -438,7 +438,7 @@ void KiwiOptimizer::CombineNumberMov(List<OptimizerInstruction>& instructions, U
 
 		UByte size = totalSize;
 
-		for (UInt u = i; u < i + insts.Size(); u++) {
+		for (UInt u = i; u < i + insts.Count(); u++) {
 			size -= sizes[0];
 
 			ULong numMask = 0;
@@ -467,26 +467,26 @@ void KiwiOptimizer::CombineNumberMov(List<OptimizerInstruction>& instructions, U
 }
 
 void KiwiOptimizer::RemoveDuplicates(List<OptimizerInstruction>& instructions) {
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
 
 		// Check for mov instructions
-		if (inst.instruction.type == InstructionType::Mov && inst.instruction.arguments.Size() == 2) {
+		if (inst.instruction.type == InstructionType::Mov && inst.instruction.arguments.Count() == 2) {
 			const Argument arg1 = inst.instruction.arguments[0];
 			const Argument arg2 = inst.instruction.arguments[1];
 
 			UInt index = NextAssign(instructions, i, arg1);
 
 			// Check for duplicate movs
-			while (index < instructions.Size()) {
+			while (index < instructions.Count()) {
 				if (instructions[index].IsStackBreak()) break;
 
 				const OptimizerInstruction in = instructions[index];
 
 				// Remove duplicate
-				if (in.instruction.type == InstructionType::Mov && in.instruction.arguments.Size() == 2) {
+				if (in.instruction.type == InstructionType::Mov && in.instruction.arguments.Count() == 2) {
 					if (in.instruction.arguments[0] == arg1 && in.instruction.arguments[1] == arg2) {
 						if (index < NextAssign(instructions, i, arg2)) {
 							instructions.RemoveAt(index);
@@ -501,7 +501,7 @@ void KiwiOptimizer::RemoveDuplicates(List<OptimizerInstruction>& instructions) {
 }
 
 void KiwiOptimizer::CombineDuplicates(List<OptimizerInstruction>& instructions) {
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].IsStackBreak()) continue;
 
 		CombineInfo info;
@@ -586,12 +586,12 @@ void KiwiOptimizer::UpdateCombineInfo(List<OptimizerInstruction>& instructions, 
 
 void KiwiOptimizer::ReplaceInstructionRegisters(Instruction& instruction, const ReplacementMap<Register>& replacement) {
 	// Replaces registers in a two argument instruction
-	if (instruction.arguments.Size() == 2 && instruction.type != InstructionType::Adr) {
+	if (instruction.arguments.Count() == 2 && instruction.type != InstructionType::Adr) {
 		ReplaceArgumentMemoryRegister(instruction.arguments[0], replacement);
 		ReplaceArgumentRegister(instruction.arguments[1], replacement);
 	}
 	// Replaces registers in a three argument instruction
-	else if (instruction.arguments.Size() == 3) {
+	else if (instruction.arguments.Count() == 3) {
 		ReplaceArgumentRegister(instruction.arguments[0], replacement);
 		ReplaceArgumentRegister(instruction.arguments[1], replacement);
 		ReplaceArgumentMemoryRegister(instruction.arguments[2], replacement);
@@ -620,7 +620,7 @@ void KiwiOptimizer::ReplaceArgumentMemoryRegister(Argument& argument, const Repl
 }
 
 void KiwiOptimizer::RemoveUnused(List<OptimizerInstruction>& instructions) {
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
@@ -632,7 +632,7 @@ bool KiwiOptimizer::IsRegister(const Argument& arg) {
 }
 
 void KiwiOptimizer::CombineComp(List<OptimizerInstruction>& instructions) {
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
@@ -640,8 +640,8 @@ void KiwiOptimizer::CombineComp(List<OptimizerInstruction>& instructions) {
 		// Check if instruction is a comp instruction with three arguments
 		if (!Instruction::IsComp(inst.instruction.type)) continue;
 		if (inst.important) continue;
-		if (inst.instruction.arguments.Size() != 3) continue;
-		if (i + 1 >= instructions.Size()) continue;
+		if (inst.instruction.arguments.Count() != 3) continue;
+		if (i + 1 >= instructions.Count()) continue;
 
 		const OptimizerInstruction inst2 = instructions[i + 1];
 
@@ -656,7 +656,7 @@ void KiwiOptimizer::CombineComp(List<OptimizerInstruction>& instructions) {
 				instructions[i].instruction.type = OppositeComp(inst.instruction.type);
 			}
 
-			instructions[i].instruction.arguments[2] = inst2.instruction.arguments.Size() == 3 ? inst2.instruction.arguments[2] : inst2.instruction.arguments[0];
+			instructions[i].instruction.arguments[2] = inst2.instruction.arguments.Count() == 3 ? inst2.instruction.arguments[2] : inst2.instruction.arguments[0];
 			instructions.RemoveAt(i + 1);
 		}
 		// Combine ne instruction
@@ -665,14 +665,14 @@ void KiwiOptimizer::CombineComp(List<OptimizerInstruction>& instructions) {
 				instructions[i].instruction.type = OppositeComp(inst.instruction.type);
 			}
 
-			instructions[i].instruction.arguments[2] = inst2.instruction.arguments.Size() == 3 ? inst2.instruction.arguments[2] : inst2.instruction.arguments[0];
+			instructions[i].instruction.arguments[2] = inst2.instruction.arguments.Count() == 3 ? inst2.instruction.arguments[2] : inst2.instruction.arguments[0];
 			instructions.RemoveAt(i + 1);
 		}
 	}
 }
 
 void KiwiOptimizer::RemoveComps(List<OptimizerInstruction>& instructions) {
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].IsStackBreak()) continue;
 
 		const OptimizerInstruction inst = instructions[i];
@@ -680,7 +680,7 @@ void KiwiOptimizer::RemoveComps(List<OptimizerInstruction>& instructions) {
 		// Check if comp instruction has two number arguments
 		if (!Instruction::IsComp(inst.instruction.type)) continue;
 		if (inst.important) continue;
-		if (inst.instruction.arguments.Size() != 3) continue;
+		if (inst.instruction.arguments.Count() != 3) continue;
 		if (inst.instruction.arguments[0].type != ArgumentType::Number) continue;
 		if (inst.instruction.arguments[1].type != ArgumentType::Number) continue;
 
@@ -721,7 +721,7 @@ void KiwiOptimizer::RemoveComps(List<OptimizerInstruction>& instructions) {
 void KiwiOptimizer::InsertEmptyPushPop(List<OptimizerInstruction>& instructions) {
 	instructions.Insert(0, Instruction(InstructionType::Push, 0));
 
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].IsLabelOrCall() || instructions[i].IsJumpOrRet() || instructions[i].CanJump()) {
 			instructions.Insert(i + 1, Instruction(InstructionType::Push, 0));
 			instructions.Insert(i, Instruction(InstructionType::Pop, 0));
@@ -736,19 +736,19 @@ void KiwiOptimizer::CombinePushPop(List<OptimizerInstruction>& instructions) {
 	// Insert empty push and pop instructions
 	InsertEmptyPushPop(instructions);
 
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		const OptimizerInstruction inst = instructions[i];
 		
 		// Check if instruction is push or pop
 		if (!inst.IsPushPop()) continue;
-		if (inst.instruction.arguments.Size() != 0) continue;
+		if (inst.instruction.arguments.Count() != 0) continue;
 
 		// Get push number
 		Long num = inst.instruction.type == InstructionType::Push ? inst.instruction.sizes[0] : -inst.instruction.sizes[0];
 		bool found = false;
 
 		// Find next push or pop
-		for (UInt u = i + 1; u < instructions.Size(); u++) {
+		for (UInt u = i + 1; u < instructions.Count(); u++) {
 			if (instructions[u].IsLabelOrCall()) break;
 			if (instructions[u].IsJumpOrRet())   break;
 			if (instructions[u].CanJump())       break;
@@ -757,7 +757,7 @@ void KiwiOptimizer::CombinePushPop(List<OptimizerInstruction>& instructions) {
 
 			// Check if instruction is push or pop
 			if (!inst2.IsPushPop()) continue;
-			if (inst2.instruction.arguments.Size() != 0) continue;
+			if (inst2.instruction.arguments.Count() != 0) continue;
 
 			// Get push number
 			Long num2 = inst2.instruction.type == InstructionType::Push ? inst2.instruction.sizes[0] : -inst2.instruction.sizes[0];
@@ -801,14 +801,14 @@ void KiwiOptimizer::CombinePushPop(List<OptimizerInstruction>& instructions) {
 }
 
 void KiwiOptimizer::RearrangeJumps(List<OptimizerInstruction>& instructions) {
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (!instructions[i].CanJump()) continue;
 
 		// Rearrange comp jump
 		if (Instruction::IsComp(instructions[i].instruction.type)) {
 			instructions[i].instruction.arguments[2] = LastLabelInChain(instructions, instructions[i].instruction.arguments[2]);
 
-			if (i + 2 < instructions.Size()) {
+			if (i + 2 < instructions.Count()) {
 				if (instructions[i + 1].instruction.type == InstructionType::Jmp) {
 					if (instructions[i + 2].instruction.type == InstructionType::Label) {
 						if (instructions[i + 2].instruction.instructionName == instructions[i].GetJump()) {
@@ -826,14 +826,14 @@ void KiwiOptimizer::RearrangeJumps(List<OptimizerInstruction>& instructions) {
 
 			UInt u = i + 1;
 
-			while (u < instructions.Size()) {
+			while (u < instructions.Count()) {
 				if (instructions[u].instruction.type == InstructionType::Label) break;
 				instructions.RemoveAt(u);
 			}
 		}
 		
 		// Remove extra labels
-		for (UInt u = i + 1; u < instructions.Size(); u++) {
+		for (UInt u = i + 1; u < instructions.Count(); u++) {
 			if (instructions[u].instruction.type != InstructionType::Label) break;
 				
 			if (instructions[u].instruction.instructionName == instructions[i].GetJump()) {
@@ -849,14 +849,14 @@ void KiwiOptimizer::RemoveUnusedLabels(List<OptimizerInstruction>& instructions)
 	Set<String> usedLabels;
 
 	// Find used labels
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].CanJump()) {
 			usedLabels.Add(instructions[i].GetJump());
 		}
 	}
 
 	// Remove unused labels
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].instruction.type == InstructionType::Label) {
 			if (!usedLabels.Contains(instructions[i].instruction.instructionName)) {
 				instructions.RemoveAt(i);
@@ -868,7 +868,7 @@ void KiwiOptimizer::RemoveUnusedLabels(List<OptimizerInstruction>& instructions)
 
 void KiwiOptimizer::RenameLabels(List<OptimizerInstruction>& instructions, ReplacementMap<String>& labels, UInt& labelIndex) {
 	// Rename label name
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].instruction.type == InstructionType::Label) {
 			labels.Add(instructions[i].instruction.instructionName, Argument(ArgumentType::Label, labelIndex++).label);
 			instructions[i].instruction.instructionName = labels.GetValue(instructions[i].instruction.instructionName);
@@ -876,7 +876,7 @@ void KiwiOptimizer::RenameLabels(List<OptimizerInstruction>& instructions, Repla
 	}
 
 	// Rename label argument name
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		for (Argument& arg : instructions[i].instruction.arguments) {
 			if (arg.type == ArgumentType::Label) {
 				arg.label = labels.GetValue(arg.label);
@@ -892,7 +892,7 @@ void KiwiOptimizer::RenameRegisters(List<OptimizerInstruction>& instructions) {
 	// Check initial register use
 	CheckAssignedRegisters(instructions, usedRegisters, 0);
 
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		// Reset register use
 		if (instructions[i].IsLabelOrCall()) {
 			usedRegisters = Set<Register>();
@@ -902,7 +902,7 @@ void KiwiOptimizer::RenameRegisters(List<OptimizerInstruction>& instructions) {
 			continue;
 		}
 
-		const UInt size = instructions[i].instruction.arguments.Size();
+		const UInt size = instructions[i].instruction.arguments.Count();
 		const bool isAssignment = instructions[i].IsRegisterAssignment();
 
 		// Replace registers
@@ -919,7 +919,7 @@ void KiwiOptimizer::RenameRegisters(List<OptimizerInstruction>& instructions) {
 }
 
 void KiwiOptimizer::CheckAssignedRegisters(List<OptimizerInstruction>& instructions, Set<Register>& usedRegisters, const UInt start) {
-	for (UInt i = start; i < instructions.Size(); i++) {
+	for (UInt i = start; i < instructions.Count(); i++) {
 		if (instructions[i].IsLabelOrCall()) break;
 
 		if (instructions[i].important && instructions[i].IsRegisterAssignment()) {
@@ -933,7 +933,7 @@ void KiwiOptimizer::CheckRegisterUse(OptimizerInstruction& instruction, Set<Regi
 	const UInt assignIndex = instruction.GetAssignedIndex();
 
 	// Check all arguments
-	for (UInt argIndex = 0; argIndex < instruction.instruction.arguments.Size(); argIndex++) {
+	for (UInt argIndex = 0; argIndex < instruction.instruction.arguments.Count(); argIndex++) {
 		// Check if argument is register
 		if (instruction.IsRegister(argIndex)) {
 			// Handle assignment to the register
@@ -989,11 +989,11 @@ InstructionType KiwiOptimizer::OppositeComp(const InstructionType type) {
 }
 
 UInt KiwiOptimizer::NextAssign(List<OptimizerInstruction>& instructions, UInt index, const Argument& arg) {
-	for (index++; index < instructions.Size(); index++) {
+	for (index++; index < instructions.Count(); index++) {
 		if (instructions[index].IsLabelOrCall()) break;
 		const OptimizerInstruction inst = instructions[index];
 
-		switch (inst.instruction.arguments.Size()) {
+		switch (inst.instruction.arguments.Count()) {
 			case 1: {
 				if (inst.instruction.arguments[0] == arg) {
 					return index;
@@ -1020,7 +1020,7 @@ UInt KiwiOptimizer::NextAssign(List<OptimizerInstruction>& instructions, UInt in
 		}
 	}
 
-	return instructions.Size();
+	return instructions.Count();
 }
 
 UInt KiwiOptimizer::NextAccess(List<OptimizerInstruction>& instructions, UInt index, const Argument& arg) {
@@ -1037,11 +1037,11 @@ UInt KiwiOptimizer::NextAccess(List<OptimizerInstruction>& instructions, UInt in
 		}
 	}
 
-	return instructions.Size();
+	return instructions.Count();
 }
 
 UInt KiwiOptimizer::NextUse(List<OptimizerInstruction>& instructions, UInt index, const Argument& arg) {
-	for (index++; index < instructions.Size(); index++) {
+	for (index++; index < instructions.Count(); index++) {
 		if (instructions[index].IsLabelOrCall()) break;
 		const OptimizerInstruction inst = instructions[index];
 
@@ -1052,7 +1052,7 @@ UInt KiwiOptimizer::NextUse(List<OptimizerInstruction>& instructions, UInt index
 		}
 	}
 
-	return instructions.Size();
+	return instructions.Count();
 }
 
 UInt KiwiOptimizer::UseCount(List<OptimizerInstruction>& instructions, UInt start, UInt end, const Argument& arg) {
@@ -1093,19 +1093,19 @@ UInt KiwiOptimizer::NextRegisterAccess(List<OptimizerInstruction>& instructions,
 		}
 	}
 
-	return instructions.Size();
+	return instructions.Count();
 }
 
 Argument KiwiOptimizer::LastLabelInChain(const List<OptimizerInstruction>& instructions, const Argument& label, const Optional<Argument>& firstLabel) {
 	Argument first = firstLabel.ValueOr(label);
 
-	for (UInt i = 0; i < instructions.Size(); i++) {
+	for (UInt i = 0; i < instructions.Count(); i++) {
 		if (instructions[i].instruction.type != InstructionType::Label) continue;
 		if (instructions[i].instruction.instructionName != label.label) continue;
 
 		Argument arg = label;
 
-		for (UInt u = i + 1; u < instructions.Size(); u++) {
+		for (UInt u = i + 1; u < instructions.Count(); u++) {
 			if (instructions[u].instruction.type == InstructionType::Jmp) {
 				if (instructions[u].instruction.arguments[0] == first) {
 					return first;

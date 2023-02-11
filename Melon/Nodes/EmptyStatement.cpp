@@ -13,8 +13,8 @@ EmptyStatement::~EmptyStatement() {
 	
 }
 
-CompiledNode EmptyStatement::Compile(CompileInfo& info) {
-	return CompiledNode();
+Ptr<Kiwi::Value> EmptyStatement::Compile(CompileInfo& info) {
+	return nullptr;
 }
 
 StringBuilder EmptyStatement::ToMelon(const UInt indent) const {

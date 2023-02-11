@@ -54,21 +54,6 @@ namespace Melon {
 			/// Get the argument at the specified index.
 			VariableSymbol* Argument(const Boxx::UInt index);
 
-			/// The combined size of the arguments.
-			Boxx::UInt ArgumentSize();
-
-			/// The size of the error type identifier.
-			Boxx::UInt ErrorTypeSize();
-
-			/// The size of the biggers error.
-			Boxx::UInt ErrorSize();
-
-			/// The combined size of all return values.
-			Boxx::UInt ReturnValueSize();
-
-			/// The size of the return values combined with errors.
-			Boxx::UInt ReturnSize();
-
 			/// Get the template argument at the specified index.
 			TypeSymbol* TemplateArgument(const Boxx::UInt index);
 

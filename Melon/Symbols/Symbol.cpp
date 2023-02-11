@@ -65,6 +65,18 @@ NameList Symbol::AbsoluteName() {
 	}
 }
 
+String Symbol::KiwiName() {
+	return AbsoluteName().ToString();
+}
+
+Kiwi::Type Symbol::KiwiType() {
+	if (TypeSymbol* type = Type()) {
+		return type->KiwiType();
+	}
+
+	return Kiwi::Type();
+}
+
 TypeSymbol* Symbol::Type() {
 	return nullptr;
 }

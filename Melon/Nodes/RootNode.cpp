@@ -19,6 +19,7 @@
 #include "Boxx/File.h"
 #include "Boxx/Math.h"
 #include "Boxx/ReplacementMap.h"
+#include "Boxx/Path.h"
 
 using namespace Boxx;
 using namespace KiwiOld;
@@ -37,99 +38,27 @@ RootNode::~RootNode() {
 
 }
 
-CompiledNode RootNode::Compile(CompileInfo& info) {
-	CompiledNode cn;
+Ptr<Kiwi::Value> RootNode::Compile(CompileInfo& info) {
+	Ptr<Kiwi::CodeBlock> codeBlock = new Kiwi::CodeBlock();
+	info.SetCodeBlock(codeBlock);
 
-	// Get size of statements
-	UInt size = 0;
-
-	for (Weak<Statements> statements : nodes) {
-		size += statements->GetSize();
-	}
-
-	// Push
-	if (size > 0) {
-		OptimizerInstruction push = Instruction(InstructionType::Push, size);
-		push.important = true;
-		cn.instructions.Add(push);
-	}
-
-	info.stack.PushFrame(size);
+	info.ClearRegisters();
 
 	// Compile nodes
 	for (Weak<Statements> statements : nodes) {
-		for (const OptimizerInstruction& instruction : statements->Compile(info).instructions) {
-			cn.instructions.Add(instruction);
-		}
+		statements->Compile(info);
 	}
 
-	// Pop
-	if (size > 0) {
-		OptimizerInstruction pop = Instruction(InstructionType::Pop, size);
-		pop.important = true;
-		cn.instructions.Add(pop);
-	}
-
-	info.stack.PopFrame(size);
-
-	// Add exit instruction
-	Instruction in = Instruction(InstructionType::Exit, info.stack.ptrSize);
-	in.arguments.Add(Argument(0));
-	cn.instructions.Add(in);
+	info.program->AddCodeBlock(codeBlock);
+	info.currentBlock = nullptr;
 
 	// Compile functions
 	for (Weak<FunctionBody> func : funcs) {
-		for (const OptimizerInstruction& instruction : func->Compile(info).instructions) {
-			cn.instructions.Add(instruction);
-		}
+		info.ClearRegisters();
+		func->Compile(info);
 	}
 
-	return cn;
-}
-
-List<OptimizerInstruction> RootNode::Compile(const Set<VariableSymbol*>& usedVariables) {
-	CompiledNode c;
-
-	// Static values for integers
-	List<Tuple<IntegerSymbol*, InstructionType, Long, Long>> integers;
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Byte,   InstructionType::Byte,  Math::ByteMin(),   Math::ByteMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UByte,  InstructionType::Byte,  Math::UByteMin(),  Math::UByteMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Short,  InstructionType::Short, Math::ShortMin(),  Math::ShortMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UShort, InstructionType::Short, Math::UShortMin(), Math::UShortMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Int,    InstructionType::Int,   Math::IntMin(),    Math::IntMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::UInt,   InstructionType::Int,   Math::UIntMin(),   Math::UIntMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::Long,   InstructionType::Long,  Math::LongMin(),   Math::LongMax()));
-	integers.Add(Tuple<IntegerSymbol*, InstructionType, Long, Long>(SymbolTable::ULong,  InstructionType::Long,  Math::ULongMin(),  Math::ULongMax()));
-
-	// Compile static memory
-	for (const Tuple<IntegerSymbol*, InstructionType, Long, Long>& integer : integers) {
-		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Name("min"), file))) {
-			Instruction name = Instruction(InstructionType::Static);
-			name.instructionName = integer.value1->Find<VariableSymbol>(Name("min"), file)->AbsoluteName().ToString();
-			c.instructions.Add(name);
-
-			Instruction value = Instruction(integer.value2);
-			value.arguments.Add(integer.value3);
-			c.instructions.Add(value);
-		}
-
-		if (usedVariables.Contains(integer.value1->Find<VariableSymbol>(Name("max"), file))) {
-			Instruction name = Instruction(InstructionType::Static);
-			name.instructionName = integer.value1->Find<VariableSymbol>(Name("max"), file)->AbsoluteName().ToString();
-			c.instructions.Add(name);
-
-			Instruction value = Instruction(integer.value2);
-			value.arguments.Add(integer.value4);
-			c.instructions.Add(value);
-		}
-	}
-
-	// Compile code
-	UByte index = 0;
-	CompileInfo info;
-	c.instructions.Add(Instruction(InstructionType::Code));
-	c.AddInstructions(Compile(info).instructions);
-	return c.instructions;
+	return nullptr;
 }
 
 void RootNode::IncludeScan(ParsingInfo& info) {
@@ -140,13 +69,13 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 
 	do {
 		// Create template symbols
-		for (; templateIndex < SymbolTable::templateSymbols.Size(); templateIndex++) {
+		for (; templateIndex < SymbolTable::templateSymbols.Count(); templateIndex++) {
 			SymbolTable::TemplateInfo info = SymbolTable::templateSymbols[templateIndex];
 			AddTemplateSpecialization(info.name, info.scope->AbsoluteName(), info.file, false);
 		}
 
 		// Scan failed nodes
-		for (UInt i = 0; i < failedNodes.Size();) {
+		for (UInt i = 0; i < failedNodes.Count();) {
 			try {
 				nodes[failedNodes[i]]->IncludeScan(info);
 				failedNodes.RemoveAt(i);
@@ -157,7 +86,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 		}
 
 		// Scan failed functions
-		for (UInt i = 0; i < failedFuncs.Size();) {
+		for (UInt i = 0; i < failedFuncs.Count();) {
 			try {
 				funcs[failedFuncs[i]]->IncludeScan(info);
 				failedFuncs.RemoveAt(i);
@@ -168,7 +97,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 		}
 
 		// Scan nodes
-		for (; nodeIndex < nodes.Size(); nodeIndex++) {
+		for (; nodeIndex < nodes.Count(); nodeIndex++) {
 			try {
 				nodes[nodeIndex]->IncludeScan(info);
 			}
@@ -178,7 +107,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 		}
 
 		// Scan functions
-		for (; funcIndex < funcs.Size(); funcIndex++) {
+		for (; funcIndex < funcs.Count(); funcIndex++) {
 			try {
 				funcs[funcIndex]->IncludeScan(info);
 			}
@@ -189,11 +118,11 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 	}
 	// Chech if scan is complete
 	while (
-		nodeIndex < nodes.Size() ||
-		funcIndex < funcs.Size() ||
+		nodeIndex < nodes.Count() ||
+		funcIndex < funcs.Count() ||
 		!failedNodes.IsEmpty() ||
 		!failedFuncs.IsEmpty() ||
-		templateIndex < SymbolTable::templateSymbols.Size()
+		templateIndex < SymbolTable::templateSymbols.Count()
 	);
 
 	includeScanning = false;
@@ -214,7 +143,7 @@ void RootNode::AddTemplateSpecialization(const NameList& name, const NameList& s
 	ReplacementMap<TypeSymbol*> templateTypes;
 
 	// Create replacement map for template arguments
-	for (UInt i = 0; i < templateInfo.value2.Size(); i++) {
+	for (UInt i = 0; i < templateInfo.value2.Count(); i++) {
 		if (TypeSymbol* const type = templateInfo.value1->TemplateArgument(i)) {
 			if (type->Is<TemplateSymbol>()) {
 				if (TypeSymbol* const t = SymbolTable::FindAbsolute<TypeSymbol>(templateInfo.value2[i], file)) {
@@ -272,7 +201,7 @@ Tuple<TemplateTypeSymbol*, List<NameList>> RootNode::FindTemplateArgs(const Name
 		}
 	}
 
-	NameList list = name.Last().name.Size() == 0 ? name.Pop() : name.Pop().Add(Name(name.Last().name));
+	NameList list = name.Last().name.Length() == 0 ? name.Pop() : name.Pop().Add(Name(name.Last().name));
 
 	// Find base template type symbol
 	TemplateTypeSymbol* const sym = SymbolTable::Find<TemplateTypeSymbol>(list, scope, file);
@@ -285,10 +214,10 @@ Tuple<TemplateTypeSymbol*, List<NameList>> RootNode::FindTemplateArgs(const Name
 
 	// Find best variant
 	for (TemplateTypeSymbol* const variant : sym->templateVariants) {
-		if (variant->templateArguments.Size() == templateArgs.Size()) {
+		if (variant->templateArguments.Count() == templateArgs.Count()) {
 			bool match = true;
 
-			for (UInt i = 0; i < templateArgs.Size(); i++) {
+			for (UInt i = 0; i < templateArgs.Count(); i++) {
 				TypeSymbol* const symArg = variant->TemplateArgument(i);
 
 				if (symArg->Is<TemplateSymbol>()) continue;
@@ -356,16 +285,16 @@ ScanInfoStack RootNode::Scan() {
 
 void RootNode::Optimize(OptimizeInfo& info) {
 	// Optimize nodes
-	for (UInt i = 0; i < nodes.Size(); i++) {
+	for (UInt i = 0; i < nodes.Count(); i++) {
 		FileInfo file = nodes[i]->file;
 		Node::Optimize(nodes[i], info);
 		nodes[i]->file = file;
 	}
 
 	// Remove unused functions
-	if (info.usedFunctions.Size() < funcs.Size()) {
+	if (info.usedFunctions.Count() < funcs.Count()) {
 		List<Ptr<FunctionBody>> functions = funcs;
-		funcs = List<Ptr<FunctionBody>>(info.usedFunctions.Size());
+		funcs = List<Ptr<FunctionBody>>(info.usedFunctions.Count());
 
 		for (Ptr<FunctionBody> func : functions) {
 			if (info.usedFunctions.Contains(func->sym)) {
@@ -377,7 +306,7 @@ void RootNode::Optimize(OptimizeInfo& info) {
 	}
 
 	// Optimize functions
-	for (UInt i = 0; i < funcs.Size(); i++) {
+	for (UInt i = 0; i < funcs.Count(); i++) {
 		funcs[i]->Optimize(info);
 	}
 }
@@ -388,13 +317,11 @@ StringBuilder RootNode::ToMelon(const UInt indent) const {
 
 void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 	// Create output directory
-	const String dir = options.outputDirectory + "melon/";
-	System::CreateDirectory(options.outputDirectory + "melon");
+	const String dir = Path::Combine(options.outputDirectory, "melon");
+	System::CreateDirectory(dir);
 
 	NameList currentNamespace = NameList::undefined;
 	String fileDir = dir;
-
-	Regex filename = Regex("~[/\\]+%.melon$");
 
 	bool writeToFile = false;
 	StringBuilder sb;
@@ -405,9 +332,7 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 		if (statements->file.currentNamespace != currentNamespace) {
 			// Write old namespace contents to file
 			if (writeToFile) {
-				FileWriter file = FileWriter(fileDir);
-				file.Write(sb.ToString());
-				file.Close();
+				FileWriter::WriteText(fileDir, sb.ToString());
 			}
 			else {
 				writeToFile = true;
@@ -419,20 +344,14 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 
 			// Create directory for new namespace
 			for (UInt i = 0; i < currentNamespace.Size(); i++) {
-				if (i > 0) fileDir += "/";
-				fileDir += currentNamespace[i].ToString();
+				fileDir = Path::Combine(fileDir, currentNamespace[i].ToString());
 
 				if (!System::DirectoryExists(fileDir)) {
 					System::CreateDirectory(fileDir);
 				}
 			}
 
-			// Get file name
-			if (fileDir.Size() != 0) fileDir += "/";
-
-			if (Optional<Match> match = filename.Match(statements->file.filename)) {
-				fileDir += match->match;
-			}
+			fileDir = Path::Combine(fileDir, Path::GetFile(statements->file.filename));
 
 			sb = StringBuilder();
 
@@ -443,13 +362,13 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 				sb += "\n";
 			}
 
-			if (sb.Size() > 0) sb += "\n";
+			if (sb.Length() > 0) sb += "\n";
 		}
 
 		// Convert node to melon string
 		StringBuilder s = statements->ToMelon(0);
 
-		if (s.Size() > 0) {
+		if (s.Length() > 0) {
 			sb += s;
 			sb += "\n";
 		}
@@ -457,8 +376,6 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 
 	// Write last text to file
 	if (writeToFile) {
-		FileWriter file = FileWriter(fileDir);
-		file.Write(sb.ToString());
-		file.Close();
+		FileWriter::WriteText(fileDir, sb.ToString());
 	}
 }

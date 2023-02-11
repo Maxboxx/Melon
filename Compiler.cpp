@@ -17,8 +17,6 @@ using namespace KiwiOld;
 using namespace Melon;
 
 int main() {
-	Ptr<int> a = nullptr;
-
 	/*
 	DragonfruitInfo info;
 	info.docComment = "///";
@@ -47,10 +45,12 @@ int main() {
 		options.converter = new x86_64Converter(x86_64Syntax::Intel, ErrorLog::logger);
 
 		MelonCompiler::Compile(options);
+		ErrorLog::LogErrors();
 	}
 	catch (FatalLoggerError& e) {
 		ErrorLog::LogErrors();
 	}
+	//*
 	catch (Error& e) {
 		try {
 			ErrorLog::Fatal(LogMessage::Message(e.Name() + ": " + e.Message()), FileInfo());
@@ -61,5 +61,6 @@ int main() {
 	}
 	//*/
 
+	System::Execute("pause");
 	return 0;
 }

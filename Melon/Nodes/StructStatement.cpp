@@ -20,12 +20,18 @@ StructStatement::StructStatement(Symbol* const scope, const FileInfo& file) : St
 
 }
 
-StructStatement::~StructStatement() {
+Ptr<Kiwi::Value> StructStatement::Compile(CompileInfo& info) {
+	Ptr<Kiwi::Struct> struct_ = new Kiwi::Struct(symbol->KiwiName());
+	
+	for (const Name& name : symbol->members) {
+		if (VariableSymbol* const var = symbol->Find<VariableSymbol>(name, file)) {
+			struct_->AddVariable(var->Type()->KiwiType(), var->KiwiName());
+		}
+	}
 
-}
+	info.program->AddStruct(struct_);
 
-CompiledNode StructStatement::Compile(CompileInfo& info) {
-	return CompiledNode();
+	return nullptr;
 }
 
 bool StructStatement::IsRecursive(StructSymbol* const symbol) const {
@@ -78,7 +84,7 @@ StringBuilder StructStatement::ToMelon(const UInt indent) const {
 	if (symbol->templateParent != nullptr) return "";
 
 	// Check if struct is completely specialized
-	for (UInt i = 0; i < symbol->templateArguments.Size(); i++) {
+	for (UInt i = 0; i < symbol->templateArguments.Count(); i++) {
 		if (symbol->templateArguments[i].IsTemplate()) continue;
 
 		if (TypeSymbol* const type = symbol->TemplateArgument(i)) {
@@ -96,7 +102,7 @@ StringBuilder StructStatement::ToMelon(const UInt indent) const {
 		sb += symbol->Parent()->Name().ToSimpleString();
 		sb += "<";
 
-		for (UInt i = 0; i < symbol->templateArguments.Size(); i++) {
+		for (UInt i = 0; i < symbol->templateArguments.Count(); i++) {
 			if (i > 0) sb += ", ";
 			sb += symbol->templateArguments[i].ToSimpleString();
 		}
@@ -140,7 +146,7 @@ StringBuilder StructStatement::ToMelon(const UInt indent) const {
 				StringBuilder s = type->Cast<StructSymbol>()->node->ToMelon(indent);
 				type->templateParent = symbol;
 
-				if (s.Size() > 0) {
+				if (s.Length() > 0) {
 					sb += "\n\n";
 					sb += String('\t').Repeat(indent);
 					sb += s;

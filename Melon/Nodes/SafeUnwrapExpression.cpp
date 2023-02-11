@@ -28,18 +28,13 @@ Symbol* SafeUnwrapExpression::Symbol() const {
 	return Type();
 }
 
-CompiledNode SafeUnwrapExpression::Compile(CompileInfo& info)  {
-	CompiledNode cn = expression->Compile(info);
+Ptr<Kiwi::Value> SafeUnwrapExpression::Compile(CompileInfo& info)  {
+	Ptr<Kiwi::Variable> var = expression->Compile(info).AsPtr<Kiwi::Variable>();
+	if (!var) return nullptr;
 
-	Instruction jmp = Instruction(SafeUnwrapChain::jumpInstName, 1);
-	jmp.arguments.Add(cn.argument);
-	jmp.arguments.Add(Argument(0));
-	cn.instructions.Add(jmp);
+	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(new Kiwi::SubVariable(var->Copy(), expression->Type()->Find(Name::HasValue, expression->File())->KiwiName()), nullptr, info.optionalChains.Peek()));
 
-	cn.argument.mem.offset += 1;
-	cn.size -= 1;
-
-	return cn;
+	return new Kiwi::SubVariable(var, expression->Type()->Find(Name::Value, expression->File())->KiwiName());
 }
 
 void SafeUnwrapExpression::IncludeScan(ParsingInfo& info)  {

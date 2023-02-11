@@ -28,7 +28,7 @@ StructSymbol* StructSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>
 		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
 	}
 
-	for (UInt i = 0; i < templateArguments.Size(); i++) {
+	for (UInt i = 0; i < templateArguments.Count(); i++) {
 		TypeSymbol* const type = TemplateArgument(i);
 
 		if (templateArguments[i].IsTemplate() && type == replacement.GetValue(type)) {

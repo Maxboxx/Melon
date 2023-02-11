@@ -13,6 +13,9 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode OptionalToBooleanNode::Compile(Weak<Expression> operand, CompileInfo& info) const {
-	return operand->Compile(info);
+Ptr<Kiwi::Value> OptionalToBooleanNode::Compile(Weak<Expression> operand, CompileInfo& info, bool includeType) const {
+	Ptr<Kiwi::Variable> var = operand->Compile(info).AsPtr<Kiwi::Variable>();
+	if (!var) return nullptr;
+
+	return new Kiwi::SubVariable(var, operand->Type()->Find(Name::HasValue, operand->File())->KiwiName());
 }

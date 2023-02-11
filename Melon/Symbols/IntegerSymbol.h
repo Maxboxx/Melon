@@ -14,6 +14,8 @@ namespace Melon {
 			/// {true} if the integer is signed.
 			bool IsSigned() const;
 
+			virtual Boxx::String KiwiName() override;
+
 			virtual IntegerSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 		protected:

@@ -1,6 +1,6 @@
 #include "ReturnStatement.h"
 
-#include "KiwiMemoryExpression.h"
+#include "KiwiVariable.h"
 #include "TypeExpression.h"
 
 #include "Kiwi/Old/Kiwi.h"
@@ -36,7 +36,7 @@ List<TypeSymbol*> ReturnStatement::GetTypes() const {
 	List<TypeSymbol*> types;
 
 	if (FunctionSymbol* const f = GetFunc()) {
-		for (UInt i = 0; i < f->returnValues.Size(); i++) {
+		for (UInt i = 0; i < f->returnValues.Count(); i++) {
 			types.Add(f->ReturnType(i));
 		}
 	}
@@ -44,36 +44,20 @@ List<TypeSymbol*> ReturnStatement::GetTypes() const {
 	return types;
 }
 
-CompiledNode ReturnStatement::Compile(CompileInfo& info) {
+Ptr<Kiwi::Value> ReturnStatement::Compile(CompileInfo& info) {
 	FunctionSymbol* const f = GetFunc();
-	if (!f) return CompiledNode();
+	if (!f) return nullptr;
 
-	UInt stackOffset  = info.stack.ptrSize + info.stack.frame;
-	UInt argumentSize = f->ArgumentSize();
-	UInt returnSize   = f->ReturnSize();
-	
-	stackOffset += argumentSize;
-	stackOffset += returnSize;
-
-	CompiledNode c;
 	List<TypeSymbol*> types = GetTypes();
 
-	// Compile return values
-	for (UInt i = 0; i < values.Size(); i++) {
-		stackOffset -= types[i]->Size();
-
-		Ptr<KiwiMemoryExpression> sn = new KiwiMemoryExpression(stackOffset, types[i]->AbsoluteName());
-
-		info.important = true;
-		c.AddInstructions(CompileAssignment(sn, values[i], info, values[i]->File()).instructions);
-		info.important = false;
+	for (UInt i = 0; i < values.Count(); i++) {
+		Ptr<KiwiVariable> reg = new KiwiVariable(new Kiwi::Variable(info.returnRegisters[i]), f->ReturnType(i)->AbsoluteName());
+		CompileAssignment(reg, values[i], info, values[i]->File(), false);
 	}
 
-	// Add return instruction
-	info.stack.PopExpr(0, c);
-	c.instructions.Add(Instruction(InstructionType::Ret));
+	info.currentBlock->AddInstruction(new Kiwi::ReturnInstruction());
 
-	return c;
+	return nullptr;
 }
 
 void ReturnStatement::IncludeScan(ParsingInfo& info) {
@@ -103,18 +87,18 @@ ScanResult ReturnStatement::Scan(ScanInfoStack& info) {
 	if (f == nullptr) return result;
 
 	// Check for correct number of return values
-	if (f->returnValues.Size() > values.Size()) {
+	if (f->returnValues.Count() > values.Count()) {
 		ErrorLog::Error(LogMessage("error.scan.return.many"), file);
 	}
-	else if (f->returnValues.Size() < values.Size()) {
+	else if (f->returnValues.Count() < values.Count()) {
 		ErrorLog::Error(LogMessage("error.scan.return.few"), file);
 	}
 
 	List<TypeSymbol*> types = GetTypes();
 
 	// Scan assignment to return values
-	for (UInt i = 0; i < values.Size(); i++) {
-		if (i >= types.Size()) break;
+	for (UInt i = 0; i < values.Count(); i++) {
+		if (i >= types.Count()) break;
 
 		if (types[i]) {
 			Ptr<TypeExpression> tn = new TypeExpression(types[i]->AbsoluteName());
@@ -146,7 +130,7 @@ Ptr<Statement> ReturnStatement::Optimize(OptimizeInfo& info) {
 StringBuilder ReturnStatement::ToMelon(const UInt indent) const {
 	StringBuilder sb = "return";
 
-	for (UInt i = 0; i < values.Size(); i++) {
+	for (UInt i = 0; i < values.Count(); i++) {
 		if (i > 0) sb += ", ";
 		else sb += " ";
 		sb += values[i]->ToMelon(indent);

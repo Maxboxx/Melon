@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PTR_INCLUDE
+#define PTR_INCLUDE
 
 #include <utility>
 
@@ -249,6 +250,9 @@ public:
 			ref = ptr.ptr->ref;
 			if (ref) ref->ref++;
 		}
+		else {
+			ref = nullptr;
+		}
 	}
 
 	Weak(const Weak<T>& ptr) {
@@ -269,6 +273,9 @@ public:
 		if (ptr.ptr) {
 			ref = ptr.ptr->ref;
 			if (ref) ref->ref++;
+		}
+		else {
+			ref = nullptr;
 		}
 	}
 
@@ -400,3 +407,4 @@ private:
 	}
 };
 
+#endif

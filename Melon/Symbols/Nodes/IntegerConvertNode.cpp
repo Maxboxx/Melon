@@ -8,40 +8,14 @@ using namespace KiwiOld;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode IntegerConvertNode::Compile(Weak<Expression> operand, CompileInfo& info) const {
-	CompiledNode cn = operand->Compile(info);
+IntegerConvertNode::IntegerConvertNode(const Kiwi::Type& type) {
+	this->type = type;
+}
 
-	if (size >= targetSize || cn.argument.type == ArgumentType::Number) {
-		cn.size = targetSize;
-	}
-	else if (cn.argument.type == ArgumentType::Register) {
-		Instruction mov = Instruction(InstructionType::Mov);
-		mov.arguments.Add(cn.argument);
-		mov.arguments.Add(cn.argument);
-		mov.sizes[0] = targetSize;
-		mov.sizes[1] = size;
-		mov.signs[0] = sign;
-		mov.signs[1] = sign;
-
-		cn.instructions.Add(mov);
-		cn.size = targetSize;
-	}
-	else if (cn.argument.type == ArgumentType::Memory) {
-		Argument arg = Argument(Register(info.index++));
-
-		Instruction mov = Instruction(InstructionType::Mov);
-		mov.arguments.Add(arg);
-		mov.arguments.Add(cn.argument);
-		mov.sizes[0] = targetSize;
-		mov.sizes[1] = size;
-		mov.signs[0] = sign;
-		mov.signs[1] = sign;
-
-		cn.instructions.Add(mov);
-		cn.argument = arg;
-		cn.size = targetSize;
-	}
-
-	return cn;
+Ptr<Kiwi::Value> IntegerConvertNode::Compile(Weak<Expression> operand, CompileInfo& info, bool includeType) const {
+	Ptr<Kiwi::Value> value = operand->Compile(info);
+	Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+	info.AddInstruction(new Kiwi::AssignInstruction(type, var->Copy(), value));
+	return var;
 }
 

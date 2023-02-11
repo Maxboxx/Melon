@@ -35,90 +35,32 @@ GuardStatement::~GuardStatement() {
 
 }
 
-UInt GuardStatement::GetSize() const {
-	return Math::Max(cond->GetSize() + continue_->GetSize(), else_ ? else_->GetSize() : 0);
-}
-
 bool GuardStatement::IsScope() const {
 	return true;
 }
 
-void GuardStatement::CompileElse(CompiledNode& compiled, CompileInfo& info, List<UInt>& jumps) {
-	for (const OptimizerInstruction& in : else_->Compile(info).instructions) {
-		// Check for custom instructions
-		if (in.instruction.type != InstructionType::Custom) {
-			compiled.instructions.Add(in);
-			continue;
-		}
+Ptr<Kiwi::Value> GuardStatement::Compile(CompileInfo& info) {
+	Ptr<Kiwi::Value> condition = cond->Compile(info);
 
-		const String type = in.instruction.instructionName;
+	const String endLbl = info.NewLabel(); 
 
-		// Check for scope wise breaks
-		if (type != BreakStatement::scopeBreakInstName) {
-			compiled.instructions.Add(in);
-			continue;
-		}
+	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(condition, endLbl));
 
-		// Handle scope wise breaks
-		if (in.instruction.sizes[0] > 1) {
-			OptimizerInstruction inst = in;
-			inst.instruction.sizes[0]--;
-			compiled.instructions.Add(inst);
-		}
-		else {
-			Instruction jmp = Instruction(InstructionType::Jmp);
-			jumps.Add(compiled.instructions.Size());
-			compiled.instructions.Add(jmp);
-		}
-	}
-}
+	info.PushScope(LoopInfo(endLbl));
 
-CompiledNode GuardStatement::Compile(CompileInfo& info) {
-	const UInt frame = info.stack.frame;
-
-	// Compile condition
-	CompiledNode compiled = cond->Compile(info);
-
-	info.stack.PopExpr(frame, compiled);
-
-	Instruction ne = Instruction(InstructionType::Ne, 1);
-	ne.arguments.Add(compiled.argument);
-	ne.arguments.Add(Argument(0));
-
-	UInt jumpIndex = compiled.instructions.Size();
-	compiled.instructions.Add(ne);
-
-	List<UInt> jumps;
-
-	// Compile else statements
 	if (else_) {
-		CompileElse(compiled, info, jumps);
+		else_->Compile(info);
 	}
 
-	// Add labels for breaks
-	if (!jumps.IsEmpty()) {
-		Instruction lbl = Instruction::Label(info.label);
-		compiled.instructions.Add(lbl);
-
-		for (const UInt jump : jumps) {
-			compiled.instructions[jump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
-		}
-
-		info.label++;
-	}
-
-	// Compile extra break
 	if (end) {
-		compiled.AddInstructions(end->Compile(info).instructions);
+		end->Compile(info);
 	}
 
-	// Compile the continue statements
-	compiled.instructions.Add(Instruction::Label(info.label));
-	compiled.instructions[jumpIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
+	info.PopScope();
 
-	compiled.AddInstructions(continue_->Compile(info).instructions);
-
-	return compiled;
+	info.NewInstructionBlock(endLbl);
+	continue_->Compile(info);
+	return nullptr;
 }
 
 void GuardStatement::IncludeScan(ParsingInfo& info) {
@@ -193,21 +135,6 @@ Ptr<Statement> GuardStatement::Optimize(OptimizeInfo& info) {
 	if (else_) Node::Optimize(else_, info);
 
 	Node::Optimize(continue_, info);
-
-	// Optimize condition for immediate values
-	if (cond->IsImmediate()) {
-		info.optimized = true;
-
-		// Optimize false
-		if (cond->GetImmediate() == 0) {
-			return OptimizeFalseCondition(info);
-		}
-		// Optimize true
-		else {
-			return OptimizeTrueCondition(info);
-		}
-	}
-
 	return nullptr;
 }
 
@@ -270,19 +197,21 @@ void GuardStatement::AddScopeBreak(ScanInfoStack& info) {
 void GuardStatement::AddScopeWiseBreak(ScanInfoStack& info) {
 	Ptr<BreakStatement> bn = new BreakStatement(scope, file);
 	bn->isBreak = true;
-	bn->loops = 1;
+	bn->loops = 2;
 	bn->scopewise = true;
-	end = bn;
 
 	info->scopeInfo.maxScopeBreakCount = Math::Max(bn->loops, info->scopeInfo.maxScopeBreakCount);
+
+	end = bn;
 }
 
 void GuardStatement::AddContinue(ScanInfoStack& info) {
 	Ptr<ContinueStatement> cn = new ContinueStatement(scope, file);
 	cn->loops = 1;
-	end = cn;
 
 	info->scopeInfo.maxLoopBreakCount = Math::Max(cn->loops, info->scopeInfo.maxLoopBreakCount);
+
+	end = cn;
 }
 
 void GuardStatement::AddReturn(ScanInfoStack& info) {

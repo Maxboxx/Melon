@@ -28,6 +28,9 @@ namespace Melon {
 		template <BaseCallType T>
 		class BaseCallNode : public T {
 		public:
+			/// The operator function to call.
+			Symbols::FunctionSymbol* operatorFunction = nullptr;
+
 			/// The expression to call.
 			Ptr<Expression> expression;
 
@@ -35,7 +38,7 @@ namespace Melon {
 			Boxx::List<Ptr<Expression>> arguments;
 
 			/// The argument attributes for the call.
-			Boxx::List<CallArgAttributes> attributes;
+			Boxx::List<CallArgAttributes> modifiers;
 
 			BaseCallNode(Symbols::Symbol* const scope, const FileInfo& file);
 			~BaseCallNode();
@@ -52,7 +55,10 @@ namespace Melon {
 			/// {true} if the function is a constructor.
 			bool IsInit() const;
 
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			/// Compiles a call expression.
+			Ptr<Kiwi::CallExpression> CompileCallExpression(CompileInfo& info);
+
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<T> Optimize(OptimizeInfo& info) override;
@@ -60,6 +66,14 @@ namespace Melon {
 
 		protected:
 			bool isStatement;
+
+			struct CompileResult {
+				Ptr<Kiwi::CallExpression> call;
+				Ptr<Kiwi::Value> instance;
+				Symbols::FunctionSymbol* func;
+			};
+
+			CompileResult CompileWithResult(CompileInfo& info);
 
 			Boxx::List<Symbols::TypeSymbol*> GetReturnTypes() const;
 
@@ -72,35 +86,6 @@ namespace Melon {
 			Symbols::FunctionSymbol* GetInitFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetStaticOrPlainFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetMethod(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
-
-			struct CallInfo {
-				Symbols::FunctionSymbol* func;
-				bool isInit;
-
-				Boxx::Int retSize, argSize;
-				Boxx::UInt tempSize, pushSize;
-
-				Boxx::List<Boxx::UInt> memoryOffsets;
-				Boxx::List<bool> assignFirst;
-
-				Boxx::UInt frame, initialTop, stackIndex;
-
-				StackPtr initialStack;
-
-				CompiledNode cn;
-			};
-
-			Boxx::UInt CalculateReturnSize(CallInfo& callInfo);
-			Boxx::UInt CalculateArgumentSize(CallInfo& callInfo, CompileInfo& info);
-			Boxx::UInt CalculateTemporarySize(CallInfo& callInfo, CompileInfo info);
-			Boxx::UInt CalculatePushSize(CallInfo& callInfo, CompileInfo& info);
-
-			void SetupStackFrame(CallInfo& callInfo, CompileInfo& info);
-			void CompileArguments(CallInfo& callInfo, CompileInfo& info);
-			void CompileRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			Ptr<Expression> GetRefArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			void CompileCopyArgument(CallInfo& callInfo, CompileInfo& info, Symbols::TypeSymbol* const type, Boxx::Int index);
-			void CompileCall(CallInfo& callInfo, CompileInfo& info);
 		};
 	}
 }

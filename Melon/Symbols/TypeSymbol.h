@@ -74,6 +74,9 @@ namespace Melon {
 			/// Uses the specified type to deduce the template values of the current type.
 			///R A map containing the deduced template types.
 			Boxx::Map<TemplateSymbol*, TypeSymbol*> DeduceTemplates(TypeSymbol* const type);
+
+			/// Gets the kiwi type of symbol.
+			virtual Kiwi::Type KiwiType();
 			
 			virtual TypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
 

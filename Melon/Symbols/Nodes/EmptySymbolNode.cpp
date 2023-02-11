@@ -3,6 +3,6 @@
 using namespace Melon::Nodes;
 using namespace Melon::Symbols::Nodes;
 
-CompiledNode EmptySymbolNode::Compile(CompileInfo& info) const {
-	return CompiledNode();
+Ptr<Kiwi::Value> EmptySymbolNode::Compile(CompileInfo& info) const {
+	return nullptr;
 }

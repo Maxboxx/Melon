@@ -8,11 +8,6 @@ using namespace KiwiOld;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-String BreakStatement::abortInstName      = "abort";
-String BreakStatement::scopeBreakInstName = "break!";
-String BreakStatement::breakTrueInstName  = "breaktrue";
-String BreakStatement::breakFalseInstName = "breakfalse";
-
 BreakStatement::BreakStatement(Symbol* const scope, const FileInfo& file) : Statement(scope, file) {
 	
 }
@@ -21,22 +16,20 @@ BreakStatement::~BreakStatement() {
 
 }
 
-CompiledNode BreakStatement::Compile(CompileInfo& info) {
-	CompiledNode c;
+Ptr<Kiwi::Value> BreakStatement::Compile(CompileInfo& info) {
+	LoopInfo loop = scopewise ? info.PeekScope(loops - 1) : info.PeekLoop(loops - 1);
 
-	Instruction in = Instruction(InstructionType::Custom, loops);
+	String label;
 
-	if (!isBreak)
-		in.instructionName = abortInstName;
-	else if (scopewise)
-		in.instructionName = scopeBreakInstName;
-	else if (breakBool)
-		in.instructionName = breakTrueInstName;
-	else
-		in.instructionName = breakFalseInstName;
+	if (isBreak) {
+		label = breakBool ? loop.trueLabel : loop.falseLabel;
+	}
+	else {
+		label = loop.endLabel;
+	}
 
-	c.instructions.Add(in);
-	return c;
+	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(label));
+	return nullptr;
 }
 
 ScanResult BreakStatement::Scan(ScanInfoStack& info) {

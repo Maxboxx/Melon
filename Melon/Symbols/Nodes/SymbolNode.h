@@ -27,28 +27,22 @@ namespace Melon {
 			public:
 				/// Compiles the symbol node.
 				///A operand: The operand.
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info) const = 0;
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info, bool includeType) const {
+					throw SymbolNodeError("SymbolNode does not override Compile");
+				}
 
 				/// Compiles the symbol node.
 				///A operand1: The first operand.
 				///A operand2: The second operand.
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const = 0;
-
-				/// Offsets a kiwi argument.
-				static KiwiOld::Argument OffsetArgument(const KiwiOld::Argument& arg, const Boxx::UInt frame, Melon::Nodes::CompileInfo& info) {
-					if (arg.type != KiwiOld::ArgumentType::Memory) return arg;
-					if (arg.mem.memptr.IsRight() || arg.mem.memptr.GetLeft().type != KiwiOld::RegisterType::Stack) return arg;
-
-					KiwiOld::Argument a = arg;
-					a.mem.offset += info.stack.frame - frame;
-					return a;
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info, bool includeType) const {
+					throw SymbolNodeError("SymbolNode does not override Compile");
 				}
 			};
 
 			/// Base for unary symbol nodes.
 			class UnarySymbolNode : public SymbolNode {
 			public:
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const override final {
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info, bool includeType) const override final {
 					throw SymbolNodeError("UnarySymbolNode does not support binary operations");
 				}
 			};
@@ -56,7 +50,7 @@ namespace Melon {
 			/// Base for binary symbol nodes.
 			class BinarySymbolNode : public SymbolNode  {
 			public:
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info) const override final {
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info, bool includeType) const override final {
 					throw SymbolNodeError("BinarySymbolNode does not support unary operations");
 				}
 			};
@@ -64,16 +58,18 @@ namespace Melon {
 			/// Base for constant symbol nodes.
 			class ConstantSymbolNode : public SymbolNode {
 			public:
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info) const override final {
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info, bool includeType) const override final {
 					return Compile(info);
 				}
 
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const override final {
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info, bool includeType) const override final {
 					return Compile(info);
 				}
 
 				/// Compiles the symbol node.
-				virtual Melon::Nodes::CompiledNode Compile(Melon::Nodes::CompileInfo& info) const = 0;
+				virtual Ptr<Kiwi::Value> Compile(Melon::Nodes::CompileInfo& info) const {
+					throw SymbolNodeError("ConstantSymbolNode does not override Compile");
+				};
 			};
 		}
 	}

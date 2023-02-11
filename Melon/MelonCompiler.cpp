@@ -3,9 +3,11 @@
 #include "Boxx/File.h"
 #include "Boxx/Mango.h"
 #include "Boxx/System.h"
+#include "Boxx/Path.h"
 
 #include "Kiwi/Old/Kiwi.h"
 #include "Kiwi/Old/x86_64Converter.h"
+#include "Kiwi/KiwiProgram.h"
 
 #include "Melon/Errors.h"
 #include "Melon/Token.h"
@@ -125,6 +127,15 @@ CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 		}
 	}
 
+	// Interpret options
+	if (optionsMap.Contains("interpret")) {
+		Mango interpret = optionsMap["interpret"];
+
+		if (interpret.Type() == MangoType::Boolean) {
+			options.interpret = (bool)interpret;
+		}
+	}
+
 	return options;
 }
 
@@ -140,8 +151,8 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 		ScanInfoStack scanInfo = ScanProject(compOptions, info);
 
 		// Compile + Optimize
-		List<OptimizerInstruction> instructions = CompileProject(info, scanInfo);
-		List<Instruction> optimizedInstructions = KiwiOptimizer::Optimize(instructions, compOptions.kiwiOptimizationPasses);
+		Ptr<Kiwi::KiwiProgram> program = CompileProject(info, scanInfo);
+		//List<Instruction> optimizedInstructions = KiwiOptimizer::Optimize(instructions, compOptions.kiwiOptimizationPasses);
 
 		// Output melon
 		if (compOptions.outputMelon) {
@@ -150,26 +161,29 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 
 		// Output kiwi
 		if (compOptions.outputKiwi) {
-			OutputKiwi(compOptions, optimizedInstructions);
+			OutputKiwi(compOptions, program);
 		}
 
 		// Output assembly
 		if (compOptions.outputAssembly) {
-			OutputAssembly(compOptions, optimizedInstructions);
+			//OutputAssembly(compOptions, optimizedInstructions);
 		}
 
 		ErrorLog::Success(LogMessage("success.compile"), FileInfo());
-		ErrorLog::LogErrors();
+
+		// Interpret kiwi
+		if (compOptions.interpret) {
+			Kiwi::Interpreter::InterpreterData data;
+			data.program = program;
+			program->Interpret(data);
+		}
 	}
 	catch (CompileError& e) {
 		ErrorLog::Fatal(LogMessage("fatal.compile"), FileInfo());
-		ErrorLog::LogErrors();
 	}
 }
 
 CompilerOptions MelonCompiler::SetupCompilerOptions(const CompilerOptions& options) {
-	const String filename = options.mainFile;
-
 	CompilerOptions compOptions = options;
 	compOptions.includeDirectories = List<String>();
 
@@ -179,39 +193,25 @@ CompilerOptions MelonCompiler::SetupCompilerOptions(const CompilerOptions& optio
 	}
 
 	// Add main directory
-	compOptions.includeDirectories.Add(Regex::Match("^(~[%/\\]*){[%/\\].*}?$", filename)->match);
+	compOptions.includeDirectories.Add(Path::GetDirectory(options.mainFile));
 
 	// Setup output file
-	if (compOptions.outputName.Size() == 0) {
-		compOptions.outputName = Regex::Match("(~[%/\\]-){%.~[%/\\%.]*}?$", filename)->match;
+	if (compOptions.outputName.Length() == 0) {
+		compOptions.outputName = Path::GetFileName(options.mainFile);
 	}
 
-	// Format include directories correctly
-	for (UInt i = 0; i < compOptions.includeDirectories.Size(); i++) {
-		const String dir = compOptions.includeDirectories[i];
-
-		if (dir[dir.Size() - 1] != '/' && dir[dir.Size() - 1] != '\\') {
-			compOptions.includeDirectories[i] += "/";
-		}
-	}
-
-	// Setup output directory
-	if (compOptions.outputDirectory.Size() == 0) {
+	// Setup output directory as main directory
+	if (compOptions.outputDirectory.IsEmpty()) {
 		compOptions.outputDirectory = compOptions.includeDirectories.Last();
 	}
-	else if (compOptions.outputDirectory[compOptions.outputDirectory.Size() - 1] != '/' && compOptions.outputDirectory[compOptions.outputDirectory.Size() - 1] != '\\') {
-		compOptions.outputDirectory += "/";
+
+	// Cleanup output directory
+	if (System::DirectoryExists(compOptions.outputDirectory)) {
+		System::DeleteDirectory(compOptions.outputDirectory);
 	}
 
-	// Clean up output directory
-	const String dir = compOptions.outputDirectory.Sub(0, compOptions.outputDirectory.Size() - 2);
-
-	if (System::DirectoryExists(dir)) {
-		System::DeleteDirectory(dir);
-	}
-
-	if (!System::DirectoryExists(dir)) {
-		System::CreateDirectory(dir);
+	if (!System::DirectoryExists(compOptions.outputDirectory)) {
+		System::CreateDirectory(compOptions.outputDirectory);
 	}
 
 	return compOptions;
@@ -265,18 +265,23 @@ ScanInfoStack MelonCompiler::ScanProject(const CompilerOptions& options, Parsing
 	return scanInfo;
 }
 
-List<OptimizerInstruction> MelonCompiler::CompileProject(ParsingInfo& info, ScanInfoStack& scanInfo) {
-	List<OptimizerInstruction> instructions = info.root.Compile(scanInfo.usedVariables);
+Ptr<Kiwi::KiwiProgram> MelonCompiler::CompileProject(ParsingInfo& info, ScanInfoStack& scanInfo) {
+	Ptr<Kiwi::KiwiProgram> program = new Kiwi::KiwiProgram();
+
+	CompileInfo compileInfo;
+	compileInfo.program = program;
+
+	info.root.Compile(compileInfo);
 
 	if (ErrorLog::HasError()) {
 		throw CompileError();
 	}
 
-	return instructions;
+	return program;
 }
 
 void MelonCompiler::OutputKiwi(const CompilerOptions& options, const List<Instruction>& instructions) {
-	KiwiLang::WriteToFile(options.outputDirectory + options.outputName + ".kiwi", ErrorLog::logger, instructions);
+	KiwiLang::WriteToFile(Path::SetExtension(Path::Combine(options.outputDirectory, options.outputName), "kiwi"), ErrorLog::logger, instructions);
 
 	for (const Tuple<Logger::LogLevel, String>& err : ErrorLog::logger) {
 		if (err.value1 == Logger::LogLevel::Error) {
@@ -285,8 +290,15 @@ void MelonCompiler::OutputKiwi(const CompilerOptions& options, const List<Instru
 	}
 }
 
+void MelonCompiler::OutputKiwi(const CompilerOptions& options, Weak<Kiwi::KiwiProgram> program) {
+	StringBuilder builder;
+	program->BuildString(builder);
+
+	FileWriter::WriteText(Path::SetExtension(Path::Combine(options.outputDirectory, options.outputName), "kiwi"), builder.ToString());
+}
+
 void MelonCompiler::OutputAssembly(const CompilerOptions& options, const List<Instruction>& instructions) {
-	KiwiLang::WriteToFile(options.outputDirectory + options.outputName + ".asm", options.converter, instructions);
+	KiwiLang::WriteToFile(Path::SetExtension(Path::Combine(options.outputDirectory, options.outputName), "asm"), options.converter, instructions);
 
 	for (const Tuple<Logger::LogLevel, String>& err : ErrorLog::logger) {
 		if (err.value1 == Logger::LogLevel::Error) {

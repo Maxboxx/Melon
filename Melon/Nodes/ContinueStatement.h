@@ -14,11 +14,9 @@ namespace Melon {
 			ContinueStatement(Symbols::Symbol* const scope, const FileInfo& file);
 			~ContinueStatement();
 
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
-
-			static Boxx::String continueInstName;
 		};
 	}
 }

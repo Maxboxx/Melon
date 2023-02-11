@@ -18,8 +18,8 @@ TypeSymbol* DiscardExpression::Type() const {
 	return nullptr;
 }
 
-CompiledNode DiscardExpression::Compile(CompileInfo& info) {
-	return CompiledNode();
+Ptr<Kiwi::Value> DiscardExpression::Compile(CompileInfo& info) {
+	return nullptr;
 }
 
 StringBuilder DiscardExpression::ToMelon(const Boxx::UInt indent) const {

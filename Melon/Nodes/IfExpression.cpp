@@ -26,7 +26,7 @@ IfExpression::~IfExpression() {
 TypeSymbol* IfExpression::Type() const {
 	TypeSymbol* type = nodes[0]->Type();
 
-	for (UInt i = 1; i < nodes.Size(); i++) {
+	for (UInt i = 1; i < nodes.Count(); i++) {
 		if (type != nodes[i]->Type()) {
 			ErrorLog::Error(LogMessage("error.type.if"), file);
 		}
@@ -35,72 +35,31 @@ TypeSymbol* IfExpression::Type() const {
 	return type;
 }
 
-CompiledNode IfExpression::Compile(CompileInfo& info) {
-	CompiledNode cn;
+Ptr<Kiwi::Value> IfExpression::Compile(CompileInfo& info) {
+	const String endLbl = info.NewLabel();
+	String nextLbl;
 
-	// Setup return value
-	cn.size = Type()->Size();
+	Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+	info.AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), var->Copy(), nullptr));
 
-	List<UInt> jumps;
+	for (UInt i = 0; i < conditions.Count(); i++) {
+		nextLbl = info.NewLabel();
 
-	info.stack.PushExpr(cn.size, cn);
-	const UInt frame = info.stack.frame; 
+		Ptr<Kiwi::Value> cond = conditions[i]->Compile(info);
+		info.AddInstruction(new Kiwi::IfInstruction(cond, nullptr, nextLbl));
 
-	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
+		Ptr<Kiwi::Value> value = nodes[i]->Compile(info);
+		info.AddInstruction(new Kiwi::AssignInstruction(var->Copy(), value));
 
-	Ptr<StackExpression> sn = new StackExpression(info.stack.top);
-	sn->type = Type()->AbsoluteName();
-
-	StackPtr stack = info.stack;
-
-	// Compile conditions and segments
-	for (UInt i = 0; i < conditions.Size(); i++) {
-		info.stack = stack;
-		info.stack.PopExpr(frame, cn);
-
-		// Compile condition
-		CompiledNode cond = conditions[i]->Compile(info);
-		cn.AddInstructions(cond.instructions);
-
-		stack = info.stack;
-
-		Instruction condInst = Instruction(InstructionType::Eq, 1);
-		condInst.arguments.Add(cond.argument);
-		condInst.arguments.Add(Argument(0));
-		cn.instructions.Add(condInst);
-
-		UInt jump = cn.instructions.Size() - 1;
-
-		// Compile value assignment
-		cn.AddInstructions(CompileAssignment(sn, nodes[i], info, nodes[i]->File()).instructions);
-
-		info.stack.PopExpr(frame, cn);
-
-		// Add jump and label
-		jumps.Add(cn.instructions.Size());
-		cn.instructions.Add(Instruction(InstructionType::Jmp, 0));
-
-		cn.instructions[jump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
-		cn.instructions.Add(Instruction::Label(info.label++));
+		info.AddInstruction(new Kiwi::GotoInstruction(endLbl));
+		info.NewInstructionBlock(nextLbl);
 	}
 
-	info.stack = stack;
+	Ptr<Kiwi::Value> value = nodes.Last()->Compile(info);
+	info.AddInstruction(new Kiwi::AssignInstruction(var->Copy(), value));
 
-	// Compile else
-	cn.AddInstructions(CompileAssignment(sn, nodes.Last(), info, nodes.Last()->File()).instructions);
-
-	info.stack.PopExpr(frame, cn);
-
-	// Add jumps to end
-	for (UInt i : jumps) {
-		cn.instructions[i].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
-	}
-
-	// End label
-	cn.instructions.Add(Instruction::Label(info.label++));
-
-	info.stack.Pop(Type()->Size());
-	return cn;
+	info.NewInstructionBlock(endLbl);
+	return var;
 }
 
 void IfExpression::IncludeScan(ParsingInfo& info) {
@@ -145,7 +104,7 @@ ScanResult IfExpression::Scan(ScanInfoStack& info) {
 NameList IfExpression::FindSideEffectScope(const bool assign) {
 	NameList list = conditions[0]->GetSideEffectScope(assign);
 
-	for (UInt i = 1; i < conditions.Size(); i++) {
+	for (UInt i = 1; i < conditions.Count(); i++) {
 		list = CombineSideEffects(list, conditions[i]->GetSideEffectScope(assign));
 	}
 
@@ -166,29 +125,8 @@ Ptr<Expression> IfExpression::Optimize(OptimizeInfo& info) {
 		Node::Optimize(cond, info);
 	}
 
-	// TODO: save type before this
-	// Remove segments
-	for (UInt i = 0; i < conditions.Size(); i++) {
-		if (conditions[i]->IsImmediate()) {
-			// Remove segment if condition is false
-			if (conditions[i]->GetImmediate() == 0) {
-				conditions.RemoveAt(i);
-				nodes.RemoveAt(i);
-				i--;
-				info.optimized = true;
-			}
-			// Remove remaining segments if condition is true
-			else {
-				nodes.RemoveAt(i + 1, nodes.Size() - i - 1);
-				conditions.RemoveAt(i, conditions.Size() - i);
-				info.optimized = true;
-				break;
-			}
-		}
-	}
-
 	// Replcae if expression with a value if there is only one segment
-	if (nodes.Size() == 1) {
+	if (nodes.Count() == 1) {
 		if (nodes[0]->Type() != Type()) {
 			Ptr<TypeConversion> cn = new TypeConversion(nodes[0]->scope, nodes[0]->File());
 			cn->isExplicit = true;
@@ -211,11 +149,11 @@ StringBuilder IfExpression::ToMelon(const UInt indent) const {
 	String tabs1 = String('\t').Repeat(indent);
 	String tabs2 = String('\t').Repeat(indent + 1);
 
-	for (UInt i = 0; i < nodes.Size(); i++) {
+	for (UInt i = 0; i < nodes.Count(); i++) {
 		if (i == 0) {
 			sb += "if ";
 		}
-		else if (i < conditions.Size()) {
+		else if (i < conditions.Count()) {
 			sb += tabs1;
 			sb += "elseif ";
 		}
@@ -224,7 +162,7 @@ StringBuilder IfExpression::ToMelon(const UInt indent) const {
 			sb += "else";
 		}
 
-		if (i < conditions.Size()) {
+		if (i < conditions.Count()) {
 			sb += conditions[i]->ToMelon(indent);
 			sb += " then\n";
 		}

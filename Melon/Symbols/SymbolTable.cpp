@@ -16,9 +16,8 @@
 #include "Nodes/IntegerAssignNode.h"
 #include "Nodes/IntegerConvertNode.h"
 #include "Nodes/BooleanAssignNode.h"
-#include "Nodes/BooleanCompareNode.h"
+#include "Nodes/BooleanBinaryOperatorNode.h"
 #include "Nodes/BooleanNotNode.h"
-#include "Nodes/BooleanToBooleanNode.h"
 #include "Nodes/BooleanConstantNode.h"
 #include "Nodes/EmptySymbolNode.h"
 #include "Nodes/OptionalAssignNode.h"
@@ -111,9 +110,11 @@ Symbol* SymbolTable::Find(NameList name, NameList scope, const FileInfo& file, c
 		while (list.Size() > 0) {
 			Symbol* const s = FindInNamespaces(list, file);
 
-			if (Symbol* const sym = s->Contains(name)) {
-				if (ignoreOrder || sym->file.statement < file.statement || sym->Is<TemplateSymbol>()) {
-					return sym;
+			if (s) {
+				if (Symbol* const sym = s->Contains(name)) {
+					if (ignoreOrder || sym->file.statement < file.statement || sym->Is<TemplateSymbol>()) {
+						return sym;
+					}
 				}
 			}
 
@@ -246,7 +247,7 @@ FunctionSymbol* SymbolTable::FindOperator(const Name& op, TypeSymbol* const type
 	return nullptr;
 }
 
-FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file) {
+FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file, bool logErrors) {
 	if (!from || !to) return nullptr;
 
 	if (FunctionSymbol* const op = from->ImplicitConversionTo(to)) {
@@ -257,11 +258,14 @@ FunctionSymbol* SymbolTable::FindImplicitConversion(TypeSymbol* const from, Type
 		return op;
 	}
 
-	// TODO: error
+	if (logErrors) {
+		ErrorLog::Error(LogMessage("error.symbol.implicit", from->AbsoluteName().ToSimpleString(), to->AbsoluteName().ToSimpleString()), file);
+	}
+
 	return nullptr;
 }
 
-FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file) {
+FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file, bool logErrors) {
 	if (!from || !to) return nullptr;
 
 	if (FunctionSymbol* const op = from->ExplicitConversionTo(to)) {
@@ -272,7 +276,10 @@ FunctionSymbol* SymbolTable::FindExplicitConversion(TypeSymbol* const from, Type
 		return op;
 	}
 
-	// TODO: error
+	if (logErrors) {
+		ErrorLog::Error(LogMessage("error.symbol.explicit", from->AbsoluteName().ToSimpleString(), to->AbsoluteName().ToSimpleString()), file);
+	}
+
 	return nullptr;
 }
 
@@ -389,7 +396,7 @@ NameList SymbolTable::ReplaceTemplates(const NameList& name, const NameList& sco
 					temp = temp.Add(type[1]);
 				}
 
-				if (Symbol* const sym = Find(temp, scope, file, SymbolTable::SearchOptions::ReplaceTemplates)) {
+				if (Symbol* const sym = Find(temp, scope, file, temp == name ? SymbolTable::SearchOptions::None : SymbolTable::SearchOptions::ReplaceTemplates)) {
 					NameList absolute = ReplaceTemplatesAbsolute(sym->AbsoluteName(), file);
 					
 					if (temp != absolute) {
@@ -433,7 +440,8 @@ void SymbolTable::Setup() {
 }
 
 IntegerSymbol* SymbolTable::Byte   = nullptr;
-IntegerSymbol* SymbolTable::UByte  = nullptr;
+IntegerSymbol* SymbolTable::Tiny   = nullptr;
+IntegerSymbol* SymbolTable::UTiny  = nullptr;
 IntegerSymbol* SymbolTable::Short  = nullptr;
 IntegerSymbol* SymbolTable::UShort = nullptr;
 IntegerSymbol* SymbolTable::Int    = nullptr;
@@ -443,8 +451,8 @@ IntegerSymbol* SymbolTable::ULong  = nullptr;
 
 void SymbolTable::SetupIntegers() {
 	Map<NameList, Boxx::Byte> integers;
-	integers.Add(NameList::Byte, -1);
-	integers.Add(NameList::UByte, 1);
+	integers.Add(NameList::Tiny, -1);
+	integers.Add(NameList::Byte, 1);
 	integers.Add(NameList::Short, -2);
 	integers.Add(NameList::UShort, 2);
 	integers.Add(NameList::Int, -4);
@@ -452,48 +460,58 @@ void SymbolTable::SetupIntegers() {
 	integers.Add(NameList::Long, -8);
 	integers.Add(NameList::ULong, 8);
 
-	Map<Name, InstructionType> binOps;
-	binOps.Add(Name::Add,          InstructionType::Add);
-	binOps.Add(Name::Sub,          InstructionType::Sub);
-	binOps.Add(Name::Mul,          InstructionType::Mul);
-	binOps.Add(Name::IDiv,         InstructionType::Div);
-	binOps.Add(Name::Mod,          InstructionType::Mod);
-	binOps.Add(Name::BitOr,        InstructionType::Or);
-	binOps.Add(Name::BitAnd,       InstructionType::And);
-	binOps.Add(Name::BitXor,       InstructionType::Xor);
-	binOps.Add(Name::BitNor,       InstructionType::Nor);
-	binOps.Add(Name::BitNand,      InstructionType::Nand);
-	binOps.Add(Name::BitXnor,      InstructionType::Xnor);
-	binOps.Add(Name::ShiftLeft,    InstructionType::ShL);
-	binOps.Add(Name::ShiftRight,   InstructionType::ShR);
-	binOps.Add(Name::Equal,        InstructionType::Eq);
-	binOps.Add(Name::NotEqual,     InstructionType::Ne);
-	binOps.Add(Name::LessEqual,    InstructionType::Le);
-	binOps.Add(Name::GreaterEqual, InstructionType::Ge);
-	binOps.Add(Name::Less,         InstructionType::Lt);
-	binOps.Add(Name::Greater,      InstructionType::Gt);
+	Map<NameList, IntegerSymbol*> intSymbols;
+
+	Map<Name, bool> binOps;
+	binOps.Add(Name::Add, false);
+	binOps.Add(Name::Sub, false);
+	binOps.Add(Name::Mul, false);
+	binOps.Add(Name::IDiv, false);
+	binOps.Add(Name::Mod, false);
+	binOps.Add(Name::BitOr, false);
+	binOps.Add(Name::BitAnd, false);
+	binOps.Add(Name::BitXor, false);
+	binOps.Add(Name::BitNor, false);
+	binOps.Add(Name::BitNand, false);
+	binOps.Add(Name::BitXnor, false);
+	binOps.Add(Name::ShiftLeft, false);
+	binOps.Add(Name::ShiftRight, false);
+	binOps.Add(Name::Equal, true);
+	binOps.Add(Name::NotEqual, true);
+	binOps.Add(Name::LessEqual, true);
+	binOps.Add(Name::GreaterEqual, true);
+	binOps.Add(Name::Less, true);
+	binOps.Add(Name::Greater, true);
 
 	for (const Pair<NameList, Boxx::Byte> integer : integers) {
+		List<Name> aliases;
+
+		if (integer.key == NameList::Byte) {
+			aliases.Add(NameList::UTiny[0]);
+		}
+
 		// Type
-		IntegerSymbol* const intSym = symbols->AddSymbol(integer.key[0], new IntegerSymbol(
+		IntegerSymbol* const intSym = symbols->AddSymbol(integer.key[0], aliases, new IntegerSymbol(
 			integer.value < 0 ? -integer.value : integer.value,
 			integer.value < 0,
 			FileInfo()
 		));
 
+		intSymbols.Add(integer.key, intSym);
+
 		// Min max
 		VariableSymbol* const min = intSym->AddSymbol(Name("min"), new VariableSymbol(FileInfo()));
-		min->attributes = VariableAttributes::Const | VariableAttributes::Static;
+		min->modifiers = VariableModifiers::Const | VariableModifiers::Static;
 		min->type = intSym->AbsoluteName();
 
 		VariableSymbol* const max = intSym->AddSymbol(Name("max"), new VariableSymbol(FileInfo()));
-		max->attributes = VariableAttributes::Const | VariableAttributes::Static;
+		max->modifiers = VariableModifiers::Const | VariableModifiers::Static;
 		max->type = intSym->AbsoluteName();
 
 		// Neg
 		FunctionSymbol* const neg  = intSym->AddSymbol(Name::Neg, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const neg1 = neg->AddOverload(new FunctionSymbol(FileInfo()));
-		neg1->symbolNode = new IntegerUnaryOperatorNode(Math::Abs(integer.value), InstructionType::Neg);
+		neg1->symbolNode = new IntegerUnaryOperatorNode(Name::Neg);
 
 		if (integer.value > 0) {
 			neg1->arguments.Add(NameList(true).Add(Name(integer.key[0].name.Sub(1))));
@@ -507,7 +525,7 @@ void SymbolTable::SetupIntegers() {
 		// Bit Not
 		FunctionSymbol* const bnot  = intSym->AddSymbol(Name::BitNot, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const bnot1 = bnot->AddOverload(new FunctionSymbol(FileInfo()));
-		bnot1->symbolNode = new IntegerUnaryOperatorNode(Math::Abs(integer.value), InstructionType::Not);
+		bnot1->symbolNode = new IntegerUnaryOperatorNode(Name::BitNot);
 		bnot1->arguments.Add(integer.key);
 		bnot1->returnValues.Add(integer.key);
 
@@ -529,24 +547,26 @@ void SymbolTable::SetupIntegers() {
 		// Assign
 		FunctionSymbol* const assign  = intSym->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 		FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
-		assign1->symbolNode = new IntegerAssignNode(integer.value);
+		assign1->symbolNode = new IntegerAssignNode();
 		assign1->arguments.Add(integer.key);
+	}
 
-		// Binary operators
-		for (const Pair<NameList, Boxx::Byte> integer2 : integers) {
+	Kiwi::Type boolType = intSymbols[NameList::Byte]->KiwiType();
+
+	// Binary operators
+	for (const Pair<NameList, Boxx::Byte>& integer : integers) {
+		IntegerSymbol* const intSym = intSymbols[integer.key];
+
+		for (const Pair<NameList, Boxx::Byte>& integer2 : integers) {
+			IntegerSymbol* const intSym2 = intSymbols[integer2.key];
+
 			FunctionSymbol* const convert1 = intSym->Contains<FunctionSymbol>(Name::As)->AddOverload(new FunctionSymbol(FileInfo()));
-			
-			IntegerConvertNode* const cn = new IntegerConvertNode();
-			cn->size = Math::Abs(integer.value);
-			cn->sign = integer.value < 0;
-			cn->targetSize = Math::Abs(integer2.value);
-
 			convert1->arguments.Add(integer.key);
 			convert1->returnValues.Add(integer2.key);
-			convert1->symbolNode = cn;
+			convert1->symbolNode = new IntegerConvertNode(intSym2->KiwiType());
 			convert1->isExplicit = false;
 
-			for (const Pair<Name, InstructionType>& op : binOps) {
+			for (const Pair<Name, bool>& op : binOps) {
 				FunctionSymbol* binOp = intSym->Contains<FunctionSymbol>(op.key);
 				if (!binOp) binOp = intSym->AddSymbol(op.key, new FunctionSymbol(FileInfo()));
 
@@ -556,36 +576,37 @@ void SymbolTable::SetupIntegers() {
 				const Boxx::UByte v2 = integer2.value < 0 ? -integer2.value : integer2.value;
 				const bool sign = integer.value < 0 || integer2.value < 0;
 
-				if (Instruction::IsComp(op.value))
+				if (op.value) {
 					binOp1->returnValues.Add(NameList::Bool);
+				}
 				else {
 					const NameList name = v1 > v2 ? integer.key : integer2.key;
 
-					if (sign && name[0].name[0] == 'u')
+					if (sign && name[0].name[0] == 'u') {
 						binOp1->returnValues.Add(NameList(true).Add(Name(name[0].name.Sub(1))));
-					else
+					}
+					else {
 						binOp1->returnValues.Add(name);
+					}
 				}
 
 				binOp1->arguments.Add(integer.key);
 				binOp1->arguments.Add(integer2.key);
-				binOp1->symbolNode = new IntegerBinaryOperatorNode(
-					v1 > v2 ? v1 : v2,
-					sign,
-					op.value
-				);
+
+				binOp1->symbolNode = new IntegerBinaryOperatorNode(op.key, op.value ? boolType : (v1 > v2 ? intSym->KiwiType() : intSym2->KiwiType()));
 			}
 		}
 	}
 
-	SymbolTable::Byte   = FindAbsolute<IntegerSymbol>(NameList::Byte,   FileInfo());
-	SymbolTable::UByte  = FindAbsolute<IntegerSymbol>(NameList::UByte,  FileInfo());
-	SymbolTable::Short  = FindAbsolute<IntegerSymbol>(NameList::Short,  FileInfo());
-	SymbolTable::UShort = FindAbsolute<IntegerSymbol>(NameList::UShort, FileInfo());
-	SymbolTable::Int    = FindAbsolute<IntegerSymbol>(NameList::Int,    FileInfo());
-	SymbolTable::UInt   = FindAbsolute<IntegerSymbol>(NameList::UInt,   FileInfo());
-	SymbolTable::Long   = FindAbsolute<IntegerSymbol>(NameList::Long,   FileInfo());
-	SymbolTable::ULong  = FindAbsolute<IntegerSymbol>(NameList::ULong,  FileInfo());
+	SymbolTable::Tiny   = intSymbols[NameList::Tiny];
+	SymbolTable::UTiny  = intSymbols[NameList::Byte];
+	SymbolTable::Byte   = intSymbols[NameList::Byte];
+	SymbolTable::Short  = intSymbols[NameList::Short];
+	SymbolTable::UShort = intSymbols[NameList::UShort];
+	SymbolTable::Int    = intSymbols[NameList::Int];
+	SymbolTable::UInt   = intSymbols[NameList::UInt];
+	SymbolTable::Long   = intSymbols[NameList::Long];
+	SymbolTable::ULong  = intSymbols[NameList::ULong];
 }
 
 IntegerSymbol* SymbolTable::Bool = nullptr;
@@ -598,32 +619,27 @@ void SymbolTable::SetupBoolean() {
 	assign1->symbolNode = new BooleanAssignNode();
 	assign1->arguments.Add(NameList::Bool);
 
-	FunctionSymbol* const eq  = boolSym->AddSymbol(Name::Equal, new FunctionSymbol(FileInfo()));
-	FunctionSymbol* const eq1 = eq->AddOverload(new FunctionSymbol(FileInfo()));
-	eq1->symbolNode = new BooleanCompareNode(InstructionType::Eq);
-	eq1->arguments.Add(NameList::Bool);
-	eq1->arguments.Add(NameList::Bool);
-	eq1->returnValues.Add(NameList::Bool);
+	List<Name> binOps;
+	binOps.Add(Name::BitOr);
+	binOps.Add(Name::BitAnd);
+	binOps.Add(Name::BitXor);
+	binOps.Add(Name::Equal);
+	binOps.Add(Name::NotEqual);
 
-	FunctionSymbol* const ne  = boolSym->AddSymbol(Name::NotEqual, new FunctionSymbol(FileInfo()));
-	FunctionSymbol* const ne1 = ne->AddOverload(new FunctionSymbol(FileInfo()));
-	ne1->symbolNode = new BooleanCompareNode(InstructionType::Ne);
-	ne1->arguments.Add(NameList::Bool);
-	ne1->arguments.Add(NameList::Bool);
-	ne1->returnValues.Add(NameList::Bool);
+	for (const Name& op : binOps) {
+		FunctionSymbol* const func  = boolSym->AddSymbol(op, new FunctionSymbol(FileInfo()));
+		FunctionSymbol* const func1 = func->AddOverload(new FunctionSymbol(FileInfo()));
+		func1->symbolNode = new BooleanBinaryOperatorNode(op);
+		func1->arguments.Add(NameList::Bool);
+		func1->arguments.Add(NameList::Bool);
+		func1->returnValues.Add(NameList::Bool);
+	}
 
 	FunctionSymbol* const boolNot  = boolSym->AddSymbol(Name::Not, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const boolNot1 = boolNot->AddOverload(new FunctionSymbol(FileInfo()));
 	boolNot1->symbolNode = new BooleanNotNode();
 	boolNot1->arguments.Add(NameList::Bool);
 	boolNot1->returnValues.Add(NameList::Bool);
-
-	FunctionSymbol* const toBool  = boolSym->AddSymbol(Name::As, new FunctionSymbol(FileInfo()));
-	FunctionSymbol* const toBool1 = toBool->AddOverload(new FunctionSymbol(FileInfo()));
-	toBool1->symbolNode = new BooleanToBooleanNode();
-	toBool1->arguments.Add(NameList::Bool);
-	toBool1->returnValues.Add(NameList::Bool);
-	toBool1->isExplicit = false;
 
 	SymbolTable::Bool = boolSym;
 }
@@ -661,17 +677,20 @@ void SymbolTable::SetupOptional() {
 	Name scope = Name("");
 	scope.types = args;
 
-	StructSymbol* const optional = optionalSym->AddSymbol(scope, new StructSymbol(FileInfo()));
+	StructSymbol* const optional = new StructSymbol(FileInfo());
 	optional->templateArguments.Add(args[0]);
+	optionalSym->AddTemplateVariant(optional);
 
 	TemplateSymbol* const templateSym = optional->AddSymbol(Name("T"), new TemplateSymbol(FileInfo()));
 	templateSym->type = templateSym->AbsoluteName();
 
 	VariableSymbol* const hasValue = optional->AddSymbol(Name::HasValue, new VariableSymbol(FileInfo()));
 	hasValue->type = NameList::Bool;
+	optional->members.Add(Name::HasValue);
 
 	VariableSymbol* const value = optional->AddSymbol(Name::Value, new VariableSymbol(FileInfo()));
 	value->type = templateSym->AbsoluteName();
+	optional->members.Add(Name::Value);
 
 	FunctionSymbol* const assign  = optional->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 

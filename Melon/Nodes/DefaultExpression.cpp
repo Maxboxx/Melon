@@ -1,7 +1,7 @@
 #include "DefaultExpression.h"
 
-#include "KiwiMemoryExpression.h"
 #include "TypeExpression.h"
+#include "KiwiVariable.h"
 
 #include "Melon/Symbols/VariableSymbol.h"
 
@@ -38,60 +38,39 @@ TypeSymbol* DefaultExpression::Type() const {
 	// TODO: error?
 	if (type == nullptr) return nullptr;
 
-	if (SymbolTable::FindImplicitConversion(operand2->Type(), type, file)) {
+	if (!SymbolTable::FindImplicitConversion(operand2->Type(), type, file)) {
 		ErrorLog::Error(LogMessage("error.type.default"), file);
 	}
 
 	return type;
 }
 
-CompiledNode DefaultExpression::Compile(CompileInfo& info) {
-	CompiledNode cn;
-	cn.size = info.stack.ptrSize;
+Ptr<Kiwi::Value> DefaultExpression::Compile(CompileInfo& info) {
+	Ptr<Kiwi::Variable> optional = operand1->Compile(info).AsPtr<Kiwi::Variable>();
+	if (!optional) return nullptr;
 
-	List<UInt> jumps;
+	Ptr<Kiwi::Variable> var  = new Kiwi::Variable(info.NewRegister());
+	info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), var->Copy(), nullptr));
 
-	info.stack.PushExpr(Type()->Size(), cn);
-	cn.argument = Argument(MemoryLocation(info.stack.Offset()));
+	// Condition
+	Ptr<Kiwi::Expression> cond = new Kiwi::SubVariable(optional->Copy(), operand1->Type()->Find(Name::HasValue, operand1->File())->KiwiName());
+	const String falseLbl = info.NewLabel();
+	const String endLbl   = info.NewLabel();
 
-	// Compile the optional value
-	CompiledNode c1 = operand1->Compile(info);
-	cn.AddInstructions(c1.instructions);
-	cn.size = c1.size - 1;
+	info.currentBlock->AddInstruction(new Kiwi::IfInstruction(cond, nullptr, falseLbl));
 
-	UInt eqIndex = cn.instructions.Size();
+	// Unwrap
+	info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(var->Copy(), new Kiwi::SubVariable(optional->Copy(), operand1->Type()->Find(Name::Value, operand1->File())->KiwiName())));
+	info.currentBlock->AddInstruction(new Kiwi::GotoInstruction(endLbl));
 
-	// Check if the optional has a value
-	Instruction eq = Instruction(InstructionType::Eq, 1);
-	eq.arguments.Add(c1.argument);
-	eq.arguments.Add(Argument(0));
-	cn.instructions.Add(eq);
+	// Default value
+	info.NewInstructionBlock(falseLbl);
+	Ptr<KiwiVariable> target = new KiwiVariable(var->Copy(), Type()->AbsoluteName());
+	Node::CompileAssignment(target, operand2, info, operand2->File(), false);
 
-	// Get memory location for the result and the optional value
-	Ptr<KiwiMemoryExpression> sn1 = new KiwiMemoryExpression(cn.argument.mem, Type()->AbsoluteName());
-	Ptr<KiwiMemoryExpression> sn2 = new KiwiMemoryExpression(c1.argument.mem.offset + 1, operand1->Type()->Find<VariableSymbol>(Name::Value, file)->Type()->AbsoluteName());
-
-	// Assign the optional value to the result
-	cn.AddInstructions(CompileAssignment(sn1, sn2, info, file).instructions);
-
-	// And jump to end
-	UInt jmp = cn.instructions.Size();
-	cn.instructions.Add(Instruction(InstructionType::Jmp));
-
-	// Add label for default value
-	cn.instructions.Add(Instruction::Label(info.label));
-	cn.instructions[eqIndex].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
-
-	// Assign default value to result
-	cn.AddInstructions(CompileAssignment(sn1, operand2, info, file).instructions);
-
-	// Add label to the end
-	cn.instructions.Add(Instruction::Label(info.label));
-	cn.instructions[jmp].instruction.arguments.Add(Argument(ArgumentType::Label, info.label++));
-
-	info.stack.Pop(Type()->Size());
-
-	return cn;
+	// End
+	info.NewInstructionBlock(endLbl);
+	return var;
 }
 
 void DefaultExpression::IncludeScan(ParsingInfo& info) {

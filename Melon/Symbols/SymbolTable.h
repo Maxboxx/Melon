@@ -144,14 +144,14 @@ namespace Melon {
 			///A to:   The type to convert to.
 			///R The conversion operator.
 			/// {nullptr} if the operator was not found.
-			static FunctionSymbol* FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file);
+			static FunctionSymbol* FindImplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file, bool logErrors = true);
 
 			/// Finds the explicit conversion operator for the specified types.
 			///A from: The type to convert from.
 			///A to:   The type to convert to.
 			///R The conversion operator.
 			/// {nullptr} if the operator was not found.
-			static FunctionSymbol* FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file);
+			static FunctionSymbol* FindExplicitConversion(TypeSymbol* const from, TypeSymbol* const to, const FileInfo& file, bool logErrors = true);
 
 			/// Adds basic types to the symbol table.
 			static void Setup();
@@ -165,8 +165,11 @@ namespace Melon {
 			/// The symbol for the {byte} type.
 			static IntegerSymbol* Byte;
 
-			/// The symbol for the {ubyte} type.
-			static IntegerSymbol* UByte;
+			/// The symbol for the {tiny} type.
+			static IntegerSymbol* Tiny;
+
+			/// The symbol for the {utiny} type.
+			static IntegerSymbol* UTiny;
 
 			/// The symbol for the {short} type.
 			static IntegerSymbol* Short;

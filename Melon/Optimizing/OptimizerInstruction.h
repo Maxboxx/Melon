@@ -25,7 +25,7 @@ namespace Melon {
 			bool CanJump() const {
 				if (KiwiOld::Instruction::IsComp(instruction.type)) {
 					return 
-						instruction.arguments.Size() == 3 &&
+						instruction.arguments.Count() == 3 &&
 						instruction.arguments[2].type == KiwiOld::ArgumentType::Label;
 				}
 
@@ -104,11 +104,11 @@ namespace Melon {
 
 			/// {true} if the instruction assigns a value to a register or memory location.
 			bool IsAssignment() const {
-				if (instruction.arguments.Size() == 2) {
+				if (instruction.arguments.Count() == 2) {
 					return instruction.type == KiwiOld::InstructionType::Mov || instruction.type == KiwiOld::InstructionType::Adr;
 				}
 				else {
-					return instruction.arguments.Size() == 3;
+					return instruction.arguments.Count() == 3;
 				}
 			}
 
@@ -116,7 +116,7 @@ namespace Melon {
 			bool IsRegisterAssignment() const {
 				if (!IsAssignment()) return false;
 
-				if (instruction.arguments.Size() == 2) {
+				if (instruction.arguments.Count() == 2) {
 					return instruction.arguments[0].type == KiwiOld::ArgumentType::Register;
 				}
 				else {
@@ -127,7 +127,7 @@ namespace Melon {
 			/// Gets the register that a value is assigned to.
 			KiwiOld::Register GetAssignedRegister() const {
 				if (IsRegisterAssignment()) {
-					return instruction.arguments.Size() == 2 ? GetRegister(0) : GetRegister(2);
+					return instruction.arguments.Count() == 2 ? GetRegister(0) : GetRegister(2);
 				}
 
 				return KiwiOld::Register();
@@ -136,7 +136,7 @@ namespace Melon {
 			/// Gets the index of the assigned register or memory location.
 			Boxx::UInt GetAssignedIndex() const {
 				if (IsAssignment()) {
-					return instruction.arguments.Size() == 2 ? 0 : 2;
+					return instruction.arguments.Count() == 2 ? 0 : 2;
 				}
 
 				return 0;

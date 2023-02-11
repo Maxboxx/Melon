@@ -29,14 +29,14 @@ ScopeSymbol::~ScopeSymbol() {
 ScopeSymbol* ScopeSymbol::AddScope(const FileInfo& file) {
 	ScopeSymbol* const table = new ScopeSymbol(file);
 	table->parent = this;
-	table->name   = Symbols::Name(String::ToString(scopes.Size()));
+	table->name   = Symbols::Name(String::ToString(scopes.Count()));
 	scopes.Add(table);
 	return table;
 }
 
 void ScopeSymbol::AddScope(ScopeSymbol* const scope) {
 	scope->parent = this;
-	scope->name   = Symbols::Name(String::ToString(scopes.Size()));
+	scope->name   = Symbols::Name(String::ToString(scopes.Count()));
 	scopes.Add(scope);
 }
 
@@ -48,7 +48,7 @@ Symbol* ScopeSymbol::FindSymbol(const NameList& scopeList, const UInt index, con
 	if (numReg.Match(scopeList[index].name)) {
 		const UInt i = scopeList[index].name.ToUInt();
 
-		if (i < scopes.Size()) {
+		if (i < scopes.Count()) {
 			return scopes[i]->FindSymbol(scopeList, index + 1, file);
 		}
 	}

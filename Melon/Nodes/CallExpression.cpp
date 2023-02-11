@@ -1,6 +1,6 @@
 #include "CallExpression.h"
 
-#include "BaseCallNode.cpp"
+#include "BaseCallNode.hpp"
 
 using namespace Boxx;
 using namespace KiwiOld;

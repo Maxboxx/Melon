@@ -51,7 +51,7 @@ Ptr<Expression> ExpressionParser::Parse(ParsingInfo& info, const bool statement)
 				if (token.type == TokenType::As) {
 					if (Ptr<TypeConversion> node = AsParser::Parse(info)) {
 						node->expression = nodes.Last();
-						nodes[nodes.Size() - 1] = node;
+						nodes[nodes.Count() - 1] = node;
 					}
 				}
 				else {
@@ -88,7 +88,7 @@ Ptr<Expression> ExpressionParser::Parse(ParsingInfo& info, const bool statement)
 
 		if (!operators.IsEmpty()) {
 			while (!operators.IsEmpty()) {
-				for (UInt i = 0; i < operators.Size();) {
+				for (UInt i = 0; i < operators.Count();) {
 					if (Precedence(operators[i].key) == highestPrecedence) {
 						Ptr<BinaryOperatorExpression> op = operators[i].value;
 						op->operand1 = nodes[i];

@@ -27,12 +27,12 @@ FunctionSymbol::~FunctionSymbol() {
 }
 
 TypeSymbol* FunctionSymbol::ReturnType(const UInt index) {
-	if (index >= returnValues.Size()) return nullptr;
+	if (index >= returnValues.Count()) return nullptr;
 	return SymbolTable::Find<TypeSymbol>(returnValues[index], AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 }
 
 TypeSymbol* FunctionSymbol::ArgumentType(const UInt index) {
-	if (index >= arguments.Size()) return nullptr;
+	if (index >= arguments.Count()) return nullptr;
 	
 	if (symbolNode) {
 		return SymbolTable::FindAbsolute<TypeSymbol>(arguments[index], file);
@@ -46,7 +46,7 @@ TypeSymbol* FunctionSymbol::ArgumentType(const UInt index) {
 }
 
 VariableSymbol* FunctionSymbol::Argument(const UInt index) {
-	if (index >= arguments.Size()) return nullptr;
+	if (index >= arguments.Count()) return nullptr;
 
 	if (symbolNode) {
 		return nullptr;
@@ -56,49 +56,8 @@ VariableSymbol* FunctionSymbol::Argument(const UInt index) {
 	}
 }
 
-UInt FunctionSymbol::ArgumentSize() {
-	UInt size = 0;
-
-	for (UInt i = 0; i < arguments.Size(); i++) {
-		VariableSymbol* const var = Argument(i);
-
-		if (var->HasAttribute(VariableAttributes::Ref)) {
-			size += StackPtr::ptrSize;
-		}
-		else {
-			size += var->Type()->Size();
-		}
-	}
-
-	return size;
-}
-
-UInt FunctionSymbol::ErrorTypeSize() {
-	if ((attributes & FunctionAttributes::Throw) == FunctionAttributes::None) return 0;
-
-	return 1;
-}
-
-UInt FunctionSymbol::ErrorSize() {
-	return 0;
-}
-
-UInt FunctionSymbol::ReturnValueSize() {
-	UInt retSize = 0; 
-
-	for (UInt i = 0; i < returnValues.Size(); i++) {
-		retSize += ReturnType(i)->Size();
-	}
-
-	return retSize;
-}
-
-UInt FunctionSymbol::ReturnSize() {
-	return ErrorTypeSize() + Math::Max(ErrorSize(), ReturnValueSize());
-}
-
 TypeSymbol* FunctionSymbol::TemplateArgument(const UInt index) {
-	if (index >= templateArguments.Size()) return nullptr;
+	if (index >= templateArguments.Count()) return nullptr;
 
 	NameList arg = templateArguments[index];
 
@@ -111,11 +70,11 @@ TypeSymbol* FunctionSymbol::TemplateArgument(const UInt index) {
 }
 
 UInt FunctionSymbol::RequiredArguments() const {
-	return arguments.Size();
+	return arguments.Count();
 }
 
 UInt FunctionSymbol::RequiredTemplateArguments() const {
-	return templateArguments.Size();
+	return templateArguments.Count();
 }
 
 FunctionSymbol* FunctionSymbol::AddOverload(FunctionSymbol* const overload) {
@@ -123,7 +82,7 @@ FunctionSymbol* FunctionSymbol::AddOverload(FunctionSymbol* const overload) {
 	overload->name = Symbols::Name();
 
 	List<NameList> args;
-	args.Add(NameList(Symbols::Name(String::ToString(overloads.Size()))));
+	args.Add(NameList(Symbols::Name(String::ToString(overloads.Count()))));
 	overload->name.arguments = args;
 
 	overloads.Add(overload);
@@ -136,8 +95,8 @@ Symbol* FunctionSymbol::FindSymbol(const NameList& scopeList, const UInt index, 
 	if (index >= scopeList.Size()) return this;
 	const Symbols::Name& scope = scopeList[index];
 
-	if (scope.name.Size() == 0 && scope.arguments) {
-		if (scope.arguments->Size() == 1 && numReg.Match(scope.arguments.Value()[0][0].name)) {
+	if (scope.name.IsEmpty() && scope.arguments) {
+		if (scope.arguments->Count() == 1 && numReg.Match(scope.arguments.Value()[0][0].name)) {
 			return overloads[scope.arguments.Value()[0][0].name.ToUInt()]->FindSymbol(scopeList, index + 1, file);
 		}
 		else for (FunctionSymbol* const overload : overloads) {
@@ -147,7 +106,7 @@ Symbol* FunctionSymbol::FindSymbol(const NameList& scopeList, const UInt index, 
 		}
 	}
 	else {
-		return MapSymbol::FindSymbol(scopeList, index, file);
+		return ScopeSymbol::FindSymbol(scopeList, index, file);
 	}
 
 	FindError(scopeList, index, file);
@@ -186,21 +145,21 @@ Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(F
 	Map<TemplateSymbol*, TypeSymbol*> templateMap;
 	Map<TemplateSymbol*, NameList> templateTypes;
 
-	for (UInt i = 0; i < func->templateArguments.Size(); i++) {
+	for (UInt i = 0; i < func->templateArguments.Count(); i++) {
 		TypeSymbol* const type = func->TemplateArgument(i);
 		if (!type) return Tuple<List<TypeSymbol*>, List<NameList>>();
 
 		if (TemplateSymbol* const templateType = type->Cast<TemplateSymbol>()) {
 			templateTypes.Add(templateType, templateType->type);
 
-			if (i < templateArgs.Size()) {
+			if (i < templateArgs.Count()) {
 				templateMap.Add(templateType, templateArgs[i]);
 			}
 		}
 	}
 
-	for (UInt i = 0; i < func->arguments.Size(); i++) {
-		if (i >= args.Size()) continue;
+	for (UInt i = 0; i < func->arguments.Count(); i++) {
+		if (i >= args.Count()) continue;
 
 		if (TypeSymbol* const arg = func->ArgumentType(i)) {
 			if (!templateTypes.IsEmpty()) {
@@ -231,7 +190,7 @@ Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(F
 
 	Tuple<List<TypeSymbol*>, List<NameList>> types;
 
-	for (UInt i = 0; i < func->templateArguments.Size(); i++) {
+	for (UInt i = 0; i < func->templateArguments.Count(); i++) {
 		TypeSymbol* const type = func->TemplateArgument(i);
 
 		if (TemplateSymbol* const templateType = type->Cast<TemplateSymbol>()) {
@@ -253,7 +212,7 @@ Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(F
 		pair.key->type = pair.value->AbsoluteName();
 	}
 
-	for (UInt i = 0; i < func->arguments.Size(); i++) {
+	for (UInt i = 0; i < func->arguments.Count(); i++) {
 		//types.value2.Add(func->ArgumentType(i)->AbsoluteName());
 		TypeSymbol* type = func->ArgumentType(i);
 
@@ -290,7 +249,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 			if (specialized.value1.IsEmpty()) continue;
 		}
 
-		for (UInt i = 0; i < args.Size(); i++) {
+		for (UInt i = 0; i < args.Count(); i++) {
 			TypeSymbol* const arg = SymbolTable::FindAbsolute<TypeSymbol>(specialized.value2[i], file);
 
 			if (!arg) {
@@ -302,7 +261,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 			if (arg != args[i]) {
 				perfect = false;
 
-				if (!SymbolTable::FindImplicitConversion(args[i], arg, file)) {
+				if (!SymbolTable::FindImplicitConversion(args[i], arg, file, false)) {
 					match = false;
 					break;
 				}
@@ -325,7 +284,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 			else if (isTemplate) {
 				UInt num = 0;
 
-				for (UInt i = 0; i < overload->templateArguments.Size(); i++) {
+				for (UInt i = 0; i < overload->templateArguments.Count(); i++) {
 					TypeSymbol* const type = overload->TemplateArgument(i);
 					
 					if (type->Is<TemplateSymbol>()) {
@@ -340,7 +299,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 					bestNum = num;
 					isAmbig = false;
 
-					for (UInt i = 0; i < overload->templateArguments.Size(); i++) {
+					for (UInt i = 0; i < overload->templateArguments.Count(); i++) {
 						TypeSymbol* const type = overload->TemplateArgument(i);
 
 						if (type->Is<TemplateSymbol>()) {
@@ -357,10 +316,12 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 
 	if (!best) {
 		// TODO: error
+		ErrorLog::Error(LogMessage::Message("Overload not found (temporary error message)"), file);
 		return nullptr;
 	}
 	else if (isAmbig) {
 		// TODO: error
+		ErrorLog::Error(LogMessage::Message("Overload is ambiguous (temporary error message)"), file);
 		return nullptr;
 	}
 	else if (!isTemplate || bestNum == 0) {
@@ -376,12 +337,12 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, cons
 
 	for (FunctionSymbol* const overload : overloads) {
 		if (isStatic && ((overload->modifiers & FunctionModifiers::Static) != FunctionModifiers::None) != isStatic) continue;
-		if (overload->RequiredArguments() > args.Size()) continue;
-		if (overload->arguments.Size() < args.Size()) continue;
+		if (overload->RequiredArguments() > args.Count()) continue;
+		if (overload->arguments.Count() < args.Count()) continue;
 
 		bool match = true;
 
-		for (UInt i = 0; i < args.Size(); i++) {
+		for (UInt i = 0; i < args.Count(); i++) {
 			TypeSymbol* const arg = overload->ArgumentType(i);
 			if (!arg) continue;
 
@@ -393,7 +354,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, cons
 				}
 			}
 
-			if (!SymbolTable::FindImplicitConversion(arg, args[i], file)) {
+			if (args[i] != arg && !SymbolTable::FindImplicitConversion(args[i], arg, file, false)) {
 				match = false;
 				break;
 			}
@@ -415,15 +376,15 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateAr
 
 	for (FunctionSymbol* const overload : overloads) {
 		if (isStatic && ((overload->modifiers & FunctionModifiers::Static) != FunctionModifiers::None) != isStatic) continue;
-		if (overload->RequiredArguments() > args.Size()) continue;
-		if (overload->arguments.Size() < args.Size()) continue;
-		if (overload->RequiredTemplateArguments() > templateArgs.Size()) continue;
-		if (overload->templateArguments.Size() < templateArgs.Size()) continue;
+		if (overload->RequiredArguments() > args.Count()) continue;
+		if (overload->arguments.Count() < args.Count()) continue;
+		if (overload->RequiredTemplateArguments() > templateArgs.Count()) continue;
+		if (overload->templateArguments.Count() < templateArgs.Count()) continue;
 
 		bool match = true;
 		UInt num = 0;
 
-		for (UInt i = 0; i < templateArgs.Size(); i++) {
+		for (UInt i = 0; i < templateArgs.Count(); i++) {
 			TypeSymbol* const arg = overload->TemplateArgument(i);
 
 			if (!arg->Is<TemplateSymbol>()) {
@@ -451,7 +412,7 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateAr
 }
 
 bool FunctionSymbol::IsNotSpecialized() {
-	for (UInt i = 0; i < templateArguments.Size(); i++) {
+	for (UInt i = 0; i < templateArguments.Count(); i++) {
 		if (TypeSymbol* const type = TemplateArgument(i)) {
 			if (type->Is<TemplateSymbol>()) {
 				return true;
@@ -471,12 +432,12 @@ void FunctionSymbol::SetTemplateValues(Symbol* const symbol) {
 		return;
 	}
 
-	if (templateArguments.Size() != sym->templateArguments.Size()) {
+	if (templateArguments.Count() != sym->templateArguments.Count()) {
 		// TODO: error?
 		return;
 	}
 
-	for (UInt i = 0; i < templateArguments.Size(); i++) {
+	for (UInt i = 0; i < templateArguments.Count(); i++) {
 		TypeSymbol* const type1 = TemplateArgument(i);
 		TypeSymbol* const type2 = sym->TemplateArgument(i);
 
@@ -511,11 +472,11 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 			root->funcs.Add(fn);
 		}
 
-		for (UInt i = 0; i < returnValues.Size(); i++) {
+		for (UInt i = 0; i < returnValues.Count(); i++) {
 			sym->returnValues.Add(ReplaceTypeScope(ReturnType(i), replacement, file));
 		}
 
-		for (UInt i = 0; i < templateArguments.Size(); i++) {
+		for (UInt i = 0; i < templateArguments.Count(); i++) {
 			TypeSymbol* const type = TemplateArgument(i);
 
 			if (templateArguments[i].IsTemplate() && type == replacement.GetValue(type)) {
@@ -527,7 +488,7 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 		}
 
 		if (symbolNode) {
-			for (UInt i = 0; i < arguments.Size(); i++) {
+			for (UInt i = 0; i < arguments.Count(); i++) {
 				sym->arguments[i] = ReplaceTypeScope(ArgumentType(i), replacement, file);
 			}
 		}

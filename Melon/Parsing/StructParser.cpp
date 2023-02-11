@@ -1,8 +1,11 @@
 #include "StructParser.h"
 
-#include "NewVariableParser.h"
 #include "FunctionParser.h"
 #include "TemplateParser.h"
+#include "AssignmentParser.h"
+#include "TypeParser.h"
+
+#include "Melon/Nodes/NameExpression.h"
 
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/TemplateSymbol.h"
@@ -30,18 +33,14 @@ Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 	while (true) {
 		bool found = false;
 
-		if (Ptr<NewVariableNode> nn = ParseVariable(info)) {
-			for (UInt i = 0; i < nn->names.Size(); i++) {
+		if (Optional<Variable> nn = ParseVariable(info)) {
+			for (UInt i = 0; i < nn->varNames.Count(); i++) {
 				VariableSymbol* const var = new VariableSymbol(info.GetFileInfo());
+				var->type = nn->types[i];
 
-				if (nn->types.Size() == 1)
-					var->type = nn->types[0];
-				else
-					var->type = nn->types[i];
-
-				var->attributes = nn->attributes[i];
-				sn->symbol->AddSymbol(nn->names[i], var);
-				sn->symbol->members.Add(nn->names[i]);
+				Name name = nn->varNames[i];
+				sn->symbol->AddSymbol(name, var);
+				sn->symbol->members.Add(name);
 			}
 
 			found = true;
@@ -130,10 +129,70 @@ Ptr<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt struc
 	return sn;
 }
 
-Ptr<NewVariableNode> StructParser::ParseVariable(ParsingInfo& info) {
-	if (Ptr<NewVariableNode> node = NewVariableParser::Parse(info)) {
-		return node;
+Optional<StructParser::Variable> StructParser::ParseVariable(ParsingInfo& info) {
+	// TODO: Create separate parser for this
+
+	Variable variables;
+
+	const UInt startIndex = info.index;
+
+	if (Optional<NameList> type = TypeParser::Parse(info)) {
+		variables.types.Add(*type);
+
+		while (info.Current().type == TokenType::Comma) {
+			info.index++;
+
+			if (Optional<NameList> type = TypeParser::Parse(info)) {
+				variables.types.Add(*type);
+			}
+			else {
+				info.index = startIndex;
+				return nullptr;
+			}
+		}
+	}
+	else {
+		return nullptr;
 	}
 
-	return nullptr;
+	if (info.Current().type != TokenType::Colon) {
+		info.index = startIndex;
+		return nullptr;
+	}
+
+	info.index++;
+
+	if (info.Current().type != TokenType::Name) {
+		info.index = startIndex;
+		return nullptr;
+	}
+
+	variables.varNames.Add(Name(info.Current().value));
+	info.index++;
+
+	while (info.Current().type == TokenType::Comma) {
+		info.index++;
+
+		if (info.Current().type == TokenType::Name) {
+			variables.varNames.Add(Name(info.Current().value));
+			info.index++;
+		}
+		else {
+			info.index = startIndex;
+			return nullptr;
+		}
+	}
+
+	if (variables.varNames.Count() > 1 && variables.types.Count() == 1) {
+		while (variables.types.Count() < variables.varNames.Count()) {
+			variables.types.Add(variables.types[0]);
+		}
+	}
+
+	if (variables.varNames.Count() != variables.types.Count()) {
+		info.index = startIndex;
+		return nullptr;
+	}
+
+	return variables;
 }

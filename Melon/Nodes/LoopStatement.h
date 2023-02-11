@@ -94,9 +94,8 @@ namespace Melon {
 			/// {true} if at least one segment will run.
 			bool WillASegmentRun() const;
 
-			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;
@@ -121,6 +120,8 @@ namespace Melon {
 				Boxx::Array<Boxx::UInt> segmentLabels;
 				Boxx::List<Boxx::Tuple<Boxx::UInt, Boxx::UInt>> jumps;
 				Boxx::Long stackTop;
+
+				~SegmentInfo() {}
 			};
 
 			struct LoopInfo {
@@ -130,21 +131,18 @@ namespace Melon {
 				Boxx::UInt loopLbl = 0;
 			};
 
-			void AddLabelIfNeeded(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+			struct LabelInfo {
+				Boxx::String trueLabel;
+				Boxx::String falseLabel;
+				Boxx::String endLabel;
 
-			void CompileIfSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+				~LabelInfo() {}
+			};
 
-			void CompileWhileSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
-			void CompileWhileStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-			void CompileWhileEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-
-			void CompileForSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
-			void CompileForStart(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-			void CompileForEnd(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-			
-			void CompileLoopBody(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo, LoopInfo& loopInfo) const;
-
-			void CompileNoneSegment(CompiledNode& compiled, CompileInfo& info, SegmentInfo& segmentInfo) const;
+			void CompileIfSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;
+			void CompileWhileSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;
+			void CompileForSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;
+			void CompileNoneSegment(LoopSegment& segment, LabelInfo& labels, CompileInfo& info) const;
 		};
 	}
 }

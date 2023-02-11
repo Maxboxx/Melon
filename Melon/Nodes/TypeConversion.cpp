@@ -35,7 +35,7 @@ TypeSymbol* TypeConversion::Type() const {
 	return s;
 }
 
-CompiledNode TypeConversion::Compile(CompileInfo& info) {
+Ptr<Kiwi::Value> TypeConversion::Compile(CompileInfo& info) {
 	TypeSymbol* const convertType = Type();
 
 	// Check if the node needs conversion
@@ -45,12 +45,11 @@ CompiledNode TypeConversion::Compile(CompileInfo& info) {
 
 	// Find conversion operator
 	FunctionSymbol* const convert = SymbolTable::FindExplicitConversion(expression->Type(), convertType, file);
-	if (!convert) return CompiledNode();
-
+	if (!convert) return nullptr;
 
 	// Compile symbol node
 	if (convert->symbolNode) {
-		return convert->symbolNode->Compile(expression, info);
+		return convert->symbolNode->Compile(expression, info, false);
 	}
 	// Compile call to operator function
 	else {
@@ -61,9 +60,9 @@ CompiledNode TypeConversion::Compile(CompileInfo& info) {
 		cn->arguments  = args;
 		cn->expression = new TypeExpression(convert->ParentType()->AbsoluteName());
 
-		CompiledNode c = cn->Compile(info);
+		Ptr<Kiwi::Value> v = cn->Compile(info);
 		expression = args[0];
-		return c;
+		return v;
 	}
 }
 

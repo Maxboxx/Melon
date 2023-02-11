@@ -56,8 +56,8 @@ Symbol* DotExpression::Symbol() const {
 	if (nodeSym->Is<VariableSymbol>()) {
 		TypeSymbol* const type = nodeSym->Type();
 
-		if (StructSymbol* const s = type->Cast<StructSymbol>()) {
-			return s->Find(name, file);
+		if (type->Is<StructSymbol>() || type->Is<EnumSymbol>()) {
+			return type->Find(name, file);
 		}
 	}
 	// Get other symbols
@@ -80,28 +80,21 @@ Symbol* DotExpression::Symbol() const {
 	return nullptr;
 }
 
-CompiledNode DotExpression::Compile(CompileInfo& info) {
+Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
 	TypeSymbol* const sym = expression->Type();
 
-	CompiledNode c = expression->Compile(info);
+	Ptr<Kiwi::Variable> value = expression->Compile(info).AsPtr<Kiwi::Variable>();
 
 	// Compile enum value
 	if (EnumSymbol* enumSym = sym->Cast<EnumSymbol>()) {
-		c.argument = Argument(sym->Find<ValueSymbol>(name, file)->value);
-		c.size = enumSym->Size();
+		return new Kiwi::Integer(sym->Find<ValueSymbol>(name, file)->value);
 	}
-	// Compile variable
-	else if (VariableSymbol* const var = sym->Find<VariableSymbol>(name, file)) {
-		if (var->HasAttribute(VariableAttributes::Static)) {
-			c.argument = MemoryLocation(0);
-			c.argument.mem.memptr = var->AbsoluteName().ToString();
-		}
-
-		c.argument.mem.offset += var->stackIndex;
-		c.size = var->Type()->Size();
+	// Compile struct value
+	else if (value) {
+		return new Kiwi::SubVariable(value, Symbol()->KiwiName());
 	}
 
-	return c;
+	return nullptr;
 }
 
 void DotExpression::IncludeScan(ParsingInfo& info) {
@@ -136,7 +129,7 @@ ScanResult DotExpression::Scan(ScanInfoStack& info) {
 
 	// Scan variable
 	if (VariableSymbol* const var = sym->Cast<VariableSymbol>()) {
-		if ((var->attributes & VariableAttributes::Static) != VariableAttributes::None) {
+		if ((var->modifiers & VariableModifiers::Static) != VariableModifiers::None) {
 			info.usedVariables.Add(var);
 		}
 	}

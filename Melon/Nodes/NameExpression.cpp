@@ -1,7 +1,5 @@
 #include "NameExpression.h"
 
-#include "PtrExpression.h"
-
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/TypeSymbol.h"
@@ -84,31 +82,17 @@ Symbol* NameExpression::Symbol() const {
 	}
 }
 
-CompiledNode NameExpression::Compile(CompileInfo& info) {
-	CompiledNode cn;
-
-	// Get symbol
+Ptr<Kiwi::Value> NameExpression::Compile(CompileInfo& info) {
 	VariableSymbol* const sym = Symbol()->Cast<VariableSymbol>();
 
-	if (!sym) return cn;
+	if (!sym) return nullptr;
 
-	// Compile reference variable
-	if (!ignoreRef && sym->HasAttribute(VariableAttributes::Ref)) {
-		Ptr<NameExpression> name = new NameExpression(scope, file);
-		name->name = this->name;
-		name->ignoreRef = true;
-
-		Ptr<PtrExpression> ptr = new PtrExpression(name);
-		return ptr->Compile(info);
+	if (!ignoreRef && sym->HasAttribute(VariableModifiers::Ref)) {
+		return new Kiwi::DerefVariable(sym->KiwiName());
 	}
-	// Compile stack variable
 	else {
-		cn.argument = Argument(MemoryLocation(info.stack.Offset(sym->stackIndex)));
+		return new Kiwi::Variable(sym->KiwiName());
 	}
-
-	cn.size = sym->Type()->Size();
-
-	return cn;
 }
 
 ScanResult NameExpression::Scan(ScanInfoStack& info) {
@@ -133,7 +117,7 @@ NameList NameExpression::FindSideEffectScope(const bool assign) {
 	if (assign) {
 		Symbols::Symbol* const s = Symbol();
 
-		if (s->Is<VariableSymbol>() && (s->Cast<VariableSymbol>()->attributes & VariableAttributes::Ref) != VariableAttributes::None) {
+		if (s->Is<VariableSymbol>() && (s->Cast<VariableSymbol>()->modifiers & VariableModifiers::Ref) != VariableModifiers::None) {
 			return s->Parent()->Parent()->AbsoluteName();
 		}
 		else {

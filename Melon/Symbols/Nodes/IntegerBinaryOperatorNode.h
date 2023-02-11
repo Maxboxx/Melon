@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IntegerBaseNode.h"
+#include "SymbolNode.h"
 
 #include "Kiwi/Old/Kiwi.h"
 
@@ -9,18 +9,18 @@ namespace Melon {
 	namespace Symbols {
 		namespace Nodes {
 			/// Node for binary operators between integers.
-			class IntegerBinaryOperatorNode : public IntegerBaseNode<BinarySymbolNode> {
+			class IntegerBinaryOperatorNode : public BinarySymbolNode {
 			public:
-				/// The binary operation.
-				KiwiOld::InstructionType op;
+				/// The binary operator.
+				Symbols::Name op;
 
-				/// {true} if the result should be signed.
-				bool sign;
+				/// The type of the operation.
+				Kiwi::Type type;
 
 				/// Constructor.
-				IntegerBinaryOperatorNode(const Boxx::UByte size, const bool sign, const KiwiOld::InstructionType name);
+				IntegerBinaryOperatorNode(const Symbols::Name& op, const Kiwi::Type& type);
 
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info) const override;
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info, bool includeType) const override;
 			};
 		}
 	}

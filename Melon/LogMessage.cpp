@@ -45,7 +45,7 @@ void LogMessage::CreateMessage(const String& id, const List<String>& strList, co
 		if (escape) {
 			switch (c) {
 				case 's': {
-					if (strIndex < strList.Size()) {
+					if (strIndex < strList.Count()) {
 						msg += strList[strIndex];
 						strIndex++;
 					}
@@ -54,7 +54,7 @@ void LogMessage::CreateMessage(const String& id, const List<String>& strList, co
 				}
 
 				case 'i': {
-					if (intIndex < intList.Size()) {
+					if (intIndex < intList.Count()) {
 						msg += String::ToString(intList[intIndex]);
 						intIndex++;
 					}
@@ -63,10 +63,10 @@ void LogMessage::CreateMessage(const String& id, const List<String>& strList, co
 				}
 
 				case 'l': {
-					if (listIndex < listList.Size()) {
+					if (listIndex < listList.Count()) {
 						List<String> list = listList[listIndex];
 
-						for (UInt i = 0; i < list.Size(); i++) {
+						for (UInt i = 0; i < list.Count(); i++) {
 							if (i > 0) msg += ", ";
 							msg += list[i];
 						}

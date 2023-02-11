@@ -17,8 +17,8 @@ EnumStatement::~EnumStatement() {
 
 }
 
-CompiledNode EnumStatement::Compile(CompileInfo& info) {
-	return CompiledNode();
+Ptr<Kiwi::Value> EnumStatement::Compile(CompileInfo& info) {
+	return nullptr;
 }
 
 StringBuilder EnumStatement::ToMelon(const UInt indent) const {
@@ -28,12 +28,12 @@ StringBuilder EnumStatement::ToMelon(const UInt indent) const {
 
 	String tabs = String('\t').Repeat(indent + 1);
 
-	for (UInt i = 0; i < values.Size(); i++) {
+	for (UInt i = 0; i < values.Count(); i++) {
 		sb += tabs;
 		sb += values[i].ToString();
 		sb += " = ";
 		sb += String::ToString(symbol->Find<ValueSymbol>(values[i], file)->value);
-		sb += i != values.Size() - 1 ? ",\n" : "\n";
+		sb += i != values.Count() - 1 ? ",\n" : "\n";
 	}
 
 	sb += String('\t').Repeat(indent);

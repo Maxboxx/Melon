@@ -25,64 +25,18 @@ DoStatement::~DoStatement() {
 
 }
 
-UInt DoStatement::GetSize() const {
-	return statements->GetSize();
-}
-
 bool DoStatement::IsScope() const {
 	return true;
 }
 
-CompiledNode DoStatement::Compile(CompileInfo& info) {
-	CompiledNode compiled;
+Ptr<Kiwi::Value> DoStatement::Compile(CompileInfo& info) {
+	LoopInfo scope = LoopInfo(info.NewLabel());
+	info.PushScope(scope);
+	statements->Compile(info);
+	info.PopScope();
 
-	List<UInt> jumps;
-
-	UInt top = info.stack.top;
-
-	// Compile content
-	for (const OptimizerInstruction& in : statements->Compile(info).instructions) {
-		// Check for custom instructions
-		if (in.instruction.type != InstructionType::Custom) {
-			compiled.instructions.Add(in);
-			continue;
-		}
-
-		const String type = in.instruction.instructionName;
-
-		// Check for scope wise break
-		if (type != BreakStatement::scopeBreakInstName) {
-			compiled.instructions.Add(in);
-			continue;
-		}
-
-		// Handle scope wise break
-		if (in.instruction.sizes[0] > 1) {
-			OptimizerInstruction inst = in;
-			inst.instruction.sizes[0]--;
-			compiled.instructions.Add(inst);
-		}
-		else {
-			Instruction jmp = Instruction(InstructionType::Jmp);
-			jumps.Add(compiled.instructions.Size());
-			compiled.instructions.Add(jmp);
-		}
-	}
-
-	// Add labels for scope breaks
-	if (!jumps.IsEmpty()) {
-		Instruction lbl = Instruction::Label(info.label);
-		compiled.instructions.Add(lbl);
-
-		for (const UInt jump : jumps) {
-			compiled.instructions[jump].instruction.arguments.Add(Argument(ArgumentType::Label, info.label));
-		}
-
-		info.label++;
-	}
-
-	info.stack.top = top;
-	return compiled;
+	info.NewInstructionBlock(scope.endLabel);
+	return nullptr;
 }
 
 void DoStatement::IncludeScan(ParsingInfo& info) {

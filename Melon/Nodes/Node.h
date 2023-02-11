@@ -14,15 +14,16 @@
 #include "Boxx/StringBuilder.h";
 
 #include "Kiwi/Old/Kiwi.h"
+#include "Kiwi/Node.h"
+#include "Kiwi/Value.h"
+#include "Kiwi/KiwiProgram.h"
 
-#include "Structs/CompiledNode.h"
 #include "Structs/CompileInfo.h"
 #include "Structs/OptimizeInfo.h"
 #include "Structs/ScanInfo.h"
 #include "Structs/ScanInfoStack.h"
 #include "Structs/ScanResult.h"
 #include "Structs/ScopeInfo.h"
-#include "Structs/StackPtr.h"
 
 #include "Melon/Symbols/Symbol.h"
 #include "Melon/Symbols/SymbolTable.h"
@@ -69,11 +70,8 @@ namespace Melon {
 			virtual ScanResult Scan(ScanInfoStack& info);
 
 			/// Compiles the node.
-			virtual CompiledNode Compile(CompileInfo& info) = 0;
-
-			/// Gets the byte size of the node.
-			///p This is only used by the compile step.
-			virtual Boxx::UInt GetSize() const;
+			///R value: The kiwi value for the node. {nullptr} if the node has no value.
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) = 0;
 
 			/// Checks if the node has side effects
 			bool HasSideEffects();
@@ -115,7 +113,9 @@ namespace Melon {
 			///p The optimized node will be assigned to this value.
 			static void Optimize(Ptr<Node>& node, OptimizeInfo& info);
 
-			static CompiledNode CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file);
+			static Ptr<Kiwi::Value> CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType = true);
+			static Ptr<Kiwi::Value> CompileAssignmentSimple(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType = true);
+			static bool IncludeType(Weak<Kiwi::Variable> var, bool includeType);
 
 		protected:
 			friend RootNode;

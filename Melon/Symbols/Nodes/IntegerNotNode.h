@@ -9,7 +9,7 @@ namespace Melon {
 			/// Node for boolean not on integer.
 			class IntegerNotNode : public UnarySymbolNode {
 			public:
-				virtual Melon::Nodes::CompiledNode Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info) const override;
+				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand, Melon::Nodes::CompileInfo& info, bool includeType) const override;
 			};
 		}
 	}

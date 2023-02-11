@@ -1,6 +1,5 @@
 #include "EnumParser.h"
 
-#include "NewVariableParser.h"
 #include "FunctionParser.h"
 #include "IntegerParser.h"
 
@@ -9,9 +8,9 @@
 #include "Melon/Symbols/FunctionSymbol.h"
 
 #include "Melon/Symbols/Nodes/IntegerAssignNode.h"
+#include "Melon/Symbols/Nodes/IntegerConvertNode.h"
 #include "Melon/Symbols/Nodes/IntegerBinaryOperatorNode.h"
 
-#include "Melon/Nodes/NewVariableNode.h"
 #include "Melon/Nodes/EmptyStatement.h"
 #include "Melon/Nodes/FunctionBody.h"
 #include "Melon/Nodes/Integer.h"
@@ -62,6 +61,8 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	enumSymbol = info.scope->AddSymbol(enumName, enumSymbol);
 	en->symbol = enumSymbol;
 
+	info.scope = enumSymbol;
+
 	List<EnumValue> values = ParseValues(info);
 
 	for (const EnumValue& value : values) {
@@ -78,24 +79,31 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "enum", enumLine), info.GetFileInfoPrev());
 	}
 
-	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo());
-	assign->arguments.Add(enumSymbol->AbsoluteName());
-	assign->symbolNode = new IntegerAssignNode(enumSymbol->Size());
-	enumSymbol->AddSymbol(Name::Assign, assign);
+	FunctionSymbol* const assign  = enumSymbol->AddSymbol(Name::Assign, new FunctionSymbol(info.GetFileInfo()));
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo()));
+	assign1->arguments.Add(enumSymbol->AbsoluteName());
+	assign1->symbolNode = new IntegerAssignNode();
 
-	FunctionSymbol* const eq = new FunctionSymbol(info.GetFileInfo());
-	eq->arguments.Add(enumSymbol->AbsoluteName());
-	eq->arguments.Add(enumSymbol->AbsoluteName());
-	eq->returnValues.Add(NameList::Bool);
-	eq->symbolNode = new IntegerBinaryOperatorNode(enumSymbol->Size(), enumSymbol->IsSigned(), InstructionType::Eq);
-	enumSymbol->AddSymbol(Name::Equal, eq);
+	FunctionSymbol* const eq  = enumSymbol->AddSymbol(Name::Equal, new FunctionSymbol(info.GetFileInfo()));
+	FunctionSymbol* const eq1 = eq->AddOverload(new FunctionSymbol(info.GetFileInfo()));
+	eq1->arguments.Add(enumSymbol->AbsoluteName());
+	eq1->arguments.Add(enumSymbol->AbsoluteName());
+	eq1->returnValues.Add(NameList::Bool);
+	eq1->symbolNode = new IntegerBinaryOperatorNode(Name::Equal, enumSymbol->KiwiType());
 
-	FunctionSymbol* const ne = new FunctionSymbol(info.GetFileInfo());
-	ne->arguments.Add(enumSymbol->AbsoluteName());
-	ne->arguments.Add(enumSymbol->AbsoluteName());
-	ne->returnValues.Add(NameList::Bool);
-	ne->symbolNode = new IntegerBinaryOperatorNode(enumSymbol->Size(), enumSymbol->IsSigned(), InstructionType::Ne);
-	enumSymbol->AddSymbol(Name::NotEqual, ne);
+	FunctionSymbol* const ne  = enumSymbol->AddSymbol(Name::NotEqual, new FunctionSymbol(info.GetFileInfo()));
+	FunctionSymbol* const ne1 = ne->AddOverload(new FunctionSymbol(info.GetFileInfo()));
+	ne1->arguments.Add(enumSymbol->AbsoluteName());
+	ne1->arguments.Add(enumSymbol->AbsoluteName());
+	ne1->returnValues.Add(NameList::Bool);
+	ne1->symbolNode = new IntegerBinaryOperatorNode(Name::NotEqual, enumSymbol->KiwiType());
+
+	FunctionSymbol* const as  = enumSymbol->AddSymbol(Name::As, new FunctionSymbol(info.GetFileInfo()));
+	FunctionSymbol* const as1 = as->AddOverload(new FunctionSymbol(info.GetFileInfo()));
+	as1->arguments.Add(enumSymbol->AbsoluteName());
+	as1->returnValues.Add(enumSymbol->AbsoluteName());
+	as1->isExplicit = false;
+	as1->symbolNode = new IntegerConvertNode(SymbolTable::Byte->KiwiType());
 
 	info.index++;
 

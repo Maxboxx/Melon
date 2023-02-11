@@ -14,9 +14,8 @@ namespace Melon {
 			DoStatement(Symbols::Symbol* const scope, const FileInfo& file);
 			~DoStatement();
 
-			virtual Boxx::UInt GetSize() const override;
 			virtual bool IsScope() const override;
-			virtual CompiledNode Compile(CompileInfo& info) override;
+			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;

@@ -7,6 +7,7 @@
 #include "TypeConversion.h"
 #include "EmptyStatement.h"
 #include "RootNode.h"
+#include "KiwiVariable.h"
 
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
@@ -42,10 +43,6 @@ void Node::IncludeScan(ParsingInfo& info) {
 
 ScanResult Node::Scan(ScanInfoStack& info) {
 	return ScanResult();
-}
-
-UInt Node::GetSize() const {
-	return 0;
 }
 
 bool Node::HasSideEffects() {
@@ -156,7 +153,7 @@ ScanResult Node::ScanAssignment(Weak<Expression> assignable, Weak<Expression> va
 	return ScanResult();
 }
 
-CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file) {
+Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {
 	List<TypeSymbol*> args;
 	args.Add(value->Type());
 
@@ -165,19 +162,34 @@ CompiledNode Node::CompileAssignment(Weak<Expression> assignable, Weak<Expressio
 	if (TypeSymbol* const type = assignable->Type()) {
 		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
 			assign = func->FindOverload(args, file);
+
+			if (assign && assign->symbolNode) {
+				assign->symbolNode->Compile(assignable, value, info, includeType);
+				return nullptr;
+			}
 		}
 	}
 
-	if (assign) {
-		Ptr<TypeConversion> cn = new TypeConversion(value->scope, value->file);
-		cn->isExplicit = false;
-		cn->expression = new WeakExpression(value);
-		cn->type = assign->ArgumentType(0)->AbsoluteName();
+	return CompileAssignmentSimple(assignable, value, info, file, includeType);
+}
 
-		return assign->symbolNode->Compile(assignable, cn, info);
+Ptr<Kiwi::Value> Node::CompileAssignmentSimple(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {
+	const Kiwi::Type type       = assignable->Type()->KiwiType();
+	Ptr<Kiwi::Variable> kiwiVar = assignable->Compile(info).AsPtr<Kiwi::Variable>();
+	Ptr<Kiwi::Value> kiwiValue  = value->Compile(info);
+
+	if (IncludeType(kiwiVar, includeType)) {
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, kiwiVar, kiwiValue));
+	}
+	else {
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(kiwiVar, kiwiValue));
 	}
 
-	return CompiledNode();
+	return nullptr;
+}
+
+bool Node::IncludeType(Weak<Kiwi::Variable> var, bool includeType) {
+	return includeType && !(var.Is<Kiwi::SubVariable>() || var.Is<Kiwi::DerefVariable>());
 }
 
 NameList Node::FindSideEffectScope(const bool assign) {
