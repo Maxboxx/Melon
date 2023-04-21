@@ -6,6 +6,7 @@
 #include "Melon/Symbols/TemplateSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/ClassSymbol.h"
 
 using namespace Boxx;
 using namespace KiwiOld;

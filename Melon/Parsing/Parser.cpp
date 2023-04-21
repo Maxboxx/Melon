@@ -158,6 +158,7 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Repeat, "repeat"));
 	patterns.Add(TokenPattern(TokenType::Until, "until"));
 	patterns.Add(TokenPattern(TokenType::Struct, "struct"));
+	patterns.Add(TokenPattern(TokenType::Class, "class"));
 	patterns.Add(TokenPattern(TokenType::Enum, "enum"));
 	patterns.Add(TokenPattern(TokenType::Init, "init"));
 	patterns.Add(TokenPattern(TokenType::As, "as"));

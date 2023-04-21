@@ -1,4 +1,4 @@
-#include "StructParser.h"
+#include "ClassParser.h"
 
 #include "FunctionParser.h"
 #include "TemplateParser.h"
@@ -8,10 +8,10 @@
 
 #include "Melon/Nodes/NameExpression.h"
 
-#include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/ClassSymbol.h"
 #include "Melon/Symbols/TemplateSymbol.h"
 
-#include "Melon/Symbols/Nodes/StructAssignNode.h"
+#include "Melon/Symbols/Nodes/ClassAssignNode.h"
 
 using namespace Boxx;
 
@@ -21,14 +21,14 @@ using namespace Melon::Symbols;
 using namespace Melon::Symbols::Nodes;
 using namespace Melon::Parsing;
 
-Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
-	if (info.Current().type != TokenType::Struct) return nullptr;
+Ptr<ClassStatement> ClassParser::Parse(ParsingInfo& info) {
+	if (info.Current().type != TokenType::Class) return nullptr;
 
 	const UInt structLine = info.Current().line;
 	info.index++;
 	MapSymbol* const temp = info.scope;
 
-	Ptr<StructStatement> sn = ParseName(info, structLine);
+	Ptr<ClassStatement> sn = ParseName(info, structLine);
 	info.scope = sn->symbol;
 
 	while (true) {
@@ -54,7 +54,7 @@ Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 	}
 
 	if (info.Current().type != TokenType::End) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "struct", structLine), info.GetFileInfoPrev());
+		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "class", structLine), info.GetFileInfoPrev());
 		info.scope = temp;
 		return nullptr;
 	}
@@ -62,7 +62,7 @@ Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo());
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 	assign1->arguments.Add(sn->symbol->AbsoluteName());
-	assign1->symbolNode = new StructAssignNode();
+	assign1->symbolNode = new ClassAssignNode();
 	sn->symbol->AddSymbol(Name::Assign, assign);
 
 	info.index++;
@@ -70,7 +70,7 @@ Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 	return sn;
 }
 
-Ptr<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt structLine) {
+Ptr<ClassStatement> ClassParser::ParseName(ParsingInfo& info, const UInt structLine) {
 	static Regex lower = Regex("^%l");
 	static Regex underscore = Regex("%a_+%a");
 
@@ -89,19 +89,19 @@ Ptr<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt struc
 	}
 
 	info.index++;
-	StructSymbol* sym;
+	ClassSymbol* sym;
 	bool redefine = false;
 	
 	if (Symbol* const s = info.scope->Contains(structName)) {
-		sym = s->Cast<StructSymbol>();
+		sym = s->Cast<ClassSymbol>();
 		redefine = true;
 	}
 	else {
-		sym = info.scope->AddSymbol(structName, new StructSymbol(info.GetFileInfo(structLine)));
+		sym = info.scope->AddSymbol(structName, new ClassSymbol(info.GetFileInfo(structLine)));
 	}
 	
 	if (Optional<List<NameList>> templateList = TemplateParser::ParseDefine(info)) {
-		StructSymbol* tsym = new StructSymbol(info.GetFileInfo(structLine));
+		ClassSymbol* tsym = new ClassSymbol(info.GetFileInfo(structLine));
 
 		for (const NameList& arg : *templateList) {
 			if (arg[0].IsEmpty()) {
@@ -122,11 +122,10 @@ Ptr<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt struc
 		info.scope->AddSymbol(structName, sym);
 	}
 
-	Ptr<StructStatement> sn = new StructStatement(info.scope, info.GetFileInfo(structLine));
+	Ptr<ClassStatement> sn = new ClassStatement(info.scope, info.GetFileInfo(structLine));
 	sn->name = structName;
 	sn->symbol = sym;
 	sym->node = sn;
 
 	return sn;
 }
-

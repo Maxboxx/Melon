@@ -6,6 +6,7 @@ namespace Melon {
 	namespace Nodes {
 		class RootNode;
 		class StructStatement;
+		class ClassStatement;
 	}
 
 	///N Melon::Symbols
@@ -38,6 +39,7 @@ namespace Melon {
 
 			friend Melon::Nodes::RootNode;
 			friend Melon::Nodes::StructStatement;
+			friend Melon::Nodes::ClassStatement;
 
 			Boxx::List<TemplateTypeSymbol*> templateVariants;
 

@@ -176,6 +176,10 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			Kiwi::Interpreter::InterpreterData data;
 			data.program = program;
 			program->Interpret(data);
+
+			if (data.heap->values.Count() > 0) {
+				ErrorLog::Warning(LogMessage("The Kiwi heap has " + Boxx::String::ToString(data.heap->values.Count()) + " leaked objects"), FileInfo());
+			}
 		}
 	}
 	catch (CompileError& e) {

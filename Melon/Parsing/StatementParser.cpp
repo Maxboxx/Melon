@@ -10,6 +10,7 @@
 #include "BreakParser.h"
 #include "ContinueParser.h"
 #include "StructParser.h"
+#include "ClassParser.h"
 #include "RepeatParser.h"
 #include "EnumParser.h"
 #include "GuardParser.h"
@@ -63,6 +64,9 @@ Ptr<Statement> StatementParser::Parse(ParsingInfo& info, const bool single) {
 		return node;
 	}
 	else if (Ptr<Statement> node = StructParser::Parse(info)) {
+		return node;
+	}
+	else if (Ptr<Statement> node = ClassParser::Parse(info)) {
 		return node;
 	}
 	else if (Ptr<Statement> node = EnumParser::Parse(info)) {

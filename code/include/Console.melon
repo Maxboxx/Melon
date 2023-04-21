@@ -1,0 +1,6 @@
+
+struct Console
+	static function log<T>(T: value)
+		_debug print value
+	end
+end

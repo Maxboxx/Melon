@@ -20,15 +20,6 @@ namespace Melon {
 
 		private:
 			static Ptr<Nodes::StructStatement> ParseName(ParsingInfo& info, const Boxx::UInt structLine);
-
-			struct Variable {
-				Boxx::List<Symbols::NameList> types;
-				Boxx::List<Symbols::Name> varNames;
-
-				~Variable() {};
-			};
-
-			static Boxx::Optional<Variable> ParseVariable(ParsingInfo& info);
 		};
 	}
 }

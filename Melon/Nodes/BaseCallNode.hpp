@@ -8,6 +8,7 @@
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/ClassSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
@@ -239,7 +240,7 @@ template <BaseCallType T>
 inline bool BaseCallNode<T>::IsInit() const {
 	Symbols::Symbol* const s = expression->Symbol();
 
-	if (s->Is<StructSymbol>()) {
+	if (s->Is<StructSymbol>() || s->Is<ClassSymbol>()) {
 		return !IsMethod();
 	}
 
@@ -265,13 +266,19 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 		
 		if (IsInit()) {
 			self = new Kiwi::Variable(info.NewRegister());
-			info.AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), nullptr));
+			info.AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), new Kiwi::AllocExpression(type.name)));
 		}
 		else if (Weak<DotExpression> dot = expression.As<DotExpression>()) {
 			self = dot->expression->Compile(info).AsPtr<Kiwi::Variable>();
 		}
 
-		call->args.Add(new Kiwi::RefValue(self->Copy()));
+		if (type.pointers > 0) {
+			call->args.Add(self->Copy());
+		}
+		else {
+			call->args.Add(new Kiwi::RefValue(self->Copy()));
+		}
+
 		instance = self;
 	}
 

@@ -9,6 +9,7 @@
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/TemplateSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/ClassSymbol.h"
 #include "Melon/Symbols/NamespaceSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/EnumSymbol.h"
@@ -56,7 +57,7 @@ Symbol* DotExpression::Symbol() const {
 	if (nodeSym->Is<VariableSymbol>()) {
 		TypeSymbol* const type = nodeSym->Type();
 
-		if (type->Is<StructSymbol>() || type->Is<EnumSymbol>()) {
+		if (type->Is<StructSymbol>() || type->Is<ClassSymbol>() || type->Is<EnumSymbol>()) {
 			return type->Find(name, file);
 		}
 	}
@@ -88,6 +89,10 @@ Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
 	// Compile enum value
 	if (EnumSymbol* enumSym = sym->Cast<EnumSymbol>()) {
 		return new Kiwi::Integer(sym->Find<ValueSymbol>(name, file)->value);
+	}
+	// Compile class value
+	else if (sym->Is<ClassSymbol>()) {
+		return new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), Symbol()->KiwiName());
 	}
 	// Compile struct value
 	else if (value) {
