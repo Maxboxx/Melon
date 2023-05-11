@@ -11,6 +11,7 @@
 #include "Melon/Symbols/TemplateSymbol.h"
 #include "Melon/Symbols/TemplateTypeSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/ClassSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/IntegerSymbol.h"
 
@@ -154,32 +155,18 @@ void RootNode::AddTemplateSpecialization(const NameList& name, const NameList& s
 	}
 
 	// Specialize template type
-	Symbol* const s = templateInfo.value1->SpecializeTemplate(templateTypes, this);
+	Symbol* const s = templateInfo.value1->InitializeSpecialize();
 
 	// Create template specialization for struct
 	if (StructSymbol* const sym = s->Cast<StructSymbol>()) {
-		templateInfo.value1->Parent()->Cast<TemplateTypeSymbol>()->AddTemplateVariant(sym);
-		sym->templateParent = templateInfo.value1;
-
-		Ptr<StructStatement> sn = new StructStatement(SymbolTable::FindAbsolute(NameList(true), file), file);
-		sn->name = sym->Parent()->Name();
-
-		List<NameList> templateArgs;
-
-		for (const NameList& arg : sym->templateArguments) {
-			templateArgs.Add(arg);
-		}
-
-		sn->name.types = templateArgs;
-
-		sn->symbol = sym;
-		sym->node = sn;
-
-		for (const Name& var : sym->members) {
-			sn->vars.Add(var);
-		}
-
-		nodes.Add(Statements::FromStatement(sn));
+		SpecializeClassStruct<StructSymbol, StructStatement>(sym, templateInfo.value1, templateTypes);
+	}
+	// Create template specialization for class
+	else if (ClassSymbol* const sym = s->Cast<ClassSymbol>()) {
+		SpecializeClassStruct<ClassSymbol, ClassStatement>(sym, templateInfo.value1, templateTypes);
+	}
+	else {
+		templateInfo.value1->SpecializeTemplate(s, templateTypes, this);
 	}
 
 	// Scan the new type

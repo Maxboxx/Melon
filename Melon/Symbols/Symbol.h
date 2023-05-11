@@ -68,8 +68,12 @@ namespace Melon {
 			/// Gets the type of the symbol.
 			virtual TypeSymbol* Type();
 
+			/// Initializes a template specialization.
+			virtual Symbol* InitializeSpecialize() = 0;
+
 			/// Specializes a template symbol.
-			virtual Symbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) = 0;
+			///A sym: Must be created from InitializeSpecialize.
+			virtual void SpecializeTemplate(Symbol* sym, const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) {}
 
 			/// Checks if the symbol or any of its parents has template arguments that have not been specialized.
 			virtual bool IsNotSpecialized();
@@ -144,7 +148,7 @@ namespace Melon {
 		protected:
 			static TypeSymbol* ReplaceType(TypeSymbol* const type, const Boxx::ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file);
 			static NameList ReplaceTypeScope(TypeSymbol* const type, const Boxx::ReplacementMap<TypeSymbol*>& replacement, const FileInfo& file);
-
+			
 			virtual Symbol* FindSymbol(const NameList& nameList, const Boxx::UInt index, const FileInfo& file);
 
 			void FindError(const NameList& nameList, const Boxx::UInt index, const FileInfo& file);

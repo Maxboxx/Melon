@@ -16,7 +16,8 @@ namespace Melon {
 			ClassStructBaseSymbol(const FileInfo& file);
 			~ClassStructBaseSymbol();
 			
-			virtual ClassStructBaseSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
+			virtual ClassStructBaseSymbol* InitializeSpecialize() override = 0;
+			virtual void SpecializeTemplate(Symbol* sym, const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 			
 			virtual bool IsInitialized() override;
 			virtual void PrepareInit() override;
@@ -26,9 +27,6 @@ namespace Melon {
 
 			/// All non static members.
 			Boxx::List<Symbols::Name> members;
-
-		protected:
-			ClassStructBaseSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root, ClassStructBaseSymbol* sym);
 		};
 	}
 }

@@ -27,13 +27,8 @@ TypeSymbol* NameExpression::Type() const {
 	Symbols::Symbol* const s = Symbol();
 
 	if (s == nullptr) return nullptr;
-
-	if (TypeSymbol* const t = s->Cast<TypeSymbol>()) {
-		return t;
-	}
-	else {
-		return s->Type();
-	}
+	
+	return s->Type();
 }
 
 Symbol* NameExpression::Symbol() const {

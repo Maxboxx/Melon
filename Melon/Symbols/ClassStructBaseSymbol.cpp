@@ -20,11 +20,16 @@ ClassStructBaseSymbol::~ClassStructBaseSymbol() {
 
 }
 
-ClassStructBaseSymbol* ClassStructBaseSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root, ClassStructBaseSymbol* sym) {
+void ClassStructBaseSymbol::SpecializeTemplate(Symbol* initSym, const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+	ClassStructBaseSymbol* sym = initSym->Cast<ClassStructBaseSymbol>();
 	sym->members = members.Copy();
 
+	List<Symbol*> addedSymbols;
+
 	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
-		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
+		Symbol* newSym = s.value->InitializeSpecialize();
+		sym->AddSymbol(s.key, newSym);
+		s.value->SpecializeTemplate(newSym, replacement, root);
 	}
 
 	for (UInt i = 0; i < templateArguments.Count(); i++) {
@@ -39,10 +44,10 @@ ClassStructBaseSymbol* ClassStructBaseSymbol::SpecializeTemplate(const Replaceme
 	}
 
 	for (TemplateTypeSymbol* const s : templateVariants) {
-		sym->AddTemplateVariant(s->SpecializeTemplate(replacement, root));
+		TemplateTypeSymbol* newSym = s->InitializeSpecialize();
+		sym->AddTemplateVariant(newSym);
+		s->SpecializeTemplate(newSym, replacement, root);
 	}
-
-	return sym;
 }
 
 bool ClassStructBaseSymbol::IsInitialized() {

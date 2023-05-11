@@ -49,7 +49,8 @@ namespace Melon {
 			virtual Kiwi::Type KiwiType() override;
 			virtual Boxx::String KiwiName() override;
 			virtual TypeSymbol* Type() override;
-			virtual VariableSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+			virtual VariableSymbol* InitializeSpecialize() override;
+			virtual void SpecializeTemplate(Symbol* sym, const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 		};
 	}
 }

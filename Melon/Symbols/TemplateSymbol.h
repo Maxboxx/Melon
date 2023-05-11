@@ -15,7 +15,8 @@ namespace Melon {
 			~TemplateSymbol();
 
 			virtual TypeSymbol* Type() override;
-			virtual TemplateSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+			virtual TemplateSymbol* InitializeSpecialize() override;
+			virtual void SpecializeTemplate(Symbol* sym, const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 		};
 	}
 }

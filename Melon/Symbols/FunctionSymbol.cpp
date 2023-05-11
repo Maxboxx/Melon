@@ -328,7 +328,10 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 		return best;
 	}
 	else {
-		return best->Parent<FunctionSymbol>()->AddOverload(best->SpecializeTemplate(replacement, Node::Root()));
+		FunctionSymbol* newSym = best->InitializeSpecialize();
+		best->Parent<FunctionSymbol>()->AddOverload(newSym);
+		best->SpecializeTemplate(newSym, replacement, Node::Root());
+		return newSym;
 	}
 }
 
@@ -451,13 +454,18 @@ void FunctionSymbol::SetTemplateValues(Symbol* const symbol) {
 	Symbol::SetTemplateValues(symbol);
 }
 
-FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+FunctionSymbol* FunctionSymbol::InitializeSpecialize() {
 	FunctionSymbol* const sym = new FunctionSymbol(file);
 	sym->arguments  = arguments.Copy();
-	sym->modifiers = modifiers;
+	sym->modifiers  = modifiers;
 	sym->isExplicit = isExplicit;
 	sym->name       = name;
 	sym->symbolNode = symbolNode;
+	return sym;
+}
+
+void FunctionSymbol::SpecializeTemplate(Symbol* initSym, const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+	FunctionSymbol* const sym = initSym->Cast<FunctionSymbol>();
 
 	if (overloads.IsEmpty()) {
 		if (node) {
@@ -494,16 +502,20 @@ FunctionSymbol* FunctionSymbol::SpecializeTemplate(const ReplacementMap<TypeSymb
 		}
 
 		for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
-			sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
+			Symbol* newSym = s.value->InitializeSpecialize();
+			sym->AddSymbol(s.key, newSym);
+			s.value->SpecializeTemplate(newSym, replacement, root);
 		}
 
 		for (ScopeSymbol* const s : scopes) {
-			sym->AddScope(s->SpecializeTemplate(replacement, root));
+			ScopeSymbol* newSym = s->InitializeSpecialize();
+			sym->AddScope(newSym);
+			s->SpecializeTemplate(newSym, replacement, root);
 		}
 	}
 	else for (FunctionSymbol* const s : overloads) {
-		sym->AddOverload(s->SpecializeTemplate(replacement, root));
+		FunctionSymbol* newSym = s->InitializeSpecialize();
+		sym->AddOverload(newSym);
+		s->SpecializeTemplate(newSym, replacement, root);
 	}
-
-	return sym;
 }

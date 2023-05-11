@@ -291,6 +291,9 @@ namespace Melon {
 			/// {true} if the name list is a relative template type.
 			bool IsTemplate() const;
 
+			/// {true} if the name list has template lists.
+			bool HasTemplates() const;
+
 			/// Gets the name at the specified index.
 			Name operator[](const Boxx::UInt i) const;
 			Name& operator[](const Boxx::UInt i);

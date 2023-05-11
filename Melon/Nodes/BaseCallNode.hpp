@@ -52,7 +52,7 @@ inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes() const {
 	}
 
 	if (IsInit()) {
-		types.Add(expression->Type());
+		types.Add(expression->Symbol()->Cast<TypeSymbol>());
 	}
 	else for (UInt i = 0; i < f->returnValues.Count(); i++) {
 		types.Add(f->ReturnType(i));

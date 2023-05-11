@@ -60,16 +60,22 @@ Symbol* ScopeSymbol::FindSymbol(const NameList& scopeList, const UInt index, con
 	return nullptr;
 }
 
-ScopeSymbol* ScopeSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
-	ScopeSymbol* const sym = new ScopeSymbol(file);
+ScopeSymbol* ScopeSymbol::InitializeSpecialize() {
+	return new ScopeSymbol(file);
+}
+
+void ScopeSymbol::SpecializeTemplate(Symbol* initSym, const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+	ScopeSymbol* const sym = initSym->Cast<ScopeSymbol>();
 
 	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
-		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
+		Symbol* newSym = s.value->InitializeSpecialize();
+		sym->AddSymbol(s.key, newSym);
+		s.value->SpecializeTemplate(newSym, replacement, root);
 	}
 
 	for (ScopeSymbol* const s : scopes) {
-		sym->AddScope(s->SpecializeTemplate(replacement, root));
+		ScopeSymbol* newSym = s->InitializeSpecialize();
+		sym->AddScope(newSym);
+		s->SpecializeTemplate(newSym, replacement, root);
 	}
-
-	return sym;
 }

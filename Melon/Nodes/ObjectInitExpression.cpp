@@ -7,6 +7,7 @@
 
 #include "Melon/Symbols/TypeSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/classSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
@@ -46,7 +47,14 @@ Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 
 	if (!value) {
 		value = new Kiwi::Variable(info.NewRegister());
-		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), value->Copy(), nullptr));
+
+		Ptr<Kiwi::Expression> expr;
+
+		if (type->Is<ClassSymbol>()) {
+			expr = new Kiwi::AllocExpression(type->KiwiName());
+		}
+
+		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), value->Copy(), expr));
 	}
 
 	// Compile vars
@@ -55,6 +63,10 @@ Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 
 		if (type->Is<StructSymbol>()) {
 			Ptr<KiwiVariable> kv = new KiwiVariable(new Kiwi::SubVariable(value->Copy(), var->KiwiName()), var->Type()->AbsoluteName());
+			CompileAssignment(kv, expressions[i], info, expressions[i]->File());
+		}
+		else if (type->Is<ClassSymbol>()) {
+			Ptr<KiwiVariable> kv = new KiwiVariable(new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), var->KiwiName()), var->Type()->AbsoluteName());
 			CompileAssignment(kv, expressions[i], info, expressions[i]->File());
 		}
 	}
@@ -79,7 +91,7 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 	if (type == nullptr) return result;
 
 	// Check if object init is valid
-	if (StructSymbol* const s = type->Cast<StructSymbol>()) {
+	if (ClassStructBaseSymbol* const s = type->Cast<ClassStructBaseSymbol>()) {
 		for (const Name& member : s->members) {
 			bool found = false;
 

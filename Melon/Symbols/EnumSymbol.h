@@ -14,7 +14,8 @@ namespace Melon {
 			EnumSymbol(const Boxx::UInt size, const bool isSigned, const FileInfo& file);
 			~EnumSymbol();
 
-			virtual EnumSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+			virtual EnumSymbol* InitializeSpecialize() override;
+			virtual void SpecializeTemplate(Symbol* sym, const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 		};
 	}
 }

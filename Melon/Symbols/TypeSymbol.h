@@ -78,7 +78,7 @@ namespace Melon {
 			/// Gets the kiwi type of symbol.
 			virtual Kiwi::Type KiwiType();
 			
-			virtual TypeSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
+			virtual TypeSymbol* InitializeSpecialize() override = 0;
 
 		protected:
 			friend TemplateSymbol;

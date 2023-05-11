@@ -14,7 +14,8 @@ namespace Melon {
 			/// The include path for this namespace.
 			Boxx::String IncludedPath() const;
 
-			virtual NamespaceSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+			virtual NamespaceSymbol* InitializeSpecialize() override;
+			virtual void SpecializeTemplate(Symbol* sym, const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 		protected:
 			Boxx::String includedPath;

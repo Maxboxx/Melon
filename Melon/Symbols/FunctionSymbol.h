@@ -117,7 +117,8 @@ namespace Melon {
 
 			virtual bool IsNotSpecialized() override;
 			virtual void SetTemplateValues(Symbol* const symbol) override;
-			virtual FunctionSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+			virtual FunctionSymbol* InitializeSpecialize() override;
+			virtual void SpecializeTemplate(Symbol* sym, const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 
 			FunctionSymbol* replace = nullptr;
 

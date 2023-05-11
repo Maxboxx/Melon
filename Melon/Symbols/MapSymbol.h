@@ -33,7 +33,7 @@ namespace Melon {
 			T* AddSymbol(const Symbols::Name& name, const Boxx::List<Symbols::Name>& aliases, T* const symbol);
 			///M
 
-			virtual MapSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override = 0;
+			virtual MapSymbol* InitializeSpecialize() override = 0;
 
 		protected:
 			virtual Symbol* FindSymbol(const NameList& scopeList, const Boxx::UInt index, const FileInfo& file) override;

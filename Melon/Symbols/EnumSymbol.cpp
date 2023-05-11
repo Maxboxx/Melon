@@ -19,13 +19,18 @@ EnumSymbol::~EnumSymbol() {
 	
 }
 
-EnumSymbol* EnumSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+EnumSymbol* EnumSymbol::InitializeSpecialize() {
 	EnumSymbol* const sym = new EnumSymbol(size, isSigned, file);
 	sym->values = values;
+	return sym;
+}
+
+void EnumSymbol::SpecializeTemplate(Symbol* initSym, const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+	EnumSymbol* const sym = initSym->Cast<EnumSymbol>();
 
 	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
-		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
+		Symbol* newSymbol = s.value->InitializeSpecialize();
+		sym->AddSymbol(s.key, newSymbol);
+		s.value->SpecializeTemplate(newSymbol, replacement, root);
 	}
-
-	return sym;
 }

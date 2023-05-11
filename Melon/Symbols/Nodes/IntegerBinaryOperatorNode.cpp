@@ -36,6 +36,9 @@ Ptr<Kiwi::Value> IntegerBinaryOperatorNode::Compile(Weak<Expression> operand1, W
 	else if (op.name == Name::IDiv.name) {
 		expression = new Kiwi::DivExpression(value1, value2);
 	}
+	else if (op.name == Name::Mod.name) {
+		expression = new Kiwi::ModExpression(value1, value2);
+	}
 	else if (op.name == Name::BitOr.name) {
 		expression = new Kiwi::BitOrExpression(value1, value2);
 	}

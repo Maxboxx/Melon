@@ -144,7 +144,13 @@ Symbol* TemplateTypeSymbol::FindSymbol(const NameList& nameList, const UInt inde
 			bool match = true;
 
 			for (UInt i = 0; i < types.Count(); i++) {
-				if (types[i] != variant->templateArguments[i]) {
+				if (types[i][0].name.Length() == 0) {
+					if (types[i] != variant->templateArguments[i]) {
+						match = false;
+						break;
+					}
+				}
+				else if (types[i] != variant->TemplateArgument(i)->AbsoluteName()) {
 					match = false;
 					break;
 				}

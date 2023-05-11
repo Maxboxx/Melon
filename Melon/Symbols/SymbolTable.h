@@ -261,7 +261,7 @@ namespace Melon {
 
 		template <class T>
 		inline T* SymbolTable::Find(const NameList& name, const NameList& scope, const FileInfo& file, const SearchOptions options) {
-			if (Symbol* const sym = Find(name, scope, file, options)) {
+			if (Symbol* const sym = Find(name.Split(), scope, file, options)) {
 				return sym->Cast<T>();
 			}
 			else {

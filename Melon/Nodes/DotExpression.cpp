@@ -39,9 +39,6 @@ TypeSymbol* DotExpression::Type() const {
 	if (s->Is<ValueSymbol>() || s->Is<VariableSymbol>() || s->Is<TemplateSymbol>()) {
 		return s->Type();
 	}
-	else if (TypeSymbol* const t = s->Cast<TypeSymbol>()) {
-		return t;
-	}
 
 	return nullptr;
 }
@@ -148,7 +145,7 @@ ScanResult DotExpression::Scan(ScanInfoStack& info) {
 						var->isAssigned = true;
 					}
 
-					if (info->type->IsInitialized()) {
+					if (info->type && info->type->IsInitialized()) {
 						info->init = false;
 					}
 				}

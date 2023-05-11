@@ -16,7 +16,7 @@ namespace Melon {
 			ClassSymbol(const FileInfo& file);
 			~ClassSymbol();
 			
-			virtual ClassSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+			virtual ClassSymbol* InitializeSpecialize() override;
 
 			virtual Boxx::UInt Size() const override;
 

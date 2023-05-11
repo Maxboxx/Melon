@@ -426,6 +426,14 @@ bool NameList::IsTemplate() const {
 	return names.Count() > 0 && names[0] == Name();
 }
 
+bool NameList::HasTemplates() const {
+	for (const Name& name : names) {
+		if (name.types) return true;
+	}
+
+	return false;
+}
+
 Name NameList::operator[](const Boxx::UInt i) const {
 	return names[i];
 }

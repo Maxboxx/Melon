@@ -22,7 +22,7 @@ TypeSymbol* ValueSymbol::Type() {
 	return parent->Cast<TypeSymbol>();
 }
 
-ValueSymbol* ValueSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+ValueSymbol* ValueSymbol::InitializeSpecialize() {
 	ValueSymbol* const sym = new ValueSymbol(file);
 	sym->value = value;
 	return sym;

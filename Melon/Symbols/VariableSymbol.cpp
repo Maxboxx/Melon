@@ -56,9 +56,28 @@ TypeSymbol* VariableSymbol::Type() {
 	return SymbolTable::Find<TypeSymbol>(type, Parent()->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 }
 
-VariableSymbol* VariableSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+VariableSymbol* VariableSymbol::InitializeSpecialize() {
 	VariableSymbol* const sym = new VariableSymbol(file);
 	sym->modifiers = modifiers;
-	sym->type = ReplaceTypeScope(Type(), replacement, file);
 	return sym;
+}
+
+void VariableSymbol::SpecializeTemplate(Symbol* initSym, const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+	VariableSymbol* sym = initSym->Cast<VariableSymbol>();
+	TypeSymbol* type = Type();
+
+	if (type == nullptr && this->type.HasTemplates()) {
+		root->AddTemplateSpecialization(this->type, Parent()->AbsoluteName(), file, false);
+		type = Type();
+	}
+
+	sym->type = ReplaceTypeScope(type, replacement, file);
+
+	if (sym->type.HasTemplates() && !sym->Type()) {
+		SymbolTable::TemplateInfo info;
+		info.file  = sym->file;
+		info.name  = sym->type;
+		info.scope = sym->Parent();
+		SymbolTable::templateSymbols.Add(info);
+	}
 }

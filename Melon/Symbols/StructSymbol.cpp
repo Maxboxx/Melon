@@ -20,7 +20,6 @@ StructSymbol::~StructSymbol() {
 
 }
 
-StructSymbol* StructSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
-	StructSymbol* const sym = new StructSymbol(file);
-	return (StructSymbol*)ClassStructBaseSymbol::SpecializeTemplate(replacement, root, sym);
+StructSymbol* StructSymbol::InitializeSpecialize() {
+	return new StructSymbol(file);
 }

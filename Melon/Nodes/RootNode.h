@@ -2,8 +2,11 @@
 
 #include "Node.h"
 #include "Statements.h"
+#include "ClassStatement.h"
+#include "StructStatement.h"
 
 #include "Melon/Symbols/TemplateTypeSymbol.h"
+#include "Melon/Symbols/ClassStructBaseSymbol.h"
 
 namespace Melon {
 	struct CompilerOptions;
@@ -48,6 +51,34 @@ namespace Melon {
 
 		private:
 			Boxx::Tuple<Symbols::TemplateTypeSymbol*, Boxx::List<Symbols::NameList>> FindTemplateArgs(const Symbols::NameList& name, const Symbols::NameList& scope, const FileInfo& file);
+
+			template <class Sym, class Stat>
+			void SpecializeClassStruct(Sym* sym, Symbols::TemplateTypeSymbol* templateSym, const Boxx::ReplacementMap<Symbols::TypeSymbol*>& templateTypes) {
+				templateSym->Parent()->Cast<Symbols::TemplateTypeSymbol>()->AddTemplateVariant(sym);
+				templateSym->SpecializeTemplate(sym, templateTypes, this);
+
+				sym->templateParent = templateSym;
+
+				Ptr<Stat> sn = new Stat(Symbols::SymbolTable::FindAbsolute(Symbols::NameList(true), file), file);
+				sn->name = sym->Parent()->Name();
+
+				Boxx::List<Symbols::NameList> templateArgs;
+
+				for (const Symbols::NameList& arg : sym->templateArguments) {
+					templateArgs.Add(arg);
+				}
+
+				sn->name.types = templateArgs;
+
+				sn->symbol = sym;
+				sym->node = sn;
+
+				for (const Symbols::Name& var : sym->members) {
+					sn->vars.Add(var);
+				}
+
+				nodes.Add(Statements::FromStatement(sn));
+			}
 
 			Boxx::UInt nodeIndex = 0;
 			Boxx::UInt funcIndex = 0;

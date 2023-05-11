@@ -33,12 +33,16 @@ String IntegerSymbol::KiwiName() {
 	return Symbol::KiwiName();
 }
 
-IntegerSymbol* IntegerSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
-	IntegerSymbol* const sym = new IntegerSymbol(size, isSigned, file);
+IntegerSymbol* IntegerSymbol::InitializeSpecialize() {
+	return new IntegerSymbol(size, isSigned, file);
+}
+
+void IntegerSymbol::SpecializeTemplate(Symbol* initSym, const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+	IntegerSymbol* const sym = initSym->Cast<IntegerSymbol>();
 	
 	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
-		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
+		Symbol* newSym = s.value->InitializeSpecialize();
+		sym->AddSymbol(s.key, newSym);
+		s.value->SpecializeTemplate(newSym, replacement, root);
 	}
-
-	return sym;
 }

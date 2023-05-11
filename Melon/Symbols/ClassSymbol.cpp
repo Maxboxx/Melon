@@ -20,9 +20,8 @@ ClassSymbol::~ClassSymbol() {
 
 }
 
-ClassSymbol* ClassSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
-	ClassSymbol* const sym = new ClassSymbol(file);
-	return (ClassSymbol*)ClassStructBaseSymbol::SpecializeTemplate(replacement, root, sym);
+ClassSymbol* ClassSymbol::InitializeSpecialize() {
+	return new ClassSymbol(file);
 }
 
 UInt ClassSymbol::Size() const {

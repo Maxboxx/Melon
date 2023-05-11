@@ -22,12 +22,16 @@ String NamespaceSymbol::IncludedPath() const {
 	return includedPath;
 }
 
-NamespaceSymbol* NamespaceSymbol::SpecializeTemplate(const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
-	NamespaceSymbol* const sym = new NamespaceSymbol(includedPath, file);
+NamespaceSymbol* NamespaceSymbol::InitializeSpecialize() {
+	return new NamespaceSymbol(includedPath, file);
+}
+
+void NamespaceSymbol::SpecializeTemplate(Symbol* initSym, const ReplacementMap<TypeSymbol*>& replacement, RootNode* const root) {
+	NamespaceSymbol* const sym = initSym->Cast<NamespaceSymbol>();
 
 	for (const Pair<Symbols::Name, Symbol*>& s : symbols) {
-		sym->AddSymbol(s.key, s.value->SpecializeTemplate(replacement, root));
+		Symbol* newSym = s.value->InitializeSpecialize();
+		sym->AddSymbol(s.key, newSym);
+		s.value->SpecializeTemplate(newSym, replacement, root);
 	}
-
-	return sym;
 }

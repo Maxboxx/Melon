@@ -82,7 +82,7 @@ ScanResult Condition::Scan(ScanInfoStack& info) {
 			assign->values[0] = new TypeExpression(type->Find(Name::Value, file)->Type()->AbsoluteName());
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.type.conditional_assign", tempValue->Type()->ToString()), tempValue->File());
+			ErrorLog::Error(LogMessage("error.type.conditional_assign", type->ToString()), tempValue->File());
 		}
 
 		ScanResult result = assign->Scan(info);

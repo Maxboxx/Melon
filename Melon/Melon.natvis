@@ -219,6 +219,16 @@
 		</Expand>
 	</Type>
 
+	<Type Name="Melon::Symbols::ClassSymbol">
+		<DisplayString>ClassSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="symbols">symbols</Item>
+			<Item Name="variants">templateVariants</Item>
+			<Item Name="templates">templateArguments</Item>
+		</Expand>
+	</Type>
+
 	<Type Name="Melon::Symbols::TemplateSymbol">
 		<DisplayString>TemplateSymbol {name}</DisplayString>
 

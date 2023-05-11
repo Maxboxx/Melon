@@ -15,7 +15,7 @@ namespace Melon {
 			StructSymbol(const FileInfo& file);
 			~StructSymbol();
 			
-			virtual StructSymbol* SpecializeTemplate(const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
+			virtual StructSymbol* InitializeSpecialize() override;
 
 			/// {true} if the scope is recursive.
 			bool isRecursive = false;
