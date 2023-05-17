@@ -22,7 +22,7 @@ Ptr<LoopStatement> LoopParser::Parse(ParsingInfo& info) {
 
 	const UInt startLine = info.Current().line;
 	const String start = info.Current().value;
-	bool single = false;
+	bool needsEnd = false;
 
 	while (IsValidSegmentType(info.Current().type, loop)) {
 		LoopStatement::LoopSegment ls;
@@ -34,14 +34,14 @@ Ptr<LoopStatement> LoopParser::Parse(ParsingInfo& info) {
 
 		info.index++;
 
-		single = ParseSegment(ls, value, info);
+		needsEnd = ParseSegment(ls, value, info);
 
 		loop->segments.Add(ls);
 
 		info.scope = info.scope->Parent<ScopeSymbol>();
 	}
 
-	if (!single) {
+	if (needsEnd) {
 		if (info.Current().type != TokenType::End) {
 			ErrorLog::Error(LogMessage("error.syntax.expected.end_at", LogMessage::Quote(start), startLine), info.GetFileInfoPrev());
 		}
@@ -70,13 +70,13 @@ bool LoopParser::ParseIf(LoopStatement::LoopSegment& ls, const Boxx::String& val
 		info.statementNumber++;
 		ls.condition = cond;
 
-		const bool single = info.Current().type == TokenType::Arrow;
+		bool needsEnd;
 
 		info.scopeCount++;
-		ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), true);
+		ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), needsEnd);
 		info.scopeCount--;
 
-		return single;
+		return needsEnd;
 	}
 	else {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", LogMessage::Quote(value)), info.GetFileInfoPrev());
@@ -92,15 +92,15 @@ bool LoopParser::ParseWhile(LoopStatement::LoopSegment& ls, const Boxx::String& 
 		info.statementNumber++;
 		ls.condition = cond;
 		
-		const bool single = info.Current().type == TokenType::Arrow;
+		bool needsEnd;
 
 		info.scopeCount++;
 		info.loops++;
-		ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Do, ScopeParser::Info("do", "while condition"), true);
+		ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Do, ScopeParser::Info("do", "while condition"), needsEnd);
 		info.loops--;
 		info.scopeCount--;
 
-		return single;
+		return needsEnd;
 	}
 	else {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after", "condition", LogMessage::Quote(value)), info.GetFileInfoPrev());
@@ -139,15 +139,15 @@ bool LoopParser::ParseFor(LoopStatement::LoopSegment& ls, const Boxx::String& va
 					ls.stepOperator = Name::Add;
 				}
 
-				const bool single = info.Current().type == TokenType::Arrow;
+				bool needsEnd;
 
 				info.scopeCount++;
 				info.loops++;
-				ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Do, ScopeParser::Info("do", "for condition"), true);
+				ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Do, ScopeParser::Info("do", "for condition"), needsEnd);
 				info.loops--;
 				info.scopeCount--;
 
-				return single;
+				return needsEnd;
 			}
 		}
 		else {
@@ -216,13 +216,13 @@ Tuple<Optional<Name>, Ptr<Node>> LoopParser::ParseForStep(ParsingInfo& info) {
 bool LoopParser::ParseNone(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
-	const bool single = info.Current().type == TokenType::Arrow;
+	bool hasEnd;
 
 	info.scopeCount++;
-	ls.statements = ScopeParser::ParseNoEnd(info, TokenType::None, ScopeParser::Info(), true);
+	ls.statements = ScopeParser::ParseNoEnd(info, TokenType::None, ScopeParser::Info(), hasEnd);
 	info.scopeCount--;
 
-	return single;
+	return hasEnd;
 }
 
 bool LoopParser::IsValidSegmentType(const TokenType t, Weak<Nodes::LoopStatement> loop) {

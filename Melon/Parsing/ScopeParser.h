@@ -21,38 +21,13 @@ namespace Melon {
 			///A required: {true} if the scope is required.
 			static Ptr<Nodes::Statements> Parse(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
 
-			/// Parses a scope without the {end} keyword.
+			/// Parses a scope with an optional {end} keyword.
 			///p Uses either {ParseBlockNoEnd} or {ParseSingle} to parse the scope. 
 			///p This function does not modify {info.scope} or {info.scopeCount}.
 			///A scopeStart: Used by {ParseBlockNoEnd}.
 			///A scopeInfo: Used by {ParseBlockNoEnd} and {ParseSingle}.
 			///A required: {true} if the scope is required.
-			static Ptr<Nodes::Statements> ParseNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
-
-			/// Parses a scope with multiple statements.
-			///p The scope starts with {scopeStart} and ends with {TokenType::End}.
-			///p This function does not modify {info.scope} or {info.scopeCount}.
-			///A scopeStart: The start token of the scope.
-			///p If this value is {TokenType::None}, the scope starts with nothing.
-			///A scopeInfo: Info used for errors.
-			///A required: {true} if the scope is required.
-			static Ptr<Nodes::Statements> ParseBlock(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
-
-			/// Parses a scope with multiple statements without the {end} keyword.
-			///p The scope starts with {scopeStart}.
-			///p This function does not modify {info.scope} or {info.scopeCount}.
-			///A scopeStart: The start token of the scope.
-			///p If this value is {TokenType::None}, the scope starts with nothing.
-			///A scopeInfo: Info used for errors.
-			///A required: {true} if the scope is required.
-			static Ptr<Nodes::Statements> ParseBlockNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required = false);
-			
-			/// Parses a scope with a single statement.
-			///p The scope starts with {TokenType::Arrow} and ends after the statement.
-			///p This function does not modify {info.scope} or {info.scopeCount}.
-			///A scopeInfo: Info for errors.
-			///A required: {true} if the scope is required.
-			static Ptr<Nodes::Statements> ParseSingle(ParsingInfo& info, const Info& scopeInfo, const bool required = false);
+			static Ptr<Nodes::Statements> ParseNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, bool& hasEnd, const bool required = false);
 
 			/// Parses an expression scope.
 			///p Uses either {ParseExpressionBlock} or {ParseExpressionSingle} to parse the scope. 
@@ -145,6 +120,9 @@ namespace Melon {
 
 				~Info() {}
 			};
+
+		private:
+			static Ptr<Nodes::Statements> Parse(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, bool required, bool requireEnd, bool& hasEnd);
 		};
 	}
 }

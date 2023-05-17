@@ -4,6 +4,9 @@
 #include "StatementParser.h"
 
 #include "Melon/Nodes/TypeConversion.h"
+#include "Melon/Nodes/ReturnStatement.h"
+
+#include "Melon/Symbols/FunctionSymbol.h"
 
 using namespace Boxx;
 
@@ -13,75 +16,80 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
 Ptr<Statements> ScopeParser::Parse(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required) {
-	if (Ptr<Statements> node = ParseSingle(info, scopeInfo, false)) {
-		return node;
-	}
-	else if (Ptr<Statements> node = ParseBlock(info, scopeStart, scopeInfo, required)) {
-		return node;
-	}
-
-	return nullptr;
+	bool hasEnd;
+	return Parse(info, scopeStart, scopeInfo, required, true, hasEnd);
 }
 
-Ptr<Statements> ScopeParser::ParseNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required) {
-	if (Ptr<Statements> node = ParseSingle(info, scopeInfo, false)) {
-		return node;
-	}
-	else if (Ptr<Statements> node = ParseBlockNoEnd(info, scopeStart, scopeInfo, required)) {
-		return node;
-	}
-
-	return nullptr;
+Ptr<Statements> ScopeParser::ParseNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, bool& hasEnd, const bool required) {
+	return Parse(info, scopeStart, scopeInfo, required, false, hasEnd);
 }
 
-Ptr<Statements> ScopeParser::ParseBlock(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required) {
-	Ptr<Statements> statements = ParseBlockNoEnd(info, scopeStart, scopeInfo, required);
+Ptr<Statements> ScopeParser::Parse(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required, bool parseEnd, bool& needsEnd) {
+	switch (info.Current().type) {
+		case TokenType::Colon: {
+			info.index++;
 
-	if (statements) {
-		if (info.Current().type != TokenType::End) {
+			if (Ptr<Statement> statement = StatementParser::Parse(info)) {
+				Ptr<Statements> statements = new Statements(statement->scope, statement->File());
+				statements->statements.Add(statement);
+				needsEnd = false;
+				return statements;
+			}
+
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(":")), info.GetFileInfoPrev());
+			break;
+		}
+
+		case TokenType::Arrow: {
+			info.index++;
+
+			if (Ptr<Expression> expr = ExpressionParser::Parse(info)) {
+				Ptr<Statements> statements = new Statements(info.scope, expr->File());
+				Ptr<ReturnStatement> ret = new ReturnStatement(info.scope, expr->File());
+				ret->values.Add(expr);
+				ret->func = info.scope->CurrentFunction()->AbsoluteName();
+				statements->statements.Add(ret);
+				needsEnd = false;
+				return statements;
+			}
+
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "expression", LogMessage::Quote("->")), info.GetFileInfoPrev());
+			break;
+		}
+
+		default: {
+			const UInt index = info.index;
+
+			if (scopeStart != TokenType::None) {
+				if (info.Current().type != scopeStart) {
+					if (required) {
+						ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(scopeInfo.expected), scopeInfo.after), info.GetFileInfoPrev());
+					}
+
+					break;
+				}
+
+				info.index++;
+			}
+
+			Ptr<Statements> statements = StatementParser::ParseMultiple(info);
+
+			if (!parseEnd) return statements;
+
+			if (info.Current().type == TokenType::End) {
+				info.index++;
+				needsEnd = false;
+				return statements;
+			}
+
 			ErrorLog::Error(LogMessage("error.syntax.expected.end_at", scopeInfo.block, scopeInfo.blockLine), info.GetFileInfoPrev());
-			return nullptr;
+			info.index = index;
+
+			break;
 		}
-
-		info.index++;
 	}
 
-	return statements;
-}
-
-Ptr<Statements> ScopeParser::ParseBlockNoEnd(ParsingInfo& info, const TokenType scopeStart, const Info& scopeInfo, const bool required) {
-	if (info.Current().type == scopeStart) {
-		info.index++;
-	}
-	else if (scopeStart != TokenType::None) {
-		if (required) {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(scopeInfo.expected), scopeInfo.after), info.GetFileInfoPrev());
-		}
-
-		return nullptr;
-	}
-
-	return StatementParser::ParseMultiple(info);
-}
-
-Ptr<Statements> ScopeParser::ParseSingle(ParsingInfo& info, const Info& scopeInfo, const bool required) {
-	if (info.Current().type != TokenType::Arrow) {
-		if (required) {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("->"), scopeInfo.after), info.GetFileInfoPrev());
-		}
-
-		return nullptr;
-	}
-
-	info.index++;
-
-	if (Ptr<Statement> node = StatementParser::Parse(info)) {
-		Ptr<Statements> statements = new Statements(node->scope, node->File());
-		statements->statements.Add(node);
-		return statements;
-	}
-
-	ErrorLog::Error(LogMessage("error.syntax.expected.after", "statement", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
+	needsEnd = false;
 	return nullptr;
 }
 

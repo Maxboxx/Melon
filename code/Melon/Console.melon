@@ -1,5 +1,7 @@
 
+--- Console stuff.
 struct Console
+	--- Logs a value to the console.
 	static function log<T>(T: value)
 		_debug print value
 	end

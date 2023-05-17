@@ -14,82 +14,74 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
 bool IncludeParser::Parse(ParsingInfo& info) {
-	if (info.Current().type == TokenType::Include) {
-		info.index++;
+	if (info.Current().type != TokenType::Include) return false;
+	info.index++;
 
-		NameList include = NameList();
+	NameList include = NameList();
 
-		if (info.Current().type == TokenType::Name) {
-			include = include.Add(Name(info.Current().value));
-			info.index++;
+	if (info.Current().type != TokenType::Name) {
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
+		return false;
+	}
 
-			while (true) {
-				if (info.Current().type != TokenType::Dot) break;
+	include = include.Add(Name(info.Current().value));
+	info.index++;
 
-				if (info.Peek().type == TokenType::Name) {
-					include = include.Add(Name(info.Peek().value));
-					info.index += 2;
-				}
-				else {
-					break;
-				}
-			}
+	while (true) {
+		if (info.Current().type != TokenType::Dot) break;
+		if (info.Peek().type != TokenType::Name) break;
 
-			const String fileDir = Path::GetDirectory(info.filename);
-			String includeDir = include[0].ToString();
+		include = include.Add(Name(info.Peek().value));
+		info.index += 2;
+	}
 
-			for (UInt i = 1; i < include.Size(); i++) {
-				includeDir = Path::Combine(includeDir, include[i].ToString());
-			}
+	const String fileDir = Path::GetDirectory(info.filename);
+	String includeDir = include[0].ToString();
 
-			const String fullDir = Path::Combine(fileDir, includeDir);
+	for (UInt i = 1; i < include.Size(); i++) {
+		includeDir = Path::Combine(includeDir, include[i].ToString());
+	}
 
-			bool found = false;
+	const String fullDir = Path::Combine(fileDir, includeDir);
 
-			if (System::FileExists(Path::SetExtension(fullDir, "melon"))) {
+	bool found = false;
+
+	if (System::FileExists(Path::SetExtension(fullDir, "melon"))) {
+		found = true;
+		include = info.currentNamespace.Add(include);
+		ParseFile(Path::SetExtension(fullDir, "melon"), include.Pop(), include.Last(), info);
+
+		if (include.Size() == 1) include = include.Pop();
+	}
+	else if (System::DirectoryExists(fullDir)) {
+		found = true;
+		include = info.currentNamespace.Add(include);
+		ParseDirectory(fileDir + includeDir, include, info);
+	}
+
+	if (!found) {
+		for (String dir : info.options.includeDirectories) {
+			dir = Path::Combine(dir, includeDir);
+
+			if (System::FileExists(Path::SetExtension(dir, "melon"))) {
 				found = true;
-				include = info.currentNamespace.Add(include);
-				ParseFile(Path::SetExtension(fullDir, "melon"), include.Pop(), include.Last(), info);
-
+				ParseFile(Path::SetExtension(dir, "melon"), include.Pop(), include.Last(), info);
 				if (include.Size() == 1) include = include.Pop();
+				break;
 			}
-			else if (System::DirectoryExists(fullDir)) {
+			else if (System::DirectoryExists(dir)) {
 				found = true;
-				include = info.currentNamespace.Add(include);
-				ParseDirectory(fileDir + includeDir, include, info);
+				ParseDirectory(dir, include, info);
+				break;
 			}
-
-			if (!found) {
-				for (String dir : info.options.includeDirectories) {
-					dir = Path::Combine(dir, includeDir);
-
-					if (System::FileExists(Path::SetExtension(dir, "melon"))) {
-						found = true;
-						ParseFile(Path::SetExtension(dir, "melon"), include.Pop(), include.Last(), info);
-						if (include.Size() == 1) include = include.Pop();
-						break;
-					}
-					else if (System::DirectoryExists(dir)) {
-						found = true;
-						ParseDirectory(dir, include, info);
-						break;
-					}
-				}
-			}
-
-			if (include.Size() > 0) {
-				info.includedNamespaces.Add(include);
-			}
-
-			return true;
-		}
-		else {
-			ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
-			return false;
 		}
 	}
 
-	return false;
+	if (include.Size() > 0) {
+		info.includedNamespaces.Add(include);
+	}
+
+	return true;
 }
 
 void IncludeParser::ParseInclude(const NameList& include, ParsingInfo& info) {
