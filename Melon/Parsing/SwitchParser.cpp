@@ -152,7 +152,7 @@ bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Ptr<SwitchExpression>&
 
 	info.scopeCount++;
 
-	Ptr<Expression> node = ScopeParser::ParseExpression(info, TokenType::Then, ScopeParser::Info("then", "switch case", "switch case", line), true);
+	Ptr<Expression> node = ScopeParser::ParseExpression(info, TokenType::Then, ScopeParser::Info("then", "switch case", "switch case", line));
 
 	if (!node) error = true;
 
@@ -177,7 +177,7 @@ bool SwitchParser::ParseExpressionDefault(ParsingInfo& info, Ptr<SwitchExpressio
 	info.index++;
 	info.scopeCount++;
 
-	Ptr<Expression> node = ScopeParser::ParseExpression(info, TokenType::None, ScopeParser::Info("default case", line), true);
+	Ptr<Expression> node = ScopeParser::ParseExpression(info, TokenType::None, ScopeParser::Info("default case", line));
 
 	if (!node) error = true;
 

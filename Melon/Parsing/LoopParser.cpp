@@ -216,13 +216,13 @@ Tuple<Optional<Name>, Ptr<Node>> LoopParser::ParseForStep(ParsingInfo& info) {
 bool LoopParser::ParseNone(LoopStatement::LoopSegment& ls, const Boxx::String& value, ParsingInfo& info) {
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
 
-	bool hasEnd;
+	bool needsEnd;
 
 	info.scopeCount++;
-	ls.statements = ScopeParser::ParseNoEnd(info, TokenType::None, ScopeParser::Info(), hasEnd);
+	ls.statements = ScopeParser::ParseNoEnd(info, TokenType::None, ScopeParser::Info(), needsEnd);
 	info.scopeCount--;
 
-	return hasEnd;
+	return needsEnd;
 }
 
 bool LoopParser::IsValidSegmentType(const TokenType t, Weak<Nodes::LoopStatement> loop) {

@@ -19,7 +19,7 @@ Ptr<DoStatement> DoParser::Parse(ParsingInfo& info) {
 	Ptr<DoStatement> node = new DoStatement(info.scope, info.GetFileInfo(line));
 	info.scopeCount++;
 
-	if (Ptr<Statements> nodes = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("do statement", line), true)) {
+	if (Ptr<Statements> nodes = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("do statement", line))) {
 		node->statements = nodes;
 		info.scope = info.scope->Parent<ScopeSymbol>();
 		info.statementNumber++;

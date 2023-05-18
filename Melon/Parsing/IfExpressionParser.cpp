@@ -49,7 +49,7 @@ Ptr<IfExpression> IfExpressionParser::Parse(ParsingInfo& info, const bool return
 }
 
 bool IfExpressionParser::ParseSimple(ParsingInfo& info, Weak<IfExpression> node, const UInt line, bool& error) {
-	if (info.Current().type != TokenType::Arrow) return false;
+	if (info.Current().type != TokenType::Colon) return false;
 	info.index++;
 	
 	// Parse first expression
@@ -85,8 +85,10 @@ bool IfExpressionParser::ParseSimple(ParsingInfo& info, Weak<IfExpression> node,
 }
 
 bool IfExpressionParser::ParseFull(ParsingInfo& info, Weak<IfExpression> node, const UInt line, bool& error) {
+	bool needsEnd;
+	
 	// Parse if block
-	if (Ptr<Expression> expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), true)) {
+	if (Ptr<Expression> expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), needsEnd)) {
 		node->nodes.Add(expr);
 	}
 	else {
@@ -107,7 +109,7 @@ bool IfExpressionParser::ParseFull(ParsingInfo& info, Weak<IfExpression> node, c
 			return false;
 		}
 
-		if (Ptr<Expression> expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), true)) {
+		if (Ptr<Expression> expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), needsEnd)) {
 			node->nodes.Add(expr);
 		}
 		else {
@@ -125,7 +127,7 @@ bool IfExpressionParser::ParseFull(ParsingInfo& info, Weak<IfExpression> node, c
 
 	info.index++;
 
-	if (Ptr<Expression> expr = ScopeParser::ParseExpression(info, TokenType::None, ScopeParser::Info(LogMessage::Quote("else"), info.Prev().line), true)) {
+	if (Ptr<Expression> expr = ScopeParser::ParseExpression(info, TokenType::None, ScopeParser::Info(LogMessage::Quote("else"), info.Prev().line))) {
 		node->nodes.Add(expr);
 	}
 	else {
