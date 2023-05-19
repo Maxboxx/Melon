@@ -1,4 +1,4 @@
-#include "SwitchParser.h"
+#include "MatchParser.h"
 
 #include "ExpressionParser.h"
 #include "ScopeParser.h"
@@ -10,8 +10,8 @@ using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
-Ptr<SwitchStatement> SwitchParser::ParseStatement(ParsingInfo& info) {
-	if (info.Current().type != TokenType::Switch) return nullptr;
+Ptr<MatchStatement> MatchParser::ParseStatement(ParsingInfo& info) {
+	if (info.Current().type != TokenType::Match) return nullptr;
 
 	const UInt startIndex = info.index;
 	const UInt switchLine = info.Current().line;
@@ -23,7 +23,7 @@ Ptr<SwitchStatement> SwitchParser::ParseStatement(ParsingInfo& info) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", LogMessage::Quote("switch")), info.GetFileInfoPrev());
 	}
 
-	Ptr<SwitchStatement> switchNode = new SwitchStatement(info.scope, info.GetFileInfo(switchLine));
+	Ptr<MatchStatement> switchNode = new MatchStatement(info.scope, info.GetFileInfo(switchLine));
 	switchNode->match = value;
 
 	ParseStatementCases(info, switchNode);
@@ -39,8 +39,8 @@ Ptr<SwitchStatement> SwitchParser::ParseStatement(ParsingInfo& info) {
 	return switchNode;
 }
 
-Ptr<SwitchExpression> SwitchParser::ParseExpression(ParsingInfo& info, const bool returnOnError) {
-	if (info.Current().type != TokenType::Switch) return nullptr;
+Ptr<MatchExpression> MatchParser::ParseExpression(ParsingInfo& info, const bool returnOnError) {
+	if (info.Current().type != TokenType::Match) return nullptr;
 
 	const UInt startIndex = info.index;
 	const UInt switchLine = info.Current().line;
@@ -54,7 +54,7 @@ Ptr<SwitchExpression> SwitchParser::ParseExpression(ParsingInfo& info, const boo
 		error = true;
 	}
 
-	Ptr<SwitchExpression> switchNode = new SwitchExpression(info.scope, info.GetFileInfo(switchLine));
+	Ptr<MatchExpression> switchNode = new MatchExpression(info.scope, info.GetFileInfo(switchLine));
 	switchNode->match = value;
 
 	ParseExpressionCases(info, switchNode, error);
@@ -76,7 +76,7 @@ Ptr<SwitchExpression> SwitchParser::ParseExpression(ParsingInfo& info, const boo
 	return switchNode;
 }
 
-List<Ptr<Expression>> SwitchParser::ParseCaseExpressions(ParsingInfo& info, bool& error) {
+List<Ptr<Expression>> MatchParser::ParseCaseExpressions(ParsingInfo& info, bool& error) {
 	List<Ptr<Expression>> expressions;
 
 	while (Ptr<Expression> node = ExpressionParser::Parse(info)) {
@@ -94,12 +94,12 @@ List<Ptr<Expression>> SwitchParser::ParseCaseExpressions(ParsingInfo& info, bool
 	return expressions;
 }
 
-void SwitchParser::ParseStatementCases(ParsingInfo& info, Ptr<SwitchStatement>& switchNode) {
+void MatchParser::ParseStatementCases(ParsingInfo& info, Ptr<MatchStatement>& switchNode) {
 	while (ParseStatementCase(info, switchNode) || ParseStatementDefault(info, switchNode));
 }
 
-bool SwitchParser::ParseStatementCase(ParsingInfo& info, Ptr<SwitchStatement>& switchNode) {
-	if (info.Current().type != TokenType::Case) return false;
+bool MatchParser::ParseStatementCase(ParsingInfo& info, Ptr<MatchStatement>& switchNode) {
+	if (info.Current().type != TokenType::Is) return false;
 	
 	const UInt line = info.Current().line;
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
@@ -110,15 +110,15 @@ bool SwitchParser::ParseStatementCase(ParsingInfo& info, Ptr<SwitchStatement>& s
 	switchNode->cases.Add(ParseCaseExpressions(info, error));
 
 	info.scopeCount++;
-	switchNode->nodes.Add(ScopeParser::Parse(info, TokenType::Then, ScopeParser::Info("then", "switch case", "switch case", line), true));
+	switchNode->nodes.Add(ScopeParser::Parse(info, TokenType::Do, ScopeParser::Info("do", "switch case", "switch case", line), true));
 	info.scopeCount--;
 
 	info.scope = info.scope->Parent<ScopeSymbol>();
 	return true;
 }
 
-bool SwitchParser::ParseStatementDefault(ParsingInfo& info, Ptr<SwitchStatement>& switchNode) {
-	if (info.Current().type != TokenType::Default) return false;
+bool MatchParser::ParseStatementDefault(ParsingInfo& info, Ptr<MatchStatement>& switchNode) {
+	if (info.Current().type != TokenType::Else) return false;
 
 	const UInt line = info.Current().line;
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
@@ -137,12 +137,12 @@ bool SwitchParser::ParseStatementDefault(ParsingInfo& info, Ptr<SwitchStatement>
 	return true;
 }
 
-void SwitchParser::ParseExpressionCases(ParsingInfo& info, Ptr<SwitchExpression>& switchNode, bool& error) {
+void MatchParser::ParseExpressionCases(ParsingInfo& info, Ptr<MatchExpression>& switchNode, bool& error) {
 	while (ParseExpressionCase(info, switchNode, error) || ParseExpressionDefault(info, switchNode, error));
 }
 
-bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Ptr<SwitchExpression>& switchNode, bool& error) {
-	if (info.Current().type != TokenType::Case) return false;
+bool MatchParser::ParseExpressionCase(ParsingInfo& info, Ptr<MatchExpression>& switchNode, bool& error) {
+	if (info.Current().type != TokenType::Is) return false;
 
 	const UInt line = info.Current().line;
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
@@ -152,7 +152,7 @@ bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Ptr<SwitchExpression>&
 
 	info.scopeCount++;
 
-	Ptr<Expression> node = ScopeParser::ParseExpression(info, TokenType::Then, ScopeParser::Info("then", "switch case", "switch case", line));
+	Ptr<Expression> node = ScopeParser::ParseExpression(info, TokenType::Do, ScopeParser::Info("do", "switch case", "switch case", line));
 
 	if (!node) error = true;
 
@@ -163,8 +163,8 @@ bool SwitchParser::ParseExpressionCase(ParsingInfo& info, Ptr<SwitchExpression>&
 	return true;
 }
 
-bool SwitchParser::ParseExpressionDefault(ParsingInfo& info, Ptr<SwitchExpression>& switchNode, bool& error) {
-	if (info.Current().type != TokenType::Default) return false;
+bool MatchParser::ParseExpressionDefault(ParsingInfo& info, Ptr<MatchExpression>& switchNode, bool& error) {
+	if (info.Current().type != TokenType::Else) return false;
 
 	const UInt line = info.Current().line;
 	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());

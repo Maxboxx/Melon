@@ -88,7 +88,7 @@ bool IfExpressionParser::ParseFull(ParsingInfo& info, Weak<IfExpression> node, c
 	bool needsEnd;
 	
 	// Parse if block
-	if (Ptr<Expression> expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), needsEnd)) {
+	if (Ptr<Expression> expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Do, ScopeParser::Info("do", "if condition"), needsEnd)) {
 		node->nodes.Add(expr);
 	}
 	else {
@@ -97,7 +97,7 @@ bool IfExpressionParser::ParseFull(ParsingInfo& info, Weak<IfExpression> node, c
 	}
 
 	// Parse elseif blocks
-	while (info.Current().type == TokenType::ElseIf) {
+	while (info.Current().type == TokenType::Elif) {
 		info.index++;
 
 		if (Ptr<Condition> cond = ConditionParser::Parse(info)) {
@@ -109,7 +109,7 @@ bool IfExpressionParser::ParseFull(ParsingInfo& info, Weak<IfExpression> node, c
 			return false;
 		}
 
-		if (Ptr<Expression> expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), needsEnd)) {
+		if (Ptr<Expression> expr = ScopeParser::ParseExpressionNoEnd(info, TokenType::Do, ScopeParser::Info("do", "if condition"), needsEnd)) {
 			node->nodes.Add(expr);
 		}
 		else {

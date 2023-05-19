@@ -1,16 +1,16 @@
 #pragma once
 
 #include "Statement.h"
-#include "SwitchBaseNode.h"
+#include "MatchBaseNode.h"
 
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
 		/// Node for {switch} statements.
-		class SwitchStatement : public SwitchBaseNode<Statement, Statements> {
+		class MatchStatement : public MatchBaseNode<Statement, Statements> {
 		public:
-			SwitchStatement(Symbols::Symbol* const scope, const FileInfo& file);
-			~SwitchStatement();
+			MatchStatement(Symbols::Symbol* const scope, const FileInfo& file);
+			~MatchStatement();
 
 			virtual bool IsScope() const override;
 			virtual Ptr<Statement> Optimize(OptimizeInfo& info) override;

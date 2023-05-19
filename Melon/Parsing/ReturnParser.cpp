@@ -14,7 +14,7 @@ using namespace Melon::Parsing;
 Ptr<ReturnStatement> ReturnParser::Parse(ParsingInfo& info) {
 	const UInt startIndex = info.index;
 
-	if (info.Current().type == TokenType::Return) {
+	if (info.Current().type == TokenType::Ret) {
 		info.index++;
 
 		Ptr<ReturnStatement> ret = new ReturnStatement(info.scope, info.GetFileInfoPrev());

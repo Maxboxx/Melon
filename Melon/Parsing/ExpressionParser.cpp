@@ -3,7 +3,7 @@
 #include "IntegerParser.h"
 #include "BooleanParser.h"
 #include "IfExpressionParser.h"
-#include "SwitchParser.h"
+#include "MatchParser.h"
 #include "NameParser.h"
 #include "CallParser.h"
 #include "DotParser.h"
@@ -24,7 +24,7 @@
 #include "Melon/Nodes/SafeUnwrapChain.h"
 #include "Melon/Nodes/TypeConversion.h"
 #include "Melon/Nodes/IfExpression.h"
-#include "Melon/Nodes/SwitchExpression.h"
+#include "Melon/Nodes/MatchExpression.h"
 #include "Melon/Nodes/Integer.h"
 #include "Melon/Nodes/Boolean.h"
 
@@ -303,7 +303,7 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 		}
 
 		try {
-			if (Ptr<SwitchExpression> node = SwitchParser::ParseExpression(info, true)) {
+			if (Ptr<MatchExpression> node = MatchParser::ParseExpression(info, true)) {
 				ErrorLog::RemoveMarker();
 				return node;
 			}
@@ -318,7 +318,7 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 		if (Ptr<IfExpression> node = IfExpressionParser::Parse(info)) {
 			return node;
 		}
-		else if (Ptr<SwitchExpression> node = SwitchParser::ParseExpression(info)) {
+		else if (Ptr<MatchExpression> node = MatchParser::ParseExpression(info)) {
 			return node;
 		}
 	}

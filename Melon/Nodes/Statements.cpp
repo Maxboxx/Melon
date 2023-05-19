@@ -1,7 +1,7 @@
 #include "Statements.h"
 
 #include "LoopStatement.h";
-#include "SwitchStatement.h";
+#include "MatchStatement.h";
 #include "RepeatStatement.h";
 #include "GuardStatement.h";
 #include "FunctionBody.h";
@@ -117,7 +117,7 @@ StringBuilder Statements::ToMelon(const UInt indent) const {
 
 bool Statements::HasSpaceAround(Weak<Statement> statement) {
 	if (statement.Is<LoopStatement>())     return true;
-	if (statement.Is<SwitchStatement>())   return true;
+	if (statement.Is<MatchStatement>())   return true;
 	if (statement.Is<DoStatement>())       return true;
 	if (statement.Is<RepeatStatement>())   return true;
 	if (statement.Is<FunctionBody>()) return true;

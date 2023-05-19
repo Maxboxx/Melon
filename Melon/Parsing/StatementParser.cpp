@@ -3,7 +3,7 @@
 #include "CallParser.h"
 #include "AssignmentParser.h"
 #include "LoopParser.h"
-#include "SwitchParser.h"
+#include "MatchParser.h"
 #include "DoParser.h"
 #include "FunctionParser.h"
 #include "ReturnParser.h"
@@ -39,7 +39,7 @@ Ptr<Statement> StatementParser::Parse(ParsingInfo& info, const bool single) {
 	else if (Ptr<Statement> node = LoopParser::Parse(info)) {
 		return node;
 	}
-	else if (Ptr<Statement> node = SwitchParser::ParseStatement(info)) {
+	else if (Ptr<Statement> node = MatchParser::ParseStatement(info)) {
 		return node;
 	}
 	else if (Ptr<Statement> node = DoParser::Parse(info)) {

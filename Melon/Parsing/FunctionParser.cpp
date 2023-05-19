@@ -438,7 +438,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 	funcHead.modifiers = ParseModifiers(info, isPlain);
 	funcHead.isMethod  = !isPlain && (funcHead.modifiers & FunctionModifiers::Static) == FunctionModifiers::None;
 
-	if (info.Current().type != TokenType::Function) {
+	if (info.Current().type != TokenType::Fun) {
 		if (funcHead.modifiers != FunctionModifiers::None) {
 			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("function"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 		}

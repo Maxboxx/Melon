@@ -73,7 +73,7 @@ bool LoopParser::ParseIf(LoopStatement::LoopSegment& ls, const Boxx::String& val
 		bool needsEnd;
 
 		info.scopeCount++;
-		ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Then, ScopeParser::Info("then", "if condition"), needsEnd);
+		ls.statements = ScopeParser::ParseNoEnd(info, TokenType::Do, ScopeParser::Info("do", "if condition"), needsEnd);
 		info.scopeCount--;
 
 		return needsEnd;
@@ -255,24 +255,24 @@ bool LoopParser::IsLoopStart(const TokenType t) {
 
 bool LoopParser::IsLoopMiddle(const TokenType t) {
 	return 
-		t == TokenType::AlsoIf ||
-		t == TokenType::ElseIf ||
-		t == TokenType::AlsoWhile ||
-		t == TokenType::ElseWhile ||
-		t == TokenType::AlsoFor ||
-		t == TokenType::ElseFor ||
+		t == TokenType::Alif ||
+		t == TokenType::Elif ||
+		t == TokenType::Alwhile ||
+		t == TokenType::Elwhile ||
+		t == TokenType::Alfor ||
+		t == TokenType::Elfor ||
 		t == TokenType::Also ||
 		t == TokenType::Else;
 }
 
 LoopStatement::LoopType LoopParser::GetLoopType(const TokenType t) {
-	if (t == TokenType::If || t == TokenType::AlsoIf || t == TokenType::ElseIf) {
+	if (t == TokenType::If || t == TokenType::Alif || t == TokenType::Elif) {
 		return LoopStatement::LoopType::If;
 	}
-	else if (t == TokenType::While || t == TokenType::AlsoWhile || t == TokenType::ElseWhile) {
+	else if (t == TokenType::While || t == TokenType::Alwhile || t == TokenType::Elwhile) {
 		return LoopStatement::LoopType::While;
 	}
-	else if (t == TokenType::For || t == TokenType::AlsoFor || t == TokenType::ElseFor) {
+	else if (t == TokenType::For || t == TokenType::Alfor || t == TokenType::Elfor) {
 		return LoopStatement::LoopType::For;
 	}
 
@@ -281,8 +281,8 @@ LoopStatement::LoopType LoopParser::GetLoopType(const TokenType t) {
 
 bool LoopParser::IsLoopAlso(const TokenType t) {
 	return 
-		t == TokenType::AlsoIf ||
-		t == TokenType::AlsoWhile ||
-		t == TokenType::AlsoFor ||
+		t == TokenType::Alif ||
+		t == TokenType::Alwhile ||
+		t == TokenType::Alfor ||
 		t == TokenType::Also;
 }

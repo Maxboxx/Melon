@@ -20,14 +20,14 @@
 namespace Melon {
 	namespace Nodes {
 		template <class T>
-		concept BaseSwitchType = std::is_same<T, Expression>::value || std::is_same<T, Statement>::value;
+		concept BaseMatchType = std::is_same<T, Expression>::value || std::is_same<T, Statement>::value;
 
 		template <class T>
-		concept BaseSwitchType2 = std::is_same<T, Expression>::value || std::is_same<T, Statement>::value || std::is_same<T, Statements>::value;
+		concept BaseMatchType2 = std::is_same<T, Expression>::value || std::is_same<T, Statement>::value || std::is_same<T, Statements>::value;
 
 		/// Abstract base node for {switch}.
-		template <BaseSwitchType T, BaseSwitchType2 U = T>
-		class SwitchBaseNode : public T {
+		template <BaseMatchType T, BaseMatchType2 U = T>
+		class MatchBaseNode : public T {
 		public:
 			/// The match expression.
 			Ptr<Expression> match;
@@ -41,12 +41,12 @@ namespace Melon {
 			/// The default node.
 			Ptr<U> def;
 
-			SwitchBaseNode(Symbols::Symbol* const scope, const FileInfo& file);
-			~SwitchBaseNode();
+			MatchBaseNode(Symbols::Symbol* const scope, const FileInfo& file);
+			~MatchBaseNode();
 
-			/// Scan info for switch nodes.
-			struct SwitchScanInfo {
-				/// {true} if the {switch} is in a constructor.
+			/// Scan info for match nodes.
+			struct MatchScanInfo {
+				/// {true} if the {match} is in a constructor.
 				bool init = false;
 
 				/// Scope info.
@@ -70,34 +70,34 @@ namespace Melon {
 
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);
 
-			SwitchScanInfo ScanSetup(ScanInfo& info) const;
+			MatchScanInfo ScanSetup(ScanInfo& info) const;
 
-			void ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const;
+			void ScanPreContents(MatchScanInfo& switchInfo, ScanInfo& info) const;
 
-			void ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const;
+			void ScanPostContents(MatchScanInfo& switchInfo, ScanInfo& info) const;
 
-			void ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const;
+			void ScanCleanup(MatchScanInfo& switchInfo, ScanInfo& info) const;
 
 			ScanResult ScanNodes(ScanInfoStack& info) const;
 		};
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline SwitchBaseNode<T, U>::SwitchBaseNode(Symbols::Symbol* const scope, const FileInfo& file) : T(scope, file) {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline MatchBaseNode<T, U>::MatchBaseNode(Symbols::Symbol* const scope, const FileInfo& file) : T(scope, file) {
 
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline SwitchBaseNode<T, U>::~SwitchBaseNode() {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline MatchBaseNode<T, U>::~MatchBaseNode() {
 
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline Symbols::TypeSymbol* SwitchBaseNode<T, U>::SwitchType() const {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline Symbols::TypeSymbol* MatchBaseNode<T, U>::SwitchType() const {
 			return nullptr;
 		}
 
 		template <>
-		inline Symbols::TypeSymbol* SwitchBaseNode<Expression, Expression>::SwitchType() const {
+		inline Symbols::TypeSymbol* MatchBaseNode<Expression, Expression>::SwitchType() const {
 			Symbols::TypeSymbol* type = nodes[0]->Type();
 
 			for (Weak<Expression> node : nodes) {
@@ -109,8 +109,8 @@ namespace Melon {
 			return type;
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline Ptr<Kiwi::Value> SwitchBaseNode<T, U>::Compile(CompileInfo& info) {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline Ptr<Kiwi::Value> MatchBaseNode<T, U>::Compile(CompileInfo& info) {
 			Ptr<Kiwi::Value> matchValue = this->match->Compile(info);
 			Ptr<Kiwi::Variable> match = new Kiwi::Variable(info.NewRegister());
 			Ptr<KiwiVariable> kiwiVar = new KiwiVariable(match->Copy(), this->match->Type()->AbsoluteName());
@@ -191,8 +191,8 @@ namespace Melon {
 			return result;
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::IncludeScan(Parsing::ParsingInfo& info) {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline void MatchBaseNode<T, U>::IncludeScan(Parsing::ParsingInfo& info) {
 			match->IncludeScan(info);
 
 			for (Weak<U> node : nodes) {
@@ -206,9 +206,9 @@ namespace Melon {
 			}
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline SwitchBaseNode<T, U>::SwitchScanInfo SwitchBaseNode<T, U>::ScanSetup(ScanInfo& info) const {
-			SwitchScanInfo switchInfo;
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline MatchBaseNode<T, U>::MatchScanInfo MatchBaseNode<T, U>::ScanSetup(ScanInfo& info) const {
+			MatchScanInfo switchInfo;
 			switchInfo.init = info.init;
 
 			if constexpr (!std::is_same<U, Expression>::value) {
@@ -223,8 +223,8 @@ namespace Melon {
 			return switchInfo;
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::ScanPreContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline void MatchBaseNode<T, U>::ScanPreContents(MatchScanInfo& switchInfo, ScanInfo& info) const {
 			if constexpr (!std::is_same<U, Expression>::value) {
 				if (switchInfo.init) {
 					info.init = true;
@@ -240,8 +240,8 @@ namespace Melon {
 			}
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::ScanPostContents(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline void MatchBaseNode<T, U>::ScanPostContents(MatchScanInfo& switchInfo, ScanInfo& info) const {
 			if constexpr (!std::is_same<U, Expression>::value) {
 				if (switchInfo.init) {
 					info.scopeInfo.unassigned = info.type->UnassignedMembers();
@@ -251,8 +251,8 @@ namespace Melon {
 			}
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline void SwitchBaseNode<T, U>::ScanCleanup(SwitchScanInfo& switchInfo, ScanInfo& info) const {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline void MatchBaseNode<T, U>::ScanCleanup(MatchScanInfo& switchInfo, ScanInfo& info) const {
 			if constexpr (!std::is_same<U, Expression>::value) {
 				for (Boxx::UInt i = 0; i < switchInfo.cases.Count(); i++) {
 					if (i == 0) {
@@ -284,12 +284,12 @@ namespace Melon {
 			}
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline ScanResult SwitchBaseNode<T, U>::ScanNodes(ScanInfoStack& info) const {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline ScanResult MatchBaseNode<T, U>::ScanNodes(ScanInfoStack& info) const {
 			ScanResult result;
 
 			// Setup scan
-			SwitchScanInfo switchInfo = ScanSetup(info.Get());
+			MatchScanInfo switchInfo = ScanSetup(info.Get());
 
 			// Get type of switch expression
 			Symbols::TypeSymbol* const type = SwitchType();
@@ -339,8 +339,8 @@ namespace Melon {
 			return result;
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline ScanResult SwitchBaseNode<T, U>::Scan(ScanInfoStack& info) {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline ScanResult MatchBaseNode<T, U>::Scan(ScanInfoStack& info) {
 			ScanResult result = match->Scan(info);
 			result.SelfUseCheck(info, match->File());
 
@@ -370,8 +370,8 @@ namespace Melon {
 			return result;
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline Symbols::NameList SwitchBaseNode<T, U>::FindSideEffectScope(const bool assign) {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline Symbols::NameList MatchBaseNode<T, U>::FindSideEffectScope(const bool assign) {
 			Symbols::NameList list = match->GetSideEffectScope(assign);
 
 			for (Weak<U> node : nodes) {
@@ -391,8 +391,8 @@ namespace Melon {
 			return list;
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline Ptr<T> SwitchBaseNode<T, U>::OptimizeSwitch(OptimizeInfo& info) {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline Ptr<T> MatchBaseNode<T, U>::OptimizeSwitch(OptimizeInfo& info) {
 			Node::Optimize(match, info);
 
 			for (Ptr<U>& node : nodes) {
@@ -431,8 +431,8 @@ namespace Melon {
 			return nullptr;
 		}
 
-		template <BaseSwitchType T, BaseSwitchType2 U>
-		inline Boxx::StringBuilder SwitchBaseNode<T, U>::ToMelon(const Boxx::UInt indent) const {
+		template <BaseMatchType T, BaseMatchType2 U>
+		inline Boxx::StringBuilder MatchBaseNode<T, U>::ToMelon(const Boxx::UInt indent) const {
 			Boxx::StringBuilder sb = "switch ";
 			sb += match->ToMelon(indent);
 
