@@ -106,7 +106,7 @@ void DotExpression::IncludeScan(ParsingInfo& info) {
 
 	if (!name.types) {
 		if (s->Is<NamespaceSymbol>() && !s->Contains(name)) {
-			IncludeParser::ParseInclude(s->AbsoluteName().Add(name), info);
+			IncludeParser::Include(s->AbsoluteName().Add(name), info);
 		}
 	}
 }

@@ -35,62 +35,37 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 		info.index += 2;
 	}
 
-	const String fileDir = Path::GetDirectory(info.filename);
-	String includeDir = include[0].ToString();
-
-	for (UInt i = 1; i < include.Size(); i++) {
-		includeDir = Path::Combine(includeDir, include[i].ToString());
-	}
-
-	const String fullDir = Path::Combine(fileDir, includeDir);
-
-	bool found = false;
-
-	if (System::FileExists(Path::SetExtension(fullDir, "melon"))) {
-		found = true;
-		include = info.currentNamespace.Add(include);
-		ParseFile(Path::SetExtension(fullDir, "melon"), include.Pop(), include.Last(), info);
-
-		if (include.Size() == 1) include = include.Pop();
-	}
-	else if (System::DirectoryExists(fullDir)) {
-		found = true;
-		include = info.currentNamespace.Add(include);
-		ParseDirectory(fileDir + includeDir, include, info);
-	}
-
-	if (!found) {
-		for (String dir : info.options.includeDirectories) {
-			dir = Path::Combine(dir, includeDir);
-
-			if (System::FileExists(Path::SetExtension(dir, "melon"))) {
-				found = true;
-				ParseFile(Path::SetExtension(dir, "melon"), include.Pop(), include.Last(), info);
-				if (include.Size() == 1) include = include.Pop();
-				break;
-			}
-			else if (System::DirectoryExists(dir)) {
-				found = true;
-				ParseDirectory(dir, include, info);
-				break;
-			}
-		}
-	}
-
-	if (include.Size() > 0) {
-		info.includedNamespaces.Add(include);
-	}
+	Include(include, info);
 
 	return true;
 }
 
-void IncludeParser::ParseInclude(const NameList& include, ParsingInfo& info) {
-	if (NamespaceSymbol* const ns = SymbolTable::FindAbsolute<NamespaceSymbol>(include.Pop(), FileInfo())) {
-		String dir = Path::Combine(ns->IncludedPath(), include.Last().ToString());
+void IncludeParser::Include(const NameList& include, ParsingInfo& info) {
+	String dir = Path::GetDirectory(info.GetFileInfo().filename);
+	String ns = Path::Combine(dir, include[0].name);
 
-		if (System::DirectoryExists(dir)) {
-			ParseDirectory(dir, include, info);
+	if (System::DirectoryExists(ns)) {
+		IncludeNamespace(ns, include, 0, info);
+	}
+}
+
+void IncludeParser::IncludeNamespace(const String& dir, const NameList& include, UInt index, ParsingInfo& info) {
+	MapSymbol* ns = SymbolTable::FindAbsolute<MapSymbol>(info.currentNamespace, info.GetFileInfo());
+	if (!ns) return;
+
+	NameList nsList = ns->AddSymbol(include[index], new NamespaceSymbol(dir, info.GetFileInfo()))->AbsoluteName();
+
+	if (index + 1 < include.Size()) {
+		String newDir = Path::Combine(dir, include[index + 1].name);
+
+		if (System::DirectoryExists(newDir)) {
+			IncludeNamespace(newDir, include, index + 1, info);
 		}
+	}
+
+	for (const String& file : System::GetFilesInDirectory(dir)) {
+		if (Path::GetExtension(file) != "melon") continue;
+		ParseFile(Path::Combine(dir, file), nsList, Name(Path::GetFileName(file)), info);
 	}
 }
 
