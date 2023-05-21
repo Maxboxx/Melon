@@ -1,4 +1,4 @@
 
-include Melon
+include Melon.Console.log
 
-Melon.Console.log(3)
+log(3)

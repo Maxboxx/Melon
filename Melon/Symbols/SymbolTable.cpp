@@ -163,24 +163,35 @@ Symbol* SymbolTable::FindInNamespaces(const NameList& name, const FileInfo& file
 		}
 	}
 
+	bool hasMatch = false;
+
+	// TODO: Only allow static stuff to be included
 	for (const NameList& includedNamespace : file.includedNamespaces) {
-		if (Symbol* const s = ContainsAbsolute(includedNamespace.Pop().Add(name))) {
-			if (includedNamespace.Last() == name[0] || s->file.includeName == name[0]) {
-				Symbol* ns = s->Parent();
+		if (includedNamespace.Last() != name[0]) continue;
 
-				for (Boxx::UInt i = 0; i < name.Size(); i++) {
-					if (NamespaceSymbol* const sym = ns->Find<NamespaceSymbol>(name[i], file)) {
-						ns = sym;
-					}
+		if (Symbol* const s = ContainsAbsolute(includedNamespace)) {
+			if (hasMatch) {
+				ErrorLog::Error(LogMessage("error.symbol.ambiguous", name[0].ToSimpleString()), file);
+			}
+
+			hasMatch = true;
+
+			Symbol* ns = s;
+
+			bool found = true;
+
+			for (Boxx::UInt i = 1; i < name.Size(); i++) {
+				if (MapSymbol* const sym = ns->Find<MapSymbol>(name[i], file)) {
+					ns = sym;
 				}
-
-				if (s->file.currentNamespace == ns->AbsoluteName()) {
-					if (foundSymbol && foundSymbol->AbsoluteName() != s->AbsoluteName()) {
-						ErrorLog::Error(LogMessage("error.symbol.ambiguous", name.ToSimpleString()), file);
-					}
-
-					foundSymbol = s;
+				else {
+					found = false;
+					break;
 				}
+			}
+
+			if (found) {
+				foundSymbol = ns;
 			}
 		}
 	}

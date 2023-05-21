@@ -45,21 +45,24 @@ void IncludeParser::Include(const NameList& include, ParsingInfo& info) {
 	String ns = Path::Combine(dir, include[0].name);
 
 	if (System::DirectoryExists(ns)) {
-		IncludeNamespace(ns, include, 0, info);
+		MapSymbol* current = SymbolTable::FindAbsolute<MapSymbol>(info.currentNamespace, info.GetFileInfo());
+
+		if (current) {
+			IncludeNamespace(current, ns, include, 0, info);
+			info.includedNamespaces.Add(info.currentNamespace.Add(include));
+		}
 	}
 }
 
-void IncludeParser::IncludeNamespace(const String& dir, const NameList& include, UInt index, ParsingInfo& info) {
-	MapSymbol* ns = SymbolTable::FindAbsolute<MapSymbol>(info.currentNamespace, info.GetFileInfo());
-	if (!ns) return;
-
-	NameList nsList = ns->AddSymbol(include[index], new NamespaceSymbol(dir, info.GetFileInfo()))->AbsoluteName();
+void IncludeParser::IncludeNamespace(MapSymbol* parent, const String& dir, const NameList& include, UInt index, ParsingInfo& info) {
+	NamespaceSymbol* ns = parent->AddSymbol(include[index], new NamespaceSymbol(dir, info.GetFileInfo()));
+	NameList nsList = ns->AbsoluteName();
 
 	if (index + 1 < include.Size()) {
 		String newDir = Path::Combine(dir, include[index + 1].name);
 
 		if (System::DirectoryExists(newDir)) {
-			IncludeNamespace(newDir, include, index + 1, info);
+			IncludeNamespace(ns, newDir, include, index + 1, info);
 		}
 	}
 

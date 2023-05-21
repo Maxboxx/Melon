@@ -16,7 +16,7 @@ namespace Melon {
 			static void Include(const Symbols::NameList& include, ParsingInfo& info);
 
 		private:
-			static void IncludeNamespace(const Boxx::String& dir, const Symbols::NameList& include, Boxx::UInt index, ParsingInfo& info);
+			static void IncludeNamespace(Symbols::MapSymbol* ns, const Boxx::String& dir, const Symbols::NameList& include, Boxx::UInt index, ParsingInfo& info);
 
 			static void ParseFile(const Boxx::String& filename, const Symbols::NameList& include, const Symbols::Name& includeFile, ParsingInfo& info);
 			static void CreateIncludeSymbols(const Boxx::String& filename, const Symbols::NameList& include);
