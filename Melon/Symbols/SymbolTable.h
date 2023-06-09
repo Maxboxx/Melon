@@ -195,6 +195,9 @@ namespace Melon {
 			/// The symbol for the {nil} type.
 			static TypeSymbol* Nil;
 
+			/// The symbol for the {char} type.
+			static IntegerSymbol* Char;
+
 		private:
 			static Symbol* FindInNamespaces(const NameList& name, const FileInfo& file);
 
@@ -204,6 +207,7 @@ namespace Melon {
 			static Boxx::Pointer<ScopeSymbol> symbols;
 
 			static void SetupIntegers();
+			static void SetupChars();
 			static void SetupBoolean();
 			static void SetupNil();
 			static void SetupOptional();

@@ -73,6 +73,7 @@ const NameList NameList::UInt    = NameList(true, Name("uint"));
 const NameList NameList::Long    = NameList(true, Name("long"));
 const NameList NameList::ULong   = NameList(true, Name("ulong"));
 const NameList NameList::Huge    = NameList(true, Name("huge"));
+const NameList NameList::Char    = NameList(true, Name("char"));
 const NameList NameList::Nil     = NameList(true, Name("nil"));
 const NameList NameList::Discard = NameList(true, Name("_"));
 

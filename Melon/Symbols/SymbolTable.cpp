@@ -445,6 +445,7 @@ NameList SymbolTable::ReplaceTemplates(const NameList& name, const NameList& sco
 
 void SymbolTable::Setup() {
 	SetupIntegers();
+	SetupChars();
 	SetupBoolean();
 	SetupNil();
 	SetupOptional();
@@ -618,6 +619,19 @@ void SymbolTable::SetupIntegers() {
 	SymbolTable::UInt   = intSymbols[NameList::UInt];
 	SymbolTable::Long   = intSymbols[NameList::Long];
 	SymbolTable::ULong  = intSymbols[NameList::ULong];
+}
+
+IntegerSymbol* SymbolTable::Char = nullptr;
+
+void SymbolTable::SetupChars() {
+	IntegerSymbol* const charSym = symbols->AddSymbol(NameList::Char[0], new IntegerSymbol(1, false, FileInfo()));
+
+	FunctionSymbol* const assign  = charSym->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign1->symbolNode = new IntegerAssignNode();
+	assign1->arguments.Add(NameList::Char);
+
+	SymbolTable::Char = charSym;
 }
 
 IntegerSymbol* SymbolTable::Bool = nullptr;

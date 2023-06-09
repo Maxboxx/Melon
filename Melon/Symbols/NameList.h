@@ -346,6 +346,9 @@ namespace Melon {
 			/// A name List for the {huge} type.
 			static const NameList Huge;
 
+			/// A name List for the {char} type.
+			static const NameList Char;
+
 			/// A name List for the {nil} type.
 			static const NameList Nil;
 

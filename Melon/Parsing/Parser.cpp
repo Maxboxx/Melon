@@ -74,11 +74,12 @@ void Parser::SetupTokens() {
 	// Comments
 	patterns.Add(TokenPattern(TokenType::CommentBlock, "%-%-#{%/+}~{%0%-}*%0%-%-", true, true));
 	patterns.Add(TokenPattern(TokenType::CommentLine, "%-%-~\n*", true, true));
-
+	
 	// Raw
 	patterns.Add(TokenPattern(TokenType::Float, "%d*%.%d+"));
 	patterns.Add(TokenPattern(TokenType::Integer, "%d+"));
 	patterns.Add(TokenPattern(TokenType::Boolean, "true|false"));
+	patterns.Add(TokenPattern(TokenType::Character, "'(|\\\\|./~{{\\\\}*\\})'", true));
 
 	// Bitwise
 	patterns.Add(TokenPattern(TokenType::BNand, "%~%&", true));

@@ -12,6 +12,7 @@ namespace Melon {
 		// Raw
 		Integer,
 		Float,
+		Character,
 		Boolean,
 		Name,
 		Nil,

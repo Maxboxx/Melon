@@ -1,6 +1,7 @@
 #include "ExpressionParser.h"
 
 #include "IntegerParser.h"
+#include "CharParser.h"
 #include "BooleanParser.h"
 #include "IfExpressionParser.h"
 #include "MatchParser.h"
@@ -26,6 +27,7 @@
 #include "Melon/Nodes/IfExpression.h"
 #include "Melon/Nodes/MatchExpression.h"
 #include "Melon/Nodes/Integer.h"
+#include "Melon/Nodes/Character.h"
 #include "Melon/Nodes/Boolean.h"
 
 using namespace Boxx;
@@ -333,6 +335,9 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 		}
 	}
 	else if (Ptr<Integer> node = IntegerParser::Parse(info)) {
+		return node;
+	}
+	else if (Ptr<Character> node = CharParser::Parse(info)) {
 		return node;
 	}
 	else if (Ptr<Boolean> node = BooleanParser::Parse(info)) {
