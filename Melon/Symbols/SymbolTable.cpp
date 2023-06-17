@@ -7,6 +7,7 @@
 #include "IntegerSymbol.h"
 #include "VariableSymbol.h"
 #include "StructSymbol.h"
+#include "ClassSymbol.h"
 
 #include "Nodes/SymbolNode.h"
 #include "Nodes/IntegerUnaryOperatorNode.h"
@@ -25,6 +26,7 @@
 #include "Nodes/OptionalUnwrapNode.h"
 #include "Nodes/OptionalToBooleanNode.h"
 #include "Nodes/OptionalNotNode.h"
+#include "Nodes/ClassAssignNode.h"
 
 #include "Kiwi/Old/Kiwi.h"
 
@@ -449,6 +451,7 @@ void SymbolTable::Setup() {
 	SetupBoolean();
 	SetupNil();
 	SetupOptional();
+	SetupArray();
 }
 
 IntegerSymbol* SymbolTable::Byte   = nullptr;
@@ -749,4 +752,29 @@ void SymbolTable::SetupOptional() {
 	optionalNot1->symbolNode = new OptionalNotNode();
 	optionalNot1->arguments.Add(optional->AbsoluteName());
 	optionalNot1->returnValues.Add(NameList::Bool);
+}
+
+void SymbolTable::SetupArray() {
+	ClassSymbol* const arraySym = symbols->AddSymbol(Name::Array, new ClassSymbol(FileInfo()));
+	List<NameList> args;
+	args.Add(NameList().Add(Name("")).Add(Name("T")));
+	Name scope = Name("");
+	scope.types = args;
+
+	ClassSymbol* const arr = new ClassSymbol(FileInfo());
+	arr->templateArguments.Add(args[0]);
+	arraySym->AddTemplateVariant(arr);
+
+	TemplateSymbol* const templateSym = arr->AddSymbol(Name("T"), new TemplateSymbol(FileInfo()));
+	templateSym->type = templateSym->AbsoluteName();
+
+	VariableSymbol* const hasValue = arr->AddSymbol(Name::Length, new VariableSymbol(FileInfo()));
+	hasValue->type = NameList::UInt;
+	arr->members.Add(Name::Length);
+
+	FunctionSymbol* const assign  = arr->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
+
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign1->symbolNode = new ClassAssignNode();
+	assign1->arguments.Add(arr->AbsoluteName());
 }

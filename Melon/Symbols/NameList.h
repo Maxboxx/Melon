@@ -209,6 +209,12 @@ namespace Melon {
 
 			/// The {<value>} name.
 			static const Name Value;
+
+			/// The array name.
+			static const Name Array;
+
+			/// The {<length>} name.
+			static const Name Length;
 		private:
 			Boxx::Map<Boxx::String, Boxx::UInt> scopes;
 		};

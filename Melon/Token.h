@@ -62,7 +62,7 @@ namespace Melon {
 		Comma,
 		Colon,
 		Dot,
-		Len,
+		Hash,
 		Exclamation,
 		Question,
 		DoubleQuestion,

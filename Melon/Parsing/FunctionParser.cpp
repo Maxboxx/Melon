@@ -223,7 +223,7 @@ Optional<Name> FunctionParser::ParseOperatorName(ParsingInfo& info) {
 		}
 
 		// Misc
-		case TokenType::Len: {
+		case TokenType::Hash: {
 			info.index++;
 			return Name::Len;
 		}

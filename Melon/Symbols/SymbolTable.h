@@ -211,6 +211,7 @@ namespace Melon {
 			static void SetupBoolean();
 			static void SetupNil();
 			static void SetupOptional();
+			static void SetupArray();
 
 			friend Melon::Nodes::RootNode;
 			friend Symbol;

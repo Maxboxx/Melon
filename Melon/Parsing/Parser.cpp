@@ -125,7 +125,7 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Comma, "%,", true));
 	patterns.Add(TokenPattern(TokenType::Colon, "%:", true));
 	patterns.Add(TokenPattern(TokenType::Dot, "%.", true));
-	patterns.Add(TokenPattern(TokenType::Len, "%#", true));
+	patterns.Add(TokenPattern(TokenType::Hash, "%#", true));
 	patterns.Add(TokenPattern(TokenType::Exclamation, "%!", true));
 	patterns.Add(TokenPattern(TokenType::DoubleQuestion, "%?%?", true));
 	patterns.Add(TokenPattern(TokenType::Question, "%?", true));

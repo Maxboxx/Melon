@@ -20,69 +20,67 @@ Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
 		first = ParseName(info);
 	}
 
-	if (first) {
-		while (!info.EndOfFile() && (info.Current().type == TokenType::Question || info.Current().type == TokenType::DoubleQuestion)) {
+	if (!first) return nullptr;
+
+	NameList type = NameList(*first);
+
+	while (!info.EndOfFile() && info.Current().type == TokenType::Dot) {
+		info.index++;
+
+		if (Optional<Name> scope = ParseName(info)) {
+			type = type.Add(*scope);
+
+			if (scope->types) {
+				SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfoPrev());
+			}
+		}
+		else {
+			info.index--;
+			break;
+		}
+	}
+
+	while (!info.EndOfFile()) {
+		if (info.Current().type == TokenType::Question || info.Current().type == TokenType::DoubleQuestion) {
 			UInt n = info.Current().type == TokenType::Question ? 1 : 2;
 			info.index++;
 
 			for (UInt i = 0; i < n; i++) {
 				Name optionalScope = Name::Optional;
 				optionalScope.types = List<NameList>();
-				optionalScope.types->Add(NameList().Add(*first));
-				first = optionalScope;
+				optionalScope.types->Add(type);
+				type = NameList(optionalScope);
 
-				SymbolTable::SpecializeTemplate(NameList().Add(*first), info.scope, info.GetFileInfoPrev());
+				SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfoPrev());
 			}
 		}
+		else if (info.Current().type == TokenType::SquareOpen && info.Peek().type == TokenType::Hash && info.Peek(2).type == TokenType::SquareClose) {
+			info.index += 3;
 
-		NameList type = NameList().Add(*first);
+			Name arrayScope = Name::Array;
+			arrayScope.types = List<NameList>();
+			arrayScope.types->Add(type);
+			type = NameList(arrayScope);
 
-		while (!info.EndOfFile()) {
-			if (info.Current().type != TokenType::Dot) break;
-			info.index++;
-
-			if (Optional<Name> scope = ParseName(info)) {
-				type = type.Add(*scope);
-
-				if (scope->types) {
-					SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfoPrev());
-				}
-
-				while (!info.EndOfFile() && (info.Current().type == TokenType::Question || info.Current().type == TokenType::DoubleQuestion)) {
-					UInt n = info.Current().type == TokenType::Question ? 1 : 2;
-					info.index++;
-
-					for (UInt i = 0; i < n; i++) {
-						Name optionalScope = Name::Optional;
-						optionalScope.types = List<NameList>();
-						optionalScope.types->Add(NameList().Add(type));
-						type = NameList().Add(optionalScope);
-
-						SymbolTable::SpecializeTemplate(NameList().Add(type), info.scope, info.GetFileInfoPrev());
-					}
-				}
-			}
-			else {
-				info.index--;
-				break;
-			}
+			SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfoPrev());
 		}
-
-		if (type.Size() == 1 && type[0] == Name::Global) {
-			if (info.Current().type == TokenType::Dot) {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("."), LogMessage::Quote("global")), info.GetFileInfoPrev());
-			}
-			else {
-				ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(".")), info.GetFileInfoPrev());
-			}
-
-			return nullptr;
+		else {
+			break;
 		}
-
-		return type;
 	}
 
-	return nullptr;
+	if (type.Size() == 1 && type[0] == Name::Global) {
+		if (info.Current().type == TokenType::Dot) {
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("."), LogMessage::Quote("global")), info.GetFileInfoPrev());
+		}
+		else {
+			ErrorLog::Error(LogMessage("error.syntax.expected.after", "name", LogMessage::Quote(".")), info.GetFileInfoPrev());
+		}
+
+		return nullptr;
+	}
+
+	return type;
 }
 
 Optional<Name> TypeParser::ParseName(ParsingInfo& info) {

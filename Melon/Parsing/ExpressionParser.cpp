@@ -11,6 +11,7 @@
 #include "ObjectInitParser.h"
 #include "TypeParser.h"
 #include "AsParser.h"
+#include "ArrayParser.h"
 
 #include "Melon/Nodes/BinaryOperatorExpression.h"
 #include "Melon/Nodes/UnaryOperatorExpression.h"
@@ -29,6 +30,7 @@
 #include "Melon/Nodes/Integer.h"
 #include "Melon/Nodes/Character.h"
 #include "Melon/Nodes/Boolean.h"
+#include "Melon/Nodes/Array.h"
 
 using namespace Boxx;
 
@@ -333,6 +335,9 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 			info.index++;
 			return node;
 		}
+	}
+	else if (Ptr<Nodes::Array> node = ArrayParser::Parse(info)) {
+		return node;
 	}
 	else if (Ptr<Integer> node = IntegerParser::Parse(info)) {
 		return node;

@@ -61,6 +61,8 @@ const Name Name::Unwrap         = Name("!");
 const Name Name::Default        = Name("??");
 const Name Name::HasValue       = Name("<hasvalue>");
 const Name Name::Value          = Name("<value>");
+const Name Name::Array          = Name("[#]");
+const Name Name::Length         = Name("<length>");
 
 const NameList NameList::Bool    = NameList(true, Name("bool"));
 const NameList NameList::Byte    = NameList(true, Name("byte"));
