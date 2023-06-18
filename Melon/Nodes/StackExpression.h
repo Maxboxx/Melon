@@ -6,7 +6,7 @@
 namespace Melon {
 	namespace Nodes {
 		/// Node for a stack position.
-		class StackExpression : public Expression {
+		class [[deprecated]] StackExpression : public Expression {
 		public:
 			/// The stack position.
 			Boxx::UInt stack;
@@ -17,7 +17,7 @@ namespace Melon {
 			StackExpression(const Boxx::UInt stack);
 			~StackExpression();
 
-			virtual Symbols::TypeSymbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};
 	}

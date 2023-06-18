@@ -13,7 +13,7 @@ MatchExpression::~MatchExpression() {
 	
 }
 
-Symbols::TypeSymbol* MatchExpression::Type() const {
+Symbols::TypeSymbol* MatchExpression::Type(Symbols::TypeSymbol* expected) const {
 	return SwitchType();
 }
 

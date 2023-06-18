@@ -16,7 +16,7 @@ KiwiValue::~KiwiValue() {
 
 }
 
-TypeSymbol* KiwiValue::Type() const {
+TypeSymbol* KiwiValue::Type(TypeSymbol* expected) const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 

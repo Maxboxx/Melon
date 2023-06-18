@@ -345,7 +345,7 @@ List<Assignment::Value> Assignment::Values() const {
 
 	for (UInt i = 0; i < assignableValues.Count(); i++) {
 		if (i + 1 >= values.Count()) {
-			List<TypeSymbol*> returnTypes = values[i]->Types();
+			List<TypeSymbol*> returnTypes = values[i]->Types(assignableValues[i]->Type());
 
 			for (UInt u = 0; u < assignableValues.Count() - i; u++) {
 				types.Add(Value(returnTypes[u], values[i]));
@@ -354,7 +354,7 @@ List<Assignment::Value> Assignment::Values() const {
 			break;
 		}
 		else {
-			types.Add(Value(values[i]->Type(), values[i]));
+			types.Add(Value(values[i]->Type(assignableValues[i]->Type()), values[i]));
 		}
 	}
 

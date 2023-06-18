@@ -27,7 +27,7 @@ UnaryOperatorExpression::~UnaryOperatorExpression() {
 
 }
 
-TypeSymbol* UnaryOperatorExpression::Type() const {
+TypeSymbol* UnaryOperatorExpression::Type(TypeSymbol* expected) const {
 	List<TypeSymbol*> args;
 	args.Add(operand->Type());
 

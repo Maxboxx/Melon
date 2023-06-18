@@ -18,11 +18,11 @@ CallExpression::~CallExpression() {
 
 }
 
-TypeSymbol* CallExpression::Type() const {
+TypeSymbol* CallExpression::Type(TypeSymbol* expected) const {
 	return Types()[0];
 }
 
-List<TypeSymbol*> CallExpression::Types() const {
+List<TypeSymbol*> CallExpression::Types(TypeSymbol* expected) const {
 	return GetReturnTypes();
 }
 

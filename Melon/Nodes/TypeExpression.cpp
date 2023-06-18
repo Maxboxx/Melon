@@ -20,7 +20,7 @@ Ptr<Kiwi::Value> TypeExpression::Compile(CompileInfo& info) {
 	return nullptr;
 }
 
-TypeSymbol* TypeExpression::Type() const {
+TypeSymbol* TypeExpression::Type(TypeSymbol* expected) const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 

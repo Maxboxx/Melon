@@ -1,6 +1,6 @@
 
 include Melon.Console.log
 
-char[#]: c = char[#] {}
+char[#]: c = {}
 
 log(c)

@@ -15,7 +15,7 @@ StackExpression::~StackExpression() {
 
 }
 
-TypeSymbol* StackExpression::Type() const {
+TypeSymbol* StackExpression::Type(TypeSymbol* expected) const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 

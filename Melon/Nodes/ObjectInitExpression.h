@@ -20,7 +20,7 @@ namespace Melon {
 			ObjectInitExpression(Symbols::Symbol* const scope, const FileInfo& file);
 			~ObjectInitExpression();
 
-			virtual Symbols::TypeSymbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;

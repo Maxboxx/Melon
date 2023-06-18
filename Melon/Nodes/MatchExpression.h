@@ -12,7 +12,7 @@ namespace Melon {
 			MatchExpression(Symbols::Symbol* const scope, const FileInfo& file);
 			~MatchExpression();
 
-			virtual Symbols::TypeSymbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override;
 		};
 	}

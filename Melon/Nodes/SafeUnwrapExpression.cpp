@@ -20,7 +20,7 @@ SafeUnwrapExpression::~SafeUnwrapExpression() {
 
 }
 
-TypeSymbol* SafeUnwrapExpression::Type() const  {
+TypeSymbol* SafeUnwrapExpression::Type(TypeSymbol* expected) const  {
 	return expression->Type()->Find(Name::Value, file)->Type();
 }
 

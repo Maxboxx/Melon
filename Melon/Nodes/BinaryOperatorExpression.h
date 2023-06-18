@@ -18,7 +18,7 @@ namespace Melon {
 			BinaryOperatorExpression(Symbols::Symbol* const scope, const Symbols::Name& op, const FileInfo& file);
 			~BinaryOperatorExpression();
 
-			virtual Symbols::TypeSymbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 
 			/// Gets the operator.
 			virtual Symbols::Name GetOperator() const;

@@ -10,12 +10,12 @@ Expression::Expression(Symbols::Symbol* const scope, const FileInfo& file) : Nod
 
 }
 
-TypeSymbol* Expression::Type() const {
+TypeSymbol* Expression::Type(TypeSymbol* expected) const {
 	return nullptr;
 }
 
-List<TypeSymbol*> Expression::Types() const {
-	if (TypeSymbol* const type = Type()) {
+List<TypeSymbol*> Expression::Types(TypeSymbol* expected) const {
+	if (TypeSymbol* const type = Type(expected)) {
 		List<TypeSymbol*> types{1};
 		types.Add(type);
 		return types;

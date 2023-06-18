@@ -31,7 +31,7 @@ BinaryOperatorExpression::~BinaryOperatorExpression() {
 	
 }
 
-TypeSymbol* BinaryOperatorExpression::Type() const {
+TypeSymbol* BinaryOperatorExpression::Type(TypeSymbol* expected) const {
 	FunctionSymbol* const s = SymbolTable::FindOperator(GetOperator(), operand1->Type(), operand2->Type(), file);
 
 	if (s && !s->returnValues.IsEmpty()) {

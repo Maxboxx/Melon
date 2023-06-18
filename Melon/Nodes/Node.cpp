@@ -155,7 +155,7 @@ ScanResult Node::ScanAssignment(Weak<Expression> assignable, Weak<Expression> va
 
 Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {
 	List<TypeSymbol*> args;
-	args.Add(value->Type());
+	args.Add(value->Type(assignable->Type()));
 
 	FunctionSymbol* assign = nullptr;
 
@@ -176,7 +176,10 @@ Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expre
 Ptr<Kiwi::Value> Node::CompileAssignmentSimple(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {
 	const Kiwi::Type type       = assignable->Type()->KiwiType();
 	Ptr<Kiwi::Variable> kiwiVar = assignable->Compile(info).AsPtr<Kiwi::Variable>();
+
+	info.PushExpectedType(assignable->Type());
 	Ptr<Kiwi::Value> kiwiValue  = value->Compile(info);
+	info.PopExpectedType();
 
 	if (IncludeType(kiwiVar, includeType)) {
 		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type, kiwiVar, kiwiValue));

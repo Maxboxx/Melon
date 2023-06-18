@@ -15,7 +15,7 @@ Boolean::~Boolean() {
 
 }
 
-TypeSymbol* Boolean::Type() const {
+TypeSymbol* Boolean::Type(TypeSymbol* expected) const {
 	return (TypeSymbol*)SymbolTable::Bool;
 }
 

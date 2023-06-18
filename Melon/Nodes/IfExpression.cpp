@@ -23,11 +23,11 @@ IfExpression::~IfExpression() {
 
 }
 
-TypeSymbol* IfExpression::Type() const {
-	TypeSymbol* type = nodes[0]->Type();
+TypeSymbol* IfExpression::Type(TypeSymbol* expected) const {
+	TypeSymbol* type = nodes[0]->Type(expected);
 
 	for (UInt i = 1; i < nodes.Count(); i++) {
-		if (type != nodes[i]->Type()) {
+		if (type != nodes[i]->Type(expected)) {
 			ErrorLog::Error(LogMessage("error.type.if"), file);
 		}
 	}

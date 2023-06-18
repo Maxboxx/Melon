@@ -12,7 +12,7 @@ KiwiVariable::KiwiVariable(Ptr<Kiwi::Variable> var, const NameList& type) : Expr
 	this->type = type;
 }
 
-TypeSymbol* KiwiVariable::Type() const {
+TypeSymbol* KiwiVariable::Type(TypeSymbol* expected) const {
 	return SymbolTable::FindAbsolute<TypeSymbol>(type, file);
 }
 

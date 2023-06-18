@@ -25,7 +25,7 @@ SafeUnwrapChain::~SafeUnwrapChain() {
 
 }
 
-TypeSymbol* SafeUnwrapChain::Type() const  {
+TypeSymbol* SafeUnwrapChain::Type(TypeSymbol* expected) const  {
 	Name scope = Name::Optional;
 	scope.types = List<NameList>();
 	scope.types->Add(expression->Type()->AbsoluteName());

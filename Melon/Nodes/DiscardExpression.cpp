@@ -14,8 +14,8 @@ DiscardExpression::~DiscardExpression() {
 
 }
 
-TypeSymbol* DiscardExpression::Type() const {
-	return nullptr;
+TypeSymbol* DiscardExpression::Type(TypeSymbol* expected) const {
+	return expected;
 }
 
 Ptr<Kiwi::Value> DiscardExpression::Compile(CompileInfo& info) {

@@ -17,7 +17,7 @@ namespace Melon {
 			DotExpression(Symbols::Symbol* const scope, const FileInfo& file);
 			~DotExpression();
 
-			virtual Symbols::TypeSymbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Symbols::Symbol* Symbol() const override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

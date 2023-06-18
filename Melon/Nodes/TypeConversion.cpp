@@ -23,7 +23,7 @@ TypeConversion::~TypeConversion() {
 
 }
 
-TypeSymbol* TypeConversion::Type() const {
+TypeSymbol* TypeConversion::Type(TypeSymbol* expected) const {
 	TypeSymbol* const s = SymbolTable::Find<TypeSymbol>(type, scope ? scope->AbsoluteName() : NameList(true), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 	if (s == nullptr) return nullptr;

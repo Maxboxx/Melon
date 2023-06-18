@@ -16,7 +16,7 @@ Character::~Character() {
 
 }
 
-TypeSymbol* Character::Type() const {
+TypeSymbol* Character::Type(TypeSymbol* expected) const {
 	return (TypeSymbol*)SymbolTable::Char;
 }
 

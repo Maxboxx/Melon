@@ -23,7 +23,7 @@ NameExpression::~NameExpression() {
 
 }
 
-TypeSymbol* NameExpression::Type() const {
+TypeSymbol* NameExpression::Type(TypeSymbol* expected) const {
 	Symbols::Symbol* const s = Symbol();
 
 	if (s == nullptr) return nullptr;

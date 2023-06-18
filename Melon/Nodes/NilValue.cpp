@@ -14,7 +14,7 @@ NilValue::~NilValue() {
 
 }
 
-TypeSymbol* NilValue::Type() const {
+TypeSymbol* NilValue::Type(TypeSymbol* expected) const {
 	return SymbolTable::Nil;
 }
 

@@ -13,10 +13,10 @@ namespace Melon {
 			Expression(Symbols::Symbol* const scope, const FileInfo& file);
 
 			/// Returns the type of the expression.
-			virtual Symbols::TypeSymbol* Type() const;
+			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const;
 
 			/// Returns the types of the expression.
-			virtual Boxx::List<Symbols::TypeSymbol*> Types() const;
+			virtual Boxx::List<Symbols::TypeSymbol*> Types(Symbols::TypeSymbol* expected = nullptr) const;
 
 			/// Returns the symbol of the expression or {nullptr} if the expression does not have a symbol.
 			virtual Symbols::Symbol* Symbol() const {
@@ -50,8 +50,8 @@ namespace Melon {
 			WeakExpression(Weak<Expression> expr) : Expression(expr->scope, expr->File()) {expression = expr;}
 			~WeakExpression() {}
 
-			virtual Symbols::TypeSymbol* Type() const override {return expression->Type();}
-			virtual Boxx::List<Symbols::TypeSymbol*> Types() const override {return expression->Types();}
+			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override {return expression->Type(expected);}
+			virtual Boxx::List<Symbols::TypeSymbol*> Types(Symbols::TypeSymbol* expected = nullptr) const override {return expression->Types(expected);}
 			virtual Symbols::Symbol* Symbol() const override {return expression->Symbol();}
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override {return nullptr;}
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override {expression->IncludeScan(info);}

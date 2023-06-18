@@ -22,7 +22,7 @@ LogicExpression::~LogicExpression() {
 
 }
 
-TypeSymbol* LogicExpression::Type() const {
+TypeSymbol* LogicExpression::Type(TypeSymbol* expected) const {
 	return (TypeSymbol*)SymbolTable::Bool;
 }
 

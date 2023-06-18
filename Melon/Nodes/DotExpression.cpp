@@ -31,7 +31,7 @@ DotExpression::~DotExpression() {
 
 }
 
-TypeSymbol* DotExpression::Type() const {
+TypeSymbol* DotExpression::Type(TypeSymbol* expected) const {
 	Symbols::Symbol* const s = Symbol();
 
 	if (s == nullptr) return nullptr;

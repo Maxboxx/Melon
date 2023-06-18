@@ -16,7 +16,7 @@ namespace Melon {
 			LogicExpression(Symbols::Symbol* const scope, const TokenType type, const FileInfo& file);
 			~LogicExpression();
 
-			virtual Symbols::TypeSymbol* Type() const override;
+			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Symbols::Name GetOperator() const;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;

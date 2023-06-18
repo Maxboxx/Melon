@@ -6,6 +6,8 @@
 
 #include "Boxx/Stack.h"
 
+#include "Melon/Symbols/TypeSymbol.h"
+
 ///N Melon::Nodes
 namespace Melon {
 	namespace Nodes {
@@ -109,12 +111,30 @@ namespace Melon {
 				return scopes.Last(depth);
 			}
 
+			/// Pushes an expected type.
+			void PushExpectedType(Symbols::TypeSymbol* type) {
+				expectedTypes.Push(type);
+			}
+
+			/// Pops an expected type.
+			void PopExpectedType() {
+				expectedTypes.Pop();
+			}
+
+			/// Peeks an expected type.
+			Symbols::TypeSymbol* PeekExpectedType() {
+				if (expectedTypes.Count() <= 0) return nullptr;
+				return expectedTypes.Peek();
+			}
+
 		private:
 			Boxx::UInt regIndex = 0;
 			Boxx::UInt lblIndex = 0;
 			
 			Boxx::List<LoopInfo> loops;
 			Boxx::List<LoopInfo> scopes;
+
+			Boxx::Stack<Symbols::TypeSymbol*> expectedTypes;
 		};
 	}
 }

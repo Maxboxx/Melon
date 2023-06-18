@@ -16,7 +16,7 @@ Integer::~Integer() {
 
 }
 
-TypeSymbol* Integer::Type() const {
+TypeSymbol* Integer::Type(TypeSymbol* expected) const {
 	// Unsigned integers
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {

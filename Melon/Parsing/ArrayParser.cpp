@@ -13,11 +13,11 @@ Ptr<Nodes::Array> ArrayParser::Parse(ParsingInfo& info) {
 
 	Optional<Symbols::NameList> type = TypeParser::Parse(info);
 	
-	if (!type) return nullptr;
-
-	if ((*type).Size() != 1 || (*type)[0].name != Symbols::Name::Array.name) {
-		info.index = startIndex;
-		return nullptr;
+	if (type) {
+		if ((*type).Size() != 1 || (*type)[0].name != Symbols::Name::Array.name) {
+			info.index = startIndex;
+			return nullptr;
+		}
 	}
 
 	if (info.Current().type != TokenType::CurlyOpen) {
@@ -35,6 +35,6 @@ Ptr<Nodes::Array> ArrayParser::Parse(ParsingInfo& info) {
 	info.index++;
 
 	Ptr<Nodes::Array> node = new Nodes::Array(info.scope, info.GetFileInfoPrev());
-	node->type = *type;
+	node->type = type;
 	return node;
 }

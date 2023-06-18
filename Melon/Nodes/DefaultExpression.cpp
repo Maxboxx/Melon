@@ -22,7 +22,7 @@ DefaultExpression::~DefaultExpression() {
 
 }
 
-TypeSymbol* DefaultExpression::Type() const {
+TypeSymbol* DefaultExpression::Type(TypeSymbol* expected) const {
 	TypeSymbol* const type1 = operand1->Type();
 
 	// TODO: error?
