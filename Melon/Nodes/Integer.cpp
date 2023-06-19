@@ -2,6 +2,8 @@
 
 #include "Boxx/Math.h"
 
+#include "Melon/Symbols/IntegerSymbol.h"
+
 using namespace Boxx;
 using namespace KiwiOld;
 
@@ -17,6 +19,8 @@ Integer::~Integer() {
 }
 
 TypeSymbol* Integer::Type(TypeSymbol* expected) const {
+	if (expected->Is<IntegerSymbol>()) return expected;
+
 	// Unsigned integers
 	if (isUnsigned) {
 		if ((ULong)number <= Math::UByteMax()) {
@@ -56,7 +60,7 @@ TypeSymbol* Integer::Type(TypeSymbol* expected) const {
 }
 
 Ptr<Kiwi::Value> Integer::Compile(CompileInfo& info) {
-	return new Kiwi::Integer(number);
+	return new Kiwi::Integer(Type(info.PeekExpectedType())->KiwiType(), number);
 }
 
 StringBuilder Integer::ToMelon(const UInt indent) const {

@@ -1,5 +1,7 @@
 #include "BooleanConstantNode.h"
 
+#include "Melon/Symbols/IntegerSymbol.h"
+
 using namespace Boxx;
 using namespace KiwiOld;
 
@@ -13,5 +15,5 @@ BooleanConstantNode::BooleanConstantNode(const bool value) {
 }
 
 Ptr<Kiwi::Value> BooleanConstantNode::Compile(CompileInfo& info) const {
-	return new Kiwi::Integer(value ? 1 : 0);
+	return new Kiwi::Integer(SymbolTable::Bool->KiwiType(), value ? 1 : 0);
 }

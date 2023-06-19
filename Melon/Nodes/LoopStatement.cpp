@@ -14,6 +14,7 @@
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/IntegerSymbol.h"
 
 using namespace Boxx;
 using namespace KiwiOld;
@@ -84,7 +85,7 @@ void LoopStatement::CompileWhileSegment(LoopSegment& segment, LabelInfo& labels,
 
 	if (labels.trueLabel != labels.endLabel || labels.falseLabel != labels.endLabel) {
 		success = new Kiwi::Variable(info.NewRegister());
-		info.AddInstruction(new Kiwi::AssignInstruction(Kiwi::Type("u8"), success->Copy(), new Kiwi::Integer(0)));
+		info.AddInstruction(new Kiwi::AssignInstruction(SymbolTable::Bool->KiwiType(), success->Copy(), new Kiwi::Integer(SymbolTable::Bool->KiwiType(), 0)));
 	}
 
 	String outer = info.NewLabel();
@@ -104,7 +105,7 @@ void LoopStatement::CompileWhileSegment(LoopSegment& segment, LabelInfo& labels,
 	info.NewInstructionBlock(inner);
 
 	if (success) {
-		info.AddInstruction(new Kiwi::AssignInstruction(success->Copy(), new Kiwi::Integer(1)));
+		info.AddInstruction(new Kiwi::AssignInstruction(success->Copy(), new Kiwi::Integer(SymbolTable::Bool->KiwiType(), 1)));
 	}
 
 	Nodes::LoopInfo loopInfo;

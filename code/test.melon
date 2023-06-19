@@ -1,6 +1,8 @@
 
 include Melon.Console.log
 
-char[#]: c = {}
+char[#]: c = {'A', 'B', 'C'}
+int[#]:  i = {1, 2, 3, 4, 5}
 
 log(c)
+log(i)

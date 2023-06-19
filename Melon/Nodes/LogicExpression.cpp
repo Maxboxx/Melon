@@ -4,6 +4,8 @@
 
 #include "Melon/Parsing/Parser.h"
 
+#include "Melon/Symbols/IntegerSymbol.h"
+
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
 using namespace Boxx;
@@ -61,7 +63,7 @@ Ptr<Kiwi::Value> LogicExpression::CompileAndOr(CompileInfo& info, const bool che
 		info.AddInstruction(new Kiwi::IfInstruction(CompileToBool(operand1, info), nextLbl, nullptr));
 	}
 
-	info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), new Kiwi::Integer(setTrue ? 1 : 0)));
+	info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), new Kiwi::Integer(SymbolTable::Bool->KiwiType(), setTrue ? 1 : 0)));
 	info.AddInstruction(new Kiwi::GotoInstruction(endLbl));
 
 	info.NewInstructionBlock(nextLbl);
@@ -69,7 +71,7 @@ Ptr<Kiwi::Value> LogicExpression::CompileAndOr(CompileInfo& info, const bool che
 	info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), CompileToBool(operand2, info)));
 
 	if (checkTrue ^ setTrue) {
-		info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), new Kiwi::EqualExpression(result->Copy(), new Kiwi::Integer(0))));
+		info.AddInstruction(new Kiwi::AssignInstruction(result->Copy(), new Kiwi::EqualExpression(result->Copy(), new Kiwi::Integer(SymbolTable::Bool->KiwiType(), 0))));
 	}
 
 	info.NewInstructionBlock(endLbl);

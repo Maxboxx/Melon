@@ -51,7 +51,7 @@ Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 		Ptr<Kiwi::Expression> expr;
 
 		if (type->Is<ClassSymbol>()) {
-			expr = new Kiwi::AllocExpression(type->KiwiName());
+			expr = new Kiwi::AllocExpression(type->KiwiType());
 		}
 
 		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), value->Copy(), expr));

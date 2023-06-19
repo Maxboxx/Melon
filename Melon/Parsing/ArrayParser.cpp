@@ -1,6 +1,7 @@
 #include "ArrayParser.h"
 
 #include "TypeParser.h"
+#include "ExpressionParser.h"
 
 using namespace Boxx;
 
@@ -27,6 +28,23 @@ Ptr<Nodes::Array> ArrayParser::Parse(ParsingInfo& info) {
 
 	info.index++;
 
+	List<Ptr<Expression>> items;
+
+	if (Ptr<Expression> expr = ExpressionParser::Parse(info)) {
+		items.Add(expr);
+
+		while (info.Current().type == TokenType::Comma) {
+			info.index++;
+
+			if (Ptr<Expression> expr = ExpressionParser::Parse(info)) {
+				items.Add(expr);
+			}
+			else {
+				ErrorLog::Error(LogMessage("error.syntax.expected.after", "expression", LogMessage::Quote(",")), info.GetFileInfoPrev());
+			}
+		}
+	}
+
 	if (info.Current().type != TokenType::CurlyClose) {
 		info.index = startIndex;
 		return nullptr;
@@ -35,6 +53,7 @@ Ptr<Nodes::Array> ArrayParser::Parse(ParsingInfo& info) {
 	info.index++;
 
 	Ptr<Nodes::Array> node = new Nodes::Array(info.scope, info.GetFileInfoPrev());
-	node->type = type;
+	node->type  = type;
+	node->items = items;
 	return node;
 }

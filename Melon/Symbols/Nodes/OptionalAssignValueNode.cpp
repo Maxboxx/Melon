@@ -4,6 +4,7 @@
 #include "Melon/Symbols/TypeSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/IntegerSymbol.h"
 
 #include "Melon/Nodes/KiwiVariable.h"
 #include "Melon/Nodes/KiwiValue.h"
@@ -28,13 +29,13 @@ Ptr<Kiwi::Value> OptionalAssignValueNode::Compile(Weak<Expression> operand1, Wea
 	}
 
 	if (operand2->Type() == SymbolTable::Nil) {
-		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(optional->Copy(), type->Find(Name::HasValue, operand1->File())->KiwiName()), new Kiwi::Integer(0)));
+		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(optional->Copy(), type->Find(Name::HasValue, operand1->File())->KiwiName()), new Kiwi::Integer(SymbolTable::Bool->KiwiType(), 0)));
 	}
 	else {
 		Ptr<KiwiVariable> var = new KiwiVariable(new Kiwi::SubVariable(optional->Copy(), type->Find(Name::Value, operand1->File())->KiwiName()), type->Find<VariableSymbol>(NameList(Name::Value), operand1->File())->Type()->AbsoluteName());
 		Ptr<KiwiValue> value = new KiwiValue(operand2->Compile(info), operand2->Type()->AbsoluteName());
 		
-		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(optional->Copy(), type->Find(Name::HasValue, operand1->File())->KiwiName()), new Kiwi::Integer(1)));
+		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(optional->Copy(), type->Find(Name::HasValue, operand1->File())->KiwiName()), new Kiwi::Integer(SymbolTable::Bool->KiwiType(), 1)));
 		Node::CompileAssignment(var, value, info, operand2->File(), false);
 	}
 

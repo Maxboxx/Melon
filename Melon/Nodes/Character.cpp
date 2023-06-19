@@ -2,6 +2,8 @@
 
 #include "Boxx/Math.h"
 
+#include "Melon/Symbols/IntegerSymbol.h"
+
 using namespace Boxx;
 using namespace KiwiOld;
 
@@ -21,7 +23,7 @@ TypeSymbol* Character::Type(TypeSymbol* expected) const {
 }
 
 Ptr<Kiwi::Value> Character::Compile(CompileInfo& info) {
-	return new Kiwi::Integer(value);
+	return new Kiwi::Integer(SymbolTable::Char->KiwiType(), value);
 }
 
 StringBuilder Character::ToMelon(const UInt indent) const {

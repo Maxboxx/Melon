@@ -85,7 +85,8 @@ Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
 
 	// Compile enum value
 	if (EnumSymbol* enumSym = sym->Cast<EnumSymbol>()) {
-		return new Kiwi::Integer(sym->Find<ValueSymbol>(name, file)->value);
+		ValueSymbol* valueSym = sym->Find<ValueSymbol>(name, file);
+		return new Kiwi::Integer(valueSym->KiwiType(), valueSym->value);
 	}
 	// Compile class value
 	else if (sym->Is<ClassSymbol>()) {

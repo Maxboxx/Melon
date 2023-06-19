@@ -768,9 +768,13 @@ void SymbolTable::SetupArray() {
 	TemplateSymbol* const templateSym = arr->AddSymbol(Name("T"), new TemplateSymbol(FileInfo()));
 	templateSym->type = templateSym->AbsoluteName();
 
-	VariableSymbol* const hasValue = arr->AddSymbol(Name::Length, new VariableSymbol(FileInfo()));
-	hasValue->type = NameList::UInt;
+	VariableSymbol* const length = arr->AddSymbol(Name::Length, new VariableSymbol(FileInfo()));
+	length->type = NameList::UInt;
 	arr->members.Add(Name::Length);
+
+	VariableSymbol* const items = arr->AddSymbol(Name::Items, new VariableSymbol(FileInfo()));
+	items->type = templateSym->AbsoluteName();
+	arr->members.Add(Name::Items);
 
 	FunctionSymbol* const assign  = arr->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 

@@ -13,6 +13,9 @@ namespace Melon {
 			/// The array type.
 			Boxx::Optional<Symbols::NameList> type;
 
+			/// The array items.
+			Boxx::List<Ptr<Expression>> items;
+
 			Array(Symbols::Symbol* scope, const FileInfo& file);
 			~Array();
 

@@ -266,7 +266,7 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 		
 		if (IsInit()) {
 			self = new Kiwi::Variable(info.NewRegister());
-			info.AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), new Kiwi::AllocExpression(type.name)));
+			info.AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), new Kiwi::AllocExpression(type)));
 		}
 		else if (Weak<DotExpression> dot = expression.As<DotExpression>()) {
 			self = dot->expression->Compile(info).AsPtr<Kiwi::Variable>();
