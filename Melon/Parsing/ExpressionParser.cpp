@@ -219,7 +219,7 @@ Ptr<Expression> ExpressionParser::ParseBinaryOperand(ParsingInfo& info, const bo
 	if (Ptr<Expression> node = ParseUnaryOperand(info, statement)) {
 		return node;
 	}
-	else if (token.type == TokenType::Minus || token.type == TokenType::BNot || token.type == TokenType::Not) {
+	else if (token.type == TokenType::Minus || token.type == TokenType::BNot || token.type == TokenType::Not || token.type == TokenType::Hash) {
 		info.index++;
 
 		if (Ptr<Expression> node = ParseBinaryOperand(info)) {

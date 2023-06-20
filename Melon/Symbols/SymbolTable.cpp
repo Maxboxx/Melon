@@ -28,6 +28,7 @@
 #include "Nodes/OptionalNotNode.h"
 #include "Nodes/ClassAssignNode.h"
 #include "Nodes/IndexGetNode.h"
+#include "Nodes/LengthNode.h"
 
 #include "Kiwi/Old/Kiwi.h"
 
@@ -788,4 +789,10 @@ void SymbolTable::SetupArray() {
 	index1->arguments.Add(arr->AbsoluteName());
 	index1->arguments.Add(NameList::UInt);
 	index1->returnValues.Add(args[0]);
+
+	FunctionSymbol* const len  = arr->AddSymbol(Name::Len, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const len1 = len->AddOverload(new FunctionSymbol(FileInfo()));
+	len1->symbolNode = new LengthNode();
+	len1->arguments.Add(arr->AbsoluteName());
+	len1->returnValues.Add(NameList::UInt);
 }

@@ -1,9 +1,13 @@
 
 include Melon.Console.log
 
-char[#]: c = {'A', 'B', 'C'}
-int[#]:  i = {1, 2, 3, 4, 5}
+char[#]: chrs = {'A', 'B', 'C'}
+int[#]:  ints = {1, 2, 3, 4, 5}
 
-log(c)
-log(i)
-log(i[3])
+for uint: i = 0, < #chrs do
+	log(chrs[i])
+end
+
+for uint: i = 0, < #ints do
+	log(ints[i])
+end
