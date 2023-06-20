@@ -7,6 +7,7 @@
 #include "MatchParser.h"
 #include "NameParser.h"
 #include "CallParser.h"
+#include "IndexParser.h"
 #include "DotParser.h"
 #include "ObjectInitParser.h"
 #include "TypeParser.h"
@@ -17,6 +18,7 @@
 #include "Melon/Nodes/UnaryOperatorExpression.h"
 #include "Melon/Nodes/LogicExpression.h"
 #include "Melon/Nodes/CallExpression.h"
+#include "Melon/Nodes/IndexExpression.h"
 #include "Melon/Nodes/DotExpression.h"
 #include "Melon/Nodes/ObjectInitExpression.h"
 #include "Melon/Nodes/NameExpression.h"
@@ -240,6 +242,13 @@ Ptr<Expression> ExpressionParser::ParseUnaryOperand(ParsingInfo& info, const boo
 			if (Ptr<CallExpression> call = CallParser::Parse(info)) {
 				call->expression = node;
 				node = call;
+
+				continue;
+			}
+
+			if (Ptr<IndexExpression> index = IndexParser::Parse(info)) {
+				index->expression = node;
+				node = index;
 
 				continue;
 			}

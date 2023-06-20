@@ -37,6 +37,12 @@ namespace Melon {
 				virtual Ptr<Kiwi::Value> Compile(Weak<Melon::Nodes::Expression> operand1, Weak<Melon::Nodes::Expression> operand2, Melon::Nodes::CompileInfo& info, bool includeType) const {
 					throw SymbolNodeError("SymbolNode does not override Compile");
 				}
+
+				/// Compiles the symbol node.
+				///A operands: The operands.
+				virtual Ptr<Kiwi::Value> Compile(Boxx::List<Weak<Melon::Nodes::Expression>> operands, Melon::Nodes::CompileInfo& info, bool includeType) const {
+					throw SymbolNodeError("SymbolNode does not override Compile");
+				}
 			};
 
 			/// Base for unary symbol nodes.

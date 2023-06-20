@@ -24,6 +24,8 @@ Ptr<CallExpression> CallParser::Parse(ParsingInfo& info) {
 			if (!call->arguments.IsEmpty()) {
 				if (info.Current().type != TokenType::Comma) {
 					ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(")"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
+					info.index = startIndex;
+					return nullptr;
 				}
 
 				info.index++;
@@ -36,7 +38,8 @@ Ptr<CallExpression> CallParser::Parse(ParsingInfo& info) {
 			}
 			else {
 				ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote(")"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
-				info.index++;
+				info.index = startIndex;
+				return nullptr;
 			}
 		}
 

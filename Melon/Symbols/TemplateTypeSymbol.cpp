@@ -135,6 +135,10 @@ Symbol* TemplateTypeSymbol::FindSymbol(const NameList& nameList, const UInt inde
 
 	const Symbols::Name& scope = nameList[index];
 
+	if (index + 1 < nameList.Size() && scope.name.Length() == 0 && !scope.types && !scope.arguments) {
+		return FindSymbol(nameList, index + 1, file);
+	}
+
 	if (scope.name.Length() == 0 && scope.types && !scope.arguments) {
 		for (TemplateTypeSymbol* const variant : templateVariants) {
 			const List<NameList> types = *scope.types;

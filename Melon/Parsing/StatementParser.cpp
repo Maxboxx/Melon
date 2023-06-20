@@ -30,10 +30,10 @@ Ptr<Statement> StatementParser::Parse(ParsingInfo& info, const bool single) {
 	if (Ptr<Statement> node = DebugParser::Parse(info)) {
 		return node;
 	}
-	else if (Ptr<Statement> node = CallParser::ParseStatement(info)) {
+	else if (Ptr<Statement> node = AssignmentParser::Parse(info, single ? AssignmentParser::Flags::Single : AssignmentParser::Flags::None)) {
 		return node;
 	}
-	else if (Ptr<Statement> node = AssignmentParser::Parse(info, single ? AssignmentParser::Flags::Single : AssignmentParser::Flags::None)) {
+	else if (Ptr<Statement> node = CallParser::ParseStatement(info)) {
 		return node;
 	}
 	else if (Ptr<Statement> node = LoopParser::Parse(info)) {

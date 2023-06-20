@@ -27,6 +27,7 @@
 #include "Nodes/OptionalToBooleanNode.h"
 #include "Nodes/OptionalNotNode.h"
 #include "Nodes/ClassAssignNode.h"
+#include "Nodes/IndexGetNode.h"
 
 #include "Kiwi/Old/Kiwi.h"
 
@@ -777,8 +778,14 @@ void SymbolTable::SetupArray() {
 	arr->members.Add(Name::Items);
 
 	FunctionSymbol* const assign  = arr->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
-
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
 	assign1->symbolNode = new ClassAssignNode();
 	assign1->arguments.Add(arr->AbsoluteName());
+
+	FunctionSymbol* const index  = arr->AddSymbol(Name::Index, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const index1 = index->AddOverload(new FunctionSymbol(FileInfo()));
+	index1->symbolNode = new IndexGetNode();
+	index1->arguments.Add(arr->AbsoluteName());
+	index1->arguments.Add(NameList::UInt);
+	index1->returnValues.Add(args[0]);
 }
