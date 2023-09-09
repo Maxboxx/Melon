@@ -1,13 +1,22 @@
 
 include Melon.Console.log
 
-char[#]: chrs = {'A', 'B', 'C'}
-int[#]:  ints = {1, 2, 3, 4, 5}
-
-for uint: i = 0, < #chrs do
-	log(chrs[i])
+class A
+	int: i
+	short: s
+	char: c
+	
+	fun init(int: i, short: s, char: c)
+		self.i = i
+		self.s = s
+		self.c = c
+	end
 end
 
-for uint: i = 0, < #ints do
-	log(ints[i])
+A[#]: a = {A(1, 2, 'A'), A(3, 6, 'B'), A(4, 8, 'C')}
+
+log(a)
+
+for uint: i = 0, < #a do
+	log(a[i])
 end

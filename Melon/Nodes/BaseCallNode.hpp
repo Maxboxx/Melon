@@ -260,13 +260,23 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 	if (!operatorFunction && (IsInit() || IsSelfPassing())) {
 		argOffset++;
 
-		Kiwi::Type type = func->Argument(0)->Type()->KiwiType();
+		TypeSymbol* typeSym = func->Argument(0)->Type();
+		Kiwi::Type type = typeSym->KiwiType();
 
 		Ptr<Kiwi::Variable> self = nullptr;
 		
 		if (IsInit()) {
 			self = new Kiwi::Variable(info.NewRegister());
-			info.AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), new Kiwi::AllocExpression(type)));
+
+			Ptr<Kiwi::Expression> expr = nullptr;
+
+			if (typeSym->Is<ClassSymbol>()) {
+				Kiwi::Type t = type;
+				t.pointers--;
+				expr = new Kiwi::AllocExpression(t);
+			}
+
+			info.AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), expr));
 		}
 		else if (Weak<DotExpression> dot = expression.As<DotExpression>()) {
 			self = dot->expression->Compile(info).AsPtr<Kiwi::Variable>();

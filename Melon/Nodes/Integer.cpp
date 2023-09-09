@@ -23,6 +23,8 @@ TypeSymbol* Integer::Type(TypeSymbol* expected) const {
 
 	// Unsigned integers
 	if (isUnsigned) {
+		return SymbolTable::ULong;
+
 		if ((ULong)number <= Math::UByteMax()) {
 			return (TypeSymbol*)SymbolTable::UTiny;
 		}
@@ -41,6 +43,8 @@ TypeSymbol* Integer::Type(TypeSymbol* expected) const {
 	}
 	// Signed integers
 	else {
+		return SymbolTable::Long;
+		
 		if (number >= Math::ByteMin()) {
 			return (TypeSymbol*)SymbolTable::Tiny;
 		}

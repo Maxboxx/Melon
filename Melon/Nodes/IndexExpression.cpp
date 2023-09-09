@@ -34,6 +34,10 @@ FunctionSymbol* IndexExpression::GetFunc() const {
 	return type->FindMethod(Name::Index, argTypes, File());
 }
 
+Symbol* IndexExpression::Symbol() const {
+	return Type();
+}
+
 TypeSymbol* IndexExpression::Type(TypeSymbol* expected) const {
 	FunctionSymbol* func = GetFunc();
 
