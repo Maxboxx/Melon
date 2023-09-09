@@ -3,20 +3,20 @@ include Melon.Console.log
 
 class A
 	int: i
-	short: s
-	char: c
 	
-	fun init(int: i, short: s, char: c)
+	fun init(int: i)
 		self.i = i
-		self.s = s
-		self.c = c
 	end
 end
 
-A[#]: a = {A(1, 2, 'A'), A(3, 6, 'B'), A(4, 8, 'C')}
+A: a = A(4)
 
 log(a)
 
-for uint: i = 0, < #a do
-	log(a[i])
-end
+_debug free a
+
+log(a)
+
+_debug free a
+
+log(a)

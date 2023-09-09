@@ -34,6 +34,10 @@ Ptr<Kiwi::Value> Debug::Compile(CompileInfo& info) {
 		Ptr<Kiwi::Value> value = argument->Compile(info);
 		info.AddInstruction(new Kiwi::DebugPrintInstruction(value));
 	}
+	else if (type == "free" && argument) {
+		Ptr<Kiwi::Value> value = argument->Compile(info);
+		info.AddInstruction(new Kiwi::FreeInstruction(value));
+	}
 
 	return nullptr;
 }
