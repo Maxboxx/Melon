@@ -24,6 +24,25 @@ TypeSymbol* Melon::Nodes::Array::Type(TypeSymbol* expected) const {
 	if (type) {
 		return SymbolTable::Find<TypeSymbol>(*type, scope->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
 	}
+	else if (!items.IsEmpty()) {
+		TypeSymbol* itemType;
+
+		if (expected && expected->Is<TemplateTypeSymbol>()) {
+			itemType = expected->Cast<TemplateTypeSymbol>()->TemplateArgument(0);
+		}
+		else {
+			itemType = items[0]->Type();
+		}
+
+		for (const Ptr<Expression>& item : items) {
+			if (item->Type(itemType) != itemType) {
+				return nullptr;
+			}
+		}
+
+		// TODO: return array of itemType.
+		return expected;
+	}
 	else {
 		return expected;
 	}
@@ -66,6 +85,19 @@ StringBuilder Melon::Nodes::Array::ToMelon(const UInt indent) const {
 		builder += ' ';
 	}
 
-	builder += "{}";
+	if (items.IsEmpty()) {
+		builder += "{}";
+	}
+	else {
+		builder += '{';
+
+		for (UInt i = 0; i < items.Count(); i++) {
+			if (i > 0) builder += ", ";
+			builder += items[i]->ToMelon(indent);
+		}
+
+		builder += '}';
+	}
+
 	return builder;
 }

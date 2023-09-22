@@ -116,13 +116,14 @@ StringBuilder Statements::ToMelon(const UInt indent) const {
 }
 
 bool Statements::HasSpaceAround(Weak<Statement> statement) {
-	if (statement.Is<LoopStatement>())     return true;
-	if (statement.Is<MatchStatement>())   return true;
-	if (statement.Is<DoStatement>())       return true;
-	if (statement.Is<RepeatStatement>())   return true;
-	if (statement.Is<FunctionBody>()) return true;
-	if (statement.Is<StructStatement>())   return true;
-	if (statement.Is<EnumStatement>())     return true;
+	if (statement.Is<LoopStatement>())   return true;
+	if (statement.Is<MatchStatement>())  return true;
+	if (statement.Is<DoStatement>())     return true;
+	if (statement.Is<RepeatStatement>()) return true;
+	if (statement.Is<FunctionBody>())    return true;
+	if (statement.Is<StructStatement>()) return true;
+	if (statement.Is<ClassStatement>())  return true;
+	if (statement.Is<EnumStatement>())   return true;
 
 	if (Weak<GuardStatement> guardNode = statement.As<GuardStatement>()) {
 		return (bool)guardNode->else_;

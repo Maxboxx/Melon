@@ -24,9 +24,16 @@ Ptr<TypeConversion> AsParser::Parse(ParsingInfo& info) {
 	const String asValue = info.Current().value;
 
 	info.index++;
+	
+	Optional<NameList> type = TypeParser::Parse(info);
+
+	if (!type && info.Current().type == TokenType::Any) {
+		info.index++;
+		type = NameList::Any;
+	}
 
 	// Parse type
-	if (Optional<NameList> type = TypeParser::Parse(info)) {
+	if (type) {
 		Ptr<TypeConversion> cn = new TypeConversion(info.scope, info.GetFileInfo(asLine));
 		cn->isExplicit = true;
 		cn->type = *type;

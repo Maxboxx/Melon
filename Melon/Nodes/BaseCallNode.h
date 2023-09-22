@@ -47,7 +47,7 @@ namespace Melon {
 			bool IsMethod() const;
 
 			/// Gets the function to call.
-			Symbols::FunctionSymbol* GetFunc() const;
+			Symbols::FunctionSymbol* GetFunc(Symbols::TypeSymbol* expected = nullptr) const;
 
 			/// {true} if {self} should be passed as an argument.
 			bool IsSelfPassing() const;
@@ -75,15 +75,15 @@ namespace Melon {
 
 			CompileResult CompileWithResult(CompileInfo& info);
 
-			Boxx::List<Symbols::TypeSymbol*> GetReturnTypes() const;
+			Boxx::List<Symbols::TypeSymbol*> GetReturnTypes(Symbols::TypeSymbol* expected = nullptr) const;
 
 			Symbols::Name GetFuncName() const;
 
 			Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>> GetTemplateTypes(const Boxx::Optional<Boxx::List<Symbols::NameList>>& types) const;
 			Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>> GetArgumentTypes() const;
 
-			Symbols::FunctionSymbol* GetFunctionSymbol(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
-			Symbols::FunctionSymbol* GetInitFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
+			Symbols::FunctionSymbol* GetFunctionSymbol(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes, Symbols::TypeSymbol* expected = nullptr) const;
+			Symbols::FunctionSymbol* GetInitFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes, Symbols::TypeSymbol* expected = nullptr) const;
 			Symbols::FunctionSymbol* GetStaticOrPlainFunction(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 			Symbols::FunctionSymbol* GetMethod(const Boxx::Optional<Boxx::List<Symbols::TypeSymbol*>>& templateTypes, const Boxx::List<Symbols::TypeSymbol*>& argTypes) const;
 		};

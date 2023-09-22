@@ -364,6 +364,9 @@ namespace Melon {
 			/// A name List for the {_} type.
 			static const NameList Discard;
 
+			/// A name List for the {any} type.
+			static const NameList Any;
+
 			/// A name List for undefined types.
 			static const NameList undefined;
 		private:

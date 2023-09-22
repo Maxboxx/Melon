@@ -36,7 +36,7 @@ Assignment::~Assignment() {
 
 void Assignment::IncludeScan(ParsingInfo& info) {
 	for (const NameList& type : types) {
-		if (type != NameList::Discard) {
+		if (type != NameList::Discard || type != NameList::Any) {
 			Include(type, info);
 		}
 	}
@@ -293,6 +293,55 @@ StringBuilder Assignment::ToMelon(const UInt indent) const {
 ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 	ScanResult result;
 	info->assign = true;
+
+	// Infer types
+	List<TypeSymbol*> infTypes;
+
+	for (UInt i = 0; i < values.Count(); i++) {
+		if (i + 1 == values.Count()) {
+			for (TypeSymbol* type : values[i]->Types(values[i]->Type())) {
+				infTypes.Add(type);
+			}
+
+			while (infTypes.Count() < assignableValues.Count()) {
+				infTypes.Add(nullptr);
+			}
+		}
+		else {
+			infTypes.Add(values[i]->Type());
+		}
+	}
+
+	List<NameList> newTypes;
+
+	for (UInt i = 0; i < assignableValues.Count(); i++) {
+		NameList current = types[types.Count() == 1 ? 0 : i];
+
+		if (current != NameList::Any) {
+			newTypes.Add(current);
+			continue;
+		}
+
+		if (VariableSymbol* sym = assignableValues[i]->Symbol<VariableSymbol>()) {
+			TypeSymbol* type = infTypes[i];
+			
+			if (type) {
+				sym->type = type->AbsoluteName();
+				newTypes.Add(sym->type);
+			}
+			else {
+				// TODO: error
+				ErrorLog::Error(LogMessage("cant infer type"), assignableValues[i]->File());
+				newTypes.Add(current);
+			}
+		}
+		else {
+			// TODO: error?
+			newTypes.Add(current);
+		}
+	}
+
+	types = newTypes;
 
 	// Check for errors among values
 	UInt errorCount = ErrorLog::ErrorCount();

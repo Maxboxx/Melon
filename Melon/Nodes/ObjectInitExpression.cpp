@@ -29,6 +29,7 @@ ObjectInitExpression::~ObjectInitExpression() {
 }
 
 TypeSymbol* ObjectInitExpression::Type(TypeSymbol* expected) const {
+	expression->Type(expected);
 	Symbols::Symbol* const sym = expression->Symbol();
 
 	if (sym == nullptr) return nullptr;

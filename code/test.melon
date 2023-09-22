@@ -9,14 +9,23 @@ class A
 	end
 end
 
-A: a = A(4)
 
-log(a)
+A:   a = A(1)
+any: b = A(2)
+A:   c = any(3)
 
-_debug free a
+A: d = any {
+	i = 4
+}
 
-log(a)
+log(a.i)
+log(b.i)
+log(c.i)
+log(d.i)
 
-_debug free a
-
-log(a)
+do
+	any:   b = 5
+	short: i = b as any
+	
+	log(i)
+end

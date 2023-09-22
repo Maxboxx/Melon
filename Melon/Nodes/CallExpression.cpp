@@ -27,6 +27,6 @@ TypeSymbol* CallExpression::Type(TypeSymbol* expected) const {
 }
 
 List<TypeSymbol*> CallExpression::Types(TypeSymbol* expected) const {
-	return GetReturnTypes();
+	return GetReturnTypes(expected);
 }
 

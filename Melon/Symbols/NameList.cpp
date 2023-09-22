@@ -79,6 +79,7 @@ const NameList NameList::Huge    = NameList(true, Name("huge"));
 const NameList NameList::Char    = NameList(true, Name("char"));
 const NameList NameList::Nil     = NameList(true, Name("nil"));
 const NameList NameList::Discard = NameList(true, Name("_"));
+const NameList NameList::Any     = NameList(true, Name("any"));
 
 Name::Name() {
 	

@@ -24,6 +24,10 @@ TypeConversion::~TypeConversion() {
 }
 
 TypeSymbol* TypeConversion::Type(TypeSymbol* expected) const {
+	if (type == NameList::Any) {
+		return expected;
+	}
+	
 	TypeSymbol* const s = SymbolTable::Find<TypeSymbol>(type, scope ? scope->AbsoluteName() : NameList(true), file, SymbolTable::SearchOptions::ReplaceTemplates);
 
 	if (s == nullptr) return nullptr;
@@ -36,7 +40,8 @@ TypeSymbol* TypeConversion::Type(TypeSymbol* expected) const {
 }
 
 Ptr<Kiwi::Value> TypeConversion::Compile(CompileInfo& info) {
-	TypeSymbol* const convertType = Type();
+	TypeSymbol* const convertType = Type(info.PeekExpectedType());
+	type = convertType->AbsoluteName();
 
 	// Check if the node needs conversion
 	if (expression->Type() == convertType) {
@@ -95,7 +100,7 @@ StringBuilder TypeConversion::ToMelon(const UInt indent) const {
 
 	if (isExplicit) {
 		sb += " as ";
-		sb += Type()->AbsoluteName().ToString();
+		sb += Type()->AbsoluteName().ToSimpleString();
 	}
 
 	return sb;

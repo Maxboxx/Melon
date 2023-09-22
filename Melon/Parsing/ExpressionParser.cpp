@@ -14,6 +14,7 @@
 #include "AsParser.h"
 #include "ArrayParser.h"
 
+#include "Melon/Nodes/AnyExpression.h"
 #include "Melon/Nodes/BinaryOperatorExpression.h"
 #include "Melon/Nodes/UnaryOperatorExpression.h"
 #include "Melon/Nodes/LogicExpression.h"
@@ -391,6 +392,10 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 	}
 	else if (Ptr<NameExpression> node = NameParser::Parse(info)) {
 		return node;
+	}
+	else if (info.Current().type == TokenType::Any) {
+		info.index++;
+		return new AnyExpression(info.GetFileInfoPrev());
 	}
 
 	info.index = startIndex;

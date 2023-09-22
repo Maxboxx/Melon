@@ -96,6 +96,11 @@ List<NameList> AssignmentParser::ParseTypes(ParsingInfo& info) {
 			info.index++;
 			types.Add(NameList::Discard);
 		}
+		// Any type
+		if (info.Current().type == TokenType::Any) {
+			info.index++;
+			types.Add(NameList::Any);
+		}
 		// Parse type
 		else if (Optional<NameList> type = TypeParser::Parse(info)) {
 			types.Add(*type);

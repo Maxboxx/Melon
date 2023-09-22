@@ -13,6 +13,7 @@
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
+#include "AnyExpression.h"
 #include "NameExpression.h"
 #include "DotExpression.h"
 
@@ -41,8 +42,8 @@ inline BaseCallNode<T>::~BaseCallNode() {
 }
 
 template <BaseCallType T>
-inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes() const {
-	FunctionSymbol* const f = GetFunc();
+inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes(TypeSymbol* expected) const {
+	FunctionSymbol* const f = GetFunc(expected);
 
 	List<TypeSymbol*> types;
 
@@ -112,7 +113,11 @@ inline Optional<List<TypeSymbol*>> BaseCallNode<T>::GetArgumentTypes() const {
 }
 
 template <BaseCallType T>
-inline FunctionSymbol* BaseCallNode<T>::GetInitFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
+inline FunctionSymbol* BaseCallNode<T>::GetInitFunction(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes, TypeSymbol* expected) const {
+	if (expected) {
+		expression->Type(expected);
+	}
+	
 	if (TypeSymbol* const t = expression->Symbol<TypeSymbol>()) {
 		if (FunctionSymbol* const f = t->Find<FunctionSymbol>(Name::Init, expression->File())) {
 			return f->FindMethodOverload(argTypes, expression->File());
@@ -166,9 +171,9 @@ inline FunctionSymbol* BaseCallNode<T>::GetMethod(const Optional<List<TypeSymbol
 }
 
 template <BaseCallType T>
-inline FunctionSymbol* BaseCallNode<T>::GetFunctionSymbol(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes) const {
+inline FunctionSymbol* BaseCallNode<T>::GetFunctionSymbol(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes, TypeSymbol* expected) const {
 	if (IsInit()) {
-		return GetInitFunction(templateTypes, argTypes);
+		return GetInitFunction(templateTypes, argTypes, expected);
 	}
 	else if (!IsMethod()) {
 		return GetStaticOrPlainFunction(templateTypes, argTypes);
@@ -190,7 +195,7 @@ inline bool BaseCallNode<T>::IsMethod() const {
 }
 
 template <BaseCallType T>
-inline FunctionSymbol* BaseCallNode<T>::GetFunc() const {
+inline FunctionSymbol* BaseCallNode<T>::GetFunc(TypeSymbol* expected) const {
 	if (operatorFunction) return operatorFunction;
 
 	List<TypeSymbol*> argTypes;
@@ -213,7 +218,7 @@ inline FunctionSymbol* BaseCallNode<T>::GetFunc() const {
 	}
 
 	// Get function symbol
-	if (FunctionSymbol* const f = GetFunctionSymbol(templateTypes, argTypes)) {
+	if (FunctionSymbol* const f = GetFunctionSymbol(templateTypes, argTypes, expected)) {
 		return f;
 	}
 
@@ -238,6 +243,10 @@ inline bool BaseCallNode<T>::IsSelfPassing() const {
 
 template <BaseCallType T>
 inline bool BaseCallNode<T>::IsInit() const {
+	if (expression.Is<AnyExpression>()) {
+		return true;
+	}
+
 	Symbols::Symbol* const s = expression->Symbol();
 
 	if (s->Is<StructSymbol>() || s->Is<ClassSymbol>()) {

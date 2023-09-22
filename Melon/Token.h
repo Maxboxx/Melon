@@ -110,6 +110,7 @@ namespace Melon {
 		As,
 		Discard,
 		Throw,
+		Any,
 
 		// Logic
 		Not,
