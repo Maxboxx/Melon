@@ -1,31 +1,11 @@
 
 include Melon.Console.log
 
-class A
-	int: i
-	
-	fun init(int: i)
-		self.i = i
-	end
+string: str = "Hello World"
+
+log(str)
+
+for int: i = 0, < #str do
+	log(str[i])
 end
 
-
-A:   a = A(1)
-any: b = A(2)
-A:   c = any(3)
-
-A: d = any {
-	i = 4
-}
-
-log(a.i)
-log(b.i)
-log(c.i)
-log(d.i)
-
-do
-	any:   b = 5
-	short: i = b as any
-	
-	log(i)
-end

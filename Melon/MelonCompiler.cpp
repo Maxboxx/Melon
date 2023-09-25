@@ -236,6 +236,18 @@ ParsingInfo MelonCompiler::ParseProject(const CompilerOptions& options) {
 
 	info.root.parsingInfo = &info;
 
+	// TODO: Better setup for this?
+	Ptr<Statements> statements = new Statements(nullptr, FileInfo());
+
+	Ptr<StructStatement> str = new StructStatement(nullptr, FileInfo());
+	str->name = NameList::String[0];
+	str->symbol = SymbolTable::String;
+	str->vars = str->symbol->members.Copy();
+
+	statements->statements.Add(str);
+
+	info.root.nodes.Add(statements);
+
 	return info;
 }
 

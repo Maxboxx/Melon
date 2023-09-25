@@ -6,3 +6,4 @@ struct Console
 		_debug print value
 	end
 end
+

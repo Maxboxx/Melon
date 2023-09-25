@@ -17,6 +17,7 @@ namespace Melon {
 		Name,
 		Nil,
 		Type,
+		StringLiteral,
 
 		// Math
 		Plus,

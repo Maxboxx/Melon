@@ -77,6 +77,7 @@ const NameList NameList::Long    = NameList(true, Name("long"));
 const NameList NameList::ULong   = NameList(true, Name("ulong"));
 const NameList NameList::Huge    = NameList(true, Name("huge"));
 const NameList NameList::Char    = NameList(true, Name("char"));
+const NameList NameList::String  = NameList(true, Name("string"));
 const NameList NameList::Nil     = NameList(true, Name("nil"));
 const NameList NameList::Discard = NameList(true, Name("_"));
 const NameList NameList::Any     = NameList(true, Name("any"));
@@ -85,7 +86,7 @@ Name::Name() {
 	
 }
 
-Name::Name(const String& name) {
+Name::Name(const Boxx::String& name) {
 	this->name = name;
 }
 
@@ -93,7 +94,7 @@ Name::~Name() {
 
 }
 
-void Name::AddScope(const String& scope) {
+void Name::AddScope(const Boxx::String& scope) {
 	if (scopes.Contains(scope)) {
 		scopes[scope]++;
 	}
@@ -102,12 +103,12 @@ void Name::AddScope(const String& scope) {
 	}
 }
 
-UInt Name::GetScope(const String& scope) const {
+UInt Name::GetScope(const Boxx::String& scope) const {
 	return scopes[scope];
 }
 
-String Name::ToString() const {
-	String scope = name;
+Boxx::String Name::ToString() const {
+	Boxx::String scope = name;
 
 	if (types) {
 		scope += "<";
@@ -148,10 +149,10 @@ String Name::ToString() const {
 	return scope;
 }
 
-String Name::ToSimpleString() const {
+Boxx::String Name::ToSimpleString() const {
 	if (name == Name::Optional.name && types && !types->IsEmpty()) return types.Value()[0].ToSimpleString() + "?";
 
-	String scope = name;
+	Boxx::String scope = name;
 
 	if (types) {
 		scope += "<";
@@ -336,17 +337,17 @@ NameList NameList::Add(const NameList& scopes) const {
 	return list;
 }
 
-NameList NameList::AddNext(const String& scope) const {
+NameList NameList::AddNext(const Boxx::String& scope) const {
 	NameList list = *this;
 
 	if (list.names.IsEmpty()) {
 		list.baseName.AddScope(scope);
-		Name s = Name("<" + scope + ":" + String::ToString(list.baseName.GetScope(scope)) + ">");
+		Name s = Name("<" + scope + ":" + Boxx::String::ToString(list.baseName.GetScope(scope)) + ">");
 		list.names.Add(s);
 	}
 	else {
 		list.names.Last().AddScope(scope);
-		Name s = Name("<" + scope + ":" + String::ToString((Boxx::Int)list.names.Last().GetScope(scope)) + ">");
+		Name s = Name("<" + scope + ":" + Boxx::String::ToString((Boxx::Int)list.names.Last().GetScope(scope)) + ">");
 		list.names.Add(s);
 	}
 
@@ -363,8 +364,8 @@ Name NameList::Last() const {
 	return names.Last();
 }
 
-String NameList::ToString() const {
-	String str = "";
+Boxx::String NameList::ToString() const {
+	Boxx::String str = "";
 
 	for (const Name& scope : names) {
 		if (str.Length() > 0) str += ".";
@@ -374,13 +375,13 @@ String NameList::ToString() const {
 	return str;
 }
 
-String NameList::ToSimpleString() const {
+Boxx::String NameList::ToSimpleString() const {
 	if (IsTemplate()) return names[1].ToSimpleString();
 
 	NameList list = *this;
 	Boxx::UInt start = 0;
 
-	String str = "";
+	Boxx::String str = "";
 
 	for (Boxx::UInt i = start; i < list.Size(); i++) {
 		if (i > start && list[i].name.Length() > 0) {

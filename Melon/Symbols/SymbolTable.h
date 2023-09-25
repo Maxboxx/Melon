@@ -17,6 +17,7 @@ namespace Melon {
 		class IntegerSymbol;
 		class VariableSymbol;
 		class FunctionSymbol;
+		class StructSymbol;
 
 		/// A table containing all symbols.
 		class SymbolTable {
@@ -198,6 +199,9 @@ namespace Melon {
 			/// The symbol for the {char} type.
 			static IntegerSymbol* Char;
 
+			/// The symbol for the {string} type.
+			static StructSymbol* String;
+
 		private:
 			static Symbol* FindInNamespaces(const NameList& name, const FileInfo& file);
 
@@ -212,6 +216,7 @@ namespace Melon {
 			static void SetupNil();
 			static void SetupOptional();
 			static void SetupArray();
+			static void SetupString();
 
 			friend Melon::Nodes::RootNode;
 			friend Symbol;

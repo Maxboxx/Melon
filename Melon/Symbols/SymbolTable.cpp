@@ -8,6 +8,7 @@
 #include "VariableSymbol.h"
 #include "StructSymbol.h"
 #include "ClassSymbol.h"
+#include "PtrSymbol.h"
 
 #include "Nodes/SymbolNode.h"
 #include "Nodes/IntegerUnaryOperatorNode.h"
@@ -29,6 +30,7 @@
 #include "Nodes/ClassAssignNode.h"
 #include "Nodes/IndexGetNode.h"
 #include "Nodes/LengthNode.h"
+#include "Nodes/StructAssignNode.h"
 
 #include "Kiwi/Old/Kiwi.h"
 
@@ -452,6 +454,7 @@ void SymbolTable::Setup() {
 	SetupChars();
 	SetupBoolean();
 	SetupNil();
+	SetupString();
 	SetupOptional();
 	SetupArray();
 }
@@ -698,6 +701,43 @@ void SymbolTable::SetupNil() {
 	assign1->arguments.Add(NameList::Nil);
 
 	SymbolTable::Nil = nilSym;
+}
+
+StructSymbol* SymbolTable::String = nullptr;
+
+void SymbolTable::SetupString() {
+	StructSymbol* const str = symbols->AddSymbol(NameList::String[0], new StructSymbol(FileInfo()));
+
+	PtrSymbol* const ptr = str->AddSymbol(Name::Array, new PtrSymbol(FileInfo()));
+	ptr->type = NameList::Char;
+
+	VariableSymbol* const length = str->AddSymbol(Name::Length, new VariableSymbol(FileInfo()));
+	length->type = NameList::UInt;
+	str->members.Add(Name::Length);
+
+	VariableSymbol* const items = str->AddSymbol(Name::Items, new VariableSymbol(FileInfo()));
+	items->type = ptr->AbsoluteName();
+	str->members.Add(Name::Items);
+
+	FunctionSymbol* const assign  = str->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign1->symbolNode = new StructAssignNode();
+	assign1->arguments.Add(str->AbsoluteName());
+
+	FunctionSymbol* const index  = str->AddSymbol(Name::Index, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const index1 = index->AddOverload(new FunctionSymbol(FileInfo()));
+	index1->symbolNode = new IndexGetNode();
+	index1->arguments.Add(str->AbsoluteName());
+	index1->arguments.Add(NameList::UInt);
+	index1->returnValues.Add(NameList::Char);
+
+	FunctionSymbol* const len  = str->AddSymbol(Name::Len, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const len1 = len->AddOverload(new FunctionSymbol(FileInfo()));
+	len1->symbolNode = new LengthNode();
+	len1->arguments.Add(str->AbsoluteName());
+	len1->returnValues.Add(NameList::UInt);
+
+	SymbolTable::String = str;
 }
 
 void SymbolTable::SetupOptional() {

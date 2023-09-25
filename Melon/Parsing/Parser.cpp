@@ -80,6 +80,7 @@ void Parser::SetupTokens() {
 	patterns.Add(TokenPattern(TokenType::Integer, "%d+"));
 	patterns.Add(TokenPattern(TokenType::Boolean, "true|false"));
 	patterns.Add(TokenPattern(TokenType::Character, "'(|\\\\|./~{{\\\\}*\\})'", true));
+	patterns.Add(TokenPattern(TokenType::StringLiteral, "\"(|\\\\|./~{{\\\\}*\\})\"", true));
 
 	// Bitwise
 	patterns.Add(TokenPattern(TokenType::BNand, "%~%&", true));

@@ -81,6 +81,7 @@ ScanResult StructStatement::Scan(ScanInfoStack& info) {
 
 StringBuilder StructStatement::ToMelon(const UInt indent) const {
 	if (name.name == Name::Optional.name) return "";
+	if (name.name == NameList::String[0].name) return "";
 	if (symbol->templateParent != nullptr) return "";
 
 	// Check if struct is completely specialized

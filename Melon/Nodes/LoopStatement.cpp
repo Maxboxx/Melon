@@ -408,6 +408,7 @@ ScanResult LoopStatement::ScanForCondition(const LoopSegment& segment, ScanInfoS
 	else {
 		Ptr<Assignment> assign  = new Assignment(segment.step->scope, segment.step->File()); 
 		assign->assignableValues.Add(new WeakExpression(segment.init->assignableValues[0]));
+		assign->types.Add(NameList::Discard);
 
 		Ptr<BinaryOperatorExpression> op = new BinaryOperatorExpression(segment.step->scope, *segment.stepOperator, segment.step->File());
 		op->operand1 = new WeakExpression(assign->assignableValues[0]);

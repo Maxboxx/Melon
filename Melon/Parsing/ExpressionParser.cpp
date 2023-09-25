@@ -2,6 +2,7 @@
 
 #include "IntegerParser.h"
 #include "CharParser.h"
+#include "StringParser.h"
 #include "BooleanParser.h"
 #include "IfExpressionParser.h"
 #include "MatchParser.h"
@@ -32,6 +33,7 @@
 #include "Melon/Nodes/MatchExpression.h"
 #include "Melon/Nodes/Integer.h"
 #include "Melon/Nodes/Character.h"
+#include "Melon/Nodes/StringLiteral.h"
 #include "Melon/Nodes/Boolean.h"
 #include "Melon/Nodes/Array.h"
 
@@ -353,6 +355,9 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 		return node;
 	}
 	else if (Ptr<Character> node = CharParser::Parse(info)) {
+		return node;
+	}
+	else if (Ptr<StringLiteral> node = StringParser::Parse(info)) {
 		return node;
 	}
 	else if (Ptr<Boolean> node = BooleanParser::Parse(info)) {
