@@ -1,11 +1,12 @@
 
 include Melon.Console.log
 
-string: str = "Hello World"
+string: hello = "Hello "
+string: world = "World!"
 
-log(str)
+string: hello_world = hello + world
 
-for int: i = 0, < #str do
-	log(str[i])
+for int: i = 0, < #hello_world do
+	log(hello_world[i])
 end
 

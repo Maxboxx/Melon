@@ -31,6 +31,7 @@
 #include "Nodes/IndexGetNode.h"
 #include "Nodes/LengthNode.h"
 #include "Nodes/StructAssignNode.h"
+#include "Nodes/StringConcatNode.h"
 
 #include "Kiwi/Old/Kiwi.h"
 
@@ -727,15 +728,22 @@ void SymbolTable::SetupString() {
 	FunctionSymbol* const index  = str->AddSymbol(Name::Index, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const index1 = index->AddOverload(new FunctionSymbol(FileInfo()));
 	index1->symbolNode = new IndexGetNode();
-	index1->arguments.Add(str->AbsoluteName());
+	index1->arguments.Add(NameList::String);
 	index1->arguments.Add(NameList::UInt);
 	index1->returnValues.Add(NameList::Char);
 
 	FunctionSymbol* const len  = str->AddSymbol(Name::Len, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const len1 = len->AddOverload(new FunctionSymbol(FileInfo()));
 	len1->symbolNode = new LengthNode();
-	len1->arguments.Add(str->AbsoluteName());
+	len1->arguments.Add(NameList::String);
 	len1->returnValues.Add(NameList::UInt);
+
+	FunctionSymbol* const concat  = str->AddSymbol(Name::Add, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const concat1 = concat->AddOverload(new FunctionSymbol(FileInfo()));
+	concat1->symbolNode = new StringConcatNode();
+	concat1->arguments.Add(NameList::String);
+	concat1->arguments.Add(NameList::String);
+	concat1->returnValues.Add(NameList::String);
 
 	SymbolTable::String = str;
 }
