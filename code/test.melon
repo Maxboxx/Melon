@@ -10,3 +10,4 @@ for int: i = 0, < #hello_world do
 	log(hello_world[i])
 end
 
+log(hello_world)

@@ -5,5 +5,15 @@ struct Console
 	static fun log<T>(T: value)
 		_debug print value
 	end
+	
+	--- Logs a string to the console.
+	static fun log(string: value)
+		_debug printstr value
+	end
+	
+	--- Logs a char to the console.
+	static fun log(char: value)
+		_debug printchr value
+	end
 end
 

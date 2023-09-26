@@ -34,6 +34,19 @@ Ptr<Kiwi::Value> Debug::Compile(CompileInfo& info) {
 		Ptr<Kiwi::Value> value = argument->Compile(info);
 		info.AddInstruction(new Kiwi::DebugPrintInstruction(value));
 	}
+	else if (type == "printstr" && argument && argument->Type() == (TypeSymbol*)SymbolTable::String) {
+		Ptr<Kiwi::Variable> value = argument->Compile(info).AsPtr<Kiwi::Variable>();
+		Ptr<Kiwi::DebugPrintInstruction> print = new Kiwi::DebugPrintInstruction(new Kiwi::SubVariable(value, Name::Items.name));
+		print->type = "str";
+
+		info.AddInstruction(print);
+	}
+	else if (type == "printchr" && argument && argument->Type() == (TypeSymbol*)SymbolTable::Char) {
+		Ptr<Kiwi::DebugPrintInstruction> print = new Kiwi::DebugPrintInstruction(argument->Compile(info));
+		print->type = "chr";
+
+		info.AddInstruction(print);
+	}
 	else if (type == "free" && argument) {
 		Ptr<Kiwi::Value> value = argument->Compile(info);
 		info.AddInstruction(new Kiwi::FreeInstruction(value));
