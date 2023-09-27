@@ -11,6 +11,9 @@ namespace Melon {
 			/// The numerical value of the enum value.
 			Boxx::Long value = 0;
 
+			/// The type of the enum value.
+			Boxx::Optional<NameList> type;
+
 			ValueSymbol(const FileInfo& file);
 			~ValueSymbol();
 

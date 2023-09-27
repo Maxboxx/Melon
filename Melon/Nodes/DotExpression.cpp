@@ -13,6 +13,7 @@
 #include "Melon/Symbols/NamespaceSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/EnumSymbol.h"
+#include "Melon/Symbols/IntegerSymbol.h"
 
 #include "Kiwi/Old/Kiwi.h"
 
@@ -84,9 +85,15 @@ Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
 	Ptr<Kiwi::Variable> value = expression->Compile(info).AsPtr<Kiwi::Variable>();
 
 	// Compile enum value
-	if (EnumSymbol* enumSym = sym->Cast<EnumSymbol>()) {
-		ValueSymbol* valueSym = sym->Find<ValueSymbol>(name, file);
-		return new Kiwi::Integer(valueSym->KiwiType(), valueSym->value);
+	if (EnumSymbol* enumSym = expression->Symbol<EnumSymbol>()) {
+		ValueSymbol* valueSym = enumSym->Find<ValueSymbol>(name, file);
+
+		Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+		info.AddInstruction(new Kiwi::AssignInstruction(enumSym->KiwiType(), var->Copy(), nullptr));
+		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), Name::Value.name), new Kiwi::Integer(SymbolTable::Byte->KiwiType(), valueSym->value)));
+		//info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), Name::Items.name), new Kiwi::Integer(valueSym->KiwiType(), 0)));
+
+		return var;
 	}
 	// Compile class value
 	else if (sym->Is<ClassSymbol>()) {

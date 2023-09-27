@@ -11,7 +11,7 @@ using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Symbols;
 
-EnumSymbol::EnumSymbol(const UInt size, const bool isSigned, const FileInfo& file) : IntegerSymbol(size, isSigned, file) {
+EnumSymbol::EnumSymbol(const FileInfo& file) : TemplateTypeSymbol(file) {
 	
 }
 
@@ -20,7 +20,7 @@ EnumSymbol::~EnumSymbol() {
 }
 
 EnumSymbol* EnumSymbol::InitializeSpecialize() {
-	EnumSymbol* const sym = new EnumSymbol(size, isSigned, file);
+	EnumSymbol* const sym = new EnumSymbol(file);
 	sym->values = values;
 	return sym;
 }

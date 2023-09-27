@@ -380,8 +380,14 @@ ScanResult Assignment::ScanAssignableValues(ScanInfoStack& info) {
 
 		// Scan assignment
 		if (!errors) {
-			Ptr<TypeExpression> type = new TypeExpression(values[i].type->AbsoluteName());
-			ScanAssignment(node, type, info, node->File());
+			if (values[i].type) {
+				Ptr<TypeExpression> type = new TypeExpression(values[i].type->AbsoluteName());
+				ScanAssignment(node, type, info, node->File());
+			}
+			else {
+				// TODO: error
+				ErrorLog::Error(LogMessage("assign type error"), values[i].value->File());
+			}
 		}
 	}
 

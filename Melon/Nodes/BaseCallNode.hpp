@@ -10,6 +10,8 @@
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/ClassSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/ValueSymbol.h"
+#include "Melon/Symbols/IntegerSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -43,9 +45,14 @@ inline BaseCallNode<T>::~BaseCallNode() {
 
 template <BaseCallType T>
 inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes(TypeSymbol* expected) const {
-	FunctionSymbol* const f = GetFunc(expected);
-
 	List<TypeSymbol*> types;
+
+	if (ValueSymbol* value = EnumValue()) {
+		types.Add(value->ParentType());
+		return types;
+	}
+
+	FunctionSymbol* const f = GetFunc(expected);
 
 	if (f == nullptr) {
 		types.Add(nullptr);
@@ -257,7 +264,25 @@ inline bool BaseCallNode<T>::IsInit() const {
 }
 
 template <BaseCallType T>
+inline ValueSymbol* BaseCallNode<T>::EnumValue() const {
+	Symbols::Symbol* const s = expression->Symbol();
+	return s->Cast<ValueSymbol>();
+}
+
+template <BaseCallType T>
 inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(CompileInfo& info) { // TODO: more accurate arg error lines
+	if (ValueSymbol* value = EnumValue()) {
+		Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+		info.AddInstruction(new Kiwi::AssignInstruction(value->ParentType()->KiwiType(), var->Copy(), nullptr));
+		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), Name::Value.name), new Kiwi::Integer(SymbolTable::Byte->KiwiType(), value->value)));
+		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), Name::Items.name), arguments[0]->Compile(info)));
+
+		CompileResult result;
+		result.func = nullptr;
+		result.instance = var;
+		return result;
+	}
+
 	FunctionSymbol* func = GetFunc();
 
 	Ptr<Kiwi::CallExpression> call = new Kiwi::CallExpression(func->KiwiName());
@@ -333,7 +358,10 @@ template <BaseCallType T>
 inline Ptr<Kiwi::Value> BaseCallNode<T>::Compile(CompileInfo& info) {
 	CompileResult result = CompileWithResult(info);
 
-	if (result.func->returnValues.IsEmpty()) {
+	if (!result.func) {
+		return result.instance;
+	}
+	else if (result.func->returnValues.IsEmpty()) {
 		info.AddInstruction(new Kiwi::CallInstruction(result.call));
 		return result.instance;
 	}

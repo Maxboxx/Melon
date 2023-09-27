@@ -2,14 +2,16 @@
 
 #include "FunctionParser.h"
 #include "IntegerParser.h"
+#include "TypeParser.h"
 
 #include "Melon/Symbols/EnumSymbol.h"
+#include "Melon/Symbols/IntegerSymbol.h"
 #include "Melon/Symbols/ValueSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
 
-#include "Melon/Symbols/Nodes/IntegerAssignNode.h"
+#include "Melon/Symbols/Nodes/EnumAssignNode.h"
 #include "Melon/Symbols/Nodes/IntegerConvertNode.h"
-#include "Melon/Symbols/Nodes/IntegerBinaryOperatorNode.h"
+#include "Melon/Symbols/Nodes/EnumCompareNode.h"
 
 #include "Melon/Nodes/EmptyStatement.h"
 #include "Melon/Nodes/FunctionBody.h"
@@ -52,7 +54,7 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	info.index++;
 
 	// TODO: size
-	EnumSymbol* enumSymbol = new EnumSymbol(1, false, info.GetFileInfo(enumLine));
+	EnumSymbol* enumSymbol = new EnumSymbol(info.GetFileInfo(enumLine));
 
 	Ptr<EnumStatement> en = new EnumStatement(info.scope, info.GetFileInfo(enumLine));
 
@@ -68,6 +70,7 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	for (const EnumValue& value : values) {
 		ValueSymbol* v = new ValueSymbol(info.GetFileInfo(value.line));
 		v->value = value.value;
+		v->type = value.type;
 
 		enumSymbol->AddSymbol(value.name, v);
 		en->values.Add(value.name);
@@ -82,28 +85,21 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	FunctionSymbol* const assign  = enumSymbol->AddSymbol(Name::Assign, new FunctionSymbol(info.GetFileInfo()));
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 	assign1->arguments.Add(enumSymbol->AbsoluteName());
-	assign1->symbolNode = new IntegerAssignNode();
+	assign1->symbolNode = new EnumAssignNode();
 
 	FunctionSymbol* const eq  = enumSymbol->AddSymbol(Name::Equal, new FunctionSymbol(info.GetFileInfo()));
 	FunctionSymbol* const eq1 = eq->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 	eq1->arguments.Add(enumSymbol->AbsoluteName());
 	eq1->arguments.Add(enumSymbol->AbsoluteName());
 	eq1->returnValues.Add(NameList::Bool);
-	eq1->symbolNode = new IntegerBinaryOperatorNode(Name::Equal, enumSymbol->KiwiType());
+	eq1->symbolNode = new EnumCompareNode(Name::Equal);
 
 	FunctionSymbol* const ne  = enumSymbol->AddSymbol(Name::NotEqual, new FunctionSymbol(info.GetFileInfo()));
 	FunctionSymbol* const ne1 = ne->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 	ne1->arguments.Add(enumSymbol->AbsoluteName());
 	ne1->arguments.Add(enumSymbol->AbsoluteName());
 	ne1->returnValues.Add(NameList::Bool);
-	ne1->symbolNode = new IntegerBinaryOperatorNode(Name::NotEqual, enumSymbol->KiwiType());
-
-	FunctionSymbol* const as  = enumSymbol->AddSymbol(Name::As, new FunctionSymbol(info.GetFileInfo()));
-	FunctionSymbol* const as1 = as->AddOverload(new FunctionSymbol(info.GetFileInfo()));
-	as1->arguments.Add(enumSymbol->AbsoluteName());
-	as1->returnValues.Add(enumSymbol->AbsoluteName());
-	as1->isExplicit = false;
-	as1->symbolNode = new IntegerConvertNode(SymbolTable::Byte->KiwiType());
+	ne1->symbolNode = new EnumCompareNode(Name::NotEqual);
 
 	info.index++;
 
@@ -141,7 +137,29 @@ Optional<EnumParser::EnumValue> EnumParser::ParseValue(ParsingInfo& info, ULong&
 	value.name = Name(info.Current().value);
 	value.line = info.Current().line;
 
-	if (info.Next().type == TokenType::Assign) {
+	info.index++;
+
+	if (info.Current().type == TokenType::ParenOpen) {
+		info.index++;
+
+		if (Optional<NameList> type = TypeParser::Parse(info)) {
+			value.type = type;
+		}
+		else {
+			// TODO: error
+			ErrorLog::Error(LogMessage("enum type error"), info.GetFileInfo());
+		}
+
+		if (info.Current().type == TokenType::ParenClose) {
+			info.index++;
+		}
+		else {
+			// TODO: error
+			ErrorLog::Error(LogMessage("enum type error"), info.GetFileInfo());
+		}
+	}
+
+	if (info.Current().type == TokenType::Assign) {
 		info.index++;
 
 		if (Ptr<Integer> num = IntegerParser::Parse(info)) {

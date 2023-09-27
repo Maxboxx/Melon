@@ -1,13 +1,14 @@
 
 include Melon.Console.log
 
-string: hello = "Hello "
-string: world = "World!"
-
-string: hello_world = hello + world
-
-for int: i = 0, < #hello_world do
-	log(hello_world[i])
+enum E
+	none,
+	num(int)
 end
 
-log(hello_world)
+E: a = E.none
+E: b = E.num(3)
+
+log(a)
+log(b)
+

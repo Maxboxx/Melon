@@ -6,6 +6,10 @@
 
 ///N Melon::Nodes
 namespace Melon {
+	namespace Symbols {
+		class ValueSymbol;
+	}
+
 	namespace Nodes {
 		/// Argument attributes for function calls.
 		enum class CallArgAttributes : Boxx::UByte {
@@ -54,6 +58,9 @@ namespace Melon {
 
 			/// {true} if the function is a constructor.
 			bool IsInit() const;
+
+			/// The enum value for enum value constructor.
+			Symbols::ValueSymbol* EnumValue() const;
 
 			/// Compiles a call expression.
 			Ptr<Kiwi::CallExpression> CompileCallExpression(CompileInfo& info);

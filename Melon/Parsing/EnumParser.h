@@ -18,6 +18,7 @@ namespace Melon {
 		private:
 			struct EnumValue {
 				Symbols::Name name;
+				Boxx::Optional<Symbols::NameList> type;
 				Boxx::ULong   value;
 				Boxx::UInt    line;
 			};
