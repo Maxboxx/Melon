@@ -18,11 +18,16 @@ EnumStatement::~EnumStatement() {
 
 }
 
+ScanResult EnumStatement::Scan(ScanInfoStack& info) {
+	symbol->UpdateSize();
+	return ScanResult();
+}
+
 Ptr<Kiwi::Value> EnumStatement::Compile(CompileInfo& info) {
 	Ptr<Kiwi::Struct> struct_ = new Kiwi::Struct(symbol->KiwiName());
 
-	struct_->AddVariable(SymbolTable::Byte->KiwiType(), Name::Value.name);
-	struct_->AddVariable(SymbolTable::Int->KiwiType(), Name::Items.name);
+	struct_->AddVariable(symbol->IdentifierType()->KiwiType(), Name::Value.name);
+	struct_->AddVariable(symbol->ValueKiwiType(), Name::Items.name);
 
 	info.program->AddStruct(struct_);
 
@@ -36,11 +41,11 @@ StringBuilder EnumStatement::ToMelon(const UInt indent) const {
 
 	String tabs = String('\t').Repeat(indent + 1);
 
-	for (UInt i = 0; i < values.Count(); i++) {
-		ValueSymbol* valueSym = symbol->Find<ValueSymbol>(values[i], file);
+	for (UInt i = 0; i < vars.Count(); i++) {
+		ValueSymbol* valueSym = symbol->Find<ValueSymbol>(vars[i], file);
 
 		sb += tabs;
-		sb += values[i].ToString();
+		sb += vars[i].ToString();
 
 		if (valueSym->type) {
 			sb += '(';
@@ -50,7 +55,7 @@ StringBuilder EnumStatement::ToMelon(const UInt indent) const {
 
 		sb += " = ";
 		sb += String::ToString(valueSym->value);
-		sb += i != values.Count() - 1 ? ",\n" : "\n";
+		sb += i != vars.Count() - 1 ? ",\n" : "\n";
 	}
 
 	sb += String('\t').Repeat(indent);

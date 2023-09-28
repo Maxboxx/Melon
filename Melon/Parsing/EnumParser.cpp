@@ -3,11 +3,13 @@
 #include "FunctionParser.h"
 #include "IntegerParser.h"
 #include "TypeParser.h"
+#include "TemplateParser.h"
 
 #include "Melon/Symbols/EnumSymbol.h"
 #include "Melon/Symbols/IntegerSymbol.h"
 #include "Melon/Symbols/ValueSymbol.h"
 #include "Melon/Symbols/FunctionSymbol.h"
+#include "Melon/Symbols/TemplateSymbol.h"
 
 #include "Melon/Symbols/Nodes/EnumAssignNode.h"
 #include "Melon/Symbols/Nodes/IntegerConvertNode.h"
@@ -37,31 +39,11 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	const UInt enumLine = info.Current().line;
 	info.index++;
 
-	if (info.Current().type != TokenType::Name) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.name.enum"), info.GetFileInfo(enumLine));
-	}
+	MapSymbol* temp = info.scope;
 
-	const Name enumName = Name(info.Current().value);
+	Ptr<EnumStatement> en = ParseName(info, enumLine);
 
-	if (lower.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.upper", "enum", info.Current().value), info.GetFileInfo());
-	}
-
-	if (underscore.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.under", "enum", info.Current().value), info.GetFileInfo());
-	}
-
-	info.index++;
-
-	// TODO: size
-	EnumSymbol* enumSymbol = new EnumSymbol(info.GetFileInfo(enumLine));
-
-	Ptr<EnumStatement> en = new EnumStatement(info.scope, info.GetFileInfo(enumLine));
-
-	en->name = enumName;
-
-	enumSymbol = info.scope->AddSymbol(enumName, enumSymbol);
-	en->symbol = enumSymbol;
+	EnumSymbol* enumSymbol = en->symbol;
 
 	info.scope = enumSymbol;
 
@@ -73,13 +55,16 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 		v->type = value.type;
 
 		enumSymbol->AddSymbol(value.name, v);
-		en->values.Add(value.name);
+		enumSymbol->members.Add(value.name);
+		en->vars.Add(value.name);
 	}
 
 	while (FunctionParser::Parse(info, enumSymbol));
 
 	if (info.Current().type != TokenType::End) {
 		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "enum", enumLine), info.GetFileInfoPrev());
+		info.scope = temp;
+		return nullptr;
 	}
 
 	FunctionSymbol* const assign  = enumSymbol->AddSymbol(Name::Assign, new FunctionSymbol(info.GetFileInfo()));
@@ -103,7 +88,7 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 
 	info.index++;
 
-	info.scope = info.scope->Parent<ScopeSymbol>();
+	info.scope = temp;
 	return en;
 }
 
@@ -175,4 +160,64 @@ Optional<EnumParser::EnumValue> EnumParser::ParseValue(ParsingInfo& info, ULong&
 	}
 
 	return value;
+}
+
+Ptr<EnumStatement> EnumParser::ParseName(ParsingInfo& info, const UInt enumLine) {
+	static Regex lower = Regex("^%l");
+	static Regex underscore = Regex("%a_+%a");
+
+	if (info.Current().type != TokenType::Name) {
+		ErrorLog::Error(LogMessage("error.syntax.expected.name.struct"), info.GetFileInfo(enumLine));
+	}
+
+	Name enumName = Name(info.Current().value);
+
+	if (lower.Match(info.Current().value)) {
+		ErrorLog::Info(LogMessage("info.name.upper", "struct", info.Current().value), info.GetFileInfo());
+	}
+
+	if (underscore.Match(info.Current().value)) {
+		ErrorLog::Info(LogMessage("info.name.under", "struct", info.Current().value), info.GetFileInfo());
+	}
+
+	info.index++;
+	EnumSymbol* sym;
+	bool redefine = false;
+
+	if (Symbol* const s = info.scope->Contains(enumName)) {
+		sym = s->Cast<EnumSymbol>();
+		redefine = true;
+	}
+	else {
+		sym = info.scope->AddSymbol(enumName, new EnumSymbol(info.GetFileInfo(enumLine)));
+	}
+
+	if (Optional<List<NameList>> templateList = TemplateParser::ParseDefine(info)) {
+		EnumSymbol* tsym = new EnumSymbol(info.GetFileInfo(enumLine));
+
+		for (const NameList& arg : *templateList) {
+			if (arg[0].IsEmpty()) {
+				tsym->AddSymbol(arg[1], new TemplateSymbol(info.GetFileInfo(enumLine)));
+			}
+
+			tsym->templateArguments.Add(arg);
+		}
+
+		Name templateScope = Name("");
+		templateScope.types = *templateList;
+
+		sym->AddTemplateVariant(tsym);
+		sym = tsym;
+		info.statementNumber++;
+	}
+	else if (redefine) {
+		info.scope->AddSymbol(enumName, sym);
+	}
+
+	Ptr<EnumStatement> sn = new EnumStatement(info.scope, info.GetFileInfo(enumLine));
+	sn->name = enumName;
+	sn->symbol = sym;
+	sym->node = sn;
+
+	return sn;
 }

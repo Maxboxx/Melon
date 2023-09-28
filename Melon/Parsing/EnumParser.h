@@ -23,6 +23,7 @@ namespace Melon {
 				Boxx::UInt    line;
 			};
 
+			static Ptr<Nodes::EnumStatement> ParseName(ParsingInfo& info, const Boxx::UInt enumLine);
 			static Boxx::List<EnumValue> ParseValues(ParsingInfo& info);
 			static Boxx::Optional<EnumValue> ParseValue(ParsingInfo& info, Boxx::ULong& currentValue);
 		};

@@ -16,7 +16,7 @@ namespace Melon {
 			Symbols::Name name;
 
 			/// The values of the enum.
-			Boxx::List<Symbols::Name> values;
+			Boxx::List<Symbols::Name> vars;
 
 			/// The enum symbol.
 			Symbols::EnumSymbol* symbol;
@@ -24,6 +24,7 @@ namespace Melon {
 			EnumStatement(Symbols::Symbol* const scope, const FileInfo& file);
 			~EnumStatement();
 
+			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 		};

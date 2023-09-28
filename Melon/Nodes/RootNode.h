@@ -4,6 +4,7 @@
 #include "Statements.h"
 #include "ClassStatement.h"
 #include "StructStatement.h"
+#include "EnumStatement.h"
 
 #include "Melon/Symbols/TemplateTypeSymbol.h"
 #include "Melon/Symbols/ClassStructBaseSymbol.h"
@@ -53,7 +54,7 @@ namespace Melon {
 			Boxx::Tuple<Symbols::TemplateTypeSymbol*, Boxx::List<Symbols::NameList>> FindTemplateArgs(const Symbols::NameList& name, const Symbols::NameList& scope, const FileInfo& file);
 
 			template <class Sym, class Stat>
-			void SpecializeClassStruct(Sym* sym, Symbols::TemplateTypeSymbol* templateSym, const Boxx::ReplacementMap<Symbols::TypeSymbol*>& templateTypes) {
+			void SpecializeType(Sym* sym, Symbols::TemplateTypeSymbol* templateSym, const Boxx::ReplacementMap<Symbols::TypeSymbol*>& templateTypes) {
 				templateSym->Parent()->Cast<Symbols::TemplateTypeSymbol>()->AddTemplateVariant(sym);
 				templateSym->SpecializeTemplate(sym, templateTypes, this);
 

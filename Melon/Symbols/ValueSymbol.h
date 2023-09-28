@@ -17,8 +17,12 @@ namespace Melon {
 			ValueSymbol(const FileInfo& file);
 			~ValueSymbol();
 
+			/// The type of the value data.
+			TypeSymbol* ValueType();
+
 			virtual TypeSymbol* Type() override;
 			virtual ValueSymbol* InitializeSpecialize() override;
+			virtual void SpecializeTemplate(Symbol* sym, const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) override;
 		};
 	}
 }

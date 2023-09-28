@@ -12,6 +12,7 @@
 #include "Melon/Symbols/TemplateTypeSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/ClassSymbol.h"
+#include "Melon/Symbols/EnumSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/IntegerSymbol.h"
 
@@ -159,11 +160,15 @@ void RootNode::AddTemplateSpecialization(const NameList& name, const NameList& s
 
 	// Create template specialization for struct
 	if (StructSymbol* const sym = s->Cast<StructSymbol>()) {
-		SpecializeClassStruct<StructSymbol, StructStatement>(sym, templateInfo.value1, templateTypes);
+		SpecializeType<StructSymbol, StructStatement>(sym, templateInfo.value1, templateTypes);
 	}
 	// Create template specialization for class
 	else if (ClassSymbol* const sym = s->Cast<ClassSymbol>()) {
-		SpecializeClassStruct<ClassSymbol, ClassStatement>(sym, templateInfo.value1, templateTypes);
+		SpecializeType<ClassSymbol, ClassStatement>(sym, templateInfo.value1, templateTypes);
+	}
+	// Create template specialization for enum
+	else if (EnumSymbol* const sym = s->Cast<EnumSymbol>()) {
+		SpecializeType<EnumSymbol, EnumStatement>(sym, templateInfo.value1, templateTypes);
 	}
 	else {
 		templateInfo.value1->SpecializeTemplate(s, templateTypes, this);

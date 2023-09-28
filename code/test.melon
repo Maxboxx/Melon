@@ -1,14 +1,26 @@
 
 include Melon.Console.log
 
-enum E
+enum Opt<T>
 	none,
-	num(int)
+	value(T)
 end
 
-E: a = E.none
-E: b = E.num(3)
+enum Either<A, B>
+	type1(A),
+	type2(B)
+end
 
-log(a)
-log(b)
+
+Opt<int>: o1 = Opt<int>.none
+Opt<int>: o2 = Opt<int>.value(3)
+
+log(o1)
+log(o2)
+
+Either<bool, int>: e1 = Either<bool, int>.type1(true)
+Either<bool, int>: e2 = Either<bool, int>.type2(5)
+
+log(e1)
+log(e2)
 
