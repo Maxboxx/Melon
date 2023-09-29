@@ -1,26 +1,29 @@
 
 include Melon.Console.log
 
-enum Opt<T>
+enum E
 	none,
-	value(T)
+	number(int),
+	boolean(bool),
+	character(char)
+	
+	fun string: type()
+		ret if self is E.none do
+			"none"
+		elif self is E.number do
+			"number"
+		elif self is E.boolean do
+			"boolean"
+		elif self is E.character do
+			"character"
+		else
+			"?"
+		end
+	end
 end
 
-enum Either<A, B>
-	type1(A),
-	type2(B)
+E[#]: values = {E.none, E.number(3), E.boolean(true), E.character('A')}
+
+for int: i = 0, < #values do
+	log(values[i].type())
 end
-
-
-Opt<int>: o1 = Opt<int>.none
-Opt<int>: o2 = Opt<int>.value(3)
-
-log(o1)
-log(o2)
-
-Either<bool, int>: e1 = Either<bool, int>.type1(true)
-Either<bool, int>: e2 = Either<bool, int>.type2(5)
-
-log(e1)
-log(e2)
-

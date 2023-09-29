@@ -13,6 +13,7 @@
 #include "ObjectInitParser.h"
 #include "TypeParser.h"
 #include "AsParser.h"
+#include "IsParser.h"
 #include "ArrayParser.h"
 
 #include "Melon/Nodes/AnyExpression.h"
@@ -59,6 +60,12 @@ Ptr<Expression> ExpressionParser::Parse(ParsingInfo& info, const bool statement)
 			if (IsBinaryOperator(token.type)) {
 				if (token.type == TokenType::As) {
 					if (Ptr<TypeConversion> node = AsParser::Parse(info)) {
+						node->expression = nodes.Last();
+						nodes[nodes.Count() - 1] = node;
+					}
+				}
+				else if (token.type == TokenType::Is) {
+					if (Ptr<IsExpression> node = IsParser::Parse(info)) {
 						node->expression = nodes.Last();
 						nodes[nodes.Count() - 1] = node;
 					}
@@ -126,6 +133,7 @@ Ptr<Expression> ExpressionParser::Parse(ParsingInfo& info, const bool statement)
 UByte ExpressionParser::Precedence(const TokenType op) {
 	switch (op) {
 		case TokenType::As: return 8;
+		case TokenType::Is: return 8;
 
 		case TokenType::DoubleQuestion: return 7;
 
@@ -167,6 +175,7 @@ UByte ExpressionParser::Precedence(const TokenType op) {
 bool ExpressionParser::IsBinaryOperator(const TokenType op) {
 	switch (op) {
 		case TokenType::As: return true;
+		case TokenType::Is: return true;
 
 		case TokenType::DoubleQuestion: return true;
 
