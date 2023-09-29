@@ -30,6 +30,9 @@ namespace Melon {
 			/// The size of the biggest value.
 			Boxx::UInt ValueSize() const;
 
+			/// True if the enum is a plain enum.
+			bool IsPlain();
+
 			virtual void UpdateSize();
 
 			virtual EnumSymbol* InitializeSpecialize() override;

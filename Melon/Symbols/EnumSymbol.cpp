@@ -41,6 +41,16 @@ UInt EnumSymbol::ValueSize() const {
 	return Size() - IdentifierSize();
 }
 
+bool EnumSymbol::IsPlain() {
+	for (const Symbols::Name& member : members) {
+		if (ValueSymbol* sym = Find<ValueSymbol>(member, FileInfo())) {
+			if (sym->type) return false;
+		}
+	}
+
+	return true;
+}
+
 void EnumSymbol::UpdateSize() {
 	size = IdentifierSize();
 

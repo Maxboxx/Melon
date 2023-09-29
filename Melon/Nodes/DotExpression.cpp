@@ -127,6 +127,14 @@ ScanResult DotExpression::Scan(ScanInfoStack& info) {
 	ScanResult result = expression->Scan(info);
 	info->assign = assign;
 
+	// Scan enum value
+	if (ValueSymbol* val = Expression::Symbol<ValueSymbol>()) {
+		if (val->type) {
+			// TODO: Error
+			//ErrorLog::Error(LogMessage("enum value is missing value argument"), File());
+		}
+	}
+
 	TypeSymbol* const type = expression->Type();
 	if (type == nullptr) return result;
 

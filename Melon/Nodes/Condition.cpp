@@ -73,20 +73,26 @@ void Condition::IncludeScan(ParsingInfo& info) {
 ScanResult Condition::Scan(ScanInfoStack& info) {
 	// Scan assignment condition
 	if (assign) {
-		Ptr<Expression> tempValue = assign->values[0];
+		Ptr<Expression> tempValue = nullptr;
+		Weak<Expression> expr = assign->values[0];
 		
-		TypeSymbol* const type = tempValue->Type();
+		TypeSymbol* const type = expr->Type();
 
 		// Check if the types match
 		if (type && type->AbsoluteName()[0].name == Name::Optional.name) {
+			tempValue = assign->values[0];
 			assign->values[0] = new TypeExpression(type->Find(Name::Value, file)->Type()->AbsoluteName());
 		}
 		else {
-			ErrorLog::Error(LogMessage("error.type.conditional_assign", type->ToString()), tempValue->File());
+			ErrorLog::Error(LogMessage("error.type.conditional_assign", type ? type->ToString() : String("")), expr->File());
 		}
 
 		ScanResult result = assign->Scan(info);
-		assign->values[0] = tempValue;
+
+		if (tempValue) {
+			assign->values[0] = tempValue;
+		}
+
 		return result;
 	}
 	// Scan regular condition

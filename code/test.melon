@@ -2,28 +2,30 @@
 include Melon.Console.log
 
 enum E
-	none,
-	number(int),
-	boolean(bool),
-	character(char)
-	
-	fun string: type()
-		ret if self is E.none do
-			"none"
-		elif self is E.number do
-			"number"
-		elif self is E.boolean do
-			"boolean"
-		elif self is E.character do
-			"character"
-		else
-			"?"
-		end
-	end
+	a,
+	b(int)
 end
 
-E[#]: values = {E.none, E.number(3), E.boolean(true), E.character('A')}
+E: a = E.a
+E: b = E.b(3)
 
-for int: i = 0, < #values do
-	log(values[i].type())
+bool: ba = a is E.a
+bool: bb = b is E.a
+
+log(ba)
+log(bb)
+
+int?: ia = a as? E.b
+int?: ib = b as? E.b
+
+log(ia)
+log(ib)
+
+if int: i = b as? E.b do
+	log(i)
 end
+
+if a is E.a do
+	log("a is E.a")
+end
+

@@ -24,6 +24,13 @@ Ptr<TypeConversion> AsParser::Parse(ParsingInfo& info) {
 	const String asValue = info.Current().value;
 
 	info.index++;
+
+	bool hasQuestion = false;
+	
+	if (!info.EndOfFile() && info.Current().type == TokenType::Question) {
+		hasQuestion = true;
+		info.index++;
+	}
 	
 	Optional<NameList> type = TypeParser::Parse(info);
 
@@ -37,12 +44,11 @@ Ptr<TypeConversion> AsParser::Parse(ParsingInfo& info) {
 		Ptr<TypeConversion> cn = new TypeConversion(info.scope, info.GetFileInfo(asLine));
 		cn->isExplicit = true;
 		cn->type = *type;
+		cn->isOptional = hasQuestion;
 		return cn;
 	}
 	else {
 		ErrorLog::Error(LogMessage("error.syntax.expected.after", "type", LogMessage::Quote(asValue)), info.GetFileInfo(asLine));
+		return nullptr;
 	}
-
-	info.index = startIndex;
-	return nullptr;
 }

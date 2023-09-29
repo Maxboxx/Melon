@@ -72,19 +72,22 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	assign1->arguments.Add(enumSymbol->AbsoluteName());
 	assign1->symbolNode = new EnumAssignNode();
 
-	FunctionSymbol* const eq  = enumSymbol->AddSymbol(Name::Equal, new FunctionSymbol(info.GetFileInfo()));
-	FunctionSymbol* const eq1 = eq->AddOverload(new FunctionSymbol(info.GetFileInfo()));
-	eq1->arguments.Add(enumSymbol->AbsoluteName());
-	eq1->arguments.Add(enumSymbol->AbsoluteName());
-	eq1->returnValues.Add(NameList::Bool);
-	eq1->symbolNode = new EnumCompareNode(Name::Equal);
+	// Only add comparisons if the enum is plain
+	if (enumSymbol->IsPlain()) {
+		FunctionSymbol* const eq  = enumSymbol->AddSymbol(Name::Equal, new FunctionSymbol(info.GetFileInfo()));
+		FunctionSymbol* const eq1 = eq->AddOverload(new FunctionSymbol(info.GetFileInfo()));
+		eq1->arguments.Add(enumSymbol->AbsoluteName());
+		eq1->arguments.Add(enumSymbol->AbsoluteName());
+		eq1->returnValues.Add(NameList::Bool);
+		eq1->symbolNode = new EnumCompareNode(Name::Equal);
 
-	FunctionSymbol* const ne  = enumSymbol->AddSymbol(Name::NotEqual, new FunctionSymbol(info.GetFileInfo()));
-	FunctionSymbol* const ne1 = ne->AddOverload(new FunctionSymbol(info.GetFileInfo()));
-	ne1->arguments.Add(enumSymbol->AbsoluteName());
-	ne1->arguments.Add(enumSymbol->AbsoluteName());
-	ne1->returnValues.Add(NameList::Bool);
-	ne1->symbolNode = new EnumCompareNode(Name::NotEqual);
+		FunctionSymbol* const ne  = enumSymbol->AddSymbol(Name::NotEqual, new FunctionSymbol(info.GetFileInfo()));
+		FunctionSymbol* const ne1 = ne->AddOverload(new FunctionSymbol(info.GetFileInfo()));
+		ne1->arguments.Add(enumSymbol->AbsoluteName());
+		ne1->arguments.Add(enumSymbol->AbsoluteName());
+		ne1->returnValues.Add(NameList::Bool);
+		ne1->symbolNode = new EnumCompareNode(Name::NotEqual);
+	}
 
 	info.index++;
 

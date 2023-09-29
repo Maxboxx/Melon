@@ -112,6 +112,8 @@ inline Optional<List<TypeSymbol*>> BaseCallNode<T>::GetArgumentTypes() const {
 			argTypes.Add(type);
 		}
 		else {
+			// TODO: error
+			ErrorLog::Error(LogMessage("argument types not found"), this->File());
 			return nullptr;
 		}
 	}
@@ -405,7 +407,10 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 
 	// Scan function
 	FunctionSymbol* const func = GetFunc();
-	if (func == nullptr) return ScanResult();
+
+	if (func == nullptr) {
+		return ScanResult();
+	}
 
 	if (info->useFunction) {
 		if (!info.usedFunctions.Contains(func)) {

@@ -4,6 +4,10 @@
 
 ///N Melon::Nodes
 namespace Melon {
+	namespace Symbols {
+		class ValueSymbol;
+	}
+
 	namespace Nodes {
 		/// Expression for converting a value to a different type.
 		class TypeConversion : public Expression {
@@ -17,8 +21,14 @@ namespace Melon {
 			/// {true} if the conversion is explicit.
 			bool isExplicit = false;
 
+			/// {true} if the conversion has an optional return type.
+			bool isOptional = false;
+
 			TypeConversion(Symbols::Symbol* const scope, const FileInfo& file);
 			~TypeConversion();
+
+			/// Gets the value symbol for the type if the type is an enum value.
+			Symbols::ValueSymbol* GetValueSymbol() const;
 
 			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
