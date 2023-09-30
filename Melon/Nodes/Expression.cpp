@@ -28,3 +28,10 @@ Ptr<Expression> Expression::Optimize(OptimizeInfo& info) {
 	return nullptr;
 }
 
+FunctionSymbol* Expression::AssignFunc(TypeSymbol* type) const {
+	return nullptr;
+}
+
+Ptr<Kiwi::Value> Expression::CompileAssignFunc(Symbols::FunctionSymbol* func, Weak<Expression> expr, CompileInfo& info) const {
+	return nullptr;
+}

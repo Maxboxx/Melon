@@ -35,7 +35,7 @@ TypeSymbol* FunctionSymbol::ArgumentType(const UInt index) {
 	if (index >= arguments.Count()) return nullptr;
 	
 	if (symbolNode) {
-		return SymbolTable::FindAbsolute<TypeSymbol>(arguments[index], file);
+		return SymbolTable::Find<TypeSymbol>(arguments[index], AbsoluteName(), file);
 	}
 	else if (Symbol* const arg = Symbol::Find(arguments[index], file)) {
 		return arg->Type();

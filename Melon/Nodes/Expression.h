@@ -3,6 +3,7 @@
 #include "Node.h"
 
 #include "Melon/Symbols/TypeSymbol.h"
+#include "Melon/Symbols/FunctionSymbol.h"
 
 ///N Melon::Nodes
 namespace Melon {
@@ -39,6 +40,12 @@ namespace Melon {
 			/// Optimizes the expression.
 			///R A new optimized node or {nullptr} if the node was not optimized.
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info);
+
+			/// Gets the assign function for the expression.
+			virtual Symbols::FunctionSymbol* AssignFunc(Symbols::TypeSymbol* type) const;
+
+			/// Compiles the assign function.
+			virtual Ptr<Kiwi::Value> CompileAssignFunc(Symbols::FunctionSymbol* func, Weak<Expression> expr, CompileInfo& info) const;
 		};
 
 		/// A weak expression.

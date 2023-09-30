@@ -5,6 +5,7 @@
 #include "Melon/Nodes/NameExpression.h"
 #include "Melon/Nodes/DotExpression.h"
 #include "Melon/Nodes/DiscardExpression.h"
+#include "Melon/Nodes/IndexExpression.h"
 
 using namespace Boxx;
 
@@ -21,8 +22,9 @@ Ptr<Expression> AssignableParser::Parse(ParsingInfo& info) {
 	}
 	// Parse expression
 	else if (Ptr<Expression> node = ExpressionParser::Parse(info, true)) {
-		if (node.Is<NameExpression>()) return node;
-		if (node.Is<DotExpression>())  return node;
+		if (node.Is<NameExpression>())  return node;
+		if (node.Is<DotExpression>())   return node;
+		if (node.Is<IndexExpression>()) return node;
 
 		info.index = startIndex;
 		return nullptr;

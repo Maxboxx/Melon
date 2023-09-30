@@ -34,6 +34,30 @@ FunctionSymbol* IndexExpression::GetFunc() const {
 	return type->FindMethod(Name::Index, argTypes, File());
 }
 
+FunctionSymbol* IndexExpression::AssignFunc(TypeSymbol* type) const {
+	List<TypeSymbol*> argTypes;
+
+	for (const Ptr<Expression>& arg : args) {
+		argTypes.Add(arg->Type());
+	}
+
+	argTypes.Add(type);
+
+	TypeSymbol* exprType = expression->Type();
+	return exprType->FindMethod(Name::Index, argTypes, File());
+}
+
+Ptr<Kiwi::Value> IndexExpression::CompileAssignFunc(FunctionSymbol* func, Weak<Expression> expr, CompileInfo& info) const {
+	if (!func->symbolNode) return nullptr;
+
+	List<Weak<Expression>> args;
+	args.Add(expression);
+	args.Add(this->args[0]);
+	args.Add(expr);
+
+	return func->symbolNode->Compile(args, info, false);
+}
+
 Symbol* IndexExpression::Symbol() const {
 	return Type();
 }
@@ -85,7 +109,7 @@ StringBuilder IndexExpression::ToMelon(const UInt indent) const {
 
 	for (UInt i = 0; i < args.Count(); i++) {
 		if (i > 0) builder += ", ";
-		args[i]->ToMelon(indent);
+		builder += args[i]->ToMelon(indent);
 	}
 
 	builder += ']';

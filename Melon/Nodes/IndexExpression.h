@@ -21,6 +21,9 @@ namespace Melon {
 
 			Symbols::FunctionSymbol* GetFunc() const;
 
+			virtual Symbols::FunctionSymbol* AssignFunc(Symbols::TypeSymbol* type) const override;
+			virtual Ptr<Kiwi::Value> CompileAssignFunc(Symbols::FunctionSymbol* func, Weak<Expression> value, CompileInfo& info) const override;
+
 			virtual Symbols::Symbol* Symbol() const override;
 			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;

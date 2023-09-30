@@ -1,31 +1,11 @@
 
 include Melon.Console.log
 
-enum E
-	a,
-	b(int)
-end
+int[#]: array = {1, 2, 3, 4}
 
-E: a = E.a
-E: b = E.b(3)
+array[2] = 45
 
-bool: ba = a is E.a
-bool: bb = b is E.a
-
-log(ba)
-log(bb)
-
-int?: ia = a as? E.b
-int?: ib = b as? E.b
-
-log(ia)
-log(ib)
-
-if int: i = b as? E.b do
-	log(i)
-end
-
-if a is E.a do
-	log("a is E.a")
+for int: i = 0, < #array do
+	log(array[i])
 end
 

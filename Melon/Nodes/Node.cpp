@@ -154,6 +154,10 @@ ScanResult Node::ScanAssignment(Weak<Expression> assignable, Weak<Expression> va
 }
 
 Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {
+	if (FunctionSymbol* assignFunc = assignable->AssignFunc(value->Type())) {
+		return assignable->CompileAssignFunc(assignFunc, value, info);
+	}
+	
 	List<TypeSymbol*> args;
 	args.Add(value->Type(assignable->Type()));
 

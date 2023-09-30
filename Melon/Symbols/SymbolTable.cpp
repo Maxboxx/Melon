@@ -29,6 +29,7 @@
 #include "Nodes/OptionalNotNode.h"
 #include "Nodes/ClassAssignNode.h"
 #include "Nodes/IndexGetNode.h"
+#include "Nodes/IndexSetNode.h"
 #include "Nodes/LengthNode.h"
 #include "Nodes/StructAssignNode.h"
 #include "Nodes/StringConcatNode.h"
@@ -837,6 +838,12 @@ void SymbolTable::SetupArray() {
 	index1->arguments.Add(arr->AbsoluteName());
 	index1->arguments.Add(NameList::UInt);
 	index1->returnValues.Add(args[0]);
+
+	FunctionSymbol* const index2 = index->AddOverload(new FunctionSymbol(FileInfo()));
+	index2->symbolNode = new IndexSetNode();
+	index2->arguments.Add(arr->AbsoluteName());
+	index2->arguments.Add(NameList::UInt);
+	index2->arguments.Add(args[0]);
 
 	FunctionSymbol* const len  = arr->AddSymbol(Name::Len, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const len1 = len->AddOverload(new FunctionSymbol(FileInfo()));
