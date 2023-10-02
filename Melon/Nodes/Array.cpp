@@ -53,6 +53,17 @@ Ptr<Kiwi::Value> Melon::Nodes::Array::Compile(CompileInfo& info) {
 
 	if (type == nullptr) return nullptr;
 
+	if (type->Parent()->Name().name == Name::Array.name) {
+		return CompileArray(type, info);
+	}
+	else if (type->Parent()->Name().name == Name::List.name) {
+		return CompileList(type, info);
+	}
+	
+	return nullptr;
+}
+
+Ptr<Kiwi::Value> Melon::Nodes::Array::CompileArray(TemplateTypeSymbol* type, CompileInfo& info) {
 	Ptr<Kiwi::Variable> arr = new Kiwi::Variable(info.NewRegister());
 
 	VariableSymbol* lenSym = type->Find<VariableSymbol>(Name::Length, file);
@@ -75,6 +86,65 @@ Ptr<Kiwi::Value> Melon::Nodes::Array::Compile(CompileInfo& info) {
 	info.PopExpectedType();
 
 	return arr;
+}
+
+Ptr<Kiwi::Value> Melon::Nodes::Array::CompileList(TemplateTypeSymbol* type, CompileInfo& info) {
+	VariableSymbol* lenSym   = type->Find<VariableSymbol>(Name::Length, File());
+	VariableSymbol* capSym   = type->Find<VariableSymbol>(Name::Capacity, File());
+	VariableSymbol* itemsSym = type->Find<VariableSymbol>(Name::Items, File());
+	TypeSymbol*     itemType = type->TemplateArgument(0);
+
+	Ptr<Kiwi::Variable> list = new Kiwi::Variable(info.NewRegister());
+
+	info.AddInstruction(new Kiwi::AssignInstruction(
+		type->KiwiType(), list->Copy(),
+		new Kiwi::AllocExpression(type->MemorySize())
+	));
+
+	UInt size = Math::Max(4U, items.Count());
+
+	info.AddInstruction(new Kiwi::AssignInstruction(
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Length.name),
+		new Kiwi::Integer(lenSym->KiwiType(), items.Count())
+	));
+
+	info.AddInstruction(new Kiwi::AssignInstruction(
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Capacity.name),
+		new Kiwi::Integer(capSym->KiwiType(), size)
+	));
+
+	Ptr<Kiwi::Variable> memSize = new Kiwi::Variable(info.NewRegister());
+
+	info.AddInstruction(new Kiwi::AssignInstruction(
+		lenSym->KiwiType(), memSize->Copy(),
+		new Kiwi::Integer(lenSym->KiwiType(), size * itemType->Size())
+	));
+
+	Ptr<Kiwi::Variable> itemsArr = new Kiwi::Variable(info.NewRegister());
+
+	info.AddInstruction(new Kiwi::AssignInstruction(
+		itemsSym->KiwiType(),
+		itemsArr->Copy(),
+		new Kiwi::AllocExpression(memSize)
+	));
+
+	Kiwi::Type kiwiType = itemType->KiwiType();
+
+	info.PushExpectedType(itemType);
+
+	for (UInt i = 0; i < items.Count(); i++) {
+		Ptr<Kiwi::Value> value = items[i]->Compile(info);
+		info.AddInstruction(new Kiwi::OffsetAssignInstruction(new Kiwi::DerefVariable(itemsArr->name), value, kiwiType, i));
+	}
+
+	info.PopExpectedType();
+
+	info.AddInstruction(new Kiwi::AssignInstruction(
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Items.name),
+		itemsArr
+	));
+
+	return list;
 }
 
 StringBuilder Melon::Nodes::Array::ToMelon(const UInt indent) const {

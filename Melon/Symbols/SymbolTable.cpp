@@ -459,6 +459,7 @@ void SymbolTable::Setup() {
 	SetupString();
 	SetupOptional();
 	SetupArray();
+	SetupList();
 }
 
 IntegerSymbol* SymbolTable::Byte   = nullptr;
@@ -843,11 +844,73 @@ void SymbolTable::SetupArray() {
 	index2->symbolNode = new IndexSetNode();
 	index2->arguments.Add(arr->AbsoluteName());
 	index2->arguments.Add(NameList::UInt);
-	index2->arguments.Add(args[0]);
+	index2->returnValues.Add(args[0]);
+	index2->attributes = FunctionAttributes::Set;
 
 	FunctionSymbol* const len  = arr->AddSymbol(Name::Len, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const len1 = len->AddOverload(new FunctionSymbol(FileInfo()));
 	len1->symbolNode = new LengthNode();
 	len1->arguments.Add(arr->AbsoluteName());
+	len1->returnValues.Add(NameList::UInt);
+}
+
+void SymbolTable::SetupList() {
+	ClassSymbol* const listSym = symbols->AddSymbol(Name::List, new ClassSymbol(FileInfo()));
+	List<NameList> args;
+	args.Add(NameList().Add(Name("")).Add(Name("T")));
+	Name scope = Name("");
+	scope.types = args;
+
+	ClassSymbol* const list = new ClassSymbol(FileInfo());
+	list->templateArguments.Add(args[0]);
+	listSym->AddTemplateVariant(list);
+
+	TemplateSymbol* const templateSym = list->AddSymbol(Name("T"), new TemplateSymbol(FileInfo()));
+	templateSym->type = templateSym->AbsoluteName();
+
+	PtrSymbol* const ptr = list->AddSymbol(Name::Array, new PtrSymbol(FileInfo()));
+	ptr->type = templateSym->type;
+
+	VariableSymbol* const length = list->AddSymbol(Name::Length, new VariableSymbol(FileInfo()));
+	length->type = NameList::UInt;
+	list->members.Add(Name::Length);
+
+	VariableSymbol* const capacity = list->AddSymbol(Name::Capacity, new VariableSymbol(FileInfo()));
+	capacity->type = NameList::UInt;
+	list->members.Add(Name::Capacity);
+
+	VariableSymbol* const items = list->AddSymbol(Name::Items, new VariableSymbol(FileInfo()));
+	items->type = ptr->AbsoluteName();
+	list->members.Add(Name::Items);
+
+	FunctionSymbol* const assign  = list->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign1->symbolNode = new ClassAssignNode();
+	assign1->arguments.Add(list->AbsoluteName());
+
+	FunctionSymbol* const index  = list->AddSymbol(Name::Index, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const index1 = index->AddOverload(new FunctionSymbol(FileInfo()));
+	index1->symbolNode = new IndexGetNode();
+	index1->arguments.Add(list->AbsoluteName());
+	index1->arguments.Add(NameList::UInt);
+	index1->returnValues.Add(args[0]);
+
+	FunctionSymbol* const index2 = index->AddOverload(new FunctionSymbol(FileInfo()));
+	index2->symbolNode = new IndexSetNode();
+	index2->arguments.Add(list->AbsoluteName());
+	index2->arguments.Add(NameList::UInt);
+	index2->returnValues.Add(args[0]);
+	index2->attributes = FunctionAttributes::Set;
+
+	FunctionSymbol* const indexAdd = index->AddOverload(new FunctionSymbol(FileInfo()));
+	indexAdd->symbolNode = new IndexSetNode();
+	indexAdd->arguments.Add(list->AbsoluteName());
+	indexAdd->returnValues.Add(args[0]);
+	indexAdd->attributes = FunctionAttributes::Set;
+
+	FunctionSymbol* const len  = list->AddSymbol(Name::Len, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const len1 = len->AddOverload(new FunctionSymbol(FileInfo()));
+	len1->symbolNode = new LengthNode();
+	len1->arguments.Add(list->AbsoluteName());
 	len1->returnValues.Add(NameList::UInt);
 }

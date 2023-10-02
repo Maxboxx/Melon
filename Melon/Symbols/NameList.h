@@ -213,8 +213,14 @@ namespace Melon {
 			/// The array name.
 			static const Name Array;
 
+			/// The list name.
+			static const Name List;
+
 			/// The {<length>} name.
 			static const Name Length;
+
+			/// The {<capacity>} name.
+			static const Name Capacity;
 
 			/// The {<items>} name.
 			static const Name Items;

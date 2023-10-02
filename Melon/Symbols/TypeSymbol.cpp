@@ -77,17 +77,17 @@ FunctionSymbol* TypeSymbol::ExplicitConversionFrom(TypeSymbol* const type) {
 	return Contains<FunctionSymbol>(as);
 }
 
-FunctionSymbol* TypeSymbol::FindMethod(const Symbols::Name& name, const List<TypeSymbol*>& args, const FileInfo& file) {
+FunctionSymbol* TypeSymbol::FindMethod(const Symbols::Name& name, const List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr) {
 	if (FunctionSymbol* const f = Find<FunctionSymbol>(name, file)) {
-		return f->FindMethodOverload(args, file);
+		return f->FindMethodOverload(args, file, attr);
 	}
 
 	return nullptr;
 }
 
-FunctionSymbol* TypeSymbol::FindMethod(const Symbols::Name& name, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+FunctionSymbol* TypeSymbol::FindMethod(const Symbols::Name& name, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr) {
 	if (FunctionSymbol* const f = Find<FunctionSymbol>(name, file)) {
-		return f->FindMethodOverload(templateArgs, args, file);
+		return f->FindMethodOverload(templateArgs, args, file, attr);
 	}
 
 	return nullptr;

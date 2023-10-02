@@ -113,12 +113,12 @@ Symbol* FunctionSymbol::FindSymbol(const NameList& scopeList, const UInt index, 
 	return nullptr;
 }
 
-FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
-	return FindOverload(args, nullptr, file);
+FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr) {
+	return FindOverload(args, nullptr, file, attr);
 }
 
-FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
-	return FindOverload(templateArgs, args, nullptr, file);
+FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr) {
+	return FindOverload(templateArgs, args, nullptr, file, attr);
 }
 
 FunctionSymbol* FunctionSymbol::FindStaticOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
@@ -129,16 +129,16 @@ FunctionSymbol* FunctionSymbol::FindStaticOverload(const List<TypeSymbol*>& temp
 	return FindOverload(templateArgs, args, true, file);
 }
 
-FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& args, const FileInfo& file) {
+FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr) {
 	List<TypeSymbol*> argList = args.Copy();
 	argList.Insert(0, Parent<TypeSymbol>());
-	return FindOverload(argList, false, file);
+	return FindOverload(argList, false, file, attr);
 }
 
-FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+FunctionSymbol* FunctionSymbol::FindMethodOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr) {
 	List<TypeSymbol*> argList = args.Copy();
 	argList.Insert(0, Parent<TypeSymbol>());
-	return FindOverload(templateArgs, argList, false, file);
+	return FindOverload(templateArgs, argList, false, file, attr);
 }
 
 Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(FunctionSymbol* const func, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
@@ -230,7 +230,7 @@ Tuple<List<TypeSymbol*>, List<NameList>> FunctionSymbol::FindTemplateArguments(F
 	return types;
 }
 
-FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overloads, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file) {
+FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overloads, const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr) {
 	FunctionSymbol* best = nullptr;
 
 	UInt bestNum    = Math::UIntMax();
@@ -240,6 +240,8 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 	ReplacementMap<TypeSymbol*> replacement;
 
 	for (FunctionSymbol* const overload : overloads) {
+		if (overload->attributes != attr) continue;
+
 		bool perfect = true;
 		bool match   = true;
 
@@ -335,10 +337,11 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<FunctionSymbol*>& overlo
 	}
 }
 
-FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file) {
+FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file, FunctionAttributes attr) {
 	List<FunctionSymbol*> matches;
 
 	for (FunctionSymbol* const overload : overloads) {
+		if (overload->attributes != attr) continue;
 		if (isStatic && ((overload->modifiers & FunctionModifiers::Static) != FunctionModifiers::None) != isStatic) continue;
 		if (overload->RequiredArguments() > args.Count()) continue;
 		if (overload->arguments.Count() < args.Count()) continue;
@@ -368,10 +371,10 @@ FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& args, cons
 		}
 	}
 
-	return FindOverload(matches, List<TypeSymbol*>(), args, file);
+	return FindOverload(matches, List<TypeSymbol*>(), args, file, attr);
 }
 
-FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file) {
+FunctionSymbol* FunctionSymbol::FindOverload(const List<TypeSymbol*>& templateArgs, const List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file, FunctionAttributes attr) {
 	UInt bestNum = 0;
 	bool ambig = false;
 
@@ -461,6 +464,7 @@ FunctionSymbol* FunctionSymbol::InitializeSpecialize() {
 	sym->isExplicit = isExplicit;
 	sym->name       = name;
 	sym->symbolNode = symbolNode;
+	sym->attributes = attributes;
 	return sym;
 }
 

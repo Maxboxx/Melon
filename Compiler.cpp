@@ -47,7 +47,7 @@ int main() {
 		MelonCompiler::Compile(options);
 		ErrorLog::LogErrors();
 	}
-	catch (FatalLoggerError& e) {
+	catch (FatalLoggerError&) {
 		ErrorLog::LogErrors();
 	}
 	//*
@@ -55,7 +55,7 @@ int main() {
 		try {
 			ErrorLog::Fatal(LogMessage::Message(e.Name() + ": " + e.Message()), FileInfo());
 		}
-		catch (FatalLoggerError e) {
+		catch (FatalLoggerError) {
 			ErrorLog::LogErrors();
 		}
 	}

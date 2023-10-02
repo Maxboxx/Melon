@@ -11,7 +11,8 @@ namespace Melon {
 		class FunctionSymbol;
 		class TemplateSymbol;
 		class TemplateTypeSymbol;
-
+		enum class FunctionAttributes : Boxx::UByte;
+		 
 		/// A symbol for a type.
 		class TypeSymbol : public MapSymbol {
 		public:
@@ -45,10 +46,10 @@ namespace Melon {
 			FunctionSymbol* ExplicitConversionFrom(TypeSymbol* const type);
 
 			/// Finds a method of the current type.
-			FunctionSymbol* FindMethod(const Symbols::Name& name, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindMethod(const Symbols::Name& name, const Boxx::List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr = FunctionAttributes(0));
 
 			/// Finds a method of the current type.
-			FunctionSymbol* FindMethod(const Symbols::Name& name, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindMethod(const Symbols::Name& name, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr = FunctionAttributes(0));
 
 			/// Finds a unary operator of the current type.
 			FunctionSymbol* FindUnaryOperator(const Symbols::Name& name, const FileInfo& file);

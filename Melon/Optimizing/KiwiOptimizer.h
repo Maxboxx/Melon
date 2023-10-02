@@ -39,7 +39,7 @@ namespace Melon {
 			struct CombineInfo {
 				OptimizerInstruction inst;
 				KiwiOld::Argument arg1, arg2;
-				Boxx::UInt nextAssign1, nextAssign2;
+				Boxx::UInt nextAssign1{}, nextAssign2{};
 
 				Boxx::ReplacementMap<KiwiOld::Register> replacement;
 				Boxx::Optional<Boxx::Tuple<KiwiOld::Register, KiwiOld::Register>> nextReplacement;

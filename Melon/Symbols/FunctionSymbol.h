@@ -68,10 +68,10 @@ namespace Melon {
 			FunctionSymbol* AddOverload(FunctionSymbol* const overload);
 
 			/// Finds the best match for a function overload.
-			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr = FunctionAttributes::None);
 
 			/// Finds the best match for a function overload.
-			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr = FunctionAttributes::None);
 
 			/// Finds the best match for a static function overload.
 			FunctionSymbol* FindStaticOverload(const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
@@ -80,10 +80,10 @@ namespace Melon {
 			FunctionSymbol* FindStaticOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 
 			/// Finds the best match for a method overload.
-			FunctionSymbol* FindMethodOverload(const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindMethodOverload(const Boxx::List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr = FunctionAttributes::None);
 
 			/// Finds the best match for a method overload.
-			FunctionSymbol* FindMethodOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
+			FunctionSymbol* FindMethodOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr = FunctionAttributes::None);
 
 			/// The template arguments of the function.
 			Boxx::List<NameList> templateArguments;
@@ -127,9 +127,9 @@ namespace Melon {
 
 			Boxx::Tuple<Boxx::List<TypeSymbol*>, Boxx::List<NameList>> FindTemplateArguments(FunctionSymbol* const func, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
 			
-			FunctionSymbol* FindOverload(const Boxx::List<FunctionSymbol*>& overloads, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file);
-			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file);
-			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file);
+			FunctionSymbol* FindOverload(const Boxx::List<FunctionSymbol*>& overloads, const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const FileInfo& file, FunctionAttributes attr = FunctionAttributes::None);
+			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file, FunctionAttributes attr = FunctionAttributes::None);
+			FunctionSymbol* FindOverload(const Boxx::List<TypeSymbol*>& templateArgs, const Boxx::List<TypeSymbol*>& args, const Boxx::Optional<bool>& isStatic, const FileInfo& file, FunctionAttributes attr = FunctionAttributes::None);
 
 		private:
 			friend TypeSymbol;

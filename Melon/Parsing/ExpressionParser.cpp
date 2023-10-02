@@ -323,7 +323,7 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 				return node;
 			}
 		}
-		catch (CompileError& e) {
+		catch (CompileError&) {
 			info.index = startIndex;
 		}
 
@@ -333,7 +333,7 @@ Ptr<Expression> ExpressionParser::ParseChainOperand(ParsingInfo& info, const boo
 				return node;
 			}
 		}
-		catch (CompileError& e) {
+		catch (CompileError&) {
 			info.index = startIndex;
 		}
 

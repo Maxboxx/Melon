@@ -63,7 +63,7 @@ namespace Melon {
 				Boxx::String block;
 
 				/// The line of the block.
-				Boxx::UInt blockLine;
+				Boxx::UInt blockLine{};
 
 				/// Creates an info object for scopes that are not required.
 				Info() {

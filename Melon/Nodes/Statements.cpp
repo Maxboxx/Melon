@@ -1,14 +1,14 @@
 #include "Statements.h"
 
-#include "LoopStatement.h";
-#include "MatchStatement.h";
-#include "RepeatStatement.h";
-#include "GuardStatement.h";
-#include "FunctionBody.h";
-#include "StructStatement.h";
-#include "EnumStatement.h";
-#include "DoStatement.h";
-#include "EmptyStatement.h";
+#include "LoopStatement.h"
+#include "MatchStatement.h"
+#include "RepeatStatement.h"
+#include "GuardStatement.h"
+#include "FunctionBody.h"
+#include "StructStatement.h"
+#include "EnumStatement.h"
+#include "DoStatement.h"
+#include "EmptyStatement.h"
 
 #include "Melon/Parsing/Parser.h"
 

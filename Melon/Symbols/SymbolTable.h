@@ -18,6 +18,7 @@ namespace Melon {
 		class VariableSymbol;
 		class FunctionSymbol;
 		class StructSymbol;
+		class PtrSymbol;
 
 		/// A table containing all symbols.
 		class SymbolTable {
@@ -216,16 +217,18 @@ namespace Melon {
 			static void SetupNil();
 			static void SetupOptional();
 			static void SetupArray();
+			static void SetupList();
 			static void SetupString();
 
 			friend Melon::Nodes::RootNode;
 			friend Symbol;
 			friend FunctionSymbol;
 			friend VariableSymbol;
+			friend PtrSymbol;
 
 			struct TemplateInfo {
 				NameList name;
-				Symbol* scope;
+				Symbol* scope{};
 				FileInfo file;
 			};
 

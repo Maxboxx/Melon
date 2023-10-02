@@ -41,10 +41,8 @@ FunctionSymbol* IndexExpression::AssignFunc(TypeSymbol* type) const {
 		argTypes.Add(arg->Type());
 	}
 
-	argTypes.Add(type);
-
 	TypeSymbol* exprType = expression->Type();
-	return exprType->FindMethod(Name::Index, argTypes, File());
+	return exprType->FindMethod(Name::Index, argTypes, File(), FunctionAttributes::Set);
 }
 
 Ptr<Kiwi::Value> IndexExpression::CompileAssignFunc(FunctionSymbol* func, Weak<Expression> expr, CompileInfo& info) const {

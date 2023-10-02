@@ -5,10 +5,10 @@
 #include "ScopeParser.h"
 #include "TemplateParser.h"
 
-#include "Melon/Symbols/MapSymbol.h";
-#include "Melon/Symbols/TemplateSymbol.h";
-#include "Melon/Symbols/StructSymbol.h";
-#include "Melon/Symbols/EnumSymbol.h";
+#include "Melon/Symbols/MapSymbol.h"
+#include "Melon/Symbols/TemplateSymbol.h"
+#include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/EnumSymbol.h"
 
 #include "Melon/Nodes/FunctionBody.h"
 

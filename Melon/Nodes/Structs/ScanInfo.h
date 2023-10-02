@@ -2,7 +2,7 @@
 
 #include "ScopeInfo.h"
 
-#include "Melon/Errors.h";
+#include "Melon/Errors.h"
 
 namespace Melon {
 	namespace Symbols {

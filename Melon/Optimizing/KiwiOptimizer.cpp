@@ -766,24 +766,24 @@ void KiwiOptimizer::CombinePushPop(List<OptimizerInstruction>& instructions) {
 
 			// Push/pop == 0
 			if (combinedNum == 0) {
-				OffsetStackPointer(instructions, i + 1, u - 1, num2);
+				OffsetStackPointer(instructions, i + 1, u - 1, (UInt)num2);
 				instructions.RemoveAt(u);
 				instructions.RemoveAt(i);
 				i--;
 			}
 			// Push
 			else if (combinedNum > 0) {
-				OffsetStackPointer(instructions, i + 1, u - 1, num2);
+				OffsetStackPointer(instructions, i + 1, u - 1, (UInt)num2);
 				instructions[i].instruction.type = InstructionType::Push;
-				instructions[i].instruction.sizes[0] = combinedNum;
+				instructions[i].instruction.sizes[0] = (UByte)combinedNum;
 				instructions.RemoveAt(u);
 				i--;
 			}
 			// Pop
 			else if (combinedNum < 0) {
-				OffsetStackPointer(instructions, i + 1, u - 1, -num);
+				OffsetStackPointer(instructions, i + 1, u - 1, (UInt)-num);
 				instructions[u].instruction.type = InstructionType::Pop;
-				instructions[u].instruction.sizes[0] = -combinedNum;
+				instructions[u].instruction.sizes[0] = (UByte)-combinedNum;
 				instructions.RemoveAt(i);
 				i--;
 			}

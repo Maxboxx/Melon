@@ -25,14 +25,14 @@ namespace Melon {
 			struct Argument {
 				Symbols::Name name;
 				Symbols::NameList type;
-				Symbols::VariableModifiers modifiers;
+				Symbols::VariableModifiers modifiers{};
 			};
 
 			struct FunctionHead {
 				Symbols::FunctionModifiers  modifiers;
 				Symbols::FunctionAttributes attributes;
-				bool isMethod;
-				bool isOperator;
+				bool isMethod{};
+				bool isOperator{};
 				Symbols::Name name;
 				Boxx::List<Argument> arguments;
 				Boxx::List<Symbols::NameList> templateArgs;

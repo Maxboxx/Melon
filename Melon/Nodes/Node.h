@@ -11,7 +11,7 @@
 #include "Boxx/Math.h"
 #include "Boxx/Error.h"
 #include "Boxx/String.h"
-#include "Boxx/StringBuilder.h";
+#include "Boxx/StringBuilder.h"
 
 #include "Kiwi/Old/Kiwi.h"
 #include "Kiwi/Node.h"

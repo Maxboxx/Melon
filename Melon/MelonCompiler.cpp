@@ -99,7 +99,7 @@ CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 
 			if (opti.Contains("ast")) {
 				if (opti["ast"].Type() == MangoType::Number) {
-					options.astOptimizationPasses = (double)opti["ast"];
+					options.astOptimizationPasses = (Boxx::UInt)(double)opti["ast"];
 				}
 				else {
 					options.astOptimizationPasses = (bool)opti["ast"] ? Math::UIntMax() : 0;
@@ -108,7 +108,7 @@ CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 
 			if (opti.Contains("kiwi")) {
 				if (opti["kiwi"].Type() == MangoType::Number) {
-					options.kiwiOptimizationPasses = (double)opti["kiwi"];
+					options.kiwiOptimizationPasses = (Boxx::UInt)(double)opti["kiwi"];
 				}
 				else {
 					options.kiwiOptimizationPasses = (bool)opti["kiwi"] ? Math::UIntMax() : 0;
@@ -117,8 +117,8 @@ CompilerOptions CompilerOptions::LoadFromFile(const String& mangoFile) {
 		}
 		else if (optimizing.Type() == MangoType::Number) {
 			double passes = optimizing;
-			options.astOptimizationPasses = passes;
-			options.kiwiOptimizationPasses = passes;
+			options.astOptimizationPasses = (Boxx::UInt)passes;
+			options.kiwiOptimizationPasses = (Boxx::UInt)passes;
 		}
 		else if (optimizing.Type() == MangoType::Boolean) {
 			UInt passes = (bool)optimizing ? Math::UIntMax() : 0;
@@ -182,7 +182,7 @@ void MelonCompiler::Compile(const CompilerOptions& options) {
 			}
 		}
 	}
-	catch (CompileError& e) {
+	catch (CompileError&) {
 		ErrorLog::Fatal(LogMessage("fatal.compile"), FileInfo());
 	}
 }

@@ -20,7 +20,7 @@ namespace Melon {
 		///H Structs
 
 		/// A stack of ScanInfo values.
-		class ScanInfoStack {
+		struct ScanInfoStack {
 		public:
 			ScanInfoStack() {
 				stack.Push(ScanInfo());

@@ -34,7 +34,7 @@ namespace Melon {
 
 		private:
 			struct Value {
-				Symbols::TypeSymbol* type;
+				Symbols::TypeSymbol* type{};
 				Weak<Expression> value;
 
 				Value() {

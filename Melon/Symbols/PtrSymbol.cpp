@@ -20,10 +20,34 @@ PtrSymbol::~PtrSymbol() {
 
 }
 
+TypeSymbol* PtrSymbol::PtrType() {
+	return SymbolTable::FindAbsolute<TypeSymbol>(this->type, file);
+}
+
 Kiwi::Type PtrSymbol::KiwiType() {
-	return Kiwi::Type(1, SymbolTable::FindAbsolute(type, file)->KiwiName());
+	return Kiwi::Type(1, PtrType()->KiwiName());
 }
 
 TypeSymbol* PtrSymbol::InitializeSpecialize() {
 	return new PtrSymbol(file);
+}
+
+void PtrSymbol::SpecializeTemplate(Symbol* initSym, const Boxx::ReplacementMap<TypeSymbol*>& replacement, Melon::Nodes::RootNode* const root) {
+	PtrSymbol* sym = initSym->Cast<PtrSymbol>();
+	TypeSymbol* type = PtrType();
+
+	if (type == nullptr && this->type.HasTemplates()) {
+		root->AddTemplateSpecialization(this->type, Parent()->AbsoluteName(), file, false);
+		type = PtrType();
+	}
+
+	sym->type = ReplaceTypeScope(type, replacement, file);
+
+	if (sym->type.HasTemplates() && !sym->PtrType()) {
+		SymbolTable::TemplateInfo info;
+		info.file  = sym->file;
+		info.name  = sym->type;
+		info.scope = sym->Parent();
+		SymbolTable::templateSymbols.Add(info);
+	}
 }

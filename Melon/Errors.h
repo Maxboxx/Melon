@@ -82,7 +82,7 @@ namespace Melon {
 		};
 
 		struct Message {
-			LogLevel level;
+			LogLevel level{};
 			LogMessage message;
 			FileInfo file;
 

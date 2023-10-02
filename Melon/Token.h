@@ -160,7 +160,7 @@ namespace Melon {
 	struct TokenPattern {
 		TokenType type = TokenType::None;
 		Boxx::Regex pattern;
-		bool ignore;
+		bool ignore{};
 
 		TokenPattern() {}
 

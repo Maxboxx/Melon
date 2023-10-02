@@ -62,7 +62,9 @@ const Name Name::Default        = Name("??");
 const Name Name::HasValue       = Name("<hasvalue>");
 const Name Name::Value          = Name("<value>");
 const Name Name::Array          = Name("[#]");
+const Name Name::List           = Name("[]");
 const Name Name::Length         = Name("<length>");
+const Name Name::Capacity       = Name("<capacity>");
 const Name Name::Items          = Name("<items>");
 
 const NameList NameList::Bool    = NameList(true, Name("bool"));
@@ -210,8 +212,8 @@ bool Name::operator==(const Name& scope) const {
 	if (arguments.HasValue() != scope.arguments.HasValue()) return false;
 
 	if (types) {
-		const List<NameList> types1 = *types;
-		const List<NameList> types2 = *scope.types;
+		const Boxx::List<NameList> types1 = *types;
+		const Boxx::List<NameList> types2 = *scope.types;
 
 		if (types1.Count() != types2.Count()) return false;
 
@@ -221,8 +223,8 @@ bool Name::operator==(const Name& scope) const {
 	}
 
 	if (arguments) {
-		const List<NameList> arguments1 = *arguments;
-		const List<NameList> arguments2 = *scope.arguments;
+		const Boxx::List<NameList> arguments1 = *arguments;
+		const Boxx::List<NameList> arguments2 = *scope.arguments;
 
 		if (arguments1.Count() != arguments2.Count()) return false;
 
@@ -244,8 +246,8 @@ bool Name::operator<(const Name& scope) const {
 	if (arguments.HasValue() != scope.arguments.HasValue()) return scope.arguments.HasValue();
 
 	if (types) {
-		const List<NameList> types1 = *types;
-		const List<NameList> types2 = *scope.types;
+		const Boxx::List<NameList> types1 = *types;
+		const Boxx::List<NameList> types2 = *scope.types;
 
 		if (types1.Count() != types2.Count()) return types1.Count() < types2.Count();
 
@@ -255,8 +257,8 @@ bool Name::operator<(const Name& scope) const {
 	}
 
 	if (arguments) {
-		const List<NameList> arguments1 = *types;
-		const List<NameList> arguments2 = *scope.types;
+		const Boxx::List<NameList> arguments1 = *types;
+		const Boxx::List<NameList> arguments2 = *scope.types;
 
 		if (arguments1.Count() != arguments2.Count()) return arguments1.Count() < arguments2.Count();
 

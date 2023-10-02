@@ -1,11 +1,13 @@
 
 include Melon.Console.log
 
-int[#]: array = {1, 2, 3, 4}
+int[]: list = {1, 2, 3}
 
-array[2] = 45
+list[1] = 22
 
-for int: i = 0, < #array do
-	log(array[i])
+log(list)
+
+for int: i = 0, < #list do
+	log(list[i])
 end
 

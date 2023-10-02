@@ -53,7 +53,7 @@ public:
 		}
 	}
 
-	Ptr(Ptr<T>&& ptr) {
+	Ptr(Ptr<T>&& ptr) noexcept {
 		this->ptr = ptr.ptr;
 		ptr.ptr = nullptr;
 	}
@@ -73,7 +73,7 @@ public:
 	}
 
 	template <PtrDerived<T> U>
-	Ptr(Ptr<U>&& ptr) {
+	Ptr(Ptr<U>&& ptr) noexcept {
 		this->ptr = ptr.ptr;
 		ptr.ptr = nullptr;
 	}
@@ -140,7 +140,7 @@ public:
 		}
 	}
 
-	void operator=(Ptr<T>&& ptr) {
+	void operator=(Ptr<T>&& ptr) noexcept {
 		FreeAll();
 		this->ptr = ptr.ptr;
 		ptr.ptr = nullptr;
@@ -170,7 +170,7 @@ public:
 	}
 
 	template <PtrDerived<T> U>
-	void operator=(Ptr<U>&& ptr) {
+	void operator=(Ptr<U>&& ptr) noexcept {
 		FreeAll();
 		this->ptr = ptr.ptr;
 		ptr.ptr = nullptr;
@@ -263,7 +263,7 @@ public:
 		}
 	}
 
-	Weak(Weak<T>&& ptr) {
+	Weak(Weak<T>&& ptr) noexcept {
 		ref = ptr.ref;
 		ptr.ref = nullptr;
 	}
@@ -289,7 +289,7 @@ public:
 	}
 
 	template <PtrDerived<T> U>
-	Weak(Weak<U>&& ptr) {
+	Weak(Weak<U>&& ptr) noexcept {
 		ref = ptr.ref;
 		ptr.ref = nullptr;
 	}
@@ -338,7 +338,7 @@ public:
 		}
 	}
 
-	void operator=(Weak<T>&& ptr) {
+	void operator=(Weak<T>&& ptr) noexcept {
 		Free();
 		ref = ptr.ref;
 		ptr.ref = nullptr;
@@ -366,7 +366,7 @@ public:
 	}
 
 	template <PtrDerived<T> U>
-	void operator=(Weak<U>&& ptr) {
+	void operator=(Weak<U>&& ptr) noexcept {
 		Free();
 		ref = ptr.ref;
 		ptr.ref = nullptr;

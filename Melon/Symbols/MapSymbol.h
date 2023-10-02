@@ -51,7 +51,7 @@ namespace Melon {
 				symbol->parent = this;
 				return symbol;
 			}
-			catch (Boxx::MapKeyError& e) {
+			catch (Boxx::MapKeyError&) {
 				ErrorLog::Error(LogMessage("error.symbol.redefine", name.ToSimpleString()), symbol->file);
 
 				if (symbol->parent == nullptr) delete symbol;
@@ -73,7 +73,7 @@ namespace Melon {
 
 				return symbol;
 			}
-			catch (Boxx::MapKeyError& e) {
+			catch (Boxx::MapKeyError&) {
 				ErrorLog::Error(LogMessage("error.symbol.redefine", name.ToSimpleString()), symbol->file);
 
 				if (symbol->parent == nullptr) delete symbol;

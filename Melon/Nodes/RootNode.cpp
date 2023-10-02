@@ -82,7 +82,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 				nodes[failedNodes[i]]->IncludeScan(info);
 				failedNodes.RemoveAt(i);
 			}
-			catch (IncludeScanError& e) {
+			catch (IncludeScanError&) {
 				i++;
 			}
 		}
@@ -93,7 +93,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 				funcs[failedFuncs[i]]->IncludeScan(info);
 				failedFuncs.RemoveAt(i);
 			}
-			catch (IncludeScanError& e) {
+			catch (IncludeScanError&) {
 				i++;
 			}
 		}
@@ -103,7 +103,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			try {
 				nodes[nodeIndex]->IncludeScan(info);
 			}
-			catch (IncludeScanError& e) {
+			catch (IncludeScanError&) {
 				failedNodes.Add(nodeIndex);
 			}
 		}
@@ -113,7 +113,7 @@ void RootNode::IncludeScan(ParsingInfo& info) {
 			try {
 				funcs[funcIndex]->IncludeScan(info);
 			}
-			catch (IncludeScanError& e) {
+			catch (IncludeScanError&) {
 				failedFuncs.Add(nodeIndex);
 			}
 		}
@@ -181,6 +181,10 @@ void RootNode::AddTemplateSpecialization(const NameList& name, const NameList& s
 }
 
 Tuple<TemplateTypeSymbol*, List<NameList>> RootNode::FindTemplateArgs(const NameList& name, const NameList& scope, const FileInfo& file) {
+	if (!name.Last().types) {
+		return Tuple<TemplateTypeSymbol*, List<NameList>>(nullptr, List<NameList>());
+	}
+
 	List<NameList> templateArgs = name.Last().types->Copy();
 
 	// Find absolute name for template types
