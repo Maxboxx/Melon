@@ -31,18 +31,14 @@ FunctionSymbol* IndexExpression::GetFunc() const {
 	}
 
 	TypeSymbol* type = expression->Type();
-	return type->FindMethod(Name::Index, argTypes, File());
+	return type->FindMethod(Name::Index, argTypes, File(), isAssignable ? FunctionAttributes::Set : FunctionAttributes::None);
 }
 
 FunctionSymbol* IndexExpression::AssignFunc(TypeSymbol* type) const {
-	List<TypeSymbol*> argTypes;
-
-	for (const Ptr<Expression>& arg : args) {
-		argTypes.Add(arg->Type());
-	}
-
-	TypeSymbol* exprType = expression->Type();
-	return exprType->FindMethod(Name::Index, argTypes, File(), FunctionAttributes::Set);
+	FunctionSymbol* sym = GetFunc();
+	if (!sym) return nullptr;
+	if (sym->attributes != FunctionAttributes::Set) return nullptr;
+	return sym;
 }
 
 Ptr<Kiwi::Value> IndexExpression::CompileAssignFunc(FunctionSymbol* func, Weak<Expression> expr, CompileInfo& info) const {
@@ -50,7 +46,11 @@ Ptr<Kiwi::Value> IndexExpression::CompileAssignFunc(FunctionSymbol* func, Weak<E
 
 	List<Weak<Expression>> args;
 	args.Add(expression);
-	args.Add(this->args[0]);
+
+	for (Weak<Expression> arg : this->args) {
+		args.Add(arg);
+	}
+
 	args.Add(expr);
 
 	return func->symbolNode->Compile(args, info, false);

@@ -16,6 +16,8 @@ namespace Melon {
 			/// The index args.
 			Boxx::List<Ptr<Expression>> args;
 
+			bool isAssignable = false;
+
 			IndexExpression(Symbols::Symbol* scope, const FileInfo& file);
 			~IndexExpression();
 

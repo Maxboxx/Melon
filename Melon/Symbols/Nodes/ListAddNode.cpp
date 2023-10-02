@@ -19,8 +19,8 @@ Ptr<Kiwi::Value> ListAddNode::Compile(List<Weak<Expression>> operands, CompileIn
 
 	info.AddInstruction(new Kiwi::IfInstruction(
 		new Kiwi::LessExpression(
-			new Kiwi::SubVariable(list->Copy(), Name::Length.name),
-			new Kiwi::SubVariable(list->Copy(), Name::Capacity.name)
+			new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Length.name),
+			new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Capacity.name)
 		),
 		addLbl
 	));
@@ -35,16 +35,21 @@ Ptr<Kiwi::Value> ListAddNode::Compile(List<Weak<Expression>> operands, CompileIn
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
 		capSym->KiwiType(), newCap->Copy(),
-		new Kiwi::LeftShiftExpression(new Kiwi::SubVariable(list->Copy(), Name::Capacity.name), new Kiwi::Integer(SymbolTable::UInt->KiwiType(), 1))
+		new Kiwi::LeftShiftExpression(new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Capacity.name), new Kiwi::Integer(SymbolTable::UInt->KiwiType(), 1))
 	));
 	
+	info.AddInstruction(new Kiwi::AssignInstruction(
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Capacity.name),
+		newCap->Copy()
+	));
+
 	Ptr<Kiwi::Variable> size = new Kiwi::Variable(info.NewRegister());
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
 		SymbolTable::UInt->KiwiType(), size->Copy(),
 		new Kiwi::MulExpression(
 			newCap->Copy(),
-			new Kiwi::Integer(SymbolTable::UInt->KiwiType(), arrayType->Size())
+			new Kiwi::Integer(SymbolTable::UInt->KiwiType(), itemType->Size())
 		)
 	));
 
@@ -52,37 +57,52 @@ Ptr<Kiwi::Value> ListAddNode::Compile(List<Weak<Expression>> operands, CompileIn
 	
 	info.AddInstruction(new Kiwi::AssignInstruction(
 		arrayType->KiwiType(), newList->Copy(),
-		new Kiwi::AllocExpression(size)
+		new Kiwi::AllocExpression(size->Copy())
 	));
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
 		SymbolTable::UInt->KiwiType(), size->Copy(),
 		new Kiwi::MulExpression(
-			new Kiwi::SubVariable(list->Copy(), Name::Length.name),
-			new Kiwi::Integer(SymbolTable::UInt->KiwiType(), arrayType->Size())
+			new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Length.name),
+			new Kiwi::Integer(SymbolTable::UInt->KiwiType(), itemType->Size())
 		)
 	));
 
 	info.AddInstruction(new Kiwi::CopyInstruction(
 		newList->Copy(), 
-		new Kiwi::SubVariable(list->Copy(), Name::Items.name),
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Items.name),
 		size->Copy()
 	));
 
-	info.AddInstruction(new Kiwi::FreeInstruction(new Kiwi::SubVariable(list->Copy(), Name::Items.name)));
+	info.AddInstruction(new Kiwi::FreeInstruction(new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Items.name)));
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
-		new Kiwi::SubVariable(list->Copy(), Name::Items.name),
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Items.name),
 		newList
 	));
 
 	info.NewInstructionBlock(addLbl);
 
+	Ptr<Kiwi::Variable> items = new Kiwi::Variable(info.NewRegister());
+
+	info.AddInstruction(new Kiwi::AssignInstruction(
+		arrayType->KiwiType(), items->Copy(),
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Items.name)
+	));
+
 	info.AddInstruction(new Kiwi::OffsetAssignInstruction(
-		new Kiwi::SubVariable(list->Copy(), Name::Items.name),
+		new Kiwi::DerefVariable(items->name),
 		operands[1]->Compile(info),
 		itemType->KiwiType(),
-		new Kiwi::SubVariable(list->Copy(), Name::Length.name)
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Length.name)
+	));
+
+	info.AddInstruction(new Kiwi::AssignInstruction(
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Length.name),
+		new Kiwi::AddExpression(
+			new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Length.name),
+			new Kiwi::Integer(lenSym->KiwiType(), 1)
+		)
 	));
 	
 	return nullptr;

@@ -24,7 +24,11 @@ Ptr<Expression> AssignableParser::Parse(ParsingInfo& info) {
 	else if (Ptr<Expression> node = ExpressionParser::Parse(info, true)) {
 		if (node.Is<NameExpression>())  return node;
 		if (node.Is<DotExpression>())   return node;
-		if (node.Is<IndexExpression>()) return node;
+
+		if (Ptr<IndexExpression> index = node.AsPtr<IndexExpression>()) {
+			index->isAssignable = true;
+			return index;
+		}
 
 		info.index = startIndex;
 		return nullptr;

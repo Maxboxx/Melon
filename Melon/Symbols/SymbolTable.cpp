@@ -30,6 +30,7 @@
 #include "Nodes/ClassAssignNode.h"
 #include "Nodes/IndexGetNode.h"
 #include "Nodes/IndexSetNode.h"
+#include "Nodes/ListAddNode.h"
 #include "Nodes/LengthNode.h"
 #include "Nodes/StructAssignNode.h"
 #include "Nodes/StringConcatNode.h"
@@ -903,7 +904,7 @@ void SymbolTable::SetupList() {
 	index2->attributes = FunctionAttributes::Set;
 
 	FunctionSymbol* const indexAdd = index->AddOverload(new FunctionSymbol(FileInfo()));
-	indexAdd->symbolNode = new IndexSetNode();
+	indexAdd->symbolNode = new ListAddNode();
 	indexAdd->arguments.Add(list->AbsoluteName());
 	indexAdd->returnValues.Add(args[0]);
 	indexAdd->attributes = FunctionAttributes::Set;
