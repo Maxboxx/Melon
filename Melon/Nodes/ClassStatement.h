@@ -25,6 +25,8 @@ namespace Melon {
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
 
+			void CompileSymbol(Weak<Kiwi::Struct> struct_, Weak<Kiwi::Struct> vtable, Weak<Kiwi::StaticData> vdata, Symbols::ClassSymbol* sym);
+
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign) override;
 		};

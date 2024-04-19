@@ -66,6 +66,8 @@ const Name Name::List           = Name("[]");
 const Name Name::Length         = Name("<length>");
 const Name Name::Capacity       = Name("<capacity>");
 const Name Name::Items          = Name("<items>");
+const Name Name::VTable         = Name("<vtable>");
+const Name Name::VData          = Name("<vdata>");
 
 const NameList NameList::Bool    = NameList(true, Name("bool"));
 const NameList NameList::Byte    = NameList(true, Name("byte"));

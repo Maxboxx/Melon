@@ -64,7 +64,7 @@ bool ParsingInfo::EndOfFile() const {
 
 Melon::Token ParsingInfo::Current() const {
 	if (index >= tokens.Count()) {
-		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.Last().line));
+		ErrorLog::Error(LogMessage("error.syntax.unexpected.eof"), FileInfo(filename, tokens.IsEmpty() ? 1 : tokens.Last().line));
 		return Token();
 	}
 

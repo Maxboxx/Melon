@@ -22,7 +22,8 @@ namespace Melon {
 			Static = 1,
 			Override = 2,
 			Required = 4,
-			Partial = 8
+			Partial = 8,
+			Abstract = 16
 		};
 
 		BOXX_ENUM_FLAGS(FunctionModifiers);

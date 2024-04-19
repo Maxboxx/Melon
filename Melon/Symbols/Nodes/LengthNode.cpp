@@ -15,13 +15,14 @@ Ptr<Kiwi::Value> LengthNode::Compile(Weak<Expression> operand, CompileInfo& info
 
 	TypeSymbol* const type = operand->Type();
 
-	Kiwi::Type lenType = type->Find<VariableSymbol>(Name::Length, operand->File())->KiwiType();
+	VariableSymbol* const varSym = type->Find<VariableSymbol>(Name::Length, operand->File());
+	Kiwi::Type lenType = varSym->KiwiType();
 
 	if (type->Is<ClassSymbol>()) {
 		var = new Kiwi::DerefVariable(var->name);
 	}
 
 	Ptr<Kiwi::Variable> len = new Kiwi::Variable(info.NewRegister());
-	info.AddInstruction(new Kiwi::AssignInstruction(lenType, len->Copy(), new Kiwi::SubVariable(var, Name::Length.name)));
+	info.AddInstruction(new Kiwi::AssignInstruction(lenType, len->Copy(), new Kiwi::SubVariable(var, varSym->KiwiName())));
 	return len;
 }

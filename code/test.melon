@@ -1,17 +1,52 @@
 
 include Melon.Console.log
 
-int[]: list = {1, 2, 3}
+include Kiwi.Var
+include Kiwi.NamedVar
+include Kiwi.DerefVar
+include Kiwi.SubVar
+include Kiwi.TypeVar
 
-list[1] = 22
-
-for int: i = #list + 1, #list < 10 do
-	list[] = i
+class A
+	int: i
+	
+	fun init(int: i)
+		self.i = i
+	end
 end
 
-log(list)
-
-for int: i = 0, < #list do
-	log(list[i])
+class B ext A
+	int: j
+	
+	fun init(int: i, int: j)
+		self.i = i
+		self.j = j
+	end
 end
 
+A: a = A(3)
+
+A: b = B(1, 2)
+
+log(a)
+log(b)
+
+Var: var = SubVar {
+	var = TypeVar {
+		var = DerefVar {
+			var = TypeVar {
+				var = NamedVar {
+					name = "hello"
+				},
+				
+				type = "A*"
+			}
+		},
+		
+		type = "A"
+	},
+	
+	name = "world"
+}
+
+log(var.toKiwi())

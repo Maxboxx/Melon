@@ -30,7 +30,7 @@ bool FunctionBody::IsScope() const {
 }
 
 Ptr<Kiwi::Value> FunctionBody::Compile(CompileInfo& info) { // TODO: more accurate arg error lines
-	if (sym->IsNotSpecialized()) return nullptr;
+	if (!statements || sym->IsNotSpecialized()) return nullptr;
 	scope->SetTemplateValues(sym);
 
 	Ptr<Kiwi::Function> func = new Kiwi::Function(sym->KiwiName());
@@ -71,7 +71,9 @@ void FunctionBody::IncludeScan(ParsingInfo& info) {
 	if (sym->IsNotSpecialized()) return;
 	scope->SetTemplateValues(sym);
 
-	statements->IncludeScan(info);
+	if (statements) {
+		statements->IncludeScan(info);
+	}
 }
 
 ScanResult FunctionBody::Scan(ScanInfoStack& info) {
@@ -92,27 +94,31 @@ ScanResult FunctionBody::Scan(ScanInfoStack& info) {
 	}
 
 	// Scan function body
-	ScanResult result = statements->Scan(info);
+	ScanResult result;
+	
+	if (statements) {
+		result = statements->Scan(info);
 
-	// Check if member variables are initialized
-	if (info->init && !info->type->IsInitialized()) {
-		for (const Name& var : info->type->UnassignedMembers()) {
-			ErrorLog::Error(LogMessage("error.scan.init.member", var.ToSimpleString()), file);
+		// Check if member variables are initialized
+		if (info->init && !info->type->IsInitialized()) {
+			for (const Name& var : info->type->UnassignedMembers()) {
+				ErrorLog::Error(LogMessage("error.scan.init.member", var.ToSimpleString()), file);
+			}
 		}
-	}
 
-	// Check if arguments are used
-	for (UInt i = 0; i < sym->arguments.Count(); i++) {
-		VariableSymbol* const arg = sym->Argument(i);
+		// Check if arguments are used
+		for (UInt i = 0; i < sym->arguments.Count(); i++) {
+			VariableSymbol* const arg = sym->Argument(i);
 
-		if (arg && (arg->modifiers & VariableModifiers::Ref) != VariableModifiers::None) {
-			info.usedVariables.Add(arg);
+			if (arg && (arg->modifiers & VariableModifiers::Ref) != VariableModifiers::None) {
+				info.usedVariables.Add(arg);
+			}
 		}
-	}
 
-	// Check if the function has not returned if it needs to
-	if (!info->scopeInfo.hasReturned && !sym->returnValues.IsEmpty()) {
-		ErrorLog::Error(LogMessage(sym->returnValues.Count() == 1 ? "error.scan.return.value" : "error.scan.return.values", sym->ToString()), file);
+		// Check if the function has not returned if it needs to
+		if (!info->scopeInfo.hasReturned && !sym->returnValues.IsEmpty()) {
+			ErrorLog::Error(LogMessage(sym->returnValues.Count() == 1 ? "error.scan.return.value" : "error.scan.return.values", sym->ToString()), file);
+		}
 	}
 
 	info.Pop();
@@ -122,7 +128,7 @@ ScanResult FunctionBody::Scan(ScanInfoStack& info) {
 }
 
 Ptr<Statement> FunctionBody::Optimize(OptimizeInfo& info) {
-	Node::Optimize(statements, info);
+	if (statements) Node::Optimize(statements, info);
 	return nullptr;
 }
 
@@ -206,12 +212,14 @@ StringBuilder FunctionBody::ToMelon(const UInt indent) const {
 
 	sb += ")\n";
 
-	// Add function body
-	sb += String('\t').Repeat(indent + 1);
-	sb += statements->ToMelon(indent + 1);
-	sb += "\n";
-	sb += String('\t').Repeat(indent);
-	sb += "end";
+	if (statements) {
+		// Add function body
+		sb += String('\t').Repeat(indent + 1);
+		sb += statements->ToMelon(indent + 1);
+		sb += "\n";
+		sb += String('\t').Repeat(indent);
+		sb += "end";
+	}
 
 	return sb;
 }

@@ -59,6 +59,10 @@ TypeSymbol* TypeConversion::Type(TypeSymbol* expected) const {
 	return t;
 }
 
+Symbol* TypeConversion::Symbol() const {
+	return Type();
+}
+
 ValueSymbol* TypeConversion::GetValueSymbol() const {
 	ErrorLog::AddMarker();
 	ValueSymbol* valueSym = SymbolTable::Find<ValueSymbol>(type, scope ? scope->AbsoluteName() : NameList(true), file, SymbolTable::SearchOptions::ReplaceTemplates);
@@ -114,6 +118,7 @@ Ptr<Kiwi::Value> TypeConversion::Compile(CompileInfo& info) {
 
 	// Compile symbol node
 	if (convert->symbolNode) {
+		//Ptr<TypeExpression> type = new TypeExpression(convertType);
 		return convert->symbolNode->Compile(expression, info, false);
 	}
 	// Compile call to operator function

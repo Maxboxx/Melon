@@ -1,0 +1,8 @@
+
+--- A kiwi program.
+class Program
+	--- Parses kiwi data.
+	static fun parse(string: data)
+	
+	end
+end

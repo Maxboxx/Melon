@@ -12,6 +12,7 @@
 #include "Melon/Symbols/TemplateSymbol.h"
 
 #include "Melon/Symbols/Nodes/ClassAssignNode.h"
+#include "Melon/Symbols/Nodes/ClassCastNode.h"
 
 using namespace Boxx;
 
@@ -22,7 +23,19 @@ using namespace Melon::Symbols::Nodes;
 using namespace Melon::Parsing;
 
 Ptr<ClassStatement> ClassParser::Parse(ParsingInfo& info) {
-	if (info.Current().type != TokenType::Class) return nullptr;
+	const UInt startIndex = info.index;
+
+	bool abstract = false;
+
+	if (info.Current().type == TokenType::Abst) {
+		abstract = true;
+		info.index++;
+	}
+
+	if (info.Current().type != TokenType::Class) {
+		info.index = startIndex;
+		return nullptr;
+	}
 
 	const UInt structLine = info.Current().line;
 	info.index++;
@@ -30,6 +43,7 @@ Ptr<ClassStatement> ClassParser::Parse(ParsingInfo& info) {
 
 	Ptr<ClassStatement> sn = ParseName(info, structLine);
 	info.scope = sn->symbol;
+	sn->symbol->abstract = abstract;
 
 	while (true) {
 		bool found = false;
@@ -65,6 +79,26 @@ Ptr<ClassStatement> ClassParser::Parse(ParsingInfo& info) {
 	assign1->symbolNode = new ClassAssignNode();
 	sn->symbol->AddSymbol(Name::Assign, assign);
 
+	ClassSymbol* base = sn->symbol;
+
+	while (base = base->BaseClass()) {
+		FunctionSymbol* const assign2 = base->Contains<FunctionSymbol>(Name::Assign)->AddOverload(new FunctionSymbol(info.GetFileInfo()));
+		assign2->arguments.Add(sn->symbol->AbsoluteName());
+		assign2->symbolNode = new ClassAssignNode();
+
+		FunctionSymbol* convert = base->Contains<FunctionSymbol>(Name::As);
+
+		if (!convert) {
+			convert = base->AddSymbol(Name::As, new FunctionSymbol(info.GetFileInfo()));
+		}
+
+		FunctionSymbol* const convert1 = convert->AddOverload(new FunctionSymbol(info.GetFileInfo()));
+		convert1->arguments.Add(base->AbsoluteName());
+		convert1->returnValues.Add(sn->symbol->AbsoluteName());
+		convert1->isExplicit = true;
+		convert1->symbolNode = new ClassCastNode(sn->symbol);
+	}
+
 	info.index++;
 	info.scope = temp;
 	return sn;
@@ -81,11 +115,11 @@ Ptr<ClassStatement> ClassParser::ParseName(ParsingInfo& info, const UInt structL
 	Name structName = Name(info.Current().value);
 
 	if (lower.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.upper", "struct", info.Current().value), info.GetFileInfo());
+		ErrorLog::Info(LogMessage("info.name.upper", "class", info.Current().value), info.GetFileInfo());
 	}
 
 	if (underscore.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.under", "struct", info.Current().value), info.GetFileInfo());
+		ErrorLog::Info(LogMessage("info.name.under", "class", info.Current().value), info.GetFileInfo());
 	}
 
 	info.index++;
@@ -120,6 +154,18 @@ Ptr<ClassStatement> ClassParser::ParseName(ParsingInfo& info, const UInt structL
 	}
 	else if (redefine) {
 		info.scope->AddSymbol(structName, sym);
+	}
+
+	if (info.Current().type == TokenType::Ext) {
+		info.index++;
+
+		if (Optional<NameList> base = TypeParser::Parse(info)) {
+			sym->baseClass = base;
+		}
+		else {
+			ErrorLog::Error(LogMessage("No base class"), info.GetFileInfoPrev());
+			return nullptr;
+		}
 	}
 
 	Ptr<ClassStatement> sn = new ClassStatement(info.scope, info.GetFileInfo(structLine));

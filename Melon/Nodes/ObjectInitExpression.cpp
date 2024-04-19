@@ -52,10 +52,19 @@ Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 		Ptr<Kiwi::Expression> expr;
 
 		if (type->Is<ClassSymbol>()) {
-			expr = new Kiwi::AllocExpression(type->KiwiType());
+			Kiwi::Type kiwiType = type->KiwiType();
+			kiwiType.pointers--;
+			expr = new Kiwi::AllocExpression(kiwiType);
 		}
 
 		info.currentBlock->AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), value->Copy(), expr));
+
+		if (type->Is<ClassSymbol>()) {
+			info.AddInstruction(new Kiwi::AssignInstruction(
+				new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), Name::VTable.name),
+				new Kiwi::Variable(type->AbsoluteName().Add(Name::VData).ToString())
+			));
+		}
 	}
 
 	// Compile vars
@@ -92,20 +101,26 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 	if (type == nullptr) return result;
 
 	// Check if object init is valid
-	if (ClassStructBaseSymbol* const s = type->Cast<ClassStructBaseSymbol>()) {
-		for (const Name& member : s->members) {
-			bool found = false;
+	if (ClassStructBaseSymbol* s = type->Cast<ClassStructBaseSymbol>()) {
+		while (s) {
+			for (const Name& member : s->members) {
+				bool found = false;
 
-			for (const Name& var : vars) {
-				if (var == member) {
-					found = true;
-					break;
+				for (const Name& var : vars) {
+					if (var == member) {
+						found = true;
+						break;
+					}
 				}
+
+				if (found) continue;
+
+				ErrorLog::Error(LogMessage("error.scan.init.object_member", member.ToSimpleString()), file);
 			}
 
-			if (found) continue;
-
-			ErrorLog::Error(LogMessage("error.scan.init.object_member", member.ToSimpleString()), file);
+			if (ClassSymbol* const cs = s->Cast<ClassSymbol>()) {
+				s = cs->BaseClass();
+			}
 		}
 	}
 	else {

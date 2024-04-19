@@ -89,6 +89,7 @@ ScopeInfo ScopeInfo::BranchUnion(const ScopeInfo& branch1, const ScopeInfo& bran
 	result.maxScopeBreakCount = Math::Max(branch1.maxScopeBreakCount, branch2.maxLoopBreakCount);
 
 	result.unassigned = Set<Name>::Intersection(branch1.unassigned, branch2.unassigned);
+	//result.ownerVars  = Set<NameList>::Intersection(branch1.ownerVars, branch2.ownerVars);
 
 	return result;
 }
@@ -118,6 +119,7 @@ ScopeInfo ScopeInfo::BranchIntersection(const ScopeInfo& branch1, const ScopeInf
 	result.maxScopeBreakCount = Math::Max(branch1.maxScopeBreakCount, branch2.maxLoopBreakCount);
 
 	result.unassigned = Set<Name>::Union(branch1.unassigned, branch2.unassigned);
+	//result.ownerVars  = Set<NameList>::Union(branch1.ownerVars, branch2.ownerVars);
 
 	return result;
 }

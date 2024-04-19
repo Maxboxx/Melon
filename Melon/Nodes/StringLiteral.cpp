@@ -4,6 +4,7 @@
 
 #include "Melon/Symbols/IntegerSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 using namespace Boxx;
 using namespace KiwiOld;
@@ -26,9 +27,12 @@ TypeSymbol* StringLiteral::Type(TypeSymbol* expected) const {
 Ptr<Kiwi::Value> StringLiteral::Compile(CompileInfo& info) {
 	Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
 
+	VariableSymbol* lenSym = SymbolTable::String->Find<VariableSymbol>(Name::Length, File());
+	VariableSymbol* strSym = SymbolTable::String->Find<VariableSymbol>(Name::Items, File());
+
 	info.AddInstruction(new Kiwi::AssignInstruction(SymbolTable::String->KiwiType(), var->Copy(), nullptr));
-	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), Name::Length.name), new Kiwi::Integer(SymbolTable::UInt->KiwiType(), value.Length())));
-	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), Name::Items.name), new Kiwi::StringValue(value)));
+	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), lenSym->KiwiName()), new Kiwi::Integer(SymbolTable::UInt->KiwiType(), value.Length())));
+	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), strSym->KiwiName()), new Kiwi::StringValue(value)));
 	
 	return var;
 }

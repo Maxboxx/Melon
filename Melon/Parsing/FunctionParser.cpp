@@ -37,8 +37,15 @@ Ptr<EmptyStatement> FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const p
 		MapSymbol* const parentSym = parent ? parent->Cast<MapSymbol>() : temp;
 		FunctionSymbol* functionParent = nullptr;
 
-		if (Symbol* const func = parentSym->Contains(funcHead.name)) {
-			functionParent = func->Cast<FunctionSymbol>();
+
+		Symbol* f = parentSym->Contains(funcHead.name);
+
+		if (f && f->ParentType() != parentSym) {
+			f = nullptr;
+		}
+
+		if (f) {
+			functionParent = f->Cast<FunctionSymbol>();
 		}
 		else {
 			functionParent = parentSym->AddSymbol(funcHead.name, new FunctionSymbol(info.GetFileInfo(startLine)))->Cast<FunctionSymbol>();
@@ -90,7 +97,9 @@ Ptr<EmptyStatement> FunctionParser::Parse(ParsingInfo& info, TypeSymbol* const p
 		info.loops = 0;
 		info.scopeCount = 0;
 		
-		func->statements = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("function", startLine));
+		if ((funcHead.modifiers & FunctionModifiers::Abstract) == FunctionModifiers::None) {
+			func->statements = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("function", startLine));
+		}
 
 		func->sym = funcSym;
 		funcSym->node = func;
@@ -290,17 +299,25 @@ FunctionModifiers FunctionParser::ParseModifiers(ParsingInfo& info, const bool i
 				modifiers |= FunctionModifiers::Static;
 				break;
 			}
-			case TokenType::Override: {
+			case TokenType::Ext: {
 				if ((modifiers & FunctionModifiers::Override) != FunctionModifiers::None) {
-					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "override"), info.GetFileInfo());
+					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "ext"), info.GetFileInfo());
 				}
 
 				modifiers |= FunctionModifiers::Override;
 				break;
 			}
+			case TokenType::Abst: {
+				if ((modifiers & FunctionModifiers::Abstract) != FunctionModifiers::None) {
+					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "abst"), info.GetFileInfo());
+				}
+
+				modifiers |= FunctionModifiers::Abstract;
+				break;
+			}
 			case TokenType::Required: {
 				if ((modifiers & FunctionModifiers::Required) != FunctionModifiers::None) {
-					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "required"), info.GetFileInfo());
+					ErrorLog::Error(LogMessage("error.syntax.attribute.multiple", "req"), info.GetFileInfo());
 				}
 
 				modifiers |= FunctionModifiers::Required;
@@ -442,7 +459,7 @@ Optional<FunctionParser::FunctionHead> FunctionParser::ParseFunctionHead(Parsing
 		if (funcHead.modifiers != FunctionModifiers::None) {
 			ErrorLog::Error(LogMessage("error.syntax.expected.after", LogMessage::Quote("function"), LogMessage::Quote(info.Prev().value)), info.GetFileInfoPrev());
 		}
-
+		
 		return nullptr;
 	}
 

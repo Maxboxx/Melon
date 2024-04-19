@@ -4,6 +4,9 @@
 
 #include "Kiwi/Instruction.h"
 
+#include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
+
 using namespace Boxx;
 using namespace KiwiOld;
 
@@ -36,7 +39,7 @@ Ptr<Kiwi::Value> Debug::Compile(CompileInfo& info) {
 	}
 	else if (type == "printstr" && argument && argument->Type() == (TypeSymbol*)SymbolTable::String) {
 		Ptr<Kiwi::Variable> value = argument->Compile(info).AsPtr<Kiwi::Variable>();
-		Ptr<Kiwi::DebugPrintInstruction> print = new Kiwi::DebugPrintInstruction(new Kiwi::SubVariable(value, Name::Items.name));
+		Ptr<Kiwi::DebugPrintInstruction> print = new Kiwi::DebugPrintInstruction(new Kiwi::SubVariable(value, SymbolTable::String->Find<VariableSymbol>(Name::Items, File())->KiwiName()));
 		print->type = "str";
 
 		info.AddInstruction(print);

@@ -55,7 +55,12 @@ void IncludeParser::Include(const NameList& include, ParsingInfo& info) {
 }
 
 void IncludeParser::IncludeNamespace(MapSymbol* parent, const String& dir, const NameList& include, UInt index, ParsingInfo& info) {
-	NamespaceSymbol* ns = parent->AddSymbol(include[index], new NamespaceSymbol(dir, info.GetFileInfo()));
+	NamespaceSymbol* ns = parent->Contains<NamespaceSymbol>(include[index]);
+
+	if (ns) return;
+
+	ns = parent->AddSymbol(include[index], new NamespaceSymbol(dir, info.GetFileInfo()));
+
 	NameList nsList = ns->AbsoluteName();
 
 	if (index + 1 < include.Size()) {

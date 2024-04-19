@@ -5,6 +5,7 @@
 namespace Melon {
 	namespace Nodes {
 		class StructStatement;
+		class ClassStatement;
 	}
 
 	///N Melon::Symbols
@@ -39,6 +40,7 @@ namespace Melon {
 			virtual Symbol* FindSymbol(const NameList& scopeList, const Boxx::UInt index, const FileInfo& file) override;
 
 			friend Melon::Nodes::StructStatement;
+			friend Melon::Nodes::ClassStatement;
 
 			Boxx::Map<Symbols::Name, Symbol*> symbols;
 		};

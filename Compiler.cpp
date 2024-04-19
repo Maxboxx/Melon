@@ -61,6 +61,6 @@ int main() {
 	}
 	//*/
 
-	System::Execute("pause");
+	//System::Execute("pause");
 	return 0;
 }

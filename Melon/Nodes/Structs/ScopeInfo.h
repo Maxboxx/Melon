@@ -58,6 +58,9 @@ namespace Melon {
 			/// All unassigned members.
 			Boxx::Set<Symbols::Name> unassigned;
 
+			/// All owner vars.
+			//Boxx::Set<Symbols::NameList> ownerVars;
+
 			/// Resets the scope to default values.
 			void Reset();
 

@@ -24,6 +24,7 @@
 using namespace Boxx;
 using namespace KiwiOld;
 
+using namespace Melon;
 using namespace Melon::Nodes;
 using namespace Melon::Parsing;
 using namespace Melon::Symbols;
@@ -289,7 +290,7 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 
 	Ptr<Kiwi::CallExpression> call = new Kiwi::CallExpression(func->KiwiName());
 
-	Ptr<Kiwi::Value> instance = nullptr;
+	Ptr<Kiwi::Variable> instance = nullptr;
 
 	UInt argOffset = 0;
 
@@ -313,6 +314,13 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 			}
 
 			info.AddInstruction(new Kiwi::AssignInstruction(type, self->Copy(), expr));
+
+			if (typeSym->Is<ClassSymbol>()) {
+				info.AddInstruction(new Kiwi::AssignInstruction(
+					new Kiwi::SubVariable(new Kiwi::DerefVariable(self->name), Name::VTable.name),
+					new Kiwi::Variable(typeSym->AbsoluteName().Add(Name::VData).ToString())
+				));
+			}
 		}
 		else if (Weak<DotExpression> dot = expression.As<DotExpression>()) {
 			self = dot->expression->Compile(info).AsPtr<Kiwi::Variable>();
@@ -323,6 +331,18 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 		}
 		else {
 			call->args.Add(new Kiwi::RefValue(self->Copy()));
+		}
+
+		if (((func->modifiers & FunctionModifiers::Abstract) | (func->modifiers & FunctionModifiers::Override)) != FunctionModifiers::None) {
+			Ptr<Kiwi::Variable> funcPtr = new Kiwi::Variable(info.NewRegister());
+
+			info.AddInstruction(new Kiwi::AssignInstruction(
+				Kiwi::Type(1, typeSym->AbsoluteName().Add(Name::VTable).ToString()),
+				funcPtr->Copy(),
+				new Kiwi::SubVariable(new Kiwi::DerefVariable(self->name), Name::VTable.name)
+			));
+
+			call->funcPtr = new Kiwi::SubVariable(new Kiwi::DerefVariable(funcPtr->name), func->Parent()->Name().name);
 		}
 
 		instance = self;

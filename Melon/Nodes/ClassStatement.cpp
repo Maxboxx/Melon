@@ -21,17 +21,47 @@ ClassStatement::ClassStatement(Symbol* const scope, const FileInfo& file) : Stat
 }
 
 Ptr<Kiwi::Value> ClassStatement::Compile(CompileInfo& info) {
-	Ptr<Kiwi::Struct> struct_ = new Kiwi::Struct(symbol->KiwiName());
+	Ptr<Kiwi::Struct>   struct_ = new Kiwi::Struct(symbol->KiwiName());
+	Ptr<Kiwi::Struct>    vtable = new Kiwi::Struct(symbol->AbsoluteName().Add(Name::VTable).ToString());
+	Ptr<Kiwi::StaticData> vdata = new Kiwi::StaticData(symbol->AbsoluteName().Add(Name::VData).ToString());
+
+	struct_->AddVariable(Kiwi::Type(1, vtable->name), Name::VTable.name);
 	
-	for (const Name& name : symbol->members) {
-		if (VariableSymbol* const var = symbol->Find<VariableSymbol>(name, file)) {
+	CompileSymbol(struct_, vtable, vdata, symbol);
+
+	info.program->AddStruct(struct_);
+
+	//if (!vtable->vars.IsEmpty()) {
+		info.program->AddStruct(vtable);
+		info.program->AddStatic(vdata);
+	//}
+
+	return nullptr;
+}
+
+void ClassStatement::CompileSymbol(Weak<Kiwi::Struct> struct_, Weak<Kiwi::Struct> vtable, Weak<Kiwi::StaticData> vdata, ClassSymbol* sym) {
+	if (ClassSymbol* baseSym = sym->BaseClass()) {
+		CompileSymbol(struct_, vtable, vdata, baseSym);
+	}
+
+	for (const Name& name : sym->members) {
+		if (VariableSymbol* const var = sym->Find<VariableSymbol>(name, file)) {
 			struct_->AddVariable(var->Type()->KiwiType(), var->KiwiName());
 		}
 	}
 
-	info.program->AddStruct(struct_);
-
-	return nullptr;
+	for (const Pair<Name, Symbol*>& inner : sym->symbols) {
+		if (FunctionSymbol* const func = inner.value->Cast<FunctionSymbol>()) {
+			for (FunctionSymbol* const overload : func->overloads) {
+				if (((overload->modifiers & FunctionModifiers::Abstract)) != FunctionModifiers::None) {
+					vtable->AddVariable(Kiwi::Type(1, ""), inner.key.ToString());
+				}
+				else if (((overload->modifiers & FunctionModifiers::Override)) != FunctionModifiers::None) {
+					vdata->AddValue(Kiwi::Type(1, ""), inner.key.ToString(), new Kiwi::Variable(overload->KiwiName()));
+				}
+			}
+		}
+	}
 }
 
 NameList ClassStatement::FindSideEffectScope(const bool assign) {
@@ -76,6 +106,11 @@ StringBuilder ClassStatement::ToMelon(const UInt indent) const {
 		}
 
 		sb += ">";
+	}
+
+	if (symbol->baseClass) {
+		sb += " ext ";
+		sb += symbol->baseClass->ToSimpleString();
 	}
 
 	String tabs = String('\t').Repeat(indent + 1);

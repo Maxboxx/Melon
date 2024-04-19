@@ -31,3 +31,26 @@ UInt ClassSymbol::Size() const {
 Kiwi::Type ClassSymbol::KiwiType() {
 	return Kiwi::Type(1, KiwiName());
 }
+
+ClassSymbol* ClassSymbol::BaseClass() const {
+	if (!baseClass) return nullptr;
+
+	return SymbolTable::Find<ClassSymbol>(*baseClass, Parent()->AbsoluteName(), file, SymbolTable::SearchOptions::ReplaceTemplates);
+}
+
+Symbol* ClassSymbol::FindSymbol(const NameList& nameList, const Boxx::UInt index, const FileInfo& file) {
+	ErrorLog::AddMarker();
+
+	if (Symbol* const sym = ClassStructBaseSymbol::FindSymbol(nameList, index, file)) {
+		ErrorLog::RemoveMarker();
+		return sym;
+	}
+
+	if (ClassSymbol* const base = BaseClass()) {
+		ErrorLog::Revert();
+		return base->FindSymbol(nameList, index, file);
+	}
+
+	ErrorLog::RemoveMarker();
+	return nullptr;
+}

@@ -121,7 +121,7 @@ Symbol* SymbolTable::Find(NameList name, NameList scope, const FileInfo& file, c
 
 			if (s) {
 				if (Symbol* const sym = s->Contains(name)) {
-					if (ignoreOrder || sym->file.statement < file.statement || sym->Is<TemplateSymbol>()) {
+					if (ignoreOrder || sym->file.statement < file.statement || sym->Is<TemplateSymbol>() || sym->Is<FunctionSymbol>()) {
 						return sym;
 					}
 				}

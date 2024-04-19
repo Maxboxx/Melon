@@ -224,6 +224,12 @@ namespace Melon {
 
 			/// The {<items>} name.
 			static const Name Items;
+
+			/// The {<vtable>} name.
+			static const Name VTable;
+
+			/// The {<vdata>} name.
+			static const Name VData;
 		private:
 			Boxx::Map<Boxx::String, Boxx::UInt> scopes;
 		};

@@ -31,6 +31,7 @@ namespace Melon {
 			Symbols::ValueSymbol* GetValueSymbol() const;
 
 			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
+			virtual Symbols::Symbol* Symbol() const override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
