@@ -190,7 +190,9 @@ Symbol* SymbolTable::FindInNamespaces(const NameList& name, const FileInfo& file
 			bool found = true;
 
 			for (Boxx::UInt i = 1; i < name.Size(); i++) {
-				if (MapSymbol* const sym = ns->Find<MapSymbol>(name[i], file)) {
+				Symbol* const sym = ns->Find(name[i], file);
+
+				if (i + 1 >= name.Size() || sym->Is<MapSymbol>()) {
 					ns = sym;
 				}
 				else {

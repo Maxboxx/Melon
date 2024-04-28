@@ -97,11 +97,16 @@ Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
 	}
 	// Compile class value
 	else if (sym->Is<ClassSymbol>()) {
-		Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+		if (expression.Is<DotExpression>() || !info.assign) {
+			Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
 
-		info.AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), var->Copy(), new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), Symbol()->KiwiName())));
+			info.AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), var->Copy(), new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), Symbol()->KiwiName())));
 
-		return var;
+			return var;
+		}
+		else {
+			return new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), Symbol()->KiwiName());
+		}
 	}
 	// Compile struct value
 	else if (value) {

@@ -6,12 +6,15 @@
 
 #include "BreakStatement.h"
 #include "TypeExpression.h"
+#include "TypeConversion.h"
+#include "IsExpression.h"
 #include "KiwiVariable.h"
 
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/ValueSymbol.h"
 #include "Melon/Symbols/SymbolTable.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
@@ -129,8 +132,25 @@ namespace Melon {
 				labels.Add(info.NewLabel());
 
 				for (Weak<Expression> expr : values) {
-					Symbols::FunctionSymbol* const sym = Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, this->match->Type(), expr->Type(), expr->File()); 
-					Ptr<Kiwi::Value> comp = sym->symbolNode->Compile(kiwiVar, expr, info, false);
+					Ptr<Kiwi::Value> comp;
+
+					if (Weak<TypeConversion> conv = expr.As<TypeConversion>()) {
+						Ptr<IsExpression> isExpr = new IsExpression(expr->scope, expr->File());
+						isExpr->expression = new KiwiVariable(match->Copy(), this->match->Type()->AbsoluteName());
+						isExpr->type = conv->GetValueSymbol(true)->AbsoluteName();
+						comp = isExpr->Compile(info);
+					}
+					else if (Symbols::ValueSymbol* const valSym = expr->Symbol<Symbols::ValueSymbol>()) {
+						Ptr<IsExpression> isExpr = new IsExpression(expr->scope, expr->File());
+						isExpr->expression = new KiwiVariable(match->Copy(), this->match->Type()->AbsoluteName());
+						isExpr->type = valSym->AbsoluteName();
+						comp = isExpr->Compile(info);
+					}
+					else {
+						Symbols::FunctionSymbol* const sym = Symbols::SymbolTable::FindOperator(Symbols::Name::Equal, this->match->Type(), expr->Type(), expr->File()); 
+						comp = sym->symbolNode->Compile(kiwiVar, expr, info, false);
+					}
+
 					info.AddInstruction(new Kiwi::IfInstruction(comp, labels.Last()));
 				}
 			}
@@ -148,6 +168,12 @@ namespace Melon {
 
 			for (Boxx::UInt i = 0; i < nodes.Count(); i++) {
 				info.NewInstructionBlock(labels[i]);
+
+				if (Weak<TypeConversion> conv = cases[i][0].As<TypeConversion>()) {
+					Ptr<Kiwi::SubVariable> items = new Kiwi::SubVariable(match->Copy(), Symbols::Name::Items.name);
+					Ptr<KiwiVariable> kiwi = new KiwiVariable(items, conv->expression->Type()->AbsoluteName());
+					Node::CompileAssignment(conv->expression, kiwi, info, conv->File(), true);
+				}
 
 				LoopInfo scope = LoopInfo(i < nodes.Count() - 1 ? labels[i + 1] : (def ? defaultLbl : endLbl), endLbl);
 
@@ -359,6 +385,10 @@ namespace Melon {
 			// Scan case values
 			for (const Boxx::List<Ptr<Expression>>& nodeList : cases) {
 				for (Weak<Expression> node : nodeList) {
+					if (Weak<TypeConversion> conv = node.As<TypeConversion>()) {
+						continue;
+					}
+
 					ScanResult r = node->Scan(info);
 					r.SelfUseCheck(info, node->File());
 					result |= r;

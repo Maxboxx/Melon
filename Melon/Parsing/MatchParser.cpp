@@ -2,6 +2,11 @@
 
 #include "ExpressionParser.h"
 #include "ScopeParser.h"
+#include "TypeParser.h"
+#include "NameParser.h"
+
+#include "Melon/Nodes/TypeConversion.h"
+#include "Melon/Nodes/NameExpression.h"
 
 using namespace Boxx;
 
@@ -20,7 +25,14 @@ Ptr<MatchStatement> MatchParser::ParseStatement(ParsingInfo& info) {
 	Ptr<Expression> value = ExpressionParser::Parse(info);
 
 	if (!value) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", LogMessage::Quote("switch")), info.GetFileInfoPrev());
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", LogMessage::Quote("match")), info.GetFileInfoPrev());
+	}
+
+	if (info.Current().type != TokenType::Do) {
+		ErrorLog::Error(LogMessage("Missing do on match"), info.GetFileInfoPrev());
+	}
+	else {
+		info.index++;
 	}
 
 	Ptr<MatchStatement> switchNode = new MatchStatement(info.scope, info.GetFileInfo(switchLine));
@@ -29,7 +41,7 @@ Ptr<MatchStatement> MatchParser::ParseStatement(ParsingInfo& info) {
 	ParseStatementCases(info, switchNode);
 
 	if (info.Current().type != TokenType::End) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "switch statement", switchLine), info.GetFileInfoPrev());
+		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "match statement", switchLine), info.GetFileInfoPrev());
 	}
 	else {
 		info.index++;
@@ -50,8 +62,16 @@ Ptr<MatchExpression> MatchParser::ParseExpression(ParsingInfo& info, const bool 
 	bool error = false;
 
 	if (!value) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", LogMessage::Quote("switch")), info.GetFileInfoPrev());
+		ErrorLog::Error(LogMessage("error.syntax.expected.after", "match expression", LogMessage::Quote("match")), info.GetFileInfoPrev());
 		error = true;
+	}
+
+	if (info.Current().type != TokenType::Do) {
+		ErrorLog::Error(LogMessage("Missing do on match"), info.GetFileInfoPrev());
+		error = true;
+	}
+	else {
+		info.index++;
 	}
 
 	Ptr<MatchExpression> switchNode = new MatchExpression(info.scope, info.GetFileInfo(switchLine));
@@ -60,7 +80,7 @@ Ptr<MatchExpression> MatchParser::ParseExpression(ParsingInfo& info, const bool 
 	ParseExpressionCases(info, switchNode, error);
 
 	if (info.Current().type != TokenType::End) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "switch expression", switchLine), info.GetFileInfoPrev());
+		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "match expression", switchLine), info.GetFileInfoPrev());
 		error = true;
 	}
 	else {
@@ -99,22 +119,84 @@ void MatchParser::ParseStatementCases(ParsingInfo& info, Ptr<MatchStatement>& sw
 }
 
 bool MatchParser::ParseStatementCase(ParsingInfo& info, Ptr<MatchStatement>& switchNode) {
-	if (info.Current().type != TokenType::Is) return false;
-	
 	const UInt line = info.Current().line;
-	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
-	info.index++;
+	const UInt startIndex = info.index;
+	
+	if (info.Current().type == TokenType::Is) {
+		bool error;
 
-	bool error;
+		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
+		info.index++;
 
-	switchNode->cases.Add(ParseCaseExpressions(info, error));
+		switchNode->cases.Add(ParseCaseExpressions(info, error));
 
-	info.scopeCount++;
-	switchNode->nodes.Add(ScopeParser::Parse(info, TokenType::Do, ScopeParser::Info("do", "switch case", "switch case", line), true));
-	info.scopeCount--;
+		info.scopeCount++;
+		switchNode->nodes.Add(ScopeParser::Parse(info, TokenType::Do, ScopeParser::Info("do", "case", "case", line), true));
+		info.scopeCount--;
 
-	info.scope = info.scope->Parent<ScopeSymbol>();
-	return true;
+		info.scope = info.scope->Parent<ScopeSymbol>();
+		return true;
+	}
+	else if (Optional<NameList> type = TypeParser::Parse(info)) {
+		if (info.Current().type != TokenType::Colon) {
+			info.index = startIndex;
+			return false;
+		}
+	
+		info.index++;
+
+		if (info.Current().type != TokenType::Name) {
+			info.index = startIndex;
+			return false;
+		}
+
+		Name varName = Name(info.Current().value);
+
+		VariableSymbol* varSym = new VariableSymbol(info.GetFileInfo());
+		varSym->type = *type;
+
+		info.index++;
+
+		if (info.Current().type != TokenType::As) {
+			info.index = startIndex;
+			return false;
+		}
+		
+		info.index++;
+
+		if (Optional<NameList> valType = TypeParser::Parse(info)) {
+			info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
+
+			info.statementNumber++;
+
+			List<Ptr<Expression>> caseList;
+
+			Ptr<TypeConversion> conv = new TypeConversion(info.scope, info.GetFileInfo());
+
+			Ptr<NameExpression> name = new NameExpression(info.scope, info.GetFileInfo());
+			name->name = varName;
+
+			conv->expression = name;
+			conv->isExplicit = true;
+			conv->type = *valType;
+
+			caseList.Add(conv);
+
+			switchNode->cases.Add(caseList);
+
+			info.scopeCount++;
+			switchNode->nodes.Add(ScopeParser::Parse(info, TokenType::Do, ScopeParser::Info("do", "case", "case", line), true));
+			info.scopeCount--;
+
+			info.scope->AddSymbol(varName, varSym);
+
+			info.scope = info.scope->Parent<ScopeSymbol>();
+			return true;
+		}
+	}
+
+	info.index = startIndex;
+	return false;
 }
 
 bool MatchParser::ParseStatementDefault(ParsingInfo& info, Ptr<MatchStatement>& switchNode) {
@@ -130,7 +212,7 @@ bool MatchParser::ParseStatementDefault(ParsingInfo& info, Ptr<MatchStatement>& 
 	info.index++;
 
 	info.scopeCount++;
-	switchNode->def = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("default case", line), true);
+	switchNode->def = ScopeParser::Parse(info, TokenType::None, ScopeParser::Info("else", line), true);
 	info.scopeCount--;
 
 	info.scope = info.scope->Parent<ScopeSymbol>();
@@ -142,25 +224,92 @@ void MatchParser::ParseExpressionCases(ParsingInfo& info, Ptr<MatchExpression>& 
 }
 
 bool MatchParser::ParseExpressionCase(ParsingInfo& info, Ptr<MatchExpression>& switchNode, bool& error) {
-	if (info.Current().type != TokenType::Is) return false;
-
 	const UInt line = info.Current().line;
-	info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
-	info.index++;
+	const UInt startIndex = info.index;
 
-	switchNode->cases.Add(ParseCaseExpressions(info, error));
+	if (info.Current().type == TokenType::Is) {
+		info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
+		info.index++;
 
-	info.scopeCount++;
+		switchNode->cases.Add(ParseCaseExpressions(info, error));
 
-	Ptr<Expression> node = ScopeParser::ParseExpression(info, TokenType::Do, ScopeParser::Info("do", "switch case", "switch case", line));
+		info.scopeCount++;
 
-	if (!node) error = true;
+		Ptr<Expression> node = ScopeParser::ParseExpression(info, TokenType::Do, ScopeParser::Info("do", "switch case", "switch case", line));
 
-	switchNode->nodes.Add(node);
+		if (!node) error = true;
 
-	info.scopeCount--;
-	info.scope = info.scope->Parent<ScopeSymbol>();
-	return true;
+		switchNode->nodes.Add(node);
+
+		info.scopeCount--;
+		info.scope = info.scope->Parent<ScopeSymbol>();
+		return true;
+	}
+	else if (Optional<NameList> type = TypeParser::Parse(info)) {
+		if (info.Current().type != TokenType::Colon) {
+			info.index = startIndex;
+			return false;
+		}
+
+		info.index++;
+
+		if (info.Current().type != TokenType::Name) {
+			info.index = startIndex;
+			return false;
+		}
+
+		Name varName = Name(info.Current().value);
+
+		VariableSymbol* varSym = new VariableSymbol(info.GetFileInfo());
+		varSym->type = *type;
+
+		info.index++;
+
+		if (info.Current().type != TokenType::As) {
+			info.index = startIndex;
+			return false;
+		}
+
+		info.index++;
+
+		if (Optional<NameList> valType = TypeParser::Parse(info)) {
+			info.scope = info.scope->Cast<ScopeSymbol>()->AddScope(info.GetFileInfo());
+
+			info.statementNumber++;
+
+			List<Ptr<Expression>> caseList;
+
+			Ptr<TypeConversion> conv = new TypeConversion(info.scope, info.GetFileInfo());
+
+			Ptr<NameExpression> name = new NameExpression(info.scope, info.GetFileInfo());
+			name->name = varName;
+
+			conv->expression = name;
+			conv->isExplicit = true;
+			conv->type = *valType;
+
+			caseList.Add(conv);
+
+			switchNode->cases.Add(caseList);
+
+			info.scopeCount++;
+
+			Ptr<Expression> node = ScopeParser::ParseExpression(info, TokenType::Do, ScopeParser::Info("do", "switch case", "switch case", line));
+
+			if (!node) error = true;
+
+			switchNode->nodes.Add(node);
+
+			info.scope->AddSymbol(varName, varSym);
+
+			info.scopeCount--;
+			info.scope = info.scope->Parent<ScopeSymbol>();
+			return true;
+		}
+	}
+
+	info.index = startIndex;
+	return false;
 }
 
 bool MatchParser::ParseExpressionDefault(ParsingInfo& info, Ptr<MatchExpression>& switchNode, bool& error) {

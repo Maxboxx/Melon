@@ -1,62 +1,33 @@
 
---- A kiwi variable.
-abst class Var
-	--- Converts the variable to kiwi.
-	abst fun string: toKiwi()
-end
 
---- A named variable.
-class NamedVar ext Var
-	string: name
+-- A kiwi variable
+enum Var
+	-- A named variable
+	name(string),
 	
-	fun init(string: name)
-		self.name = name
-	end
+	-- A derefed variable
+	deref(string)
 	
-	ext fun string: toKiwi()
-		ret self.name
-	end
-end
-
---- A sub variable.
-class SubVar ext Var
-	Var: var
-	string: name
+	--/
+	-- A sub variable
+	sub {
+		Var*: v,
+		string: p
+	}
 	
-	fun init(Var: var, string: name)
-		self.var  = var
-		self.name = name
-	end
+	-- A typed variable
+	type {
+		Var*: v,
+		string: t
+	}
+	/--
 	
-	ext fun string: toKiwi()
-		ret self.var.toKiwi() + "." + self.name
-	end
-end
-
---- A deref variable.
-class DerefVar ext Var
-	Var: var
-	
-	fun init(Var: var)
-		self.var = var
-	end
-	
-	ext fun string: toKiwi()
-		ret "*" + self.var.toKiwi()
-	end
-end
-
---- A variable with an explicit type.
-class TypeVar ext Var
-	Var: var
-	string: type
-	
-	fun init(Var: var, string: type)
-		self.var  = var
-		self.type = type
-	end
-	
-	ext fun string: toKiwi()
-		ret "(" + self.var.toKiwi() + " as " + self.type + ")"
+	fun string: toKiwi()
+		ret match self do
+			string: n as Var.name:  n
+			string: n as Var.deref: "*" + n
+			
+			else: ""
+		end
 	end
 end

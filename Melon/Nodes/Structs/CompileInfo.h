@@ -30,6 +30,9 @@ namespace Melon {
 			/// The optional chain stack.
 			Boxx::Stack<Boxx::String> optionalChains;
 
+			/// True for assignments.
+			bool assign = false;
+
 			~CompileInfo() {}
 
 			/// Returns the name of a new register.

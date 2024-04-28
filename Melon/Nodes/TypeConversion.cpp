@@ -7,6 +7,7 @@
 #include "Melon/Symbols/TemplateSymbol.h"
 #include "Melon/Symbols/ValueSymbol.h"
 #include "Melon/Symbols/EnumSymbol.h"
+#include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -63,12 +64,13 @@ Symbol* TypeConversion::Symbol() const {
 	return Type();
 }
 
-ValueSymbol* TypeConversion::GetValueSymbol() const {
+ValueSymbol* TypeConversion::GetValueSymbol(bool ignoreExpr) const {
 	ErrorLog::AddMarker();
 	ValueSymbol* valueSym = SymbolTable::Find<ValueSymbol>(type, scope ? scope->AbsoluteName() : NameList(true), file, SymbolTable::SearchOptions::ReplaceTemplates);
 	ErrorLog::RevertToMarker();
 
 	if (!valueSym) return nullptr;
+	if (ignoreExpr) return valueSym;
 
 	if (valueSym->ParentType() != expression->Type() || !valueSym->type || !isOptional) {
 		ErrorLog::Error(LogMessage("enum value conversion error"), file);
@@ -87,18 +89,22 @@ Ptr<Kiwi::Value> TypeConversion::Compile(CompileInfo& info) {
 		
 		const String endLbl = info.NewLabel();
 
-		info.AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), opt->Copy(), nullptr));
+		TypeSymbol* const type = Type();
+		VariableSymbol* const hasValSym = type->Contains<VariableSymbol>(Name::HasValue);
+		VariableSymbol* const valSym = type->Contains<VariableSymbol>(Name::Value);
+
+		info.AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), opt->Copy(), nullptr));
 
 		info.AddInstruction(new Kiwi::AssignInstruction(
-			new Kiwi::SubVariable(opt->Copy(), Name::HasValue.name),
+			new Kiwi::SubVariable(opt->Copy(), hasValSym->KiwiName()),
 			new Kiwi::EqualExpression(
 				new Kiwi::SubVariable(var->Copy(), Name::Value.name),
 				new Kiwi::Integer(enumSym->IdentifierType()->KiwiType(), valueSym->value)
 			)
 		));
 
-		info.AddInstruction(new Kiwi::IfInstruction(new Kiwi::SubVariable(opt->Copy(), Name::HasValue.name), nullptr, endLbl));
-		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(opt->Copy(), Name::Value.name), new Kiwi::SubVariable(var, Name::Items.name)));
+		info.AddInstruction(new Kiwi::IfInstruction(new Kiwi::SubVariable(opt->Copy(), hasValSym->KiwiName()), nullptr, endLbl));
+		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(opt->Copy(), valSym->KiwiName()), new Kiwi::SubVariable(var, Name::Items.name)));
 		info.NewInstructionBlock(endLbl);
 
 		return opt;

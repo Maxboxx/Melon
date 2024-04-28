@@ -28,7 +28,7 @@ namespace Melon {
 			~TypeConversion();
 
 			/// Gets the value symbol for the type if the type is an enum value.
-			Symbols::ValueSymbol* GetValueSymbol() const;
+			Symbols::ValueSymbol* GetValueSymbol(bool ignoreExpr = false) const;
 
 			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Symbols::Symbol* Symbol() const override;

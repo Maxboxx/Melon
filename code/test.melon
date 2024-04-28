@@ -2,51 +2,10 @@
 include Melon.Console.log
 
 include Kiwi.Var
-include Kiwi.NamedVar
-include Kiwi.DerefVar
-include Kiwi.SubVar
-include Kiwi.TypeVar
 
-class A
-	int: i
-	
-	fun init(int: i)
-		self.i = i
-	end
-end
+string?: s = nil
 
-class B ext A
-	int: j
-	
-	fun init(int: i, int: j)
-		self.i = i
-		self.j = j
-	end
-end
 
-A: a = A(3)
+Var: v = Var.deref("hello")
 
-A: b = B(1, 2)
-
-log(a)
-log(b)
-
-Var: var = SubVar {
-	var = TypeVar {
-		var = DerefVar {
-			var = TypeVar {
-				var = NamedVar {
-					name = "hello"
-				},
-				
-				type = "A*"
-			}
-		},
-		
-		type = "A"
-	},
-	
-	name = "world"
-}
-
-log(var.toKiwi())
+log(v.toKiwi())
