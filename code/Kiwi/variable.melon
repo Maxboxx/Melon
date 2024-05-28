@@ -6,28 +6,32 @@ enum Var
 	name(string),
 	
 	-- A derefed variable
-	deref(string)
+	deref(string),
 	
-	--/
 	-- A sub variable
-	sub {
-		Var*: v,
-		string: p
-	}
+	sub(SubVar),
 	
 	-- A typed variable
-	type {
-		Var*: v,
-		string: t
-	}
-	/--
+	type(TypeVar)
 	
 	fun string: toKiwi()
 		ret match self do
-			string: n as Var.name:  n
-			string: n as Var.deref: "*" + n
+			string:  n as Var.name:  n
+			string:  n as Var.deref: "*" + n
+			SubVar:  v as Var.sub:   v.v!.toKiwi() + "." + v.p
+			TypeVar: v as Var.type:  "(" + v.v!.toKiwi() + " as " + v.t + ")"
 			
 			else: ""
 		end
 	end
+end
+
+struct SubVar
+	Var*: v
+	string: p
+end
+
+struct TypeVar
+	Var*: v
+	string: t
 end

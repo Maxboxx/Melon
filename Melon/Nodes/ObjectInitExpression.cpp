@@ -121,6 +121,9 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 			if (ClassSymbol* const cs = s->Cast<ClassSymbol>()) {
 				s = cs->BaseClass();
 			}
+			else {
+				s = nullptr;
+			}
 		}
 	}
 	else {

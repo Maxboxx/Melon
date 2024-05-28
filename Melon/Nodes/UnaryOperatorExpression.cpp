@@ -9,6 +9,7 @@
 #include "Melon/Symbols/FunctionSymbol.h"
 #include "Melon/Symbols/TemplateSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/PtrSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
 
@@ -51,7 +52,12 @@ TypeSymbol* UnaryOperatorExpression::Type(TypeSymbol* expected) const {
 Symbol* UnaryOperatorExpression::Symbol() const {
 	if (op == Name::Unwrap) {
 		if (TypeSymbol* const type = operand->Type()) {
-			return type->Find<VariableSymbol>(Name::Value, file);
+			if (PtrSymbol* ptr = type->Cast<PtrSymbol>()) {
+				return ptr->PtrType();
+			}
+			else {
+				return type->Find<VariableSymbol>(Name::Value, file);
+			}
 		}
 	}
 

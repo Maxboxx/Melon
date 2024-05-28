@@ -28,6 +28,7 @@
 #include "Nodes/OptionalToBooleanNode.h"
 #include "Nodes/OptionalNotNode.h"
 #include "Nodes/PtrAssignNode.h"
+#include "Nodes/PtrUnwrapNode.h"
 #include "Nodes/IndexGetNode.h"
 #include "Nodes/IndexSetNode.h"
 #include "Nodes/ListAddNode.h"
@@ -829,6 +830,12 @@ void SymbolTable::SetupPointer() {
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
 	assign1->symbolNode = new PtrAssignNode();
 	assign1->arguments.Add(pointer->AbsoluteName());
+
+	FunctionSymbol* const unwrap  = pointer->AddSymbol(Name::Unwrap, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const unwrap1 = unwrap->AddOverload(new FunctionSymbol(FileInfo()));
+	unwrap1->symbolNode = new PtrUnwrapNode();
+	unwrap1->arguments.Add(pointer->AbsoluteName());
+	unwrap1->returnValues.Add(templateSym->AbsoluteName());
 }
 
 void SymbolTable::SetupArray() {
