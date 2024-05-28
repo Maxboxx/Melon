@@ -27,7 +27,7 @@
 #include "Nodes/OptionalUnwrapNode.h"
 #include "Nodes/OptionalToBooleanNode.h"
 #include "Nodes/OptionalNotNode.h"
-#include "Nodes/ClassAssignNode.h"
+#include "Nodes/PtrAssignNode.h"
 #include "Nodes/IndexGetNode.h"
 #include "Nodes/IndexSetNode.h"
 #include "Nodes/ListAddNode.h"
@@ -461,6 +461,7 @@ void SymbolTable::Setup() {
 	SetupNil();
 	SetupString();
 	SetupOptional();
+	SetupPointer();
 	SetupArray();
 	SetupList();
 }
@@ -809,6 +810,27 @@ void SymbolTable::SetupOptional() {
 	optionalNot1->returnValues.Add(NameList::Bool);
 }
 
+void SymbolTable::SetupPointer() {
+	PtrSymbol* const pointerSym = symbols->AddSymbol(Name::Pointer, new PtrSymbol(FileInfo()));
+	List<NameList> args;
+	args.Add(NameList().Add(Name("")).Add(Name("T")));
+	Name scope = Name("");
+	scope.types = args;
+
+	PtrSymbol* const pointer = new PtrSymbol(FileInfo());
+	pointer->templateArguments.Add(args[0]);
+	pointer->type = args[0];
+	pointerSym->AddTemplateVariant(pointer);
+
+	TemplateSymbol* const templateSym = pointer->AddSymbol(Name("T"), new TemplateSymbol(FileInfo()));
+	templateSym->type = templateSym->AbsoluteName();
+
+	FunctionSymbol* const assign  = pointer->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
+	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
+	assign1->symbolNode = new PtrAssignNode();
+	assign1->arguments.Add(pointer->AbsoluteName());
+}
+
 void SymbolTable::SetupArray() {
 	ClassSymbol* const arraySym = symbols->AddSymbol(Name::Array, new ClassSymbol(FileInfo()));
 	List<NameList> args;
@@ -833,7 +855,7 @@ void SymbolTable::SetupArray() {
 
 	FunctionSymbol* const assign  = arr->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
-	assign1->symbolNode = new ClassAssignNode();
+	assign1->symbolNode = new PtrAssignNode();
 	assign1->arguments.Add(arr->AbsoluteName());
 
 	FunctionSymbol* const index  = arr->AddSymbol(Name::Index, new FunctionSymbol(FileInfo()));
@@ -888,7 +910,7 @@ void SymbolTable::SetupList() {
 
 	FunctionSymbol* const assign  = list->AddSymbol(Name::Assign, new FunctionSymbol(FileInfo()));
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(FileInfo()));
-	assign1->symbolNode = new ClassAssignNode();
+	assign1->symbolNode = new PtrAssignNode();
 	assign1->arguments.Add(list->AbsoluteName());
 
 	FunctionSymbol* const index  = list->AddSymbol(Name::Index, new FunctionSymbol(FileInfo()));

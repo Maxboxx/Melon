@@ -54,6 +54,16 @@ Optional<NameList> TypeParser::Parse(ParsingInfo& info) {
 				SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfoPrev());
 			}
 		}
+		else if (info.Current().type == TokenType::Mul) {
+			info.index++;
+
+			Name optionalScope = Name::Pointer;
+			optionalScope.types = List<NameList>();
+			optionalScope.types->Add(type);
+			type = NameList(optionalScope);
+
+			SymbolTable::SpecializeTemplate(type, info.scope, info.GetFileInfoPrev());
+		}
 		else if (info.Current().type == TokenType::SquareOpen && info.Peek().type == TokenType::Hash && info.Peek(2).type == TokenType::SquareClose) {
 			info.index += 3;
 

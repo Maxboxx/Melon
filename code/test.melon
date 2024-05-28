@@ -3,9 +3,18 @@ include Melon.Console.log
 
 include Kiwi.Var
 
-string?: s = nil
+string?: _ = nil
+ulong*: _ = 3
 
 
-Var: v = Var.deref("hello")
+int:  a = 3
+int?: b = 4
+int*: c = new (5 as int)
 
-log(v.toKiwi())
+int?*: x = new b
+int*?: y = c
+
+log(x)
+log(y)
+
+

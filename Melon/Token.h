@@ -114,6 +114,7 @@ namespace Melon {
 		Any,
 		Ext,
 		Abst,
+		New,
 
 		// Logic
 		Not,

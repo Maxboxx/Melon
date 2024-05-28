@@ -170,6 +170,12 @@ void RootNode::AddTemplateSpecialization(const NameList& name, const NameList& s
 	else if (EnumSymbol* const sym = s->Cast<EnumSymbol>()) {
 		SpecializeType<EnumSymbol, EnumStatement>(sym, templateInfo.value1, templateTypes);
 	}
+	else if (TemplateTypeSymbol* const sym = s->Cast<TemplateTypeSymbol>()) {
+		templateInfo.value1->Parent()->Cast<Symbols::TemplateTypeSymbol>()->AddTemplateVariant(sym);
+		templateInfo.value1->SpecializeTemplate(sym, templateTypes, this);
+
+		sym->templateParent = templateInfo.value1;
+	}
 	else {
 		templateInfo.value1->SpecializeTemplate(s, templateTypes, this);
 	}

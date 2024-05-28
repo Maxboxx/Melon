@@ -216,6 +216,7 @@ namespace Melon {
 			static void SetupBoolean();
 			static void SetupNil();
 			static void SetupOptional();
+			static void SetupPointer();
 			static void SetupArray();
 			static void SetupList();
 			static void SetupString();

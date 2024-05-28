@@ -57,6 +57,7 @@ const Name Name::As = Name("as");
 
 const Name Name::TemplateSymbol = Name("<template>");
 const Name Name::Optional       = Name("?");
+const Name Name::Pointer        = Name("*");
 const Name Name::Unwrap         = Name("!");
 const Name Name::Default        = Name("??");
 const Name Name::HasValue       = Name("<hasvalue>");

@@ -198,6 +198,9 @@ namespace Melon {
 			/// The {?} name.
 			static const Name Optional;
 
+			/// The {*} name.
+			static const Name Pointer;
+
 			/// The {!} name.
 			static const Name Unwrap;
 

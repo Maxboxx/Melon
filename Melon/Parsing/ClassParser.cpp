@@ -11,7 +11,7 @@
 #include "Melon/Symbols/ClassSymbol.h"
 #include "Melon/Symbols/TemplateSymbol.h"
 
-#include "Melon/Symbols/Nodes/ClassAssignNode.h"
+#include "Melon/Symbols/Nodes/PtrAssignNode.h"
 #include "Melon/Symbols/Nodes/ClassCastNode.h"
 
 using namespace Boxx;
@@ -76,7 +76,7 @@ Ptr<ClassStatement> ClassParser::Parse(ParsingInfo& info) {
 	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo());
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 	assign1->arguments.Add(sn->symbol->AbsoluteName());
-	assign1->symbolNode = new ClassAssignNode();
+	assign1->symbolNode = new PtrAssignNode();
 	sn->symbol->AddSymbol(Name::Assign, assign);
 
 	ClassSymbol* base = sn->symbol;
@@ -84,7 +84,7 @@ Ptr<ClassStatement> ClassParser::Parse(ParsingInfo& info) {
 	while (base = base->BaseClass()) {
 		FunctionSymbol* const assign2 = base->Contains<FunctionSymbol>(Name::Assign)->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 		assign2->arguments.Add(sn->symbol->AbsoluteName());
-		assign2->symbolNode = new ClassAssignNode();
+		assign2->symbolNode = new PtrAssignNode();
 
 		FunctionSymbol* convert = base->Contains<FunctionSymbol>(Name::As);
 
