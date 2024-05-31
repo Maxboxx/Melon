@@ -1,7 +1,10 @@
 #include "EnumStatement.h"
 
+#include "StructStatement.h"
+
 #include "Melon/Symbols/EnumSymbol.h"
 #include "Melon/Symbols/ValueSymbol.h"
+#include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/IntegerSymbol.h"
 
 using namespace Boxx;
@@ -31,6 +34,10 @@ Ptr<Kiwi::Value> EnumStatement::Compile(CompileInfo& info) {
 
 	info.program->AddStruct(struct_);
 
+	for (Weak<StructStatement> struct_ : structs) {
+		struct_->Compile(info);
+	}
+
 	return nullptr;
 }
 
@@ -42,19 +49,29 @@ StringBuilder EnumStatement::ToMelon(const UInt indent) const {
 	String tabs = String('\t').Repeat(indent + 1);
 
 	for (UInt i = 0; i < vars.Count(); i++) {
-		ValueSymbol* valueSym = symbol->Find<ValueSymbol>(vars[i], file);
-
 		sb += tabs;
-		sb += vars[i].ToString();
 
-		if (valueSym->type) {
-			sb += '(';
-			sb += valueSym->type->ToSimpleString();
-			sb += ')';
+		if (ValueSymbol* valueSym = symbol->Contains<ValueSymbol>(vars[i])) {
+			sb += vars[i].ToString();
+
+			if (valueSym->type) {
+				sb += '(';
+				sb += valueSym->type->ToSimpleString();
+				sb += ')';
+			}
+
+			sb += " = ";
+			sb += String::ToString(valueSym->value);
+		}
+		else if (StructSymbol* structSym = symbol->Contains<StructSymbol>(vars[i])) {
+			if (structSym->node) {
+				sb += structSym->node->ToMelon(indent);
+			}
+
+			sb += " = ";
+			sb += String::ToString(structSym->value);
 		}
 
-		sb += " = ";
-		sb += String::ToString(valueSym->value);
 		sb += i != vars.Count() - 1 ? ",\n" : "\n";
 	}
 

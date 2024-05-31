@@ -21,6 +21,9 @@ namespace Melon {
 			/// The enum symbol.
 			Symbols::EnumSymbol* symbol;
 
+			/// The enum structs.
+			Boxx::List<Ptr<StructStatement>> structs;
+
 			EnumStatement(Symbols::Symbol* const scope, const FileInfo& file);
 			~EnumStatement();
 

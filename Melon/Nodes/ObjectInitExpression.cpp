@@ -70,6 +70,7 @@ Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 	// Compile vars
 	for (UInt i = 0; i < vars.Count(); i++) {
 		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
+		info.PushExpectedType(var->Type());
 
 		if (type->Is<StructSymbol>()) {
 			Ptr<KiwiVariable> kv = new KiwiVariable(new Kiwi::SubVariable(value->Copy(), var->KiwiName()), var->Type()->AbsoluteName());
@@ -79,6 +80,8 @@ Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 			Ptr<KiwiVariable> kv = new KiwiVariable(new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), var->KiwiName()), var->Type()->AbsoluteName());
 			CompileAssignment(kv, expressions[i], info, expressions[i]->File());
 		}
+
+		info.PopExpectedType();
 	}
 
 	return value;
@@ -96,7 +99,7 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 	ScanResult result = expression->Scan(info);
 	result.SelfUseCheck(info, expression->File());
 	
-	TypeSymbol* const type = Type();
+	TypeSymbol* const type = Type(info.PeekExpectedType());
 
 	if (type == nullptr) return result;
 
@@ -141,8 +144,10 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 		VariableSymbol* const v = type->Find<VariableSymbol>(vars[i], file);
 		TypeSymbol* const varType = v->Type();
 
+		info.PushExpectedType(varType);
 		Ptr<TypeExpression> tn = new TypeExpression(varType->AbsoluteName());
 		ScanAssignment(tn, expressions[i], info, expressions[i]->File());
+		info.PopExpectedType();
 	}
 
 	// Scan expressions

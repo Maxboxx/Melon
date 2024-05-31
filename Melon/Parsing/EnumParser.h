@@ -8,6 +8,10 @@
 
 ///N Melon::Parsing
 namespace Melon {
+	namespace Nodes {
+		class StructStatement;
+	}
+
 	namespace Parsing {
 		/// Parser for enums.
 		class EnumParser {
@@ -21,6 +25,7 @@ namespace Melon {
 				Boxx::Optional<Symbols::NameList> type;
 				Boxx::ULong   value;
 				Boxx::UInt    line;
+				Ptr<Nodes::StructStatement> struct_;
 			};
 
 			static Ptr<Nodes::EnumStatement> ParseName(ParsingInfo& info, const Boxx::UInt enumLine);

@@ -2,6 +2,7 @@
 
 #include "Melon/Symbols/EnumSymbol.h"
 #include "Melon/Symbols/ValueSymbol.h"
+#include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/IntegerSymbol.h"
 
 using namespace Boxx;
@@ -37,7 +38,7 @@ ScanResult IsExpression::Scan(ScanInfoStack& info) {
 	Symbols::Symbol* sym = TypeSymbol();
 	Symbols::TypeSymbol* type = expression->Type();
 
-	if (type->Is<EnumSymbol>() && type == sym->ParentType() && sym->Is<ValueSymbol>()) {
+	if (type->Is<EnumSymbol>() && type == sym->ParentType() && (sym->Is<ValueSymbol>() || sym->Is<StructSymbol>())) {
 		
 	}
 	else {
@@ -51,18 +52,25 @@ Ptr<Kiwi::Value> IsExpression::Compile(CompileInfo& info) {
 	Symbols::Symbol* sym = TypeSymbol();
 	Symbols::TypeSymbol* type = expression->Type();
 
-	if (type->Is<EnumSymbol>() && type == sym->ParentType() && sym->Is<ValueSymbol>()) {
+	if (type->Is<EnumSymbol>() && type == sym->ParentType()) {
 		EnumSymbol* enumSym = type->Cast<EnumSymbol>();
-		ValueSymbol* value  = sym->Cast<ValueSymbol>();
+		Long value;
+
+		if (ValueSymbol* const valueSym = sym->Cast<ValueSymbol>()) {
+			value = valueSym->value;
+		}
+		else if (StructSymbol* const structSym = sym->Cast<StructSymbol>()) {
+			value = structSym->value;
+		}
 
 		Ptr<Kiwi::Variable> var = expression->Compile(info).AsPtr<Kiwi::Variable>();
 		Ptr<Kiwi::Variable> res = new Kiwi::Variable(info.NewRegister());
 
 		info.AddInstruction(new Kiwi::AssignInstruction(
 			SymbolTable::Bool->KiwiType(), res->Copy(),
-			new Kiwi::EqualExpression(
+				new Kiwi::EqualExpression(
 				new Kiwi::SubVariable(var->Copy(), Name::Value.name),
-				new Kiwi::Integer(enumSym->IdentifierType()->KiwiType(), value->value)
+				new Kiwi::Integer(enumSym->IdentifierType()->KiwiType(), value)
 			) 
 		));
 

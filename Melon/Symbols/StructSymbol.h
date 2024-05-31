@@ -22,6 +22,9 @@ namespace Melon {
 
 			/// The struct node for this symbol.
 			Weak<Melon::Nodes::StructStatement> node;
+
+			/// The enum value.
+			Boxx::Long value;
 		};
 	}
 }

@@ -137,7 +137,16 @@ namespace Melon {
 					if (Weak<TypeConversion> conv = expr.As<TypeConversion>()) {
 						Ptr<IsExpression> isExpr = new IsExpression(expr->scope, expr->File());
 						isExpr->expression = new KiwiVariable(match->Copy(), this->match->Type()->AbsoluteName());
-						isExpr->type = conv->GetValueSymbol(true)->AbsoluteName();
+
+						Symbols::ValueSymbol* const valueSym = conv->GetValueSymbol(true);
+						
+						if (valueSym) {
+							isExpr->type = valueSym->AbsoluteName();
+						}
+						else {
+							isExpr->type = conv->Type()->AbsoluteName();
+						}
+
 						comp = isExpr->Compile(info);
 					}
 					else if (Symbols::ValueSymbol* const valSym = expr->Symbol<Symbols::ValueSymbol>()) {

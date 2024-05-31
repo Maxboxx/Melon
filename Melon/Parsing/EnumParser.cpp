@@ -4,6 +4,7 @@
 #include "IntegerParser.h"
 #include "TypeParser.h"
 #include "TemplateParser.h"
+#include "StructParser.h"
 
 #include "Melon/Symbols/EnumSymbol.h"
 #include "Melon/Symbols/IntegerSymbol.h"
@@ -14,9 +15,11 @@
 #include "Melon/Symbols/Nodes/EnumAssignNode.h"
 #include "Melon/Symbols/Nodes/IntegerConvertNode.h"
 #include "Melon/Symbols/Nodes/EnumCompareNode.h"
+#include "Melon/Symbols/Nodes/EnumStructAssignNode.h"
 
 #include "Melon/Nodes/EmptyStatement.h"
 #include "Melon/Nodes/FunctionBody.h"
+#include "Melon/Nodes/StructStatement.h"
 #include "Melon/Nodes/Integer.h"
 
 #include "Kiwi/Old/Kiwi.h"
@@ -50,11 +53,17 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	List<EnumValue> values = ParseValues(info);
 
 	for (const EnumValue& value : values) {
-		ValueSymbol* v = new ValueSymbol(info.GetFileInfo(value.line));
-		v->value = value.value;
-		v->type = value.type;
+		if (value.struct_) {
+			value.struct_->symbol->value = value.value;
+		}
+		else {
+			ValueSymbol* v = new ValueSymbol(info.GetFileInfo(value.line));
+			v->value = value.value;
+			v->type = value.type;
 
-		enumSymbol->AddSymbol(value.name, v);
+			enumSymbol->AddSymbol(value.name, v);
+		}
+
 		enumSymbol->members.Add(value.name);
 		en->vars.Add(value.name);
 	}
@@ -71,6 +80,28 @@ Ptr<EnumStatement> EnumParser::Parse(ParsingInfo& info) {
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo()));
 	assign1->arguments.Add(enumSymbol->AbsoluteName());
 	assign1->symbolNode = new EnumAssignNode();
+
+	for (const EnumValue& value : values) {
+		if (value.struct_) {
+			FunctionSymbol* const assign2 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo()));
+			assign2->arguments.Add(value.struct_->symbol->AbsoluteName());
+			assign2->symbolNode = new EnumStructAssignNode(value.value);
+
+			FunctionSymbol* as = value.struct_->symbol->Contains<FunctionSymbol>(Name::As);
+
+			if (!as) {
+				as = value.struct_->symbol->AddSymbol(Name::As, new FunctionSymbol(FileInfo()));
+			}
+
+			FunctionSymbol* const as1 = as->AddOverload(new FunctionSymbol(FileInfo()));
+			as1->symbolNode = new EnumStructAssignNode(value.value);
+			as1->arguments.Add(value.struct_->symbol->AbsoluteName());
+			as1->returnValues.Add(enumSymbol->AbsoluteName());
+			as1->isExplicit = false;
+
+			en->structs.Add(value.struct_);
+		}
+	}
 
 	// Only add comparisons if the enum is plain
 	if (enumSymbol->IsPlain()) {
@@ -145,6 +176,9 @@ Optional<EnumParser::EnumValue> EnumParser::ParseValue(ParsingInfo& info, ULong&
 			// TODO: error
 			ErrorLog::Error(LogMessage("enum type error"), info.GetFileInfo());
 		}
+	}
+	else if (Ptr<StructStatement> s = StructParser::ParseCurly(value.name, info)) {
+		value.struct_ = s;
 	}
 
 	if (info.Current().type == TokenType::Assign) {

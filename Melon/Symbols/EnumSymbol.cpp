@@ -3,6 +3,7 @@
 #include "SymbolTable.h"
 #include "TypeSymbol.h"
 #include "ValueSymbol.h"
+#include "StructSymbol.h"
 #include "IntegerSymbol.h"
 
 #include "Melon/Nodes/RootNode.h"
@@ -57,7 +58,7 @@ void EnumSymbol::UpdateSize() {
 	UInt valueSize = 0;
 
 	for (const Symbols::Name& name : members) {
-		if (ValueSymbol* const value = Find<ValueSymbol>(name, file)) {
+		if (ValueSymbol* const value = Contains<ValueSymbol>(name)) {
 			if (TypeSymbol* const type = value->ValueType()) {
 				if (type->Size() == 0) {
 					type->UpdateSize();
@@ -65,6 +66,13 @@ void EnumSymbol::UpdateSize() {
 				
 				valueSize = Math::Max(valueSize, type->Size());
 			}
+		}
+		else if (StructSymbol* const value = Contains<StructSymbol>(name)) {
+			if (value->Size() == 0) {
+				value->UpdateSize();
+			}
+
+			valueSize = Math::Max(valueSize, value->Size());
 		}
 	}
 

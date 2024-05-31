@@ -2,25 +2,25 @@
 include Melon.Console.log
 
 include Kiwi.Var
-include Kiwi.SubVar
-include Kiwi.TypeVar
 
 string?: _ = nil
 ulong*: _ = 3
+Var.sub*?: _ = nil
+Var.type*?: _ = nil
 
 
-Var: v = Var.sub(SubVar {
-	v = new Var.type(TypeVar {
-		v = new Var.sub(SubVar {
+Var: v = Var.sub {
+	v = new Var.type {
+		v = new Var.sub {
 			v = new Var.deref("a"),
 			p = "b"
-		}),
+		},
 		
 		t = "A"
-	}),
+	},
 	
 	p = "c"
-})
+}
 
 
 log(v)

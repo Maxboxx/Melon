@@ -142,7 +142,7 @@ NameList Node::CombineSideEffects(const NameList& scope1, const NameList& scope2
 
 ScanResult Node::ScanAssignment(Weak<Expression> assignable, Weak<Expression> value, ScanInfoStack& info, const FileInfo& file) {
 	List<TypeSymbol*> args;
-	args.Add(value->Type());
+	args.Add(value->Type(info.PeekExpectedType()));
 
 	if (TypeSymbol* const type = assignable->Type()) {
 		if (FunctionSymbol* const func = type->Find<FunctionSymbol>(Name::Assign, file)) {
@@ -154,7 +154,7 @@ ScanResult Node::ScanAssignment(Weak<Expression> assignable, Weak<Expression> va
 }
 
 Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {
-	if (FunctionSymbol* assignFunc = assignable->AssignFunc(value->Type())) {
+	if (FunctionSymbol* assignFunc = assignable->AssignFunc(value->Type(info.PeekExpectedType()))) {
 		return assignable->CompileAssignFunc(assignFunc, value, info);
 	}
 	
@@ -178,7 +178,7 @@ Ptr<Kiwi::Value> Node::CompileAssignment(Weak<Expression> assignable, Weak<Expre
 }
 
 Ptr<Kiwi::Value> Node::CompileAssignmentSimple(Weak<Expression> assignable, Weak<Expression> value, CompileInfo& info, const FileInfo& file, bool includeType) {
-	const Kiwi::Type type       = assignable->Type()->KiwiType();
+	const Kiwi::Type type = assignable->Type()->KiwiType();
 
 	bool assign = info.assign;
 	info.assign = true;

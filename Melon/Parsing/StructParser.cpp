@@ -26,10 +26,31 @@ Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 
 	const UInt structLine = info.Current().line;
 	info.index++;
-	MapSymbol* const temp = info.scope;
 
-	Ptr<StructStatement> sn = ParseName(info, structLine);
-	info.scope = sn->symbol;
+	Ptr<StructStatement> sn = ParseName(nullptr, info, structLine);
+	
+	return ParseBody(sn, info, structLine, false);
+}
+
+Ptr<StructStatement> StructParser::ParseCurly(const Name& name, ParsingInfo& info) {
+	const UInt structLine = info.Current().line;
+
+	Ptr<StructStatement> sn = ParseName(name, info, structLine);
+
+	return ParseBody(sn, info, structLine, true);
+}
+
+Ptr<StructStatement> StructParser::ParseBody(Ptr<StructStatement> statement, ParsingInfo& info, const UInt structLine, bool curly) {
+	if (curly) {
+		if (info.Current().type != TokenType::CurlyOpen) {
+			return nullptr;
+		}
+
+		info.index++;
+	}
+
+	MapSymbol* const temp = info.scope;
+	info.scope = statement->symbol;
 
 	while (true) {
 		bool found = false;
@@ -40,55 +61,71 @@ Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 				var->type = nn->types[i];
 
 				Name name = nn->names[i];
-				sn->symbol->AddSymbol(name, var);
-				sn->symbol->members.Add(name);
+				statement->symbol->AddSymbol(name, var);
+				statement->symbol->members.Add(name);
 			}
 
 			found = true;
 		}
-		else if (FunctionParser::Parse(info, sn->symbol)) {
+		else if (FunctionParser::Parse(info, statement->symbol)) {
 			found = true;
 		}
 
 		if (!found) break;
 	}
 
-	if (info.Current().type != TokenType::End) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "struct", structLine), info.GetFileInfoPrev());
-		info.scope = temp;
-		return nullptr;
+	if (curly) {
+		if (info.Current().type != TokenType::CurlyClose) {
+			ErrorLog::Error(LogMessage("error.syntax.expected.close_at", LogMessage::Quote("}"), "struct", structLine), info.GetFileInfoPrev());
+			info.scope = temp;
+			return nullptr;
+		}
+	}
+	else {
+		if (info.Current().type != TokenType::End) {
+			ErrorLog::Error(LogMessage("error.syntax.expected.end_at", "struct", structLine), info.GetFileInfoPrev());
+			info.scope = temp;
+			return nullptr;
+		}
 	}
 
 	FunctionSymbol* const assign = new FunctionSymbol(info.GetFileInfo());
 	FunctionSymbol* const assign1 = assign->AddOverload(new FunctionSymbol(info.GetFileInfo()));
-	assign1->arguments.Add(sn->symbol->AbsoluteName());
+	assign1->arguments.Add(statement->symbol->AbsoluteName());
 	assign1->symbolNode = new StructAssignNode();
-	sn->symbol->AddSymbol(Name::Assign, assign);
+	statement->symbol->AddSymbol(Name::Assign, assign);
 
 	info.index++;
 	info.scope = temp;
-	return sn;
+	return statement;
 }
 
-Ptr<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt structLine) {
+Ptr<StructStatement> StructParser::ParseName(Optional<Name> name, ParsingInfo& info, const UInt structLine) {
 	static Regex lower = Regex("^%l");
 	static Regex underscore = Regex("%a_+%a");
 
-	if (info.Current().type != TokenType::Name) {
-		ErrorLog::Error(LogMessage("error.syntax.expected.name.struct"), info.GetFileInfo(structLine));
+	const bool hasName = (bool)name;
+
+	if (!name) {
+		if (info.Current().type != TokenType::Name) {
+			ErrorLog::Error(LogMessage("error.syntax.expected.name.struct"), info.GetFileInfo(structLine));
+		}
+
+		name = Name(info.Current().value);
+
+		if (lower.Match(info.Current().value)) {
+			ErrorLog::Info(LogMessage("info.name.upper", "struct", info.Current().value), info.GetFileInfo());
+		}
+
+		if (underscore.Match(info.Current().value)) {
+			ErrorLog::Info(LogMessage("info.name.under", "struct", info.Current().value), info.GetFileInfo());
+		}
+
+		info.index++;
 	}
 
-	Name structName = Name(info.Current().value);
+	Name structName = *name;
 
-	if (lower.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.upper", "struct", info.Current().value), info.GetFileInfo());
-	}
-
-	if (underscore.Match(info.Current().value)) {
-		ErrorLog::Info(LogMessage("info.name.under", "struct", info.Current().value), info.GetFileInfo());
-	}
-
-	info.index++;
 	StructSymbol* sym;
 	bool redefine = false;
 	
@@ -100,26 +137,28 @@ Ptr<StructStatement> StructParser::ParseName(ParsingInfo& info, const UInt struc
 		sym = info.scope->AddSymbol(structName, new StructSymbol(info.GetFileInfo(structLine)));
 	}
 	
-	if (Optional<List<NameList>> templateList = TemplateParser::ParseDefine(info)) {
-		StructSymbol* tsym = new StructSymbol(info.GetFileInfo(structLine));
+	if (!hasName) {
+		if (Optional<List<NameList>> templateList = TemplateParser::ParseDefine(info)) {
+			StructSymbol* tsym = new StructSymbol(info.GetFileInfo(structLine));
 
-		for (const NameList& arg : *templateList) {
-			if (arg[0].IsEmpty()) {
-				tsym->AddSymbol(arg[1], new TemplateSymbol(info.GetFileInfo(structLine)));
+			for (const NameList& arg : *templateList) {
+				if (arg[0].IsEmpty()) {
+					tsym->AddSymbol(arg[1], new TemplateSymbol(info.GetFileInfo(structLine)));
+				}
+
+				tsym->templateArguments.Add(arg);
 			}
 
-			tsym->templateArguments.Add(arg);
+			Name templateScope = Name("");
+			templateScope.types = *templateList;
+
+			sym->AddTemplateVariant(tsym);
+			sym = tsym;
+			info.statementNumber++;
 		}
-
-		Name templateScope = Name("");
-		templateScope.types = *templateList;
-
-		sym->AddTemplateVariant(tsym);
-		sym = tsym;
-		info.statementNumber++;
-	}
-	else if (redefine) {
-		info.scope->AddSymbol(structName, sym);
+		else if (redefine) {
+			info.scope->AddSymbol(structName, sym);
+		}
 	}
 
 	Ptr<StructStatement> sn = new StructStatement(info.scope, info.GetFileInfo(structLine));

@@ -55,6 +55,27 @@ namespace Melon {
 				return &stack.Peek();
 			}
 
+			/// Peeks the expected type.
+			Symbols::TypeSymbol* PeekExpectedType() const {
+				if (expectedTypes.Count() > 0) {
+					return expectedTypes.Peek();
+				}
+
+				return nullptr;
+			}
+
+			/// Pops the expected type.
+			void PopExpectedType() {
+				if (expectedTypes.Count() > 0) {
+					expectedTypes.Pop();
+				}
+			}
+
+			/// Pushes the expected type.
+			void PushExpectedType(Symbols::TypeSymbol* type) {
+				expectedTypes.Push(type);
+			}
+
 			/// All used variables.
 			Boxx::Set<Symbols::VariableSymbol*> usedVariables;
 
@@ -69,6 +90,7 @@ namespace Melon {
 
 		private:
 			Boxx::Stack<ScanInfo> stack;
+			Boxx::Stack<Symbols::TypeSymbol*> expectedTypes;
 		};
 	}
 }

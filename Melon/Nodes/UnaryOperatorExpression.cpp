@@ -99,7 +99,7 @@ ScanResult UnaryOperatorExpression::Scan(ScanInfoStack& info) {
 	ScanResult result = operand->Scan(info);
 	result.SelfUseCheck(info, operand->File());
 
-	if (op == Name::Unwrap) {
+	if (op == Name::Unwrap && !operand->Type()->Is<PtrSymbol>()) {
 		// TODO: fix
 		ErrorLog::Warning(LogMessage::Message("unwrap operator does not work properly for nil values"), file);
 	}
