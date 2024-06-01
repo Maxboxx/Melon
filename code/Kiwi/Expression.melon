@@ -1,0 +1,29 @@
+
+include Value
+
+enum Expr
+	value(Value),
+	
+	add {
+		Value: a
+		Value: b
+		
+		fun init(Value: a, Value: b)
+			self.a = a
+			self.b = b
+		end
+	}
+	
+	fun string: toKiwi()
+		ret match self do
+			Value: v as Expr.value: v.toKiwi()
+			
+			Expr.add: a as Expr.add do
+				"add " + a.a.toKiwi() + ", " + a.b.toKiwi()
+			end
+			
+			else: ""
+		end
+	end
+end
+

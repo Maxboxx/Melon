@@ -209,6 +209,15 @@
 		</Expand>
 	</Type>
 
+	<Type Name="Melon::Symbols::EnumSymbol">
+		<DisplayString>EnumSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="members">members</Item>
+			<Item Name="symbols">symbols</Item>
+		</Expand>
+	</Type>
+
 	<Type Name="Melon::Symbols::StructSymbol">
 		<DisplayString>StructSymbol {name}</DisplayString>
 
@@ -231,6 +240,14 @@
 
 	<Type Name="Melon::Symbols::TemplateSymbol">
 		<DisplayString>TemplateSymbol {name}</DisplayString>
+
+		<Expand>
+			<Item Name="type">type</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Melon::Symbols::PtrSymbol">
+		<DisplayString>PtrSymbol {name}</DisplayString>
 
 		<Expand>
 			<Item Name="type">type</Item>

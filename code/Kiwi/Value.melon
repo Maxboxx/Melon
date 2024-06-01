@@ -1,0 +1,17 @@
+
+include Var
+
+enum Value
+	num(int),
+	var(Var)
+	
+	fun string: toKiwi()
+		ret match self do
+			int: i as Value.num: "<num>"
+			Var: v as Value.var: v.toKiwi()
+			
+			else: ""
+		end
+	end
+end
+

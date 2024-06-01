@@ -66,13 +66,14 @@ Ptr<Kiwi::Value> Melon::Nodes::Array::Compile(CompileInfo& info) {
 Ptr<Kiwi::Value> Melon::Nodes::Array::CompileArray(TemplateTypeSymbol* type, CompileInfo& info) {
 	Ptr<Kiwi::Variable> arr = new Kiwi::Variable(info.NewRegister());
 
-	VariableSymbol* lenSym = type->Find<VariableSymbol>(Name::Length, file);
+	VariableSymbol* lenSym   = type->Find<VariableSymbol>(Name::Length, file);
+	VariableSymbol* itemsSym = type->Find<VariableSymbol>(Name::Items, file);
 	TypeSymbol* itemType = type->TemplateArgument(0);
 	UInt size = lenSym->Size();
 	size += itemType->Size() * items.Count();
 
 	info.AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), arr->Copy(), new Kiwi::AllocExpression(size)));
-	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(new Kiwi::DerefVariable(arr->name), Name::Length.name), new Kiwi::Integer(lenSym->KiwiType(), items.Count())));
+	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(new Kiwi::DerefVariable(arr->name), lenSym->KiwiName()), new Kiwi::Integer(lenSym->KiwiType(), items.Count())));
 
 	Kiwi::Type kiwiType = type->Find<VariableSymbol>(Name::Items, file)->KiwiType();
 
@@ -80,7 +81,7 @@ Ptr<Kiwi::Value> Melon::Nodes::Array::CompileArray(TemplateTypeSymbol* type, Com
 
 	for (UInt i = 0; i < items.Count(); i++) {
 		Ptr<Kiwi::Value> value = items[i]->Compile(info);
-		info.AddInstruction(new Kiwi::OffsetAssignInstruction(new Kiwi::SubVariable(new Kiwi::DerefVariable(arr->name), Name::Items.name), value, kiwiType, i));
+		info.AddInstruction(new Kiwi::OffsetAssignInstruction(new Kiwi::SubVariable(new Kiwi::DerefVariable(arr->name), itemsSym->KiwiName()), value, kiwiType, i));
 	}
 
 	info.PopExpectedType();
@@ -104,12 +105,12 @@ Ptr<Kiwi::Value> Melon::Nodes::Array::CompileList(TemplateTypeSymbol* type, Comp
 	UInt size = Math::Max(4U, items.Count());
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
-		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Length.name),
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), lenSym->KiwiName()),
 		new Kiwi::Integer(lenSym->KiwiType(), items.Count())
 	));
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
-		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Capacity.name),
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), capSym->KiwiName()),
 		new Kiwi::Integer(capSym->KiwiType(), size)
 	));
 
@@ -140,7 +141,7 @@ Ptr<Kiwi::Value> Melon::Nodes::Array::CompileList(TemplateTypeSymbol* type, Comp
 	info.PopExpectedType();
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
-		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), Name::Items.name),
+		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), itemsSym->KiwiName()),
 		itemsArr
 	));
 

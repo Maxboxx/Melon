@@ -28,7 +28,7 @@ Ptr<Kiwi::Value> IndexGetNode::Compile(List<Weak<Expression>> operands, CompileI
 
 		Ptr<Kiwi::Variable> items = new Kiwi::Variable(info.NewRegister());
 
-		info.AddInstruction(new Kiwi::AssignInstruction(type, items->Copy(), new Kiwi::SubVariable(arr, Name::Items.name)));
+		info.AddInstruction(new Kiwi::AssignInstruction(type, items->Copy(), new Kiwi::SubVariable(arr, itemsSym->KiwiName())));
 
 		var = new Kiwi::Variable(info.NewRegister());
 
@@ -50,7 +50,7 @@ Ptr<Kiwi::Value> IndexGetNode::Compile(List<Weak<Expression>> operands, CompileI
 		info.AddInstruction(new Kiwi::AssignInstruction(
 			type, var->Copy(), 
 			new Kiwi::OffsetExpression(
-				new Kiwi::SubVariable(arr, Name::Items.name),
+				new Kiwi::SubVariable(arr, itemsSym->KiwiName()),
 				type, type, operands[1]->Compile(info)
 			)
 		));

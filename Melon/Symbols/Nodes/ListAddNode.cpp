@@ -1,5 +1,7 @@
 #include "ListAddNode.h"
 
+#include "Melon/Nodes/TypeConversion.h"
+
 #include "Melon/Symbols/TemplateTypeSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/PtrSymbol.h"
@@ -90,10 +92,15 @@ Ptr<Kiwi::Value> ListAddNode::Compile(List<Weak<Expression>> operands, CompileIn
 		arrayType->KiwiType(), items->Copy(),
 		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), itemsSym->KiwiName())
 	));
+	
+	Ptr<TypeConversion> conv = new TypeConversion(operands[1]->scope, operands[1]->File());
+	conv->isExplicit = false;
+	conv->type = itemType->AbsoluteName();
+	conv->expression = new WeakExpression(operands[1]);
 
 	info.AddInstruction(new Kiwi::OffsetAssignInstruction(
 		new Kiwi::DerefVariable(items->name),
-		operands[1]->Compile(info),
+		conv->Compile(info),
 		itemType->KiwiType(),
 		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), lenSym->KiwiName())
 	));

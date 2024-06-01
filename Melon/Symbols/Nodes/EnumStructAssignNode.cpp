@@ -35,7 +35,7 @@ Ptr<Kiwi::Value> EnumStructAssignNode::Compile(Weak<Expression> operand1, Weak<E
 
 	Ptr<Kiwi::Variable> var = operand1->Compile(info).AsPtr<Kiwi::Variable>();
 
-	if (includeType) {
+	if (Node::IncludeType(var, includeType)) {
 		info.AddInstruction(new Kiwi::AssignInstruction(type->KiwiType(), var->Copy(), nullptr));
 	}
 

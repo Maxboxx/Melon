@@ -30,9 +30,14 @@ Ptr<Kiwi::Value> StringLiteral::Compile(CompileInfo& info) {
 	VariableSymbol* lenSym = SymbolTable::String->Find<VariableSymbol>(Name::Length, File());
 	VariableSymbol* strSym = SymbolTable::String->Find<VariableSymbol>(Name::Items, File());
 
+	String str = value;
+	str = str.Replace("\\\\", "\\");
+	str = str.Replace("\\n", "\n");
+	str = str.Replace("\\t", "\t");
+
 	info.AddInstruction(new Kiwi::AssignInstruction(SymbolTable::String->KiwiType(), var->Copy(), nullptr));
-	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), lenSym->KiwiName()), new Kiwi::Integer(SymbolTable::UInt->KiwiType(), value.Length())));
-	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), strSym->KiwiName()), new Kiwi::StringValue(value)));
+	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), lenSym->KiwiName()), new Kiwi::Integer(SymbolTable::UInt->KiwiType(), str.Length())));
+	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), strSym->KiwiName()), new Kiwi::StringValue(str)));
 	
 	return var;
 }

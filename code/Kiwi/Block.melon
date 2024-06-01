@@ -1,0 +1,17 @@
+
+include Inst
+
+
+struct Block
+	Inst[]: insts
+	
+	fun string: toKiwi()
+		string: str = ""
+		
+		for int: i = 0, < #self.insts do
+			str = str + "\t" + self.insts[i].toKiwi() + "\n"
+		end
+		
+		ret str
+	end
+end

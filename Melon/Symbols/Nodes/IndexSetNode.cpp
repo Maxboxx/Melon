@@ -35,7 +35,7 @@ Ptr<Kiwi::Value> IndexSetNode::Compile(List<Weak<Expression>> operands, CompileI
 
 		Ptr<Kiwi::Variable> items = new Kiwi::Variable(info.NewRegister());
 
-		info.AddInstruction(new Kiwi::AssignInstruction(type, items->Copy(), new Kiwi::SubVariable(arr, Name::Items.name)));
+		info.AddInstruction(new Kiwi::AssignInstruction(type, items->Copy(), new Kiwi::SubVariable(arr, itemsSym->KiwiName())));
 
 		type.pointers--;
 
@@ -58,7 +58,7 @@ Ptr<Kiwi::Value> IndexSetNode::Compile(List<Weak<Expression>> operands, CompileI
 		convert->expression = new KiwiValue(operands[2]->Compile(info), operands[2]->Type()->AbsoluteName());
 
 		info.AddInstruction(new Kiwi::OffsetAssignInstruction(
-			new Kiwi::SubVariable(arr, Name::Items.name),
+			new Kiwi::SubVariable(arr, itemsSym->KiwiName()),
 			convert->Compile(info), type, index
 		));
 	}

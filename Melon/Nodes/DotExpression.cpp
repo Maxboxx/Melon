@@ -112,6 +112,16 @@ Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
 	}
 	// Compile struct value
 	else if (value) {
+		TypeSymbol* const t = Type();
+
+		if (t->Is<ClassSymbol>() && !info.assign) {
+			Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
+
+			info.AddInstruction(new Kiwi::AssignInstruction(t->KiwiType(), var->Copy(), new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), Symbol()->KiwiName())));
+
+			return var;
+		}
+
 		return new Kiwi::SubVariable(value, Symbol()->KiwiName());
 	}
 

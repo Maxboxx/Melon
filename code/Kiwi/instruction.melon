@@ -1,4 +1,25 @@
 
-class Instruction
+include Var
+include Expression
 
+enum Inst
+	return,
+	
+	assign {
+		Var: v
+		Expr: e
+	}
+	
+	fun string: toKiwi()
+		ret match self do
+			Inst.assign: a as Inst.assign do
+				a.v.toKiwi() + " = " + a.e.toKiwi()
+			end
+			
+			is Inst.return: "ret"
+			
+			else: ""
+		end
+	end
 end
+

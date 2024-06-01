@@ -76,7 +76,7 @@ void PtrSymbol::SpecializeTemplate(Symbol* initSym, const Boxx::ReplacementMap<T
 		}
 	}
 
-	sym->type = sym->TemplateArgument(0)->AbsoluteName();
+	sym->type = ReplaceTypeScope(type, replacement, file);
 
 	if (sym->type.HasTemplates() && !sym->PtrType()) {
 		SymbolTable::TemplateInfo info;

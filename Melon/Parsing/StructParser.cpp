@@ -33,6 +33,8 @@ Ptr<StructStatement> StructParser::Parse(ParsingInfo& info) {
 }
 
 Ptr<StructStatement> StructParser::ParseCurly(const Name& name, ParsingInfo& info) {
+	if (info.Current().type != TokenType::CurlyOpen) return nullptr;
+
 	const UInt structLine = info.Current().line;
 
 	Ptr<StructStatement> sn = ParseName(name, info, structLine);
