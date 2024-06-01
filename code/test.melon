@@ -9,21 +9,20 @@ Var.sub*?: _ = nil
 Var.type*?: _ = nil
 
 
-Var: v = Var.sub {
-	v = new Var.type {
-		v = new Var.sub {
-			v = new Var.deref("a"),
-			p = "b"
-		},
+Var: v = Var.sub(
+	Var.type(
+		Var.sub(
+			Var.deref("a"),
+			"b"
+		),
 		
-		t = "A"
-	},
+		"A"
+	),
 	
-	p = "c"
-}
+	"c"
+)
 
 
 log(v)
 log(v.toKiwi())
-
 

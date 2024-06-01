@@ -1,5 +1,4 @@
 
-
 -- A kiwi variable
 enum Var
 	-- A named variable
@@ -12,12 +11,22 @@ enum Var
 	sub {
 		Var*: v
 		string: p
+		
+		fun init(Var: v, string: p)
+			self.v = new v
+			self.p = p
+		end
 	},
 	
 	-- A typed variable
 	type {
 		Var*: v
 		string: t
+		
+		fun init(Var: v, string: t)
+			self.v = new v
+			self.t = t
+		end
 	}
 	
 	fun string: toKiwi()

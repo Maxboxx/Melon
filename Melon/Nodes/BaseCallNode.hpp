@@ -4,6 +4,7 @@
 
 #include "TypeExpression.h"
 #include "ObjectInitExpression.h"
+#include "TypeConversion.h"
 
 #include "Melon/Parsing/Parser.h"
 
@@ -365,7 +366,12 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 			call->args.Add(new Kiwi::RefValue(value));
 		}
 		else {
-			call->args.Add(arguments[i]->Compile(info));
+			Ptr<TypeConversion> conv = new TypeConversion(this->Node::scope, this->Node::file);
+			conv->type = arg->Type()->AbsoluteName();
+			conv->isExplicit = false;
+			conv->expression = new WeakExpression(arguments[i]);
+
+			call->args.Add(conv->Compile(info));
 		}
 	}
 	
