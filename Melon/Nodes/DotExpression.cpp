@@ -1,6 +1,7 @@
 #include "DotExpression.h"
 
 #include "NameExpression.h"
+#include "AnyExpression.h"
 
 #include "Melon/Parsing/Parser.h"
 #include "Melon/Parsing/IncludeParser.h"
@@ -33,7 +34,7 @@ DotExpression::~DotExpression() {
 }
 
 TypeSymbol* DotExpression::Type(TypeSymbol* expected) const {
-	Symbols::Symbol* const s = Symbol();
+	Symbols::Symbol* const s = Symbol(expected);
 
 	if (s == nullptr) return nullptr;
 
@@ -44,8 +45,14 @@ TypeSymbol* DotExpression::Type(TypeSymbol* expected) const {
 	return nullptr;
 }
 
-Symbol* DotExpression::Symbol() const {
-	Symbols::Symbol* const nodeSym = expression->Symbol();
+Symbol* DotExpression::Symbol(TypeSymbol* expected) const {
+	if (expected != nullptr && expected->Is<StructSymbol>() && expected->Name() == name) {
+		if (EnumSymbol* e = expected->Parent<EnumSymbol>()) {
+			expected = e;
+		}
+	}
+	
+	Symbols::Symbol* nodeSym = expression->Symbol(expected);
 
 	if (nodeSym == nullptr) {
 		return nullptr;
@@ -80,12 +87,14 @@ Symbol* DotExpression::Symbol() const {
 }
 
 Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
-	TypeSymbol* const sym = expression->Type();
+	TypeSymbol* const typeSym = expression->Type(info.PeekExpectedType());
 
+	Symbols::Symbol* const symbol = Symbol(info.PeekExpectedType());
+	 
 	Ptr<Kiwi::Variable> value = expression->Compile(info).AsPtr<Kiwi::Variable>();
 
 	// Compile enum value
-	if (EnumSymbol* enumSym = expression->Symbol<EnumSymbol>()) {
+	if (EnumSymbol* enumSym = expression->Symbol<EnumSymbol>(info.PeekExpectedType())) {
 		ValueSymbol* valueSym = enumSym->Find<ValueSymbol>(name, file);
 
 		if (valueSym) {
@@ -98,31 +107,31 @@ Ptr<Kiwi::Value> DotExpression::Compile(CompileInfo& info) {
 		}
 	}
 	// Compile class value
-	else if (sym->Is<ClassSymbol>()) {
+	else if (typeSym->Is<ClassSymbol>()) {
 		if (expression.Is<DotExpression>() || !info.assign) {
 			Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
 
-			info.AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), var->Copy(), new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), Symbol()->KiwiName())));
+			info.AddInstruction(new Kiwi::AssignInstruction(Type()->KiwiType(), var->Copy(), new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), symbol->KiwiName())));
 
 			return var;
 		}
 		else {
-			return new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), Symbol()->KiwiName());
+			return new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), symbol->KiwiName());
 		}
 	}
 	// Compile struct value
 	else if (value) {
-		TypeSymbol* const t = Type();
+		TypeSymbol* const t = Type(info.PeekExpectedType());
 
 		if (t->Is<ClassSymbol>() && !info.assign) {
 			Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
 
-			info.AddInstruction(new Kiwi::AssignInstruction(t->KiwiType(), var->Copy(), new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), Symbol()->KiwiName())));
+			info.AddInstruction(new Kiwi::AssignInstruction(t->KiwiType(), var->Copy(), new Kiwi::SubVariable(new Kiwi::DerefVariable(value->name), symbol->KiwiName())));
 
 			return var;
 		}
 
-		return new Kiwi::SubVariable(value, Symbol()->KiwiName());
+		return new Kiwi::SubVariable(value, symbol->KiwiName());
 	}
 
 	return nullptr;
@@ -156,7 +165,7 @@ ScanResult DotExpression::Scan(ScanInfoStack& info) {
 		}
 	}
 
-	TypeSymbol* const type = expression->Type();
+	TypeSymbol* const type = expression->Type(info.PeekExpectedType());
 	if (type == nullptr) return result;
 
 	Symbols::Symbol* sym = type->Find(Name(name.name), file);

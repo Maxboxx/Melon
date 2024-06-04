@@ -49,7 +49,7 @@ TypeSymbol* UnaryOperatorExpression::Type(TypeSymbol* expected) const {
 	return nullptr;
 }
 
-Symbol* UnaryOperatorExpression::Symbol() const {
+Symbol* UnaryOperatorExpression::Symbol(TypeSymbol* expected) const {
 	if (op == Name::Unwrap) {
 		if (TypeSymbol* const type = operand->Type()) {
 			if (PtrSymbol* ptr = type->Cast<PtrSymbol>()) {

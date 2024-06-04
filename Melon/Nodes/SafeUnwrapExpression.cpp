@@ -24,8 +24,8 @@ TypeSymbol* SafeUnwrapExpression::Type(TypeSymbol* expected) const  {
 	return expression->Type()->Find(Name::Value, file)->Type();
 }
 
-Symbol* SafeUnwrapExpression::Symbol() const {
-	return Type();
+Symbol* SafeUnwrapExpression::Symbol(TypeSymbol* expected) const {
+	return Type(expected);
 }
 
 Ptr<Kiwi::Value> SafeUnwrapExpression::Compile(CompileInfo& info)  {

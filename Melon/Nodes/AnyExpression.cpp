@@ -15,7 +15,11 @@ AnyExpression::~AnyExpression() {
 	delete inferred;
 }
 
-Symbol* AnyExpression::Symbol() const {
+Symbol* AnyExpression::Symbol(TypeSymbol* expected) const {
+	if (expected) {
+		*inferred = expected;
+	}
+
 	return *inferred;
 }
 

@@ -57,10 +57,10 @@ namespace Melon {
 			bool IsSelfPassing() const;
 
 			/// {true} if the function is a constructor.
-			bool IsInit() const;
+			bool IsInit(Symbols::TypeSymbol* expected = nullptr) const;
 
 			/// The enum value for enum value constructor.
-			Symbols::ValueSymbol* EnumValue() const;
+			Symbols::ValueSymbol* EnumValue(Symbols::TypeSymbol* expected) const;
 
 			/// Compiles a call expression.
 			Ptr<Kiwi::CallExpression> CompileCallExpression(CompileInfo& info);

@@ -31,7 +31,7 @@ TypeSymbol* NameExpression::Type(TypeSymbol* expected) const {
 	return s->Type();
 }
 
-Symbol* NameExpression::Symbol() const {
+Symbol* NameExpression::Symbol(TypeSymbol* expected) const {
 	Name s = name.Copy();
 
 	// Get template types

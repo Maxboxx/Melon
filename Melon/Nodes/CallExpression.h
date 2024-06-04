@@ -12,7 +12,7 @@ namespace Melon {
 			CallExpression(Symbols::Symbol* const scope, const FileInfo& file);
 			~CallExpression();
 
-			virtual Symbols::Symbol* Symbol() const override;
+			virtual Symbols::Symbol* Symbol(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Boxx::List<Symbols::TypeSymbol*> Types(Symbols::TypeSymbol* expected = nullptr) const override;
 		};

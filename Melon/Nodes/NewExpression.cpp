@@ -55,7 +55,7 @@ TypeSymbol* NewExpression::ExpectedInnerType(TypeSymbol* expectedOuter) const {
 	return nullptr;
 }
 
-Symbol* NewExpression::Symbol() const {
+Symbol* NewExpression::Symbol(TypeSymbol* expected) const {
 	return nullptr;
 }
 

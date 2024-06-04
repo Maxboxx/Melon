@@ -262,10 +262,20 @@ Ptr<Expression> ExpressionParser::ParseBinaryOperand(ParsingInfo& info, const bo
 }
 
 Ptr<Expression> ExpressionParser::ParseUnaryOperand(ParsingInfo& info, const bool statement) {
-	if (Ptr<Expression> node = ParseChainOperand(info, statement)) {
+	Ptr<Expression> node = ParseChainOperand(info, statement);
+
+	if (node || info.Current().type == TokenType::Dot) {
 		bool hasSafeUnwrap = false;
 
 		while (!info.EndOfFile()) {
+			if (Ptr<DotExpression> dot = DotParser::Parse(info)) {
+				dot->expression = node ? node : new AnyExpression(dot->File());
+				node = dot;
+				continue;
+			}
+
+			if (!node) break;
+
 			if (Ptr<CallExpression> call = CallParser::Parse(info)) {
 				call->expression = node;
 				node = call;
@@ -277,12 +287,6 @@ Ptr<Expression> ExpressionParser::ParseUnaryOperand(ParsingInfo& info, const boo
 				index->expression = node;
 				node = index;
 
-				continue;
-			}
-
-			if (Ptr<DotExpression> dot = DotParser::Parse(info)) {
-				dot->expression = node;
-				node = dot;
 				continue;
 			}
 

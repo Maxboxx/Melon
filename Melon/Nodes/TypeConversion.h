@@ -31,12 +31,18 @@ namespace Melon {
 			Symbols::ValueSymbol* GetValueSymbol(bool ignoreExpr = false) const;
 
 			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
-			virtual Symbols::Symbol* Symbol() const override;
+			virtual Symbols::Symbol* Symbol(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;
+
+			/// Creates an implicit type conversion.
+			static Ptr<TypeConversion> Implicit(Weak<Expression> expression, const Symbols::NameList& type);
+
+			/// Creates an explicit type conversion.
+			static Ptr<TypeConversion> Explicit(Weak<Expression> expression, const Symbols::NameList& type);
 
 		protected:
 			virtual Symbols::NameList FindSideEffectScope(const bool assign);

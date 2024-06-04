@@ -26,6 +26,22 @@ TypeConversion::~TypeConversion() {
 
 }
 
+Ptr<TypeConversion> TypeConversion::Implicit(Weak<Expression> expression, const NameList& type) {
+	Ptr<TypeConversion> conv = new TypeConversion(expression->scope, expression->File());
+	conv->isExplicit = false;
+	conv->type = type;
+	conv->expression = new WeakExpression(expression);
+	return conv;
+}
+
+Ptr<TypeConversion> TypeConversion::Explicit(Weak<Expression> expression, const NameList& type) {
+	Ptr<TypeConversion> conv = new TypeConversion(expression->scope, expression->File());
+	conv->isExplicit = true;
+	conv->type = type;
+	conv->expression = new WeakExpression(expression);
+	return conv;
+}
+
 TypeSymbol* TypeConversion::Type(TypeSymbol* expected) const {
 	if (type == NameList::Any) {
 		return expected;
@@ -60,8 +76,8 @@ TypeSymbol* TypeConversion::Type(TypeSymbol* expected) const {
 	return t;
 }
 
-Symbol* TypeConversion::Symbol() const {
-	return Type();
+Symbol* TypeConversion::Symbol(TypeSymbol* expected) const {
+	return Type(expected);
 }
 
 ValueSymbol* TypeConversion::GetValueSymbol(bool ignoreExpr) const {

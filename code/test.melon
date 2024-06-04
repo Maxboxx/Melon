@@ -7,29 +7,24 @@ include Kiwi.Expr
 include Kiwi.Value
 include Kiwi.Var
 
-Inst[]: insts = {}
-
-insts[] = Inst.assign {
-	v = Var.name("x"),
-	e = Expr.value(Value.num(3))
-}
-
-insts[] = Inst.assign {
-	v = Var.name("y"),
-	
-	e = Expr.add(
-		Value.var(Var.name("x")),
-		Value.num(4)
-	)
-}
-
-insts[] = Inst.return
-
-
 Block: block = Block {
-	insts = insts
+	insts = {
+		.assign {
+			v = .name("x"),
+			e = .value(Value.num(3))
+		},
+		
+		.assign {
+			v = .name("y"),
+			
+			e = .add(
+				Value.var(Var.name("x")),
+				Value.num(4)
+			)
+		},
+		
+		.return
+	}
 }
 
 log(block.toKiwi())
-
-

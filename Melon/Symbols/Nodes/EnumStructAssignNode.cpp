@@ -41,7 +41,7 @@ Ptr<Kiwi::Value> EnumStructAssignNode::Compile(Weak<Expression> operand1, Weak<E
 
 	info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), Name::Value.name), new Kiwi::Integer(valueType, value)));
 
-	Ptr<KiwiVariable> kiwiVar = new KiwiVariable(new Kiwi::SubVariable(var->Copy(), Name::Items.name), operand2->Type()->AbsoluteName());
+	Ptr<KiwiVariable> kiwiVar = new KiwiVariable(new Kiwi::SubVariable(var->Copy(), Name::Items.name), operand2->Type(info.PeekExpectedType())->AbsoluteName());
 
 	return Node::CompileAssignmentSimple(kiwiVar, operand2, info, operand1->File(), false);
 }

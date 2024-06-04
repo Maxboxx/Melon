@@ -887,13 +887,13 @@ void SymbolTable::SetupArray() {
 }
 
 void SymbolTable::SetupList() {
-	ClassSymbol* const listSym = symbols->AddSymbol(Name::List, new ClassSymbol(FileInfo()));
+	StructSymbol* const listSym = symbols->AddSymbol(Name::List, new StructSymbol(FileInfo()));
 	List<NameList> args;
 	args.Add(NameList().Add(Name("")).Add(Name("T")));
 	Name scope = Name("");
 	scope.types = args;
 
-	ClassSymbol* const list = new ClassSymbol(FileInfo());
+	StructSymbol* const list = new StructSymbol(FileInfo());
 	list->templateArguments.Add(args[0]);
 	listSym->AddTemplateVariant(list);
 

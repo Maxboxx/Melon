@@ -2,12 +2,14 @@
 
 #include "KiwiVariable.h"
 #include "TypeExpression.h"
+#include "TypeConversion.h"
 
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/TypeSymbol.h"
+#include "Melon/Symbols/EnumSymbol.h"
 #include "Melon/Symbols/StructSymbol.h"
-#include "Melon/Symbols/classSymbol.h"
+#include "Melon/Symbols/ClassSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 
 #include "Melon/Symbols/Nodes/SymbolNode.h"
@@ -28,9 +30,9 @@ ObjectInitExpression::~ObjectInitExpression() {
 
 }
 
-TypeSymbol* ObjectInitExpression::Type(TypeSymbol* expected) const {
+TypeSymbol* ObjectInitExpression::ExprType(TypeSymbol* expected) const {
 	expression->Type(expected);
-	Symbols::Symbol* const sym = expression->Symbol();
+	Symbols::Symbol* const sym = expression->Symbol(expected);
 
 	if (sym == nullptr) return nullptr;
 
@@ -41,10 +43,22 @@ TypeSymbol* ObjectInitExpression::Type(TypeSymbol* expected) const {
 	return nullptr;
 }
 
+TypeSymbol* ObjectInitExpression::Type(TypeSymbol* expected) const {
+	TypeSymbol* const type = ExprType(expected);
+
+	if (type->Is<StructSymbol>()) {
+		if (EnumSymbol* e = type->Parent<EnumSymbol>()) {
+			return e;
+		}
+	}
+
+	return type;
+}
+
 Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 	Ptr<Kiwi::Variable> value = expression->Compile(info).AsPtr<Kiwi::Variable>();
 
-	TypeSymbol* const type = Type();
+	TypeSymbol* const type = ExprType(info.PeekExpectedType());
 
 	if (!value) {
 		value = new Kiwi::Variable(info.NewRegister());
@@ -71,6 +85,7 @@ Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 	for (UInt i = 0; i < vars.Count(); i++) {
 		VariableSymbol* const var = type->Find<VariableSymbol>(vars[i], file);
 		info.PushExpectedType(var->Type());
+		//Ptr<TypeConversion> conv = TypeConversion::Implicit(expressions[i], var->Type()->AbsoluteName());
 
 		if (type->Is<StructSymbol>()) {
 			Ptr<KiwiVariable> kv = new KiwiVariable(new Kiwi::SubVariable(value->Copy(), var->KiwiName()), var->Type()->AbsoluteName());
@@ -84,7 +99,10 @@ Ptr<Kiwi::Value> ObjectInitExpression::Compile(CompileInfo& info) {
 		info.PopExpectedType();
 	}
 
-	return value;
+	Ptr<KiwiVariable> kiwiVar = new KiwiVariable(value, type->AbsoluteName());
+	Ptr<TypeConversion> conv = TypeConversion::Implicit(kiwiVar, Type(info.PeekExpectedType())->AbsoluteName());
+
+	return conv->Compile(info);
 }
 
 void ObjectInitExpression::IncludeScan(ParsingInfo& info) {
@@ -99,7 +117,7 @@ ScanResult ObjectInitExpression::Scan(ScanInfoStack& info) {
 	ScanResult result = expression->Scan(info);
 	result.SelfUseCheck(info, expression->File());
 	
-	TypeSymbol* const type = Type(info.PeekExpectedType());
+	TypeSymbol* const type = ExprType(info.PeekExpectedType());
 
 	if (type == nullptr) return result;
 

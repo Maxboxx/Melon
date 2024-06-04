@@ -18,7 +18,7 @@ namespace Melon {
 			~UnaryOperatorExpression();
 
 			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
-			virtual Symbols::Symbol* Symbol() const override;
+			virtual Symbols::Symbol* Symbol(Symbols::TypeSymbol* expected = nullptr) const override;
 
 			/// Gets the operator.
 			virtual Symbols::Name GetOperator() const;

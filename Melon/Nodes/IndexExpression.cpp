@@ -56,8 +56,8 @@ Ptr<Kiwi::Value> IndexExpression::CompileAssignFunc(FunctionSymbol* func, Weak<E
 	return func->symbolNode->Compile(args, info, false);
 }
 
-Symbol* IndexExpression::Symbol() const {
-	return Type();
+Symbol* IndexExpression::Symbol(TypeSymbol* expected) const {
+	return Type(expected);
 }
 
 TypeSymbol* IndexExpression::Type(TypeSymbol* expected) const {

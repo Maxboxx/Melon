@@ -20,7 +20,7 @@ namespace Melon {
 			virtual Boxx::List<Symbols::TypeSymbol*> Types(Symbols::TypeSymbol* expected = nullptr) const;
 
 			/// Returns the symbol of the expression or {nullptr} if the expression does not have a symbol.
-			virtual Symbols::Symbol* Symbol() const {
+			virtual Symbols::Symbol* Symbol(Symbols::TypeSymbol* expected = nullptr) const {
 				return nullptr;
 			}
 
@@ -28,7 +28,7 @@ namespace Melon {
 			///p Returns {nullptr} if the symbol is not of the specified type.
 			///M
 			template <class T>
-			T* Symbol() const {
+			T* Symbol(Symbols::TypeSymbol* expected = nullptr) const {
 			///M
 				if (Symbols::Symbol* const sym = Symbol()) {
 					return sym->Cast<T>();
@@ -59,7 +59,7 @@ namespace Melon {
 
 			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override {return expression->Type(expected);}
 			virtual Boxx::List<Symbols::TypeSymbol*> Types(Symbols::TypeSymbol* expected = nullptr) const override {return expression->Types(expected);}
-			virtual Symbols::Symbol* Symbol() const override {return expression->Symbol();}
+			virtual Symbols::Symbol* Symbol(Symbols::TypeSymbol* expected = nullptr) const override {return expression->Symbol();}
 			virtual Ptr<Expression> Optimize(OptimizeInfo& info) override {return nullptr;}
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override {expression->IncludeScan(info);}
 			virtual ScanResult Scan(ScanInfoStack& info) override {return expression->Scan(info);}

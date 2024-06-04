@@ -98,19 +98,18 @@ Ptr<Kiwi::Value> Melon::Nodes::Array::CompileList(TemplateTypeSymbol* type, Comp
 	Ptr<Kiwi::Variable> list = new Kiwi::Variable(info.NewRegister());
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
-		type->KiwiType(), list->Copy(),
-		new Kiwi::AllocExpression(type->MemorySize())
+		type->KiwiType(), list->Copy(), nullptr
 	));
 
 	UInt size = Math::Max(4U, items.Count());
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
-		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), lenSym->KiwiName()),
+		new Kiwi::SubVariable(new Kiwi::Variable(list->name), lenSym->KiwiName()),
 		new Kiwi::Integer(lenSym->KiwiType(), items.Count())
 	));
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
-		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), capSym->KiwiName()),
+		new Kiwi::SubVariable(new Kiwi::Variable(list->name), capSym->KiwiName()),
 		new Kiwi::Integer(capSym->KiwiType(), size)
 	));
 
@@ -141,7 +140,7 @@ Ptr<Kiwi::Value> Melon::Nodes::Array::CompileList(TemplateTypeSymbol* type, Comp
 	info.PopExpectedType();
 
 	info.AddInstruction(new Kiwi::AssignInstruction(
-		new Kiwi::SubVariable(new Kiwi::DerefVariable(list->name), itemsSym->KiwiName()),
+		new Kiwi::SubVariable(new Kiwi::Variable(list->name), itemsSym->KiwiName()),
 		itemsArr
 	));
 

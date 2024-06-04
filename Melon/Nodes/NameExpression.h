@@ -18,7 +18,7 @@ namespace Melon {
 			~NameExpression();
 
 			virtual Symbols::TypeSymbol* Type(Symbols::TypeSymbol* expected = nullptr) const override;
-			virtual Symbols::Symbol* Symbol() const override;
+			virtual Symbols::Symbol* Symbol(Symbols::TypeSymbol* expected = nullptr) const override;
 			virtual Ptr<Kiwi::Value> Compile(CompileInfo& info) override;
 			virtual ScanResult Scan(ScanInfoStack& info) override;
 			virtual Boxx::StringBuilder ToMelon(const Boxx::UInt indent) const override;

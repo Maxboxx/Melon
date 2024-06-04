@@ -9,6 +9,7 @@
 #include "Melon/Parsing/Parser.h"
 
 #include "Melon/Symbols/StructSymbol.h"
+#include "Melon/Symbols/EnumSymbol.h"
 #include "Melon/Symbols/ClassSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
 #include "Melon/Symbols/ValueSymbol.h"
@@ -49,7 +50,7 @@ template <BaseCallType T>
 inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes(TypeSymbol* expected) const {
 	List<TypeSymbol*> types;
 
-	if (ValueSymbol* value = EnumValue()) {
+	if (ValueSymbol* value = EnumValue(expected)) {
 		types.Add(value->ParentType());
 		return types;
 	}
@@ -61,8 +62,8 @@ inline List<TypeSymbol*> BaseCallNode<T>::GetReturnTypes(TypeSymbol* expected) c
 		return types;
 	}
 
-	if (IsInit()) {
-		types.Add(expression->Symbol()->Cast<TypeSymbol>());
+	if (IsInit(expected)) {
+		types.Add(expression->Symbol(expected)->Cast<TypeSymbol>());
 	}
 	else for (UInt i = 0; i < f->returnValues.Count(); i++) {
 		types.Add(f->ReturnType(i));
@@ -183,7 +184,7 @@ inline FunctionSymbol* BaseCallNode<T>::GetMethod(const Optional<List<TypeSymbol
 
 template <BaseCallType T>
 inline FunctionSymbol* BaseCallNode<T>::GetFunctionSymbol(const Optional<List<TypeSymbol*>>& templateTypes, const List<TypeSymbol*>& argTypes, TypeSymbol* expected) const {
-	if (IsInit()) {
+	if (IsInit(expected)) {
 		return GetInitFunction(templateTypes, argTypes, expected);
 	}
 	else if (!IsMethod()) {
@@ -197,6 +198,10 @@ inline FunctionSymbol* BaseCallNode<T>::GetFunctionSymbol(const Optional<List<Ty
 template <BaseCallType T>
 inline bool BaseCallNode<T>::IsMethod() const {
 	if (Weak<DotExpression> dot = expression.As<DotExpression>()) {
+		Symbols::Symbol* sym = dot->Symbol();
+
+		if (sym->Is<StructSymbol>()) return false;
+
 		if (dot->expression->Type()) {
 			return true;
 		}
@@ -253,14 +258,16 @@ inline bool BaseCallNode<T>::IsSelfPassing() const {
 }
 
 template <BaseCallType T>
-inline bool BaseCallNode<T>::IsInit() const {
+inline bool BaseCallNode<T>::IsInit(TypeSymbol* expected) const {
 	if (expression.Is<AnyExpression>()) {
 		return true;
 	}
 
-	Symbols::Symbol* const s = expression->Symbol();
+	Symbols::Symbol* const s = expression->Symbol(expected);
 
 	if (s->Is<StructSymbol>() || s->Is<ClassSymbol>()) {
+		if (s->Parent<EnumSymbol>()) return true;
+
 		return !IsMethod();
 	}
 
@@ -268,14 +275,14 @@ inline bool BaseCallNode<T>::IsInit() const {
 }
 
 template <BaseCallType T>
-inline ValueSymbol* BaseCallNode<T>::EnumValue() const {
-	Symbols::Symbol* const s = expression->Symbol();
+inline ValueSymbol* BaseCallNode<T>::EnumValue(TypeSymbol* expected) const {
+	Symbols::Symbol* const s = expression->Symbol(expected);
 	return s->Cast<ValueSymbol>();
 }
 
 template <BaseCallType T>
 inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(CompileInfo& info) { // TODO: more accurate arg error lines
-	if (ValueSymbol* value = EnumValue()) {
+	if (ValueSymbol* value = EnumValue(info.PeekExpectedType())) {
 		Ptr<Kiwi::Variable> var = new Kiwi::Variable(info.NewRegister());
 		info.AddInstruction(new Kiwi::AssignInstruction(value->ParentType()->KiwiType(), var->Copy(), nullptr));
 		info.AddInstruction(new Kiwi::AssignInstruction(new Kiwi::SubVariable(var->Copy(), Name::Value.name), new Kiwi::Integer(SymbolTable::Byte->KiwiType(), value->value)));
@@ -287,7 +294,7 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 		return result;
 	}
 
-	FunctionSymbol* func = GetFunc();
+	FunctionSymbol* func = GetFunc(info.PeekExpectedType());
 
 	Ptr<Kiwi::CallExpression> call = new Kiwi::CallExpression(func->KiwiName());
 
@@ -295,7 +302,7 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 
 	UInt argOffset = 0;
 
-	if (!operatorFunction && (IsInit() || IsSelfPassing())) {
+	if (!operatorFunction && (IsInit(info.PeekExpectedType()) || IsSelfPassing())) {
 		argOffset++;
 
 		TypeSymbol* typeSym = func->Argument(0)->Type();
@@ -303,7 +310,7 @@ inline BaseCallNode<T>::CompileResult BaseCallNode<T>::CompileWithResult(Compile
 
 		Ptr<Kiwi::Variable> self = nullptr;
 		
-		if (IsInit()) {
+		if (IsInit(info.PeekExpectedType())) {
 			self = new Kiwi::Variable(info.NewRegister());
 
 			Ptr<Kiwi::Expression> expr = nullptr;
@@ -463,7 +470,7 @@ inline ScanResult BaseCallNode<T>::Scan(ScanInfoStack& info) {
 		result |= r;
 	}
 
-	const bool init = IsInit();
+	const bool init = IsInit(info.PeekExpectedType());
 
 	// Scan argument assignment
 	for (UInt u = 0; u < func->arguments.Count(); u++) {
