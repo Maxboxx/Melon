@@ -208,6 +208,41 @@ Symbol* SymbolTable::FindInNamespaces(const NameList& name, const FileInfo& file
 		}
 	}
 
+	// TODO: Only allow static stuff to be included
+	for (const NameList& importedNamespace : file.importedNamespaces) {
+		if (Symbol* const s = ContainsAbsolute(importedNamespace)) {
+			Symbol* const inner = s->Contains(name[0]);
+
+			if (inner == nullptr) continue;
+
+			if (hasMatch) {
+				ErrorLog::Error(LogMessage("error.symbol.ambiguous", name[0].ToSimpleString()), file);
+			}
+
+			hasMatch = true;
+
+			Symbol* ns = inner;
+
+			bool found = true;
+
+			for (Boxx::UInt i = 1; i < name.Size(); i++) {
+				Symbol* const sym = ns->Find(name[i], file);
+
+				if (i + 1 >= name.Size() || sym->Is<MapSymbol>()) {
+					ns = sym;
+				}
+				else {
+					found = false;
+					break;
+				}
+			}
+
+			if (found) {
+				foundSymbol = ns;
+			}
+		}
+	}
+
 	if (foundSymbol) return foundSymbol;
 
 	ErrorLog::Error(LogMessage("error.symbol.not_found", name.ToSimpleString()), file);

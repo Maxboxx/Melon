@@ -24,6 +24,9 @@ namespace Melon {
 		/// All included namespaces.
 		Boxx::Set<Symbols::NameList> includedNamespaces;
 
+		/// All included namespaces.
+		Boxx::Set<Symbols::NameList> importedNamespaces;
+
 		/// The statement number of this file location.
 		Boxx::UInt statement;
 

@@ -1,6 +1,4 @@
 
-include Var
-include Expression
 
 enum Inst
 	return,

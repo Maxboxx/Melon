@@ -1,6 +1,4 @@
 
-include Inst
-
 
 struct Block
 	Inst[]: insts

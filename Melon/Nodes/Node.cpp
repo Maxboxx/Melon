@@ -221,7 +221,7 @@ void Node::Include(const Symbols::NameList& name, ParsingInfo& info) {
 					s = sym;
 				}
 				else {
-					IncludeParser::Include(s->AbsoluteName().Add(name[i]), info);
+					IncludeParser::Include(s->AbsoluteName().Add(name[i]), info, false);
 					done = false;
 					break;
 				}

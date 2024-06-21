@@ -79,6 +79,7 @@ FileInfo ParsingInfo::GetFileInfo() const {
 	file.statement = statementNumber;
 	file.currentNamespace = currentNamespace;
 	file.includedNamespaces = includedNamespaces;
+	file.importedNamespaces = importedNamespaces;
 	return file;
 }
 
@@ -90,6 +91,7 @@ FileInfo ParsingInfo::GetFileInfo(const UInt line) const {
 	file.statement = statementNumber;
 	file.currentNamespace = currentNamespace;
 	file.includedNamespaces = includedNamespaces;
+	file.importedNamespaces = importedNamespaces;
 	return file;
 }
 
@@ -101,6 +103,7 @@ FileInfo ParsingInfo::GetFileInfoNext() const {
 	file.statement = statementNumber;
 	file.currentNamespace = currentNamespace;
 	file.includedNamespaces = includedNamespaces;
+	file.importedNamespaces = importedNamespaces;
 	return file;
 }
 
@@ -112,6 +115,7 @@ FileInfo ParsingInfo::GetFileInfoNext(const UInt steps) const {
 	file.statement = statementNumber;
 	file.currentNamespace = currentNamespace;
 	file.includedNamespaces = includedNamespaces;
+	file.importedNamespaces = importedNamespaces;
 	return file;
 }
 
@@ -123,6 +127,7 @@ FileInfo ParsingInfo::GetFileInfoPrev() const {
 	file.statement = statementNumber;
 	file.currentNamespace = currentNamespace;
 	file.includedNamespaces = includedNamespaces;
+	file.importedNamespaces = importedNamespaces;
 	return file;
 }
 
@@ -134,5 +139,6 @@ FileInfo ParsingInfo::GetFileInfoPrev(const UInt steps) const {
 	file.statement = statementNumber;
 	file.currentNamespace = currentNamespace;
 	file.includedNamespaces = includedNamespaces;
+	file.importedNamespaces = importedNamespaces;
 	return file;
 }

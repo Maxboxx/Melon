@@ -1,11 +1,7 @@
 
 include Melon.Console.log
 
-include Kiwi.Block
-include Kiwi.Inst
-include Kiwi.Expr
-include Kiwi.Value
-include Kiwi.Var
+import Kiwi
 
 Block: block = Block {
 	insts = {

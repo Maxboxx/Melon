@@ -13,7 +13,7 @@ namespace Melon {
 			static bool Parse(ParsingInfo& info);
 
 			/// Parses a file to include to the project.
-			static void Include(const Symbols::NameList& include, ParsingInfo& info);
+			static void Include(const Symbols::NameList& include, ParsingInfo& info, const bool import);
 
 		private:
 			static void IncludeNamespace(Symbols::MapSymbol* ns, const Boxx::String& dir, const Symbols::NameList& include, Boxx::UInt index, ParsingInfo& info);

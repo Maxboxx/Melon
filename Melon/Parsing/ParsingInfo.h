@@ -52,6 +52,9 @@ namespace Melon {
 			/// All namespaces included by the current file.
 			Boxx::Set<Symbols::NameList> includedNamespaces;
 
+			/// All namespaces imported by the current file.
+			Boxx::Set<Symbols::NameList> importedNamespaces;
+
 			/// The current statement number.
 			Boxx::UInt statementNumber = 1;
 

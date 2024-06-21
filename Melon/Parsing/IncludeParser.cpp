@@ -14,7 +14,9 @@ using namespace Melon::Symbols;
 using namespace Melon::Parsing;
 
 bool IncludeParser::Parse(ParsingInfo& info) {
-	if (info.Current().type != TokenType::Include) return false;
+	if (info.Current().type != TokenType::Include && info.Current().type != TokenType::Import) return false;
+
+	const bool import = info.Current().type == TokenType::Import;
 	info.index++;
 
 	NameList include = NameList();
@@ -35,12 +37,12 @@ bool IncludeParser::Parse(ParsingInfo& info) {
 		info.index += 2;
 	}
 
-	Include(include, info);
+	Include(include, info, import);
 
 	return true;
 }
 
-void IncludeParser::Include(const NameList& include, ParsingInfo& info) {
+void IncludeParser::Include(const NameList& include, ParsingInfo& info, const bool import) {
 	String dir = Path::GetDirectory(info.GetFileInfo().filename);
 	String ns = Path::Combine(dir, include[0].name);
 
@@ -49,7 +51,13 @@ void IncludeParser::Include(const NameList& include, ParsingInfo& info) {
 
 		if (current) {
 			IncludeNamespace(current, ns, include, 0, info);
-			info.includedNamespaces.Add(info.currentNamespace.Add(include));
+
+			if (!import) {
+				info.includedNamespaces.Add(info.currentNamespace.Add(include));
+			}
+			else {
+				info.importedNamespaces.Add(info.currentNamespace.Add(include));
+			}
 		}
 	}
 }
@@ -87,8 +95,11 @@ void IncludeParser::ParseFile(const String& filename, const NameList& include, c
 	Name currentFile = info.currentFile;
 	info.currentFile = includeFile;
 
-	Set<NameList> namespaces = info.includedNamespaces;
+	Set<NameList> includes = info.includedNamespaces;
 	info.includedNamespaces = Set<NameList>();
+
+	Set<NameList> imports = info.importedNamespaces;
+	info.importedNamespaces = Set<NameList>();
 
 	List<Token> tokens = info.tokens;
 	info.tokens = List<Token>();
@@ -115,7 +126,8 @@ void IncludeParser::ParseFile(const String& filename, const NameList& include, c
 	info.filename = file;
 	info.currentFile = currentFile;
 	info.currentNamespace = currentNamespace;
-	info.includedNamespaces = namespaces;
+	info.includedNamespaces = includes;
+	info.importedNamespaces = imports;
 	info.tokens = tokens;
 	info.index = index;
 	info.loops = loops;

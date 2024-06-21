@@ -107,6 +107,7 @@ namespace Melon {
 		Override,
 		Debug,
 		Include,
+		Import,
 		Global,
 		As,
 		Discard,

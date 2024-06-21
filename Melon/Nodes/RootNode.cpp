@@ -364,6 +364,13 @@ void RootNode::ToMelonFiles(const CompilerOptions& options) const {
 				sb += "\n";
 			}
 
+			// Convert imports to string
+			for (const NameList& include : statements->file.importedNamespaces) {
+				sb += "import ";
+				sb += include.ToString();
+				sb += "\n";
+			}
+
 			if (sb.Length() > 0) sb += "\n";
 		}
 
