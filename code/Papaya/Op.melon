@@ -1,0 +1,74 @@
+
+enum Op
+	nop,
+	
+	load8,
+	load16,
+	load32,
+	load64,
+	
+	store8,
+	store16,
+	store32,
+	store64,
+	
+	push,
+	pop,
+	
+	int8,
+	int16,
+	int32,
+	int64,
+	
+	sx8_16,
+	sx8_32,
+	sx8_64,
+	sx16_32,
+	sx16_64,
+	sx32_64,
+	
+	zx8_16,
+	zx8_32,
+	zx8_64,
+	zx16_32,
+	zx16_64,
+	zx32_64,
+	
+	mov8,
+	mov16,
+	mov32,
+	mov64,
+	
+	add8,
+	add16,
+	add32,
+	add64,
+	
+	sub8,
+	sub16,
+	sub32,
+	sub64,
+	
+	mul8,
+	mul16,
+	mul32,
+	mul64,
+	
+	div8,
+	div16,
+	div32,
+	div64,
+	
+	udiv8,
+	udiv16,
+	udiv32,
+	udiv64,
+	
+	alloc,
+	free,
+	syscall
+end
+
+enum SysOp
+	print
+end

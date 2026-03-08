@@ -1,0 +1,68 @@
+
+struct Bytes
+	--- Converts an interger to bytes.
+	static fun byte[]: integer(short: value)
+		byte[]: bytes = {}
+		byte: b = 0
+		
+		_debug byte0 b value
+		bytes[] = b
+		
+		_debug byte1 b value
+		bytes[] = b
+		
+		ret bytes
+	end
+
+	--- Converts an interger to bytes.
+	static fun byte[]: integer(int: value)
+		byte[]: bytes = {}
+		byte: b = 0
+		
+		_debug byte0 b value
+		bytes[] = b
+		
+		_debug byte1 b value
+		bytes[] = b
+		
+		_debug byte2 b value
+		bytes[] = b
+		
+		_debug byte3 b value
+		bytes[] = b
+		
+		ret bytes
+	end
+	
+	--- Converts an interger to bytes.
+	static fun byte[]: integer(long: value)
+		byte[]: bytes = {}
+		byte: b = 0
+		
+		_debug byte0 b value
+		bytes[] = b
+		
+		_debug byte1 b value
+		bytes[] = b
+		
+		_debug byte2 b value
+		bytes[] = b
+		
+		_debug byte3 b value
+		bytes[] = b
+		
+		_debug byte4 b value
+		bytes[] = b
+		
+		_debug byte5 b value
+		bytes[] = b
+		
+		_debug byte6 b value
+		bytes[] = b
+		
+		_debug byte7 b value
+		bytes[] = b
+		
+		ret bytes
+	end
+end

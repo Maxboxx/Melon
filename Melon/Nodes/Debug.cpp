@@ -6,6 +6,7 @@
 
 #include "Melon/Symbols/StructSymbol.h"
 #include "Melon/Symbols/VariableSymbol.h"
+#include "Melon/Symbols/IntegerSymbol.h"
 
 using namespace Boxx;
 using namespace KiwiOld;
@@ -22,11 +23,19 @@ void Debug::IncludeScan(Parsing::ParsingInfo& info) {
 	if (argument) {
 		argument->IncludeScan(info);
 	}
+
+	if (argument2) {
+		argument2->IncludeScan(info);
+	}
 }
 
 ScanResult Debug::Scan(ScanInfoStack& info) {
 	if (argument) {
 		return argument->Scan(info);
+	}
+
+	if (argument2) {
+		return argument2->Scan(info);
 	}
 
 	return ScanResult();
@@ -53,6 +62,30 @@ Ptr<Kiwi::Value> Debug::Compile(CompileInfo& info) {
 	else if (type == "free" && argument) {
 		Ptr<Kiwi::Value> value = argument->Compile(info);
 		info.AddInstruction(new Kiwi::FreeInstruction(value));
+	}
+	else if (type.Sub(0, 3) == "byte" && argument && argument2) {
+		Int offset = type.Sub(4).ToInt();
+
+		Ptr<Kiwi::Variable> value = argument->Compile(info).AsPtr<Kiwi::Variable>();
+
+		Ptr<Kiwi::DebugByteInstruction> getByte = new Kiwi::DebugByteInstruction(value, argument2->Compile(info), offset);
+		info.AddInstruction(getByte);
+	}
+	else if (type == "writebytes" && argument && argument2) {
+		Ptr<Kiwi::Variable> name = argument->Compile(info).AsPtr<Kiwi::Variable>();
+		Ptr<Kiwi::Variable> data = argument2->Compile(info).AsPtr<Kiwi::Variable>();
+
+		TypeSymbol* type1 = argument->Type();
+		TypeSymbol* type2 = argument2->Type();
+
+		Ptr<Kiwi::DebugFileWriteInstruction> write = new Kiwi::DebugFileWriteInstruction(
+			new Kiwi::SubVariable(name->Copy(), type1->Find(Name::Items, File())->KiwiName()),
+			new Kiwi::SubVariable(data->Copy(), type2->Find(Name::Items, File())->KiwiName()),
+			new Kiwi::SubVariable(name->Copy(), type1->Find(Name::Length, File())->KiwiName()),
+			new Kiwi::SubVariable(data->Copy(), type2->Find(Name::Length, File())->KiwiName())
+		);
+
+		info.AddInstruction(write);
 	}
 
 	return nullptr;

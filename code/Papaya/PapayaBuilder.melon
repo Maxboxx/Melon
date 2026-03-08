@@ -1,0 +1,53 @@
+
+include Melon
+
+struct PapayaBuilder
+	byte[]: bytes
+	
+	fun init()
+		self.bytes = {}
+	end
+
+	fun emit(Op: op)
+		self.emit(op, 0, 0, 0)
+	end
+	
+	fun emit(Op: op, long: arg1)
+		self.emit(op, arg1, 0, 0)
+	end
+	
+	fun emit(Op: op, long: arg1, long: arg2)
+		self.emit(op, arg1, arg2, 0)
+	end
+	
+	fun emit(Op: op, long: arg1, long: arg2, long: arg3)
+		byte: b = 0
+		_debug byte0 b op
+		self.bytes[] = b
+		self.addBytes(arg1)
+		self.addBytes(arg2)
+		self.addBytes(arg3)
+	end
+	
+	fun sys(SysOp: op)
+		self.sys(op, 0, 0)
+	end
+	
+	fun sys(SysOp: op, long: arg1)
+		self.sys(op, arg1, 0)
+	end
+	
+	fun sys(SysOp: op, long: arg1, long: arg2)
+		byte: b = 0
+		_debug byte0 b op
+		self.emit(Op.syscall, b, arg1, arg2)
+	end
+	
+	fun addBytes(long: value)
+		byte[]: bytes = Melon.Bytes.integer(value)
+		
+		for int: i = 0, < #bytes do
+			self.bytes[] = bytes[i]
+		end
+	end
+end

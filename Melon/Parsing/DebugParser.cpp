@@ -17,11 +17,13 @@ Ptr<Debug> DebugParser::Parse(ParsingInfo& info) {
 		String type = info.Current().value;
 		info.index++;
 
-		Ptr<Expression> expr = ExpressionParser::Parse(info);
+		Ptr<Expression> expr  = ExpressionParser::Parse(info);
+		Ptr<Expression> expr2 = ExpressionParser::Parse(info);
 
 		Ptr<Debug> node = new Debug(info.scope, info.GetFileInfoPrev());
 		node->type = type;
-		node->argument = expr;
+		node->argument  = expr;
+		node->argument2 = expr2;
 		return node;
 	}
 

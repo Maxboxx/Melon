@@ -14,6 +14,9 @@ namespace Melon {
 			/// The argument.
 			Ptr<Expression> argument;
 
+			/// The second argument.
+			Ptr<Expression> argument2;
+
 			Debug(Symbols::Symbol* const scope, const FileInfo& file);
 
 			virtual void IncludeScan(Parsing::ParsingInfo& info) override;

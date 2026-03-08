@@ -1,0 +1,6 @@
+
+struct File
+	static fun writeBytes(string: filename, byte[]: bytes)
+		_debug writebytes filename bytes
+	end
+end
